@@ -44,6 +44,8 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Ghost;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Imp;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Wandmaker;
 import com.shatteredpixel.shatteredpixeldungeon.items.Amulet;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.EndGem;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.items.EndGemItem;
 import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
 import com.shatteredpixel.shatteredpixeldungeon.items.Heap;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
@@ -284,6 +286,20 @@ public class Dungeon {
 		Badges.reset();
 		
 		GamesInProgress.selectedClass.initHero( hero );
+
+		//END 便利测试挑战:勾选了 CONVENIENCE 的每局开局,给一份测试便利包(金币+随机宝石若干),
+		//便于快速验证商店宝石、镶嵌与法杖蜕变。不影响未勾选的普通对局。
+		if (isChallenged( Challenges.CONVENIENCE )){
+			gold += 300; //测试资金
+			int gemCount = 2;
+			EndGem[] gemKinds = EndGem.values();
+			for (int i=0; i<gemCount; i++) {
+				EndGemItem gem = new EndGemItem( gemKinds[ Random.Int(gemKinds.length) ] );
+				gem.identify();
+				//放包,包满则静默丢弃(避免依赖 level 尚不存在时抛异常)
+				gem.collect();
+			}
+		}
 	}
 
 	public static boolean isChallenged( int mask ) {

@@ -327,7 +327,15 @@ public enum HeroClass {
 		}
 	}
 	
+	/** END: 终焉扩展把决斗家与牧师从可选职业中移除(整体不可选起点；仍保留其枚举/存档兼容)。 */
+	public boolean isDisabledForEnd(){
+		return this == DUELIST || this == CLERIC;
+	}
+
 	public boolean isUnlocked(){
+		//END: 被移除的两个职业直接视为不可用
+		if (isDisabledForEnd()) return false;
+
 		//always unlock on debug builds
 		if (DeviceCompat.isDebug()) return true;
 

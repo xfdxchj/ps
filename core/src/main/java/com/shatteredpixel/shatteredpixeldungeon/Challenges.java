@@ -36,9 +36,12 @@ public class Challenges {
 	public static final int NO_SCROLLS		    = 64;
 	public static final int CHAMPION_ENEMIES	= 128;
 	public static final int STRONGER_BOSSES 	= 256;
+	//END(便利测试挑战): 勾选后开局携带测试便利包(金币/宝石/法杖等),便于快速验证商店宝石、法杖蜕变等.
+	//此项对游戏本身并不“更难”，仅作测试用途,未勾选时完全无影响。
+	public static final int CONVENIENCE	= 512;
 
-	public static final int MAX_VALUE           = 511;
-	public static final int MAX_CHALS           = 9;
+	public static final int MAX_VALUE           = 1023; // (1<<10)-1,含便利测试挑战
+	public static final int MAX_CHALS           = 10;
 
 	public static final String[] NAME_IDS = {
 			"champion_enemies",
@@ -49,11 +52,12 @@ public class Challenges {
 			"no_herbalism",
 			"swarm_intelligence",
 			"darkness",
-			"no_scrolls"
+			"no_scrolls",
+			"convenience"
 	};
 
 	public static final int[] MASKS = {
-			CHAMPION_ENEMIES, STRONGER_BOSSES, NO_FOOD, NO_ARMOR, NO_HEALING, NO_HERBALISM, SWARM_INTELLIGENCE, DARKNESS, NO_SCROLLS
+			CHAMPION_ENEMIES, STRONGER_BOSSES, NO_FOOD, NO_ARMOR, NO_HEALING, NO_HERBALISM, SWARM_INTELLIGENCE, DARKNESS, NO_SCROLLS, CONVENIENCE
 	};
 
 	public static int activeChallenges(){
