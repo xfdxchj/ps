@@ -24,6 +24,11 @@ _Shattered Pixel Dungeon: End — implementation roadmap_
 - 生命宝石 → `Char` max HP（buffs `MAX_HP` 类 buff 或 actor 生命上限）。
 - 掉落/图鉴：需要把宝石登记进物品生成(Generator/掉落)或仅靠确定性发现(炼金 forged)先最小实现。
 ### 里程碑 M1: 数据模型 + 可镶嵌标记 + 基础攻击/防御/生命加成接现有方法，能在 CI 编译。
+- [x] M1.a 数据模型：`endcontent.EndGem`(5类) + `EndGemProfile`(随装备等级线性，`bonusAt(int)`)
+- [x] M1.b 可镶嵌标记+持久化：`Weapon.gem`/`Armor.gem`(EndGem序号,-1=无)+`hasGem()/gemType()`，bundle `end_gem` 键，守卫式 restore，不随 reset 丢失(仿 enchant/glyph)。提交 `a6bc480`
+- [ ] M1.c 数值接入：攻击宝石→武器伤害/命中点、防御宝石→护甲减伤/闪避点、生命宝石→max HP（需精读 damageRoll/accuracyFactor/evasion/drRoll 后逐个接入）
+- [ ] M1.d 可获得性：参照 `ScrollOfEnchantment` 的 `InventoryScroll`/`GameScene.selectItem` 交互做"对装备使用宝石"的入口 + ItemSprite/generator 登记
+
 
 ## 2. 法杖蜕变/进化
 对接点：`items.wands.Wand.level()/buffedLvl()/upgrade()`、`initialCharges()/chargesPerCast`；各类具体桩 `WandOfFireblast` 等 `onZap`；`+8` 判定 → 在 `Wand.upgrade()` 或新工具拦截。
