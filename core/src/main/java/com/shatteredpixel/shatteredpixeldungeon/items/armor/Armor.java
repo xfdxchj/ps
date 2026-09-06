@@ -25,6 +25,7 @@ import com.shatteredpixel.shatteredpixeldungeon.Badges;
 import com.shatteredpixel.shatteredpixeldungeon.Challenges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.EndGem;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.MagicImmune;
@@ -117,7 +118,18 @@ public class Armor extends EquipableItem {
 	public boolean glyphHardened = false;
 	public boolean curseInfusionBonus = false;
 	public boolean masteryPotionBonus = false;
-	
+
+	//END: 可镶嵌在护甲上的宝石（同 glyph 持久化，不随 reset 丢失）
+	public int gem = -1; //EndGem 序号，-1 = 无
+
+	public boolean hasGem(){
+		return gem >= 0 && gem < EndGem.values().length;
+	}
+
+	public EndGem gemType(){
+		return hasGem() ? EndGem.values()[gem] : null;
+	}
+
 	protected BrokenSeal seal;
 	
 	public int tier;
@@ -138,6 +150,7 @@ public class Armor extends EquipableItem {
 	private static final String MASTERY_POTION_BONUS = "mastery_potion_bonus";
 	private static final String SEAL            = "seal";
 	private static final String AUGMENT			= "augment";
+	private static final String GEM             = "end_gem";
 
 	@Override
 	public void storeInBundle( Bundle bundle ) {
@@ -150,6 +163,7 @@ public class Armor extends EquipableItem {
 		bundle.put( MASTERY_POTION_BONUS, masteryPotionBonus );
 		bundle.put( SEAL, seal);
 		bundle.put( AUGMENT, augment);
+		bundle.put( GEM, gem );
 	}
 
 	@Override
@@ -164,6 +178,8 @@ public class Armor extends EquipableItem {
 		seal = (BrokenSeal)bundle.get(SEAL);
 		
 		augment = bundle.getEnum(AUGMENT, Augment.class);
+		gem = bundle.contains(GEM) ? bundle.getInt( GEM ) : -1;
+		if (!hasGem()) gem = -1;
 	}
 
 	@Override

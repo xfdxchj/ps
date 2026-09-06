@@ -66,6 +66,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.weapon.enchantments.Projec
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.enchantments.Shocking;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.enchantments.Unstable;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.enchantments.Vampiric;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.EndGem;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.RunicBlade;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Scimitar;
@@ -126,7 +127,18 @@ abstract public class Weapon extends KindOfWeapon {
 	public boolean enchantHardened = false;
 	public boolean curseInfusionBonus = false;
 	public boolean masteryPotionBonus = false;
-	
+
+	//END: 可镶嵌在武器上的宝石（参考 enchantment/glyph 持久化方式，不随 reset 丢失）
+	public int gem = -1; //EndGem 序号，-1 = 无
+
+	public boolean hasGem(){
+		return gem >= 0 && gem < EndGem.values().length;
+	}
+
+	public EndGem gemType(){
+		return hasGem() ? EndGem.values()[gem] : null;
+	}
+
 	@Override
 	public int proc( Char attacker, Char defender, int damage ) {
 
@@ -224,6 +236,7 @@ abstract public class Weapon extends KindOfWeapon {
 	private static final String CURSE_INFUSION_BONUS = "curse_infusion_bonus";
 	private static final String MASTERY_POTION_BONUS = "mastery_potion_bonus";
 	private static final String AUGMENT	        = "augment";
+	private static final String GEM               = "end_gem";
 
 	@Override
 	public void storeInBundle( Bundle bundle ) {
@@ -235,6 +248,7 @@ abstract public class Weapon extends KindOfWeapon {
 		bundle.put( CURSE_INFUSION_BONUS, curseInfusionBonus );
 		bundle.put( MASTERY_POTION_BONUS, masteryPotionBonus );
 		bundle.put( AUGMENT, augment );
+		bundle.put( GEM, gem );
 	}
 	
 	@Override
@@ -248,6 +262,8 @@ abstract public class Weapon extends KindOfWeapon {
 		masteryPotionBonus = bundle.getBoolean( MASTERY_POTION_BONUS );
 
 		augment = bundle.getEnum(AUGMENT, Augment.class);
+		gem = bundle.contains(GEM) ? bundle.getInt( GEM ) : -1;
+		if (!hasGem()) gem = -1;
 	}
 	
 	@Override

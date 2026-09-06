@@ -32,6 +32,11 @@ public final class EndGemProfile {
         return base + perLevel * equipmentLevel;
     }
 
+    /** 在给定装备等级下该宝石贡献的整数加成（用于攻击/防御等按整数结算的项）。 */
+    public int bonusAt(int equipmentLevel){
+        return Math.round(atLevel(equipmentLevel));
+    }
+
     public EndGem gem(){ return gem; }
     public float base(){ return base; }
     public float perLevel(){ return perLevel; }
