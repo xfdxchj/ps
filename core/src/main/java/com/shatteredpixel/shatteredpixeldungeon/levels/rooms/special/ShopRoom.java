@@ -26,6 +26,8 @@ import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Belongings;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Shopkeeper;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.EndGem;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.items.EndGemItem;
 import com.shatteredpixel.shatteredpixeldungeon.items.Ankh;
 import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
 import com.shatteredpixel.shatteredpixeldungeon.items.Heap;
@@ -306,6 +308,10 @@ public class ShopRoom extends SpecialRoom {
 
 		itemsToSpawn.add( new Ankh() );
 		itemsToSpawn.add( new StoneOfAugmentation() );
+
+		//END: 每个商店必定刷新一颗随机类型宝石（与复活十字章同价位）
+		EndGem[] all = EndGem.values();
+		itemsToSpawn.add( EndGemItem.of( all[ Random.Int( all.length ) ] ) );
 
 		TimekeepersHourglass hourglass = Dungeon.hero.belongings.getItem(TimekeepersHourglass.class);
 		if (hourglass != null && hourglass.isIdentified() && !hourglass.cursed){

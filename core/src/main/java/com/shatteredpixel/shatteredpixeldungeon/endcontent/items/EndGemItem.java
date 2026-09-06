@@ -90,7 +90,7 @@ public class EndGemItem extends Item {
 
 	@Override
 	public int value() {
-		return 1 * quantity;
+		return 50 * quantity;   //与 Ankh(复活十字章)同价,商店售价经统一倍率计算故两者恒同价
 	}
 
 	//——行动/动作——
