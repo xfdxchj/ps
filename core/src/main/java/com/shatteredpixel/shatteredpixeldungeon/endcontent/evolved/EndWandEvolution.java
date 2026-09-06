@@ -4,22 +4,30 @@
  * 目标：法杖到达蜕变线(>= +8,见 isEligible)时,可用材料(后续接入锻造/UI)把它“变成一个新物品”,
  * 即换成某个 EvolvedXxx/高阶法杖类,保留充能/等级并携带独特附魔光泽。
  *
- * 第一批按“模板先跑通”落地 3 把(魔弹/爆炎/闪电)；其余法杖按其注册自然补齐。
- * 本类仅描述“x 源法杖 -> y 进化法杖”的映射与换装;机制微调在各 Evolved 子类/后续演进。
+ * 当前已为全部 13 种法杖注册进化形态(魔弹/爆炎/闪电/冲击波/腐蚀/腐化/解离/冰霜/活体大地/棱光/再生/注魂/哨戒)。
+ * 每把进化即一支“新法杖”、带独特进阶附魔光泽;本类仅描述“x 源法杖 -> y 进化法杖”映射与换装,机制微调在各 Evolved 子类。
  */
 package com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved;
 
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand;
+import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfBlastWave;
+import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfCorrosion;
+import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfCorruption;
+import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfDisintegration;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfFireblast;
+import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfFrost;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfLightning;
+import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfLivingEarth;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfMagicMissile;
+import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfPrismaticLight;
+import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfRegrowth;
+import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfTransfusion;
+import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfWarding;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public final class EndWandEvolution {
-
-    private EndWandEvolution() {}
 
     /** 蜕变所需的原始法杖最低强化等级。 */
     public static final int MIN_EVOLUTION_LEVEL = 8;
@@ -30,6 +38,16 @@ public final class EndWandEvolution {
         REGISTRY.put(WandOfMagicMissile.class, EvolvedWandOfMagicMissile.class);
         REGISTRY.put(WandOfFireblast.class,    EvolvedWandOfFireblast.class);
         REGISTRY.put(WandOfLightning.class,    EvolvedWandOfLightning.class);
+        REGISTRY.put(WandOfBlastWave.class,      EvolvedWandOfBlastWave.class);
+        REGISTRY.put(WandOfCorrosion.class,      EvolvedWandOfCorrosion.class);
+        REGISTRY.put(WandOfCorruption.class,     EvolvedWandOfCorruption.class);
+        REGISTRY.put(WandOfDisintegration.class, EvolvedWandOfDisintegration.class);
+        REGISTRY.put(WandOfFrost.class,          EvolvedWandOfFrost.class);
+        REGISTRY.put(WandOfLivingEarth.class,    EvolvedWandOfLivingEarth.class);
+        REGISTRY.put(WandOfPrismaticLight.class, EvolvedWandOfPrismaticLight.class);
+        REGISTRY.put(WandOfRegrowth.class,       EvolvedWandOfRegrowth.class);
+        REGISTRY.put(WandOfTransfusion.class,    EvolvedWandOfTransfusion.class);
+        REGISTRY.put(WandOfWarding.class,        EvolvedWandOfWarding.class);
     }
 
     public static boolean hasEvolution( Wand wand ){
