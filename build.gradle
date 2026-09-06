@@ -1,0 +1,39 @@
+//Root build configuration for the 《破碎的像素地牢：终焉扩展》 (Shattered Pixel Dungeon: End) build.
+//Custom MOD project (skeleton) forked from upstream Shattered Pixel Dungeon 3.3.8.
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:9.1.0'
+    }
+}
+
+allprojects {
+
+    ext {
+        appName = 'Shattered Pixel Dungeon: End'
+        appPackageName = 'com.shatteredpixel.shatteredpixeldungeon'
+
+        appVersionCode = 1
+        appVersionName = '0.0.1-end'
+
+        appJavaCompatibility = JavaVersion.VERSION_11
+
+        appAndroidCompileSDK = 36   //Android 15
+        appAndroidMinSDK = 21       //Android 5.0
+        appAndroidTargetSDK = 36    //Android 15
+
+        gdxVersion = '1.14.0'
+        gdxControllersVersion = '2.2.4'
+    }
+    version = appVersionName
+
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://central.sonatype.com/repository/maven-snapshots/' }
+    }
+
+}

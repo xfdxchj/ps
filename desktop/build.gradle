@@ -1,0 +1,63 @@
+//Desktop launcher module for 《破碎的像素地牢：终焉扩展》(Shattered Pixel Dungeon: End).
+//Forked from upstream SPD, trimmed of the external packaging plugin (org.beryx.runtime)
+//so the module only needs core Gradle plugins (java-library / application) plus the LibGDX artifacts.
+apply plugin: 'application'
+
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+java.sourceCompatibility = java.targetCompatibility = appJavaCompatibility
+
+ext.appMainClass = "com.shatteredpixel.shatteredpixeldungeon.desktop.DesktopLauncher"
+application.mainClass = appMainClass
+processResources {
+    from new File(project(':core').projectDir, "/src/main/assets")
+    from new File(project(':desktop').projectDir,"/src/main/assets")
+}
+
+def osName = System.getProperty('os.name').toLowerCase(Locale.ROOT)
+
+tasks.register('debug', JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    ignoreExitValue = true
+
+    mainClass = appMainClass
+    systemProperty 'Specification-Title', appName
+    systemProperty 'Implementation-Title', appPackageName
+    systemProperty 'Specification-Version', appVersionName + "-INDEV"
+    systemProperty 'Implementation-Version', appVersionCode
+
+    if (osName.contains('mac')) {
+        jvmArgs '-XstartOnFirstThread'
+    }
+}
+
+tasks.register('release', Jar) {
+    //FIXME this is now needed as of gradle 7.0, due to our weird sourceSets setup. Should see if there's a better way to do this
+    setDuplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+    from sourceSets.main.output
+    dependsOn configurations.runtimeClasspath
+    from { configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) } }
+
+    manifest {
+        attributes 'Main-Class': appMainClass
+        attributes 'Specification-Title': appName
+        attributes 'Implementation-Title': appPackageName
+        attributes 'Specification-Version': appVersionName
+        attributes 'Implementation-Version': appVersionCode
+    }
+}
+
+dependencies {
+    implementation project(':core')
+
+    implementation "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
+    implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
+    implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+    implementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
+    implementation "com.badlogicgames.gdx-controllers:gdx-controllers-desktop:$gdxControllersVersion"
+
+    //we use LWJGL tinyFD directly to display crash messages (DesktopLauncher)
+    implementation "org.lwjgl:lwjgl-tinyfd:3.3.3"
+
+    implementation project(':services:updates:githubUpdates')
+    implementation project(':services:news:shatteredNews')
+}

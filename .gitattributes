@@ -1,0 +1,26 @@
+# Normalize line endings for text files
+* text=auto
+
+# Explicitly LF for code/scripts
+*.java text eol=lf
+*.properties text eol=lf
+*.gradle text eol=lf
+*.txt text eol=lf
+*.xml text eol=lf
+*.yml text eol=lf
+gradlew text eol=lf
+
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary assets as-is
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ttf binary
+*.wav binary
+*.ogg binary
+*.mp3 binary
+*.ser binary
+*.pkm binary
