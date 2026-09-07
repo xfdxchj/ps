@@ -153,7 +153,13 @@ public class DesktopLauncher {
 		if (vendor == null) {
 			vendor = System.getProperty("Implementation-Title");
 		}
-		vendor = vendor.split("\\.")[1];
+		if (vendor == null || vendor.indexOf('.') < 0) {
+			vendor = "shatteredpixel"; //running from unpacked jars; use a sane save-path owner
+		} else {
+			String[] vp = vendor.split("\\.");
+			if (vp.length >= 2) vendor = vp[1];
+		}
+		vendor = vendor == null ? "shatteredpixel" : vendor;
 
 		String basePath = "";
 		Files.FileType baseFileType = null;
