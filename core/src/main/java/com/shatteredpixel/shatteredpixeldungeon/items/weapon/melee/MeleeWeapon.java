@@ -307,6 +307,15 @@ public class MeleeWeapon extends Weapon {
 
 		String info = super.info();
 
+		//END gem: 说明显示武器上已嵌宝石(攻击/命中)及当前提供
+		if (hasGem() && gemType() != null) {
+			int lvl = buffedLvl();
+			int val = com.shatteredpixel.shatteredpixeldungeon.endcontent.EndGemProfile.of(gemType()).bonusAt(lvl);
+			String kindName = gemType() == com.shatteredpixel.shatteredpixeldungeon.endcontent.EndGem.ATTACK ? "攻击" :
+					( gemType() == com.shatteredpixel.shatteredpixeldungeon.endcontent.EndGem.ACCURACY ? "命中" : gemType().name());
+			info += "\n\n镶嵌宝石：" + kindName + "宝石(等级"+lvl+") → 提供 +" + val;
+		}
+
 		if (levelKnown) {
 			info += "\n\n" + Messages.get(MeleeWeapon.class, "stats_known", tier, augment.damageFactor(min()), augment.damageFactor(max()), STRReq());
 			if (Dungeon.hero != null) {
