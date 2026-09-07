@@ -304,9 +304,8 @@ public class Armor extends EquipableItem {
 			} else {
 				hero.next();
 			}
-			//END gem(生命宝石):本件护甲已替换上身,其宝石(尤其 MAX_HP)会改变英雄最大生命,
-			//必须在此重算 HT;否则卸下带生命宝石的甲后其加成会残留不消退。
-			hero.updateHT(false);
+			//END gem(生命宝石):本件护甲已替换上身;装上含 MAX_HP 宝石的甲时同步把当前血也拉高到新上限
+			hero.updateHT(true);
 			return true;
 			
 		} else {
@@ -513,6 +512,12 @@ public class Armor extends EquipableItem {
 
 		if (seal != null && seal.level() == 0)
 			seal.upgrade();
+
+		//END gem:同一件甲直接升级(不脱甲)时会提升 buffedLvl;若当前正穿着生命宝石甲,
+		//更新最大生命并让当前血同步涨到新上限(宝石故能切实“加生命”)
+		if (Dungeon.hero != null && Dungeon.hero.isAlive() && isEquipped(Dungeon.hero)){
+			Dungeon.hero.updateHT(true);
+		}
 
 		return super.upgrade();
 	}
