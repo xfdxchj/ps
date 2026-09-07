@@ -48,14 +48,14 @@ public final class EndGemProfile {
         return of(g).bonusAt(equipmentLevel);
     }
 
-    /** 设计稿默认成长矩阵(可按系统数值平衡调整；数值语义在生产时随接入位置统一)。 */
+    /** 按用户给定的成长曲线(2026). */
     public static EndGemProfile of(EndGem gem){
         switch (gem){
-            case ATTACK:   return new EndGemProfile(EndGem.ATTACK,   1f, 1f); // 成长 1~2/级
-            case DEFENSE:  return new EndGemProfile(EndGem.DEFENSE,  1f, 1f); // 成长 1~2/级
-            case ACCURACY: return new EndGemProfile(EndGem.ACCURACY, 2f, 1f); // 命中点
-            case EVASION:  return new EndGemProfile(EndGem.EVASION,  2f, 1f); // 闪避点
-            case MAX_HP:   return new EndGemProfile(EndGem.MAX_HP,   5f, 2f); // 生命上限
+            case ATTACK:   return new EndGemProfile(EndGem.ATTACK,   1f, 2f); // 伤害 base1 每级+2
+            case DEFENSE:  return new EndGemProfile(EndGem.DEFENSE,  1f, 1f); // 减伤 base1 每级+1
+            case ACCURACY: return new EndGemProfile(EndGem.ACCURACY, 2f, 4f); // 命中 base2 每级+4
+            case EVASION:  return new EndGemProfile(EndGem.EVASION,  2f, 2f); // 闪避 base2 每级+2
+            case MAX_HP:   return new EndGemProfile(EndGem.MAX_HP,   5f, 5f); // 生命 base5 每级+5
             default:       return new EndGemProfile(gem, 0f, 0f);
         }
     }
