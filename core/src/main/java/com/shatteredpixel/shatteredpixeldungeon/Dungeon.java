@@ -55,6 +55,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.rings.Ring;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.Scroll;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfRegrowth;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfWarding;
+import com.shatteredpixel.shatteredpixeldungeon.journal.Catalog;
 import com.shatteredpixel.shatteredpixeldungeon.journal.Notes;
 import com.shatteredpixel.shatteredpixeldungeon.levels.CavesBossLevel;
 import com.shatteredpixel.shatteredpixeldungeon.levels.CavesLevel;
@@ -299,7 +300,34 @@ public class Dungeon {
 				//放包,包满则静默丢弃(避免依赖 level 尚不存在时抛异常)
 				gem.collect();
 			}
+
+			//END 便利：把本次终焉扩展新造物品在图鉴里标记为“已发现/已见过”，方便你在日志直接看
+			markEndContentSeen();
 		}
+	}
+
+	/** 便利测试挑战下，把终焉新造物(宝石与进化法杖等)都在图鉴登记见过。 */
+	private static void markEndContentSeen(){
+		Catalog.setSeen(EndGemItem.class);
+		for (Class<?> clz : new Class<?>[]{
+				//进化法杖(13)
+				endcontent.evolved.EvolvedWandOfMagicMissile.class,
+				endcontent.evolved.EvolvedWandOfFireblast.class,
+				endcontent.evolved.EvolvedWandOfLightning.class,
+				endcontent.evolved.EvolvedWandOfBlastWave.class,
+				endcontent.evolved.EvolvedWandOfCorrosion.class,
+				endcontent.evolved.EvolvedWandOfCorruption.class,
+				endcontent.evolved.EvolvedWandOfDisintegration.class,
+				endcontent.evolved.EvolvedWandOfFrost.class,
+				endcontent.evolved.EvolvedWandOfLivingEarth.class,
+				endcontent.evolved.EvolvedWandOfPrismaticLight.class,
+				endcontent.evolved.EvolvedWandOfRegrowth.class,
+				endcontent.evolved.EvolvedWandOfTransfusion.class,
+				endcontent.evolved.EvolvedWandOfWarding.class
+		}){
+			Catalog.setSeen(clz);
+		}
+	}
 	}
 
 	public static boolean isChallenged( int mask ) {
