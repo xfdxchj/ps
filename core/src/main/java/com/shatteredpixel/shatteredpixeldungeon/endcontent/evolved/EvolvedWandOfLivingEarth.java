@@ -20,5 +20,21 @@ public class EvolvedWandOfLivingEarth extends WandOfLivingEarth {
 		return new ItemSprite.Glowing( 13152368, 1.7f );
 	}
 
-	// TODO(endcontent/M2): 活体大地:灵壤守卫可装备(机制TODO)
+	//结束扩展 M2：伤害与"泥沙量"(armorToAdd)在原版 onZap 中同源(=damageRoll())，
+	//统一提升 40%，一次覆写同时覆盖两者。
+	@Override
+	public int damageRoll() {
+		return Math.round(super.damageRoll() * 1.4f);
+	}
+	// ---- 终焉·进化基础(统一13把)：等级归零后强度锚定+8并成长+20%、最大充能20 ----
+	@Override
+	public int buffedLvl() {
+		return 8 + Math.round(super.buffedLvl() * 1.2f);
+	}
+
+	@Override
+	public void updateLevel() {
+		maxCharges = 20;
+		curCharges = Math.min(curCharges, maxCharges);
+	}
 }

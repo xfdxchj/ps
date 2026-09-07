@@ -41,4 +41,15 @@ public class EvolvedWandOfMagicMissile extends WandOfMagicMissile {
 			com.shatteredpixel.shatteredpixeldungeon.Dungeon.level.pressCell( bolt.collisionPos );
 		}
 	}
+	// ---- 终焉·进化基础(统一13把)：等级归零后强度锚定+8并成长+20%、最大充能20 ----
+	@Override
+	public int buffedLvl() {
+		return 8 + Math.round(super.buffedLvl() * 1.2f);
+	}
+
+	@Override
+	public void updateLevel() {
+		maxCharges = 20;
+		curCharges = Math.min(curCharges, maxCharges);
+	}
 }
