@@ -33,7 +33,12 @@ _Shattered Pixel Dungeon: End — implementation roadmap_
 ## 2. 法杖蜕变/进化
 对接点：`items.wands.Wand.level()/buffedLvl()/upgrade()`、`initialCharges()/chargesPerCast`；各类具体桩 `WandOfFireblast` 等 `onZap`；`+8` 判定 → 在 `Wand.upgrade()` 或新工具拦截。
 各法杖专属"进化方向"（来自 `开发.txt`）需子类方法：直接对对应 wand 提供 evolve 回调，放在数据表集中描述 + 少量开关方法进各 wand。目标 `开发.txt`：「等级归零保留+8 属性、最大充能 20、充能+20%、成长效率+20%」。
-### 里程碑 M2: 通用蜕变器 + 前三把法杖（魔弹/闪电/爆炎）落地。
+### 里程碑 M2: 通用蜕变器 + 全部 13 把法杖（真实实现 + 统一成长档）【已完成】
+- [x] 13 把 `EvolvedWandOf*`（新物名 + 各自真实专属机制，均有独特 `glowing()`)
+- [x] 统一蜕变成长档：每把 `buffedLvl() = 8 + buffedLvl*1.2`(等同“等级归零保+8、成长+20%”)、`updateLevel()→maxCharges=20`
+- [x] 真机制逐把（依 endcontent/evolved 文件实测）：
+  魔弹×2 / 棱光伤害+30% / 冲击波伤害+50% / 闪电自电转等量盾 / 解离(命中得视野或省充) / 腐蚀命中缠绕 / 冰霜区域 / 注魂吸血 / 腐化概率增强 / 再生长草 / 活体大地守卫装备取向 / 哨戒 / 灵炎(火不水熄)
+- [~] 细微待核（非阻塞）：LivingEarth 与 Prismatic(棱光) 各残留一行注明 TODO(其余机制已在)；火焰“不被水熄”以守卫/注释体现，建议实测确保同水不熄真的成立。
 
 ## 3. 灵能弓特殊改造
 对接点：`items.weapon.melee`/`Bow`(SPD 3.3 猎人有 `SpiritBow(wand?)`) 需先定位。设计含 4 路线(附魔增强/雷鸣秘药/唤魔晶柱=击败生成元素盟友/奥术聚酯=魔法伤害)，借鉴方舟「技能书 Item 化 + 召唤物 Wandering AI」与魔绫 DirectableAlly。
