@@ -186,24 +186,12 @@ public class SewerLevel extends RegularLevel {
 	@Override
 	public void buildFlagMaps() {
 		super.buildFlagMaps();
-		for (int i=0; i < length(); i++) {
-			if (map[i] == Terrain.REGION_DECO || map[i] == Terrain.REGION_DECO_ALT){
-				flamable[i] = true;
-			}
-		}
+		//END: 已移除“储物木桶”装饰：下水道不再把这些 REGION_DECO 当作易燃桶。
 	}
 
 	@Override
 	public void destroy(int pos) {
-		//if we're burning  sewers barrels
-		int terr = map[pos];
-		if (terr == Terrain.REGION_DECO){
-			set(pos, Terrain.WATER);
-			Splash.at(pos, 0xFF507B5D, 10);
-		} else if (terr == Terrain.REGION_DECO_ALT){
-			set(pos, Terrain.EMPTY_SP);
-			Splash.at(pos, 0xFF507B5D, 10);
-		}
+		//END: 已删除储物木桶:不再判定 REGION_DECO 为桶并把火烧处变成水/空格
 		super.destroy(pos);
 	}
 
