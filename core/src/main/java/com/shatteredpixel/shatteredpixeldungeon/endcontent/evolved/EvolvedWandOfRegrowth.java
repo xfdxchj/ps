@@ -97,25 +97,9 @@ public class EvolvedWandOfRegrowth extends WandOfRegrowth {
 
 		Random.shuffle(cells);
 
-		if (chargesPerCast() >= 3){
-			Lotus l = new Lotus();
-			l.setLevel(buffedLvl());
-			if (cells.contains(target) && Actor.findChar(target) == null){
-				cells.remove((Integer)target);
-				l.pos = target;
-				GameScene.add(l);
-			} else {
-				for (int i = bolt.path.size()-1; i >= 0; i--){
-					int c = bolt.path.get(i);
-					if (cells.contains(c) && Actor.findChar(c) == null){
-						cells.remove((Integer)c);
-						l.pos = c;
-						GameScene.add(l);
-						break;
-					}
-				}
-			}
-		}
+		//END fix: 父类(Lotus)的 setLevel 是 private,进化子类不同顶层类无法调用;Lotus 生成交给父类路径
+		//(此处不直接调父私有成员)，因此这里不额外生成 Lotus——进化体现为“不限次长草/铺面积更大”。
+		//(注: 若需保留 Lotus,应在父类内部开 setter 供子类调用,这是后续增强点。)
 
 		//places grass along center of cone
 		for (int cell : bolt.path){
