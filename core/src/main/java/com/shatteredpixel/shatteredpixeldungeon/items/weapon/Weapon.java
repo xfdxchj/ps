@@ -586,6 +586,19 @@ abstract public class Weapon extends KindOfWeapon {
 				multi += 0.2f;
 			}
 
+			//END 成品弓① 附魔灵弓 模式A「稳固本体」：给该弓本体的附魔再加 +0.5 触发倍率
+			//等价于“额外半颗奥术戒”；仅当本弓以模式A(稳固)装备时叠加，摘/换其它弓或切到模式B即失效。
+			if (attacker instanceof Hero && ((Hero)attacker).belongings.weapon() != null
+					&& ((Hero)attacker).belongings.weapon()
+						instanceof com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndSpiritBowMight){
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndSpiritBowMight b
+						= (com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndSpiritBowMight)
+							((Hero)attacker).belongings.weapon();
+				if (b.modeIndex() == 0){          //0 = 稳固本体
+					multi += 0.5f;                //+50% 奥术等价
+				}
+			}
+
 			return multi;
 		}
 

@@ -1,58 +1,169 @@
 package com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved;
 
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
+import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.SpiritBow;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon.Enchantment;
+import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
+import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
+import com.shatteredpixel.shatteredpixeldungeon.windows.WndOptions;
+import com.watabou.utils.Bundle;
+
+import java.util.ArrayList;
 
 /**
- * END 灵能弓· 成品 ①「附魔灵弓」。
+ * END 灵能弓· 成品 ①「附魔灵弓」（双模式）。
  *
- * 需求（最终要求）：“每次攻击必定触发一个【随机】附魔（可含稀有附魔），
- * 而不是触发弓身上固定的那一个附魔。”
- *
- * 本弓是“随机附魔工匠”：每一下命中的附魔，
- * 是在常见 / 稀见 / 稀有 全池里当场随机掷一把（而非身上那个静态 enchantment），
- * 并按该把原本的效果就地执行一次（可含稀有 Grim/Vampiric/腐化…），且必触发、不猜概率。
- *
- * 实现取舍：
- *  - 命中时临时把“身上静态附魔”摘下来，令父级(SpiritBow→Weapon)的常规处理不去触发那固定的一把，
- *    以免出现“固定 + 随机”双重触发、违背“不是弓上那个附魔”的原意；
- *  - 每击经 Weapon.Enchantment.random() 从【正面向全池 random (仅 common/uncommon/rare, 不含诅咒)】
- *    掷一把，再用本弓本体执行其 `proc` —— 效果强度随本弓 buffedLvl/level 自然缩放。
+ * 需求（最终要求）：
+ *  ① 锻造时可在本弓详情里从【正面向附魔全池随机抽 5 个】选 1 个写成“本体附魔”(enchantment)。
+ *  ② 双模式(背包-本弓窗口里一排按钮手动来回切、可存档)：
+ *      - 模式 A「稳固」：触发【本体附魔】，并给这把弓一个“+50% 奥术戒”等价加成
+ *        (在 Weapon.Enchantment.genericProcChanceMultiplier 对当局只为本模式叠加 +0.5)，
+ *        本体大多数时候会必然触发、>100% 溢出再自然变强。
+ *      - 模式 B「随机」：放弃本体、改为每击必触发一个全池【随机附魔】(含稀有)。
  */
-public class EndSpiritBowMight extends SpiritBow {
+public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 
+	public static final String AC_SELECT = "END_MIGHT_SELECT";   // 在本弓窗口里弹 5选1(本体附魔)
+
+	private static final String MODE_KEY      = "might_mode";
+	private static final String INIT_CHOSEN   = "might_body_chosen"; //是否已完成过本体选择(按钮文案提示用)
+
+	private int mode = 0;                 //0=稳固本体(A),1=随机(B)
+	private boolean bodyChosen = false;   //锻造后是否已选定过本体(未定每次点击选本体都再弹)
+
+	/* ---------------- 元信息 / EndModeWand ---------------- */
 	@Override public String name() { return "附魔灵弓"; }
 
+	@Override public int modeCount()          { return 2; }
+	@Override public int modeIndex()          { return mode; }
 	@Override
-	public int proc(Char attacker, Char defender, int damage) {
-
-		//1) 让父级先做自然之怒 / ID 等常规处理，但先摘掉身上的静态附魔，
-		//   以免父级 Weapon.proc 顺手触发“弓上固定那一个”。
-		Enchantment carried = enchantment;
-		if (carried != null) {
-			enchantment = null;                 // 直接字段存取，避开 enchant() 的附加副作用
+	public void setModeIndex( int index ){
+		if (index < 0 || index >= modeCount()) index = 0;
+		mode = index;
+	}
+	@Override
+	public String modeName( int index ){
+		switch (index){
+			case 0:  return "稳固本体 (附魔+50%)";
+			case 1:  return "随机附魔";
+			default: return "";
 		}
-		damage = super.proc(attacker, defender, damage);
-		if (carried != null) {
-			enchantment = carried;              // 命中后还原，让它仍显示在物品面板上
-		}
+	}
 
-		//2) 每击都掷一把正面向【随机】附魔并执行（必触发；常见/稀见/稀有全池；若掷出即放）
-		if (defender != null && defender.isAlive()){
-			Enchantment roll = null;
-			try {
-				roll = Enchantment.random();    // 只取正面向，落诅咒的池外
-			} catch (Exception ignore) { /* keep null */ }
-			if (roll != null){
-				try {
-					damage = roll.proc(this, attacker, defender, damage);
-				} catch (Exception ignore) {
-					//个别附魔在不搭的处境抛异常就跳过本次该发，不进 crash
+	/* ---------------- 动作 (供 WndUseItem 生成“选本体”按钮) ---------------- */
+	@Override
+	public ArrayList<String> actions( Hero hero ){
+		ArrayList<String> actions = super.actions( hero );
+		actions.add( AC_SELECT );
+		actions.remove( AC_EQUIP );      //神弓本来就不走 AC_EQUIP
+		return actions;
+	}
+
+	@Override
+	public String actionName( String action, Hero hero ){
+		if (action.equals( AC_SELECT )) return "选本体(5选项 1)";
+		return super.actionName( action, hero );
+	}
+
+	@Override
+	public void execute( Hero hero, String action ){
+		if (action.equals( AC_SELECT )){
+			chooseBodyEnchantment();
+			return;
+		}
+		super.execute( hero, action );
+	}
+
+	/** 弹出 5 个候选(全池正向随机、可含稀有)，由玩家挑 1 写成本弓本体附魔。 */
+	private void chooseBodyEnchantment(){
+		final Enchantment[] sample = samplePositiveEnchantments( 5 );
+		if (sample.length == 0){
+			bodyChosen = true;     //极端空池就保持未定义，交由模式B随机
+			return;
+		}
+		ArrayList<String> opts = new ArrayList<>();
+		for (Enchantment e : sample){
+			opts.add( Messages.titleCase( e.getClass().getSimpleName() ) );
+		}
+		GameScene.show( new WndOptions(
+				Messages.titleCase( name() ),
+				"请为本弓挑一个本体附魔：\n(模式<稳固>会触发它，并附 +50% 奥术等价加成；模式<随机>则不用它)。",
+				opts.toArray( new String[0] ) ) {
+			@Override
+			protected void onSelect( int index ){
+				if (index >= 0 && index < sample.length){
+					enchantment = sample[index];            //写为本体附魔（随本弓 bundle 自动持久化）
+					bodyChosen = true;
+					Item.updateQuickslot();
 				}
 			}
+		});
+	}
+
+	/** 从正面向全池抽样(可含稀有)、类不重复，最多 n 个。 */
+	private Enchantment[] samplePositiveEnchantments( int n ){
+		ArrayList<Enchantment> got = new ArrayList<>();
+		int guard = 0;
+		while (got.size() < n && guard < 80){
+			guard++;
+			Enchantment e = null;
+			try {
+				e = Enchantment.random();     // 随机正面向附魔(常见/稀见/稀有)，不含诅咒
+			} catch (Exception ignore) { continue; }
+			if (e == null) continue;
+			boolean dup = false;
+			for (Enchantment have : got){
+				if (have.getClass().equals(e.getClass())){ dup = true; break; }
+			}
+			if (!dup) got.add( e );
+		}
+		return got.toArray( new Enchantment[0] );
+	}
+
+	/* ---------------- 命中行为（双模式分流） ---------------- */
+	@Override
+	public int proc( Char attacker, Char defender, int damage ){
+
+		if ( mode == 1 ){
+			//模式 B(随机)：临时摘下本体，让父级不去触发它；再由下面每击放一个全池随机附魔。
+			Enchantment carried = enchantment;
+			if (carried != null) enchantment = null;
+			try {
+				damage = super.proc( attacker, defender, damage );
+			} finally {
+				if (carried != null) enchantment = carried;      //无论是否异常都还原本体
+			}
+
+			if (defender != null && defender.isAlive()){
+				Enchantment roll = null;
+				try { roll = Enchantment.random(); } catch (Exception ignore){}
+				if (roll != null){
+					try { damage = roll.proc( this, attacker, defender, damage ); }
+					catch (Exception ignore){}
+				}
+			}
+			return damage;
 		}
 
-		return damage;
+		//模式 A(稳固)：把本体附魔留给 Weapon.proc 正常触发（本体就是上述选的 enchantment）；
+		//  “+50% 奥术”通过 genericProcChanceMultiplier 在本模式叠加，这里不需要绕过。
+		return super.proc( attacker, defender, damage );
+	}
+
+	/* ---------------- 持久化 mode / bodyChosen ---------------- */
+	@Override
+	public void storeInBundle( Bundle bundle ){
+		super.storeInBundle( bundle );
+		bundle.put( MODE_KEY, mode );
+		bundle.put( INIT_CHOSEN, bodyChosen );
+	}
+
+	@Override
+	public void restoreFromBundle( Bundle bundle ){
+		super.restoreFromBundle( bundle );
+		if (bundle.contains( MODE_KEY ))   mode = bundle.getInt( MODE_KEY );
+		if (bundle.contains( INIT_CHOSEN )) bodyChosen = bundle.getBoolean( INIT_CHOSEN );
 	}
 }
