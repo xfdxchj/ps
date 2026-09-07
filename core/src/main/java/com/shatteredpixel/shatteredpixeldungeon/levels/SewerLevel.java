@@ -185,13 +185,20 @@ public class SewerLevel extends RegularLevel {
 
 	@Override
 	public void buildFlagMaps() {
+		//END: 移除“储物木桶”：下水道的 REGION_DECO/ALT 仅代表木桶这类可挡住路径的桶状装饰，
+		//这里在计算可走性前把它们改成普通可走地板(EMPTY),彻底不再生成木桶。
+		//（只动下水道的桶，其它区域的雕像/塑像用 Terrain.STATUE，不受影响保留。）
+		for (int i = 0; i < length(); i++) {
+			if (map[i] == Terrain.REGION_DECO || map[i] == Terrain.REGION_DECO_ALT){
+				map[i] = Terrain.EMPTY;
+			}
+		}
 		super.buildFlagMaps();
-		//END: 已移除“储物木桶”装饰：下水道不再把这些 REGION_DECO 当作易燃桶。
 	}
 
 	@Override
 	public void destroy(int pos) {
-		//END: 已删除储物木桶:不再判定 REGION_DECO 为桶并把火烧处变成水/空格
+		//桶已被替换为普通地板,此处不再需要桶的特殊燃烧行为
 		super.destroy(pos);
 	}
 

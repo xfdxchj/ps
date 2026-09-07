@@ -55,9 +55,10 @@
 ## [已提交/进行中] 用户追加项
 - `82022a6` docs: development changelog added above（本节为其工作状态追踪）。
 
-### 储物木桶（已删除，进行中提交）
-- 定位：“储物木桶”= 下水道层可燃烧装饰地形 `Terrain.REGION_DECO/REGION_DECO_ALT`(SewerLevel)。
-- 措施：SewerLevel `buildFlagMaps()` 不再把这些装饰标成易燃；`destroy()` 不再把它们烧成水/空格，桶 flavor 与烧桶副作用移除（装饰仍作为普通墙体存在）。待提交确认。”
+### 储物木桶（已删除）
+- 定位：“储物木桶”= 下水道层 `SewerLevel` 的 `Terrain.REGION_DECO/REGION_DECO_ALT` 桶状装饰(占一格、易燃、可被烧成水/空地)。
+- 最终做法：在 `SewerLevel.buildFlagMaps()` 中、计算可走性之前把这些桶格重写为普通可走 `Terrain.EMPTY` —— 木桶彻底不再生成；`destroy()` 相应清空烧桶行为。
+- 只动下水道的桶，**保留各区的雕像/塑像(那是 `Terrain.STATUE`，非本类)不受影响**。
 
 ### 便利功能（仅挑战开启）
 1. 条目仍准确：本批还含 —— **开局把各类物品标记为 `Catalog.setSeen`(已见过)**(需枚举物品类型；待细化可见入口)。
