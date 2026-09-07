@@ -304,6 +304,9 @@ public class Armor extends EquipableItem {
 			} else {
 				hero.next();
 			}
+			//END gem(生命宝石):本件护甲已替换上身,其宝石(尤其 MAX_HP)会改变英雄最大生命,
+			//必须在此重算 HT;否则卸下带生命宝石的甲后其加成会残留不消退。
+			hero.updateHT(false);
 			return true;
 			
 		} else {
@@ -373,6 +376,9 @@ public class Armor extends EquipableItem {
 
 			BrokenSeal.WarriorShield sealBuff = hero.buff(BrokenSeal.WarriorShield.class);
 			if (sealBuff != null) sealBuff.setArmor(null);
+
+			//END gem(生命宝石):护甲已卸下(不再提供其 MAX_HP 加成),立即重算生命上限,否则会残留那部分加成。
+			hero.updateHT(false);
 
 			return true;
 
