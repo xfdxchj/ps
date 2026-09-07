@@ -199,7 +199,10 @@ public class Shopkeeper extends NPC {
 
 	//shopkeepers are greedy!
 	public static int sellPrice(Item item){
-		return item.value() * 5 * (Dungeon.depth / 5 + 1);
+		int p = item.value() * 5 * (Dungeon.depth / 5 + 1);
+		//挑战·通货膨胀:商店售价 +50%
+		if (Dungeon.isChallenged(com.shatteredpixel.shatteredpixeldungeon.Challenges.INFLATION)) p = (int)Math.ceil(p * 1.5f);
+		return p;
 	}
 	
 	public static WndBag sell() {

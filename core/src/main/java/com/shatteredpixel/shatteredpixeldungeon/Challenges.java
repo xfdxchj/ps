@@ -40,8 +40,13 @@ public class Challenges {
 	//此项对游戏本身并不“更难”，仅作测试用途,未勾选时完全无影响。
 	public static final int CONVENIENCE	= 512;
 
-	public static final int MAX_VALUE           = 1023; // (1<<10)-1,含便利测试挑战
-	public static final int MAX_CHALS           = 10;
+	//END(正式挑战)：炼金无望 —— 在炼金台完成合成需要 1.5× 炼金能量。
+	public static final int COSTLY_ALCHEMY	= 1024;
+	//END(正式挑战)：通货膨胀 —— 商店售价 +50%，你把东西卖回商店得 -50%。
+	public static final int INFLATION		= 2048;
+
+	public static final int MAX_VALUE           = 4095; // (1<<12)-1,含便利测试与 2 个新正式挑战
+	public static final int MAX_CHALS           = 12;
 
 	public static final String[] NAME_IDS = {
 			"champion_enemies",
@@ -53,11 +58,13 @@ public class Challenges {
 			"swarm_intelligence",
 			"darkness",
 			"no_scrolls",
-			"convenience"
+			"convenience",
+			"costly_alchemy",
+			"inflation"
 	};
 
 	public static final int[] MASKS = {
-			CHAMPION_ENEMIES, STRONGER_BOSSES, NO_FOOD, NO_ARMOR, NO_HEALING, NO_HERBALISM, SWARM_INTELLIGENCE, DARKNESS, NO_SCROLLS, CONVENIENCE
+			CHAMPION_ENEMIES, STRONGER_BOSSES, NO_FOOD, NO_ARMOR, NO_HEALING, NO_HERBALISM, SWARM_INTELLIGENCE, DARKNESS, NO_SCROLLS, CONVENIENCE, COSTLY_ALCHEMY, INFLATION
 	};
 
 	public static int activeChallenges(){

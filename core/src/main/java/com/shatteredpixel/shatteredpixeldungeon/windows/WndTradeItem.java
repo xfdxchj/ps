@@ -86,7 +86,7 @@ public class WndTradeItem extends WndInfoItem {
 				pos = warn.bottom();
 			}
 
-			RedButton btnSell = new RedButton( Messages.get(this, "sell", item.value()) ) {
+			RedButton btnSell = new RedButton( Messages.get(this, "sell", shopPaysFor(item)) ) {
 				@Override
 				protected void onClick() {
 					sell( item, finalShop);
@@ -101,7 +101,7 @@ public class WndTradeItem extends WndInfoItem {
 
 		} else {
 
-			int priceAll= item.value();
+			int priceAll= shopPaysFor(item);
 			RedButton btnSell1 = new RedButton( Messages.get(this, "sell_1", priceAll / item.quantity()) ) {
 				@Override
 				protected void onClick() {
@@ -278,7 +278,7 @@ public class WndTradeItem extends WndInfoItem {
 			//selling items in the sell interface doesn't spend time
 			hero.spend(-hero.cooldown());
 
-			new Gold( item.value() ).doPickUp( hero );
+			new Gold( shopPaysFor( item ) ).doPickUp( hero );
 
 			if (shop != null){
 				shop.buybackItems.add(item);
@@ -301,5 +301,14 @@ public class WndTradeItem extends WndInfoItem {
 		if (!item.doPickUp( Dungeon.hero )) {
 			Dungeon.level.drop( item, heap.pos ).sprite.drop();
 		}
+	}
+
+	//END 挑战·通货膨胀: 把物品卖回商店所得 -50%
+	private static int shopPaysFor(Item item){
+		int v = item.value();
+		if (Dungeon.isChallenged( com.shatteredpixel.shatteredpixeldungeon.Challenges.INFLATION )){
+			v = v / 2;
+		}
+		return v;
 	}
 }

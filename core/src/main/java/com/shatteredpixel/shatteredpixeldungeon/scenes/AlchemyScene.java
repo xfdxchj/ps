@@ -644,7 +644,7 @@ public class AlchemyScene extends PixelScene {
 
 			Recipe recipe = recipes.get(i);
 
-			int cost = recipe.cost(ingredients);
+			int cost = alchemyCost(recipe.cost(ingredients));
 
 			outputs[i].visible = true;
 			outputs[i].setRect(outputs[0].left(), top, BTN_SIZE, BTN_SIZE);
@@ -692,7 +692,7 @@ public class AlchemyScene extends PixelScene {
 		Item result = null;
 		
 		if (recipe != null){
-			int cost = recipe.cost(ingredients);
+			int cost = alchemyCost(recipe.cost(ingredients));
 			if (toolkit != null){
 				cost = toolkit.consumeEnergy(cost);
 			}
@@ -1208,6 +1208,14 @@ public class AlchemyScene extends PixelScene {
 
 	public static void clearToolkit(){
 		AlchemyScene.toolkit = null;
+	}
+
+	//END 挑战·炼金无望：炼金能量消耗 ×1.5
+	private static int alchemyCost(int base){
+		if (Dungeon.isChallenged(com.shatteredpixel.shatteredpixeldungeon.Challenges.COSTLY_ALCHEMY)){
+			return (int)Math.ceil(base * 1.5f);
+		}
+		return base;
 	}
 
 }
