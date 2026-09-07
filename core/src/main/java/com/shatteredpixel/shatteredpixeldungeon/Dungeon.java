@@ -301,20 +301,30 @@ public class Dungeon {
 		
 		GamesInProgress.selectedClass.initHero( hero );
 
-		//END 便利测试挑战:勾选了 CONVENIENCE 的每局开局,给一份测试便利包(金币+随机宝石若干),
-		//便于快速验证商店宝石、镶嵌与法杖蜕变。不影响未勾选的普通对局。
+		//END 便利测试挑战:勾选 CONVENIENCE 的开局给整套“新增内容+素材”,便于直接做/用所有新增物:
+		//5 种宝石各一、13 把进化法杖各一、30 张升级卷、若干强化符石(炼金蜕变料),并全部 identify+入包,
+		//同时把它们登记为“本局已见/图鉴已记录”(日志直接可见)。不影响未勾选的普通对局。
 		if (isChallenged( Challenges.CONVENIENCE )){
 			gold += 300; //测试资金
-			int gemCount = 2;
-			EndGem[] gemKinds = EndGem.values();
-			for (int i=0; i<gemCount; i++) {
-				EndGemItem gem = new EndGemItem( gemKinds[ Random.Int(gemKinds.length) ] );
-				gem.identify();
-				//放包,包满则静默丢弃(避免依赖 level 尚不存在时抛异常)
-				gem.collect();
+
+			for (EndGem gem : EndGem.values()) {
+				EndGemItem g = new EndGemItem(gem);
+				g.identify();
+				g.collect();
 			}
 
-			//END 便利：把本次终焉扩展新造物品在图鉴里标记为“已发现/已见过”，方便你在日志直接看
+			for (Class<?> e : new Class<?>[]{EvolvedWandOfMagicMissile.class, EvolvedWandOfFireblast.class, EvolvedWandOfLightning.class,EvolvedWandOfBlastWave.class,EvolvedWandOfCorrosion.class,EvolvedWandOfCorruption.class,EvolvedWandOfDisintegration.class,EvolvedWandOfFrost.class,EvolvedWandOfLivingEarth.class,EvolvedWandOfPrismaticLight.class,EvolvedWandOfRegrowth.class,EvolvedWandOfTransfusion.class,EvolvedWandOfWarding.class}){
+				try {
+					Item w = (Item)(e.getDeclaredConstructor().newInstance());
+					w.identify();
+					w.collect();
+				} catch (Exception ex){ /*忽略单件失败*/ }
+			}
+
+			for (int i=0; i<30; i++){ com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfUpgrade su = new com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfUpgrade(); su.identify(); su.collect(); }
+			for (int i=0; i<6; i++){ com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfAugmentation st = new com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfAugmentation(); st.identify(); st.collect(); }
+
+			//END 便利：把终焉新造物标记“已见”(Catalog) + 记入本局 discovered(日志)
 			markEndContentSeen();
 		}
 	}
