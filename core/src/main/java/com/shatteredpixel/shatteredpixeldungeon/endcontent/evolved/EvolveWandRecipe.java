@@ -11,6 +11,8 @@ import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.Recipe;
 import com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfAugmentation;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand;
+import com.shatteredpixel.shatteredpixeldungeon.journal.Catalog;
+import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 
 import java.util.ArrayList;
 
@@ -52,6 +54,11 @@ public class EvolveWandRecipe extends Recipe {
 
 		Wand evolved = EndWandEvolution.evolve(source);
 		if (evolved == null) return null;
+
+		//END: 产物标记已鉴定并登记进图鉴(法杖组)，方便日志记录本次配方
+		evolved.identify();
+		Catalog.setSeen(evolved.getClass());
+		GLog.i("炼成进化法杖: " + evolved.title() + " 已记入图鉴/日志。");
 
 		//消耗材料：源法杖与一颗强化符石清零（AlchemyScene 会按 quantity 移除）
 		for (Item it : ingredients){

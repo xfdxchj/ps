@@ -75,8 +75,9 @@ public final class EndWandEvolution {
         } catch (Exception e) {
             return null; // 防御：注册的进化类都应有无参构造
         }
-        // 终焉·进化基础：真实等级+8(保留原属性，level()/buffedLvl() 全按8级)；充能上限20 由子类覆写
-        evolved.level( 8 );
+        // 终焉·进化基础：继承源法杖原有等级(至少+8)；充能上限20 由子类覆写
+        int inherited = Math.max( MIN_EVOLUTION_LEVEL, source.level() );
+        evolved.level( inherited );
         evolved.updateLevel();
         evolved.curCharges = Math.min( evolved.maxCharges, source.curCharges );
         return evolved;

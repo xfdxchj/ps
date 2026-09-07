@@ -115,6 +115,20 @@ import com.shatteredpixel.shatteredpixeldungeon.items.weapon.SpiritBow;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.darts.TippedDart;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.items.EndGemItem;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfBlastWave;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfCorrosion;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfCorruption;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfDisintegration;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfFireblast;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfFrost;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfLightning;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfLivingEarth;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfMagicMissile;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfPrismaticLight;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfRegrowth;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfTransfusion;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfWarding;
 import com.watabou.utils.Bundle;
 
 import java.util.ArrayList;
@@ -211,6 +225,14 @@ public enum Catalog {
 		GLYPHS.addItems(Armor.Glyph.curses);
 
 		WANDS.addItems(Generator.Category.WAND.classes);
+		//END: 终焉 13 把进化法杖也归入"法杖"图鉴组
+		WANDS.addItems(EvolvedWandOfMagicMissile.class, EvolvedWandOfFireblast.class,
+				EvolvedWandOfLightning.class, EvolvedWandOfBlastWave.class,
+				EvolvedWandOfCorrosion.class, EvolvedWandOfCorruption.class,
+				EvolvedWandOfDisintegration.class, EvolvedWandOfFrost.class,
+				EvolvedWandOfLivingEarth.class, EvolvedWandOfPrismaticLight.class,
+				EvolvedWandOfRegrowth.class, EvolvedWandOfTransfusion.class,
+				EvolvedWandOfWarding.class);
 
 		RINGS.addItems(Generator.Category.RING.classes);
 
@@ -260,6 +282,8 @@ public enum Catalog {
 				GooBlob.class, TengusMask.class, MetalShard.class, KingsCrown.class,
 				LiquidMetal.class, ArcaneResin.class,
 				SealShard.class, BrokenStaff.class, CloakScrap.class, BowFragment.class, BrokenHilt.class, TornPage.class);
+		//END: 终焉装备宝石归入"杂项消耗品"图鉴组
+		MISC_CONSUMABLES.addItems(EndGemItem.class);
 
 	}
 

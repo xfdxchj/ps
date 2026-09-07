@@ -24,6 +24,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor;
 import com.shatteredpixel.shatteredpixeldungeon.items.bags.Bag;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon;
+import com.shatteredpixel.shatteredpixeldungeon.journal.Catalog;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
@@ -41,6 +42,10 @@ public class EndGemItem extends Item {
 		image = ItemSpriteSheet.STONE_AUGMENTATION; //占位图标：正式美术未接前复用现有宝石石图标
 		defaultAction = AC_USE;
 		stackable = false;                 //单颗使用；不同种类宝石不堆叠
+
+		//END: 宝石天生"已鉴定"——拾取即登记进图鉴/日志(见 Item.collect→Catalog.setSeen)
+		levelKnown = true;
+		cursedKnown = true;
 	}
 
 	/** 本宝石所属类型；由构造/恢复时设置。缺省=攻击,便于 new EndGemItem() 断言。 */
@@ -62,6 +67,17 @@ public class EndGemItem extends Item {
 
 	public EndGem gemType(){
 		return gem;
+	}
+
+	@Override
+	public boolean doPickUp( Hero hero, int pos ) {
+		boolean wasSeen = Catalog.isSeen( getClass() );
+		boolean picked = super.doPickUp( hero, pos );
+		//END: 首次获得宝石时即时日志提示(登记已由 Item.collect→Catalog.setSeen 完成)
+		if (picked && !wasSeen){
+			GLog.i( "图鉴新增: " + name() );
+		}
+		return picked;
 	}
 
 	//——显示信息(自造中文占位,未走 messages 属性文件以优先保编译)——
