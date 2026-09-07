@@ -105,6 +105,7 @@ public class WndUseItem extends WndInfoItem {
 					if (i == emw.modeIndex()){
 						mb.textColor( TITLE_COLOR ); //高亮当前形态
 					}
+					add( mb ); //必须挂到窗口,否则 layoutButtons 只排版不出现在窗口里
 					modeBtns.add( mb );
 				}
 				y = layoutButtons( modeBtns, width, y );
