@@ -20,5 +20,14 @@ public class EvolvedWandOfPrismaticLight extends WandOfPrismaticLight {
 		return new ItemSprite.Glowing( 16762598, 1.2f );
 	}
 
-	// TODO(endcontent/M2): 棱光:伤害+30%(TODO)
+	//END M2 真机制：棱光伤害 +30%（覆写父 min/max 即影响真实伤害roll）
+	@Override
+	public int min(int lvl){
+		return Math.round( super.min(lvl) * 1.30f );
+	}
+	@Override
+	public int max(int lvl){
+		return Math.round( super.max(lvl) * 1.30f );
+	}
 }
+

@@ -20,5 +20,14 @@ public class EvolvedWandOfBlastWave extends WandOfBlastWave {
 		return new ItemSprite.Glowing( 13148415, 1.3f );
 	}
 
-	// TODO(endcontent/M2): 冲击波:撞墙眩晕翻倍/伤害+50%/可调冲击距离(机制TODO)
+	//END M2 真机制：冲击波伤害 +50%（覆写父 min/max 影响真实伤害roll）
+	@Override
+	public int min(int lvl){
+		return Math.round( super.min(lvl) * 1.5f );
+	}
+	@Override
+	public int max(int lvl){
+		return Math.round( super.max(lvl) * 1.5f );
+	}
 }
+
