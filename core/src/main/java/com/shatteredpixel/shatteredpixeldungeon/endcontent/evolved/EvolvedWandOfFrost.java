@@ -1,7 +1,10 @@
 /*
  * Shattered Pixel Dungeon: End —《破碎的像素地牢：终焉扩展》
- * M2 真机制：WandOfFrost → 凝霜法杖（进化新物品 + 独特附魔光泽）。
- * 对应开发.txt 描述：冰霜:冰冻变为 3×3 范围的低温(Chill)区域。
+ * 凝霜法杖(冰霜进化) 双形态：
+ *   形态 0·冰霜直击(default)：耗 1 充能。命中点单目标冰冻/寒冷，并对命中点 3×3 内其它敌人附加寒冷。
+ *   形态 1·冰雪区域：耗 3 充能。选中一个位置铺开 3×3 持续冰雪区域，持续数回合；
+ *       每回合对区域内敌人造成 50% 面板伤害 + 全额寒冷；对已冻结(冰封)的敌人直接破除冻结
+ *       并造成 150% 面板伤害。
  */
 package com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved;
 
@@ -9,6 +12,7 @@ import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
+import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.Blob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.Fire;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Chill;
@@ -17,12 +21,23 @@ import com.shatteredpixel.shatteredpixeldungeon.items.Heap;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfFrost;
 import com.shatteredpixel.shatteredpixeldungeon.levels.rooms.special.MagicalFireRoom;
 import com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica;
+import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSprite;
 import com.watabou.noosa.audio.Sample;
+import com.watabou.utils.Bundle;
 import com.watabou.utils.PathFinder;
 import com.watabou.utils.Random;
 
-public class EvolvedWandOfFrost extends WandOfFrost {
+public class EvolvedWandOfFrost extends WandOfFrost implements EndModeWand {
+
+	private static final int MODE_FROST_BOLT = 0;
+	private static final int MODE_FROST_FIELD = 1;
+
+	/** 冰雪区域持续回合数(铺地后每格 cur 值；可调)。 */
+	private static final int FIELD_TURNS = 4;
+
+	/** 当前形态(0=冰霜直击,1=冰雪区域)。 */
+	private int mode = MODE_FROST_BOLT;
 
 	@Override
 	public String name() {
@@ -34,9 +49,56 @@ public class EvolvedWandOfFrost extends WandOfFrost {
 		return new ItemSprite.Glowing( 11923711, 1.5f );
 	}
 
-	//END M2 真机制：除命中单体外，还对命中点 3×3 内其它敌人施加较低等级的寒冷
+	/* ---------------- EndModeWand ---------------- */
+	@Override
+	public int modeCount() {
+		return 2;
+	}
+	@Override
+	public int modeIndex() {
+		return mode;
+	}
+	@Override
+	public void setModeIndex( int index ) {
+		if (index < 0 || index >= modeCount()) index = 0;
+		this.mode = index;
+	}
+	@Override
+	public String modeName( int index ) {
+		switch (index){
+			case MODE_FROST_BOLT:  return "冰霜直击";
+			case MODE_FROST_FIELD: return "冰雪区域";
+			default:               return "";
+		}
+	}
+
+	/** 冰雪区域耗 3 充能；冰霜直击耗 1。 */
+	@Override
+	protected int chargesPerCast() {
+		return mode == MODE_FROST_FIELD ? 3 : 1;
+	}
+
+	/** 铺地形态也需要能选中地面空格，瞄准沿用父类(法杖默认弹道)。 */
+	@Override
+	public int collisionProperties( int target ){
+		if (mode == MODE_FROST_FIELD){
+			return Ballistica.STOP_SOLID | Ballistica.IGNORE_SOFT_SOLID;
+		}
+		return super.collisionProperties( target );
+	}
+
+	//END M2：命中点直击(形态0) + 冰雪区域(形态1)
 	@Override
 	public void onZap(Ballistica bolt) {
+		if (mode == MODE_FROST_FIELD){
+			onZapField( bolt );
+		} else {
+			onZapBolt( bolt );
+		}
+	}
+
+	/** 形态 0：命中点冰冻/寒冷，并对命中点 3×3 内其它敌人施加寒冷。 */
+	private void onZapBolt(Ballistica bolt) {
 
 		Heap heap = Dungeon.level.heaps.get(bolt.collisionPos);
 		if (heap != null) {
@@ -86,7 +148,7 @@ public class EvolvedWandOfFrost extends WandOfFrost {
 			Dungeon.level.pressCell(bolt.collisionPos);
 		}
 
-		//END M2：命中点周围 3×3 内的其它敌人施加较低等级寒冷(Chill)
+		//命中点周围 3×3 内的其它敌人施加较低等级寒冷(Chill)
 		for (int i : PathFinder.NEIGHBOURS8) {
 			Char around = Actor.findChar(bolt.collisionPos + i);
 			if (around == null || around == ch) continue;
@@ -94,6 +156,54 @@ public class EvolvedWandOfFrost extends WandOfFrost {
 			Buff.affect(around, Chill.class, 1f + buffedLvl()/2f);
 		}
 	}
+
+	/** 形态 1：以命中点为中心铺开 3×3 冰雪区域(持续 FIELD_TURNS 回合)。 */
+	private void onZapField(Ballistica bolt) {
+
+		int center = bolt.collisionPos;
+		if (!Dungeon.level.insideMap( center )){
+			return;
+		}
+
+		int dmgBase = damageRoll();
+		int halfDmg = Math.round( dmgBase * 0.5f );   //每回合常规伤害(面板 50%)
+		int fullDmg = Math.round( dmgBase * 1.5f );   //破冰伤害(面板 150%)
+		float chillDur = 2f + buffedLvl();            //"全额"寒冷时长(与直击命中一致)
+
+		//3×3 铺开(含中心)，经 Blob.seed 登记到 level.blobs 以便持久化/查询
+		int seeded = 0;
+		EndFrostField field = null;
+		for (int i : PathFinder.NEIGHBOURS9) {
+			int cell = center + i;
+			if (!Dungeon.level.insideMap( cell ) || Dungeon.level.solid[cell]) {
+				continue;
+			}
+			field = Blob.seed( cell, FIELD_TURNS, EndFrostField.class );
+			seeded++;
+		}
+
+		if (field != null && seeded > 0){
+			field.set( halfDmg, fullDmg, chillDur, this );
+			GameScene.add( field );
+		}
+
+		Sample.INSTANCE.play( Assets.Sounds.HIT_MAGIC, 1, 1.1f * Random.Float(0.87f, 1.15f) );
+	}
+
+	// ---- 形态持久化 ----
+	private static final String MODE = "end_mode";
+	@Override
+	public void storeInBundle( Bundle bundle ) {
+		super.storeInBundle( bundle );
+		bundle.put( MODE, mode );
+	}
+	@Override
+	public void restoreFromBundle( Bundle bundle ) {
+		super.restoreFromBundle( bundle );
+		mode = bundle.getInt( MODE );
+		if (mode < 0 || mode >= modeCount()) mode = 0;
+	}
+
 	// ---- 终焉·进化基础(统一13把)：真实等级+8、充能上限20(10起步,每级+1) ----
 	@Override
 	public void updateLevel() {

@@ -4,9 +4,9 @@
  *   湮解法杖 → 拥有人手可选的两种发射形态（在背包-法杖详情窗口切换 / 见 EndModeWand）：
  *
  *   形态 0·湮解·单线(default)：耗 1 充能。沿瞄准单线投出一束解离柱，
- *      可穿透沿途所有单位、轰开易燃地形（不再带旧 M2 的视野看破/落空省充）。
- *   形态 1·湮解·分裂：耗 2 充能(每发 +1)。以瞄准方向为中心，另向对称 ±45° 各投一束，
- *      共 3 束(中心 + 左右)。三束各沿各自弹道穿透命中，本形态伤害 ×1.2。
+ *      可穿透沿途所有单位、轰开易燃地形；本形态伤害 ×1.2。
+ *   形态 1·湮解·分裂：耗 1 充能。以瞄准方向为中心，另向对称 ±45° 各投一束，
+ *      共 3 束(中心 + 左右)。三束各沿各自弹道穿透命中，本形态伤害不额外提升。
  */
 package com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved;
 
@@ -80,14 +80,18 @@ public class EvolvedWandOfDisintegration extends WandOfDisintegration implements
 
 	/* ---------------- 充能/伤害 ---------------- */
 
-	/** 湮解·分裂每发额外 +1 充能；单线维持基础 1。 */
+	/**
+	 * 充能消耗：单线与分裂形态都只耗 1 点（分裂不再额外 +1）。
+	 * 取舍由伤害倍率体现（见 damageScale）。
+	 */
 	@Override
 	protected int chargesPerCast() {
-		return mode == MODE_SPLIT ? 2 : 1;
+		return 1;
 	}
 
+	/** 伤害倍率：普通·单线 +20%；分裂(三束)不提升(收益在多目标覆盖)。 */
 	private float damageScale() {
-		return mode == MODE_SPLIT ? 1.2f : 1f;
+		return mode == MODE_LINE ? 1.2f : 1f;
 	}
 
 	private int distance() {

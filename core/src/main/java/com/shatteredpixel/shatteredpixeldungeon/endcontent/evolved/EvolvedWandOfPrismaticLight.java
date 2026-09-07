@@ -5,9 +5,9 @@
  *
  *   形态 0·普攻直射(default)：耗 1 充能。退回父类的单目标直射——照亮地形浅层，
  *      只命中瞄准落点上的一个敌对单位，附带致盲/对亡灵·恶魔增伤（基础 affectTarget 语义）。
- *   形态 1·灵光光束：耗 3 充能。向瞄准方向打出一道 2 格宽、可穿透的强光束
- *      (ConeAOE 窄发散角 + 不因单位停下)，对光束所经的每一个敌对单位真正独立结算
- *      affectTarget(致盲与增伤)，并照亮点亮更宽范围的地形。
+ *   形态 1·灵光光束：耗 3 充能。沿瞄准方向打出一道 3 格宽、可穿透的矩形光带
+ *      (核心束 + 左右两条垂直偏移平行束)，对光带内每一个敌对单位独立结算
+ *      affectTarget(致盲与增伤)，并照亮点亮光带地形。
  *
  * 上述是哪一种由 modeIndex 决定（非按剩余充能自动判断），方便战斗中按需手动切换。
  */
@@ -31,30 +31,33 @@ import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MagesStaff;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfPrismaticLight;
 import com.shatteredpixel.shatteredpixeldungeon.levels.Terrain;
 import com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica;
-import com.shatteredpixel.shatteredpixeldungeon.mechanics.ConeAOE;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSprite;
 import com.shatteredpixel.shatteredpixeldungeon.tiles.DungeonTilemap;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.Callback;
 import com.watabou.utils.PathFinder;
+import com.watabou.utils.Point;
 import com.watabou.utils.PointF;
 import com.watabou.utils.Random;
 import com.watabou.noosa.audio.Sample;
+
+import java.util.ArrayList;
+import java.util.HashSet;
 
 public class EvolvedWandOfPrismaticLight extends WandOfPrismaticLight implements EndModeWand {
 
 	private static final int MODE_BASIC = 0;
 	private static final int MODE_BEAM  = 1;
 
-	/** 灵光光束的"宽度"(名义发散角,度数)。小值≈2格宽的准直光束。 */
-	private static final float BEAM_DEGREES = 8f;
+	/** 灵光光束名义"宽度"格数(3格宽矩形光带：核心束+左右各1条垂直偏移束)。 */
+	private static final int BEAM_WIDTH = 3;
 
 	/** 当前形态(0=普攻直射,1=灵光光束)。 */
 	private int mode = MODE_BASIC;
 
-	/** 本发施放实际展开的光带(仅灵光形态)。 */
-	private transient ConeAOE cone;
+	/** 本发施放实际展开的光带格集合(仅灵光形态)。 */
+	private transient HashSet<Integer> beamCells;
 
 	@Override
 	public String name() {
@@ -146,14 +149,13 @@ public class EvolvedWandOfPrismaticLight extends WandOfPrismaticLight implements
 
 	private void onZapBeam( Ballistica beam ){
 
-		if (cone == null){
-			//防御：fx 一定在 onZap 前调用把 cone 建好；若没有则补一块。
-			cone = new ConeAOE( beam, distance(), BEAM_DEGREES,
-					Ballistica.STOP_SOLID | Ballistica.IGNORE_SOFT_SOLID );
+		if (beamCells == null){
+			//防御：fx 一定在 onZap 前调用把光带建好；若没有则补建。
+			beamCells = buildBeamCells( beam );
 		}
 
 		boolean discovered = false;
-		for (int cell : cone.cells) {
+		for (int cell : beamCells) {
 
 			if (cell == beam.sourcePos) continue;
 
@@ -172,6 +174,59 @@ public class EvolvedWandOfPrismaticLight extends WandOfPrismaticLight implements
 			Sample.INSTANCE.play( Assets.Sounds.SECRET );
 		}
 		GameScene.updateFog();
+	}
+
+	/**
+	 * 把一条瞄准束扩成"3格宽"的矩形光带格集合：
+	 * 沿主束路径，每一格再向垂直主方向的两侧各扩 (BEAM_WIDTH-1)/2 格。
+	 * 用与湮解分裂同款的"整格垂直邻居法"沿 path 推进，避免发散成锥形。
+	 */
+	private HashSet<Integer> buildBeamCells( Ballistica beam ){
+
+		HashSet<Integer> result = new HashSet<>();
+		//主路径上每一格
+		ArrayList<Integer> path = new ArrayList<>( beam.subPath( 1, Math.min( beam.dist, distance() ) ) );
+		if (path.isEmpty()){
+			result.add( beam.collisionPos );
+			return result;
+		}
+
+		//垂直扩展半宽(3格宽 → 每侧1格)
+		int half = (BEAM_WIDTH - 1) / 2;
+
+		for (int i = 0; i < path.size(); i++){
+			int cell = path.get( i );
+
+			//推进方向 = 当前格-上一格 的方向；垂直向量 = (-dirY, dirX)
+			int dirX = 0, dirY = 0;
+			Point prevP = (i >= 1)
+					? Dungeon.level.cellToPoint( path.get( i-1 ) )
+					: Dungeon.level.cellToPoint( beam.sourcePos );
+			Point curP  = Dungeon.level.cellToPoint( cell );
+			dirX = curP.x - prevP.x;
+			dirY = curP.y - prevP.y;
+
+			result.add( cell );
+
+			//两侧扩展 half 格
+			for (int s = 1; s <= half; s++){
+				int perpX = -dirY, perpY = dirX;
+				Point base = Dungeon.level.cellToPoint( cell );
+				int cellLeft  = Dungeon.level.pointToCell( new Point(
+						base.x + perpX * s, base.y + perpY * s ) );
+				int cellRight = Dungeon.level.pointToCell( new Point(
+						base.x - perpX * s, base.y - perpY * s ) );
+
+				//只收录地图内的格
+				if (Dungeon.level.insideMap( cellLeft )){
+					result.add( cellLeft );
+				}
+				if (Dungeon.level.insideMap( cellRight )){
+					result.add( cellRight );
+				}
+			}
+		}
+		return result;
 	}
 
 	/** 照亮某个 cell 及其 3x3 邻域；若翻到秘密地形返回 true。 */
@@ -222,19 +277,32 @@ public class EvolvedWandOfPrismaticLight extends WandOfPrismaticLight implements
 	public void fx(Ballistica beam, Callback callback) {
 
 		if (mode == MODE_BEAM) {
-			// 灵光光束：打一束窄发散可穿透光带并画出多条光束示意宽度。
-			cone = new ConeAOE( beam, distance(), BEAM_DEGREES,
-					Ballistica.STOP_SOLID | Ballistica.IGNORE_SOFT_SOLID );
+			// 灵光光束：构建 3 格宽矩形光带，并沿主束末端画 3 条平行射线示意宽度。
+			beamCells = buildBeamCells( beam );
 
-			// 主光轴
-			curUser.sprite.parent.add(
-					new Beam.LightRay( curUser.sprite.center(),
-							DungeonTilemap.raisedTileCenterToWorld( rayEndCone( cone.coreRay ) ) ) );
-			// 外沿两道光,示意"2格宽"
-			for (Ballistica r : cone.outerRays){
+			int endCell = beam.path.get( Math.min( beam.dist, distance() ) );
+			Point endP = Dungeon.level.cellToPoint( endCell );
+
+			//主束末端方向(取最后一段)决定垂直偏移方向
+			int lastIdx = Math.min( beam.dist, distance() ) - 1;
+			Point beforeP = (lastIdx > 0)
+					? Dungeon.level.cellToPoint( beam.path.get( lastIdx - 1 ) )
+					: Dungeon.level.cellToPoint( beam.sourcePos );
+			int dirX = endP.x - beforeP.x;
+			int dirY = endP.y - beforeP.y;
+			//垂直向量
+			int perpX = -dirY, perpY = dirX;
+
+			for (int s = -1; s <= 1; s++){   //s=-1,0,1 → 三条平行射线
+				int tx = endP.x + perpX * s;
+				int ty = endP.y + perpY * s;
+				if (tx < 0 || ty < 0 || tx >= Dungeon.level.width() || ty >= Dungeon.level.height()){
+					continue;
+				}
+				int targetCell = Dungeon.level.pointToCell( new Point( tx, ty ) );
 				curUser.sprite.parent.add(
 						new Beam.LightRay( curUser.sprite.center(),
-								DungeonTilemap.raisedTileCenterToWorld( rayEndCone( r ) ) ) );
+								DungeonTilemap.raisedTileCenterToWorld( targetCell ) ) );
 			}
 			Sample.INSTANCE.play( Assets.Sounds.RAY );
 		} else {
@@ -247,11 +315,6 @@ public class EvolvedWandOfPrismaticLight extends WandOfPrismaticLight implements
 		}
 
 		callback.call();
-	}
-
-	private int rayEndCone( Ballistica ray ){
-		if (ray == null) return curUser.pos;
-		return ray.path.get( Math.min( ray.dist, distance() ) );
 	}
 
 	@Override
