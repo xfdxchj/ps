@@ -11,10 +11,19 @@ import java.util.ArrayList;
  * END 灵能弓· 成品 ②「雷鸣」。
  * 命中主目标后，以主目标为中心向外跳 1 格的闪电链，命中怪各吃 20% 原始伤害。
  * 电弧收集/动效复用原生 Shocking.arc 助手；只对存活敌对额外结算，避免劈到射击者自己。
+ *
+ * 额外：雷鸣灵弓自身攻击速度 +50%（它射得比普通灵能弓快一半）；
+ * 通过 speedMultiplier(owner) ×1.5 → Weapon.delayFactor = baseDelay / speedMultiplier 自动变快。
  */
 public class EndSpiritBowStorm extends SpiritBow {
 
 	@Override public String name() { return "雷鸣灵弓"; }
+
+	/** 雷鸣灵弓自身 +50% 攻击速度。 */
+	@Override
+	protected float speedMultiplier( Char owner ){
+		return super.speedMultiplier( owner ) * 1.5f;
+	}
 
 	@Override
 	public int proc(Char attacker, Char defender, int damage) {

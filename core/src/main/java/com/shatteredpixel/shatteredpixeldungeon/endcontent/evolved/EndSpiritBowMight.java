@@ -56,7 +56,10 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 	@Override
 	public ArrayList<String> actions( Hero hero ){
 		ArrayList<String> actions = super.actions( hero );
-		actions.add( AC_SELECT );
+		//仅未定过本体的第一回提供“选本体(5选1)”，选定后按钮消失，避免反复刷本体附魔
+		if (!bodyChosen){
+			actions.add( AC_SELECT );
+		}
 		actions.remove( AC_EQUIP );      //神弓本来就不走 AC_EQUIP
 		return actions;
 	}
