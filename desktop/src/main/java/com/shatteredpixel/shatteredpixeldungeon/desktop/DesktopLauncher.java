@@ -115,9 +115,14 @@ public class DesktopLauncher {
 			}
 		});
 		
-		Game.version = DesktopLauncher.class.getPackage().getSpecificationVersion();
+		Game.version = DesktopLauncher.class.getPackage() != null
+				? DesktopLauncher.class.getPackage().getSpecificationVersion()
+				: null;
 		if (Game.version == null) {
 			Game.version = System.getProperty("Specification-Version");
+		}
+		if (Game.version == null) {
+			Game.version = "0.0.1-end"; //unpacked run: no manifest version; must be non-null for DeviceCompat etc.
 		}
 		
 		try {
