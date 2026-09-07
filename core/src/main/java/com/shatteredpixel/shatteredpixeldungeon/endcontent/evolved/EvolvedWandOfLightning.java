@@ -72,8 +72,8 @@ public class EvolvedWandOfLightning extends WandOfLightning {
 			wandProc(ch, chargesPerCast());
 			if (ch == curUser && ch.isAlive()) {
 				//END M2：受自身闪电伤害转化为等量护盾
-				int selfDmg = Math.round(damageRoll() * multiplier * 0.5f);
-				int shield = Math.max(1, selfDmg);
+				int selfDmg = Math.round(damageRoll() * multiplier);
+				int shield = Math.max(1, Math.round(selfDmg * 0.40f));
 				Buff.affect(ch, Barrier.class).setShield(shield);
 				ch.sprite.showStatusWithIcon(CharSprite.POSITIVE, Integer.toString(shield), FloatingText.SHIELDING);
 			} else {
