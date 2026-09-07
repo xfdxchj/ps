@@ -300,6 +300,9 @@ public class Game implements ApplicationListener {
 		PrintWriter pw = new PrintWriter(sw);
 		tr.printStackTrace(pw);
 		pw.flush();
+		//write straight to the console too, so desktop (which may not surface Gdx.app.error
+		// through its app logger) still shows the full stack trace
+		System.err.println(sw.toString());
 		Gdx.app.error("GAME", sw.toString());
 	}
 	

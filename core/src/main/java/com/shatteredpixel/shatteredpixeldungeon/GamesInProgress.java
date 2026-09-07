@@ -123,8 +123,15 @@ public class GamesInProgress {
 				}
 
 			} catch (IOException e) {
+				//print the real cause to the (desktop) console; otherwise a corrupted / unreadable
+				// save would just silently fail to show a slot here
+				System.err.println("GamesInProgress.check: failed to read save for slot " + slot + ":");
+				e.printStackTrace();
+				ShatteredPixelDungeon.reportException( e );
 				info = null;
 			} catch (Exception e){
+				System.err.println("GamesInProgress.check: failed to load save for slot " + slot + ":");
+				e.printStackTrace();
 				ShatteredPixelDungeon.reportException( e );
 				info = null;
 			}

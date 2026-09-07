@@ -445,6 +445,13 @@ public class InterlevelScene extends PixelScene {
 						
 					} catch (Exception e) {
 						
+						//Log the full exception before it is surfaced to the UI toast, as the
+						// desktop console ordinarily shows nothing for these recoverable failures.
+						// (this is usually an IOException/save-load error while continuing or moving floors)
+						System.err.println("InterlevelScene load error (mode=" + mode + "):");
+						e.printStackTrace();
+						ShatteredPixelDungeon.reportException( e );
+						
 						error = e;
 						
 					}
@@ -566,6 +573,12 @@ public class InterlevelScene extends PixelScene {
 
 				else throw new RuntimeException("fatal error occurred while moving between floors. " +
 							"Seed:" + Dungeon.seed + " depth:" + Dungeon.depth, error);
+
+				//ensure the real exception is always printed to the (desktop) console before the toast,
+				// rather than only ever surfacing the generic 'cannot read save' message
+				System.err.println("Showing load-error toast (mode=" + mode + ", seed=" + Dungeon.seed + ", depth=" + Dungeon.depth + "):");
+				error.printStackTrace();
+				ShatteredPixelDungeon.reportException( error );
 
 				add( new WndError( errorMsg ) {
 					public void onBackPressed() {
