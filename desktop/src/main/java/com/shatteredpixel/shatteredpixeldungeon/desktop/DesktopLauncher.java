@@ -121,9 +121,18 @@ public class DesktopLauncher {
 		}
 		
 		try {
-			Game.versionCode = Integer.parseInt(DesktopLauncher.class.getPackage().getImplementationVersion());
+			String implVer = DesktopLauncher.class.getPackage() != null
+					? DesktopLauncher.class.getPackage().getImplementationVersion()
+					: null;
+			Game.versionCode = implVer == null ? -1 : Integer.parseInt(implVer);
 		} catch (NumberFormatException e) {
-			Game.versionCode = Integer.parseInt(System.getProperty("Implementation-Version"));
+			//running from unpacked install there may be no Implementation-Version; fall back to sys prop, else -1
+			try {
+				String v = System.getProperty("Implementation-Version");
+				Game.versionCode = (v == null) ? -1 : Integer.parseInt(v);
+			} catch (NumberFormatException e2) {
+				Game.versionCode = -1;
+			}
 		}
 
 		if (UpdateImpl.supportsUpdates()){
