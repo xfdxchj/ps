@@ -319,8 +319,15 @@ public class Dungeon {
 		}
 	}
 
-	/** 便利测试挑战下，把终焉新造物(宝石与进化法杖等)都在图鉴登记见过。 */
+	/** 便利测试挑战下：把图鉴登记成“几乎所有会出现物品都见过”，即日志全解锁。 */
 	private static void markEndContentSeen(){
+		//END: 全解锁——遍历所有 Generator 类别,每个类的实体都标记已见过(方便日志/图鉴直接看全)
+		for (Generator.Category c : Generator.Category.values()){
+			if (c.classes == null) continue;
+			for (Class<?> k : c.classes){
+				if (k != null) Catalog.setSeen(k);
+			}
+		}
 		Catalog.setSeen(EndGemItem.class);
 		for (Class<?> clz : new Class<?>[]{
 				//进化法杖(13)
