@@ -219,6 +219,17 @@ public abstract class Recipe {
 		new MeatPie.Recipe()
 	};
 	
+	//END 法杖蜕变：+8 法杖 ＋ 强化符石 → 对应进化法杖（由一条动态配方覆盖全部 13 把）
+	private static Recipe[] endVariantRecipes = new Recipe[]{
+		new com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolveWandRecipe()
+	};
+	
+	public static ArrayList<Recipe> endVariantRecipeList(){
+		ArrayList<Recipe> result = new ArrayList<>();
+		for (Recipe r : endVariantRecipes) result.add(r);
+		return result;
+	}
+	
 	public static ArrayList<Recipe> findRecipes(ArrayList<Item> ingredients){
 
 		ArrayList<Recipe> result = new ArrayList<>();
@@ -238,6 +249,12 @@ public abstract class Recipe {
 			
 		} else if (ingredients.size() == 2){
 			for (Recipe recipe : twoIngredientRecipes){
+				if (recipe.testIngredients(ingredients)){
+					result.add(recipe);
+				}
+			}
+			//END: 法杖蜕变配方（源法杖+强化符石）也在 2 材料情形参与
+			for (Recipe recipe : endVariantRecipes){
 				if (recipe.testIngredients(ingredients)){
 					result.add(recipe);
 				}
