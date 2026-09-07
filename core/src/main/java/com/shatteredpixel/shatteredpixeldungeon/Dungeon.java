@@ -45,6 +45,19 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Imp;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Wandmaker;
 import com.shatteredpixel.shatteredpixeldungeon.items.Amulet;
 import com.shatteredpixel.shatteredpixeldungeon.endcontent.EndGem;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfBlastWave;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfCorrosion;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfCorruption;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfDisintegration;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfFireblast;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfFrost;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfLightning;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfLivingEarth;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfMagicMissile;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfPrismaticLight;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfRegrowth;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfTransfusion;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfWarding;
 import com.shatteredpixel.shatteredpixeldungeon.endcontent.items.EndGemItem;
 import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
 import com.shatteredpixel.shatteredpixeldungeon.items.Heap;
@@ -311,19 +324,19 @@ public class Dungeon {
 		Catalog.setSeen(EndGemItem.class);
 		for (Class<?> clz : new Class<?>[]{
 				//进化法杖(13)
-				endcontent.evolved.EvolvedWandOfMagicMissile.class,
-				endcontent.evolved.EvolvedWandOfFireblast.class,
-				endcontent.evolved.EvolvedWandOfLightning.class,
-				endcontent.evolved.EvolvedWandOfBlastWave.class,
-				endcontent.evolved.EvolvedWandOfCorrosion.class,
-				endcontent.evolved.EvolvedWandOfCorruption.class,
-				endcontent.evolved.EvolvedWandOfDisintegration.class,
-				endcontent.evolved.EvolvedWandOfFrost.class,
-				endcontent.evolved.EvolvedWandOfLivingEarth.class,
-				endcontent.evolved.EvolvedWandOfPrismaticLight.class,
-				endcontent.evolved.EvolvedWandOfRegrowth.class,
-				endcontent.evolved.EvolvedWandOfTransfusion.class,
-				endcontent.evolved.EvolvedWandOfWarding.class
+				EvolvedWandOfMagicMissile.class,
+				EvolvedWandOfFireblast.class,
+				EvolvedWandOfLightning.class,
+				EvolvedWandOfBlastWave.class,
+				EvolvedWandOfCorrosion.class,
+				EvolvedWandOfCorruption.class,
+				EvolvedWandOfDisintegration.class,
+				EvolvedWandOfFrost.class,
+				EvolvedWandOfLivingEarth.class,
+				EvolvedWandOfPrismaticLight.class,
+				EvolvedWandOfRegrowth.class,
+				EvolvedWandOfTransfusion.class,
+				EvolvedWandOfWarding.class
 		}){
 			Catalog.setSeen(clz);
 		}
