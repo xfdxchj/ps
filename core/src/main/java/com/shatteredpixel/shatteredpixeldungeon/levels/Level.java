@@ -361,8 +361,9 @@ public abstract class Level implements Bundlable {
 	@Override
 	public void restoreFromBundle( Bundle bundle ) {
 
-		version = bundle.getInt( VERSION );
-		
+		//version key may be absent for local saves written without manifest/version; treat as current
+		version = bundle.contains(VERSION) ? bundle.getInt( VERSION ) : ShatteredPixelDungeon.v3_3_0;
+
 		//saves from before v2.5.4 are not supported
 		if (version < ShatteredPixelDungeon.v2_5_4){
 			throw new RuntimeException("old save");
