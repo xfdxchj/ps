@@ -8,6 +8,53 @@
 
 ## 分批提交记录（新→旧，含 commit 短号）
 
+### [新提交] — 灵能弓三选一锻造（原四选一去④奥术）+ 去自造占位料
+- **配方（三选一铁匠炉）**：`endcontent/evolved/EvolveSpiritBowRecipe` + `SpiritBowCoreRecipe`(2 升级卷轴+50 液金→灵能核心) 接进 `Recipe.variableRecipes`；`Recipe.usableInRecipe` 放行非诅咒灵能弓。锅：1 把原版灵能弓 + 1 灵能核心 + 任一特殊料 → 对应成品弓：
+  - ① 附魔灵弓 ← 消耗 `升级卷轴 ScrollOfUpgrade` → `EndSpiritBowMight`
+  - ② 雷鸣灵弓 ← 消耗 `雷鸣魔药 ShockingBrew` → `EndSpiritBowStorm`
+  - ③ 唤魔灵弓 ← 消耗 `唤魔晶柱 SummonElemental` → `EndSpiritBowSummon`
+  - (④ 奥术灵弓已按本轮需求移除，含其 ArcaneResin 分支整支删除)
+  - 已锻成品弓不可再入锅当基底；`sampleOutput`/`brew` 均按“投入的特殊料”产出正确成品，预览与实锻一致。
+- **删除自造占位材料**：`endcontent/items/SpiritBowMaterial` + `MaterialOf{Might,Storm,Summon,Arcane}` 全移除（新配方全走本 fork 原装料），内容零残留引用。
+- **① 附魔灵弓（每次攻击触发一个随机附魔）**：`EndSpiritBowMight` 命中时临时摘下身上静态附魔，每击用 `Weapon.Enchantment.random()` 在常见/稀见/**稀有**全池掷一把正面向附魔并当场执行一次——故每次攻击都必定触发【随机】附魔（可含 Grim/Vampiric/腐化 等稀有），而非触发弓上那把固定附魔；不修改 Weapon/主类，效果强度随本弓 buffedLvl 自然缩放。锻造时不再把源弓附魔强拷到这弓上。
+- **② 雷鸣灵弓 / ③ 唤魔灵弓**：接入各成品弓自带机制（雷鸣：命中后经 `Shocking.arc` 向外链 1 格、对敌对各单位结算 20% 箭伤；唤魔：命中击杀后延迟一帧以 10% 掷召随机元素盟友、生命压至其自身最大生命 ~30%）——沿用本 fork `Weapon.proc` 于敌人扣血前触发,故击杀判定皆以延迟 Actor 方式实现。
+
+### [已提交] `7795016` — 进化法杖机制调整：湮解/棱光/凝霜
+- **湮解(湮解法杖)**：伤害倍率对调——普通·单线形态伤害 +20%（×1.2），分裂(三束)形态不额外提升（收益在多目标覆盖）；分裂形态充能消耗由 2 改为 **1**。
+- **棱光(棱辉法杖)**：灵光光束不再用发散锥，改为**固定 3 格宽矩形光带**——沿主束路径逐格向垂直方向左右各扩 1 格（`BEAM_WIDTH=3`，不随距离变宽），光带内每个敌对单位独立结算致盲/增伤；`fx` 同步画 3 条平行射线示意宽度。
+- **冰霜(凝霜法杖)**：接入 `EndModeWand` 双形态——
+  - 形态0「冰霜直击」(默认，耗1)：原命中点直击 + 3×3 附加寒冷；
+  - 形态1「冰雪区域」(耗3)：选中位置铺开 3×3 **持续冰雪区域**（`FIELD_TURNS=4` 回合）；
+  - 新增 `endcontent/evolved/EndFrostField`(Blob 子类，仿原版 Blizzard/Fire 范式)：每回合对区域内敌人造成 **50% 面板伤害 + 全额 Chill**；对已冻结(冰封 `Frost`)的敌人**破除冻结**并造成 **150% 面板伤害**（每回合触发）；区域不扩散只随回合衰减；持久化伤害/时长，读档后伤害归因回退为区域自身。
+- 三把法杖的形态选择/持久化走既有 `EndModeWand` 契约（背包-法杖窗口切换）。
+
+### [已提交] `c62e047` — 进化法杖与宝石登记进游戏内图鉴/日志；合成弹配方日志
+- `journal/Catalog`：13 把进化法杖注册进「法杖(WANDS)」图鉴组，`EndGemItem` 注册进「杂项消耗品(MISC_CONSUMABLES)」图鉴组——之前便利挑战里 `Catalog.setSeen` 对这些类无效(未注册)，现已真正生效。
+- `items/EndGemItem`：宝石**天生已鉴定**(拾取即自动登记图鉴，走 `Item.collect→setSeen`)；首次拾取弹即时日志「图鉴新增：XX宝石」。
+- `evolved/EvolveWandRecipe.brew`：炼成进化法杖时产物自动 `identify()` + `Catalog.setSeen` + 即时日志「炼成进化法杖：XX 已记入图鉴/日志」。
+
+### [已提交] `4d84134` — fix(load): 兼容无 VERSION 键的存档(按当前版本处理)
+- 避免 `ascend` 时把旧格式存档误判删除。
+
+### [已提交] `dea3080` — fix(wnd): EvolvedWand 模式按钮需 add() 才可见
+- 背包-法杖窗口的形态切换按钮此前只 setPos 未 attach 到列表，改为 `add()`，保证按钮实际渲染可点。
+
+### [已提交] `d8a7b93` — desktop: 存档加载失败时打印可见日志
+- `InterlevelScene/GamesInProgress` 加载失败新增桌面可见日志输出，便于定位坏档。
+
+### [已提交] `389c6d5` — 进化法杖系统：13把专属机制 + 统一进化基础 + 灵炎/B2/B4模式改版
+- **13 把进化法杖专属机制全部接通**：魔弹(弹数×2)、爆炎(灵炎不熄)、闪电(自电转盾)、冲击波(伤害+50%/撞墙眩晕×2/可调推距1-3-5)、腐蚀(+1回合缠绕)、腐化(触发+30%)、解离(命中视野/落空50%省充)、冰霜(3×3寒冷)、活体大地(泥沙+伤害同源+40%)、棱光、再生(取消次数限制)、注魂(护盾吸20%生命)、哨戒(消耗充能直接成高阶段哨兵)。
+- **统一进化基础**：进化产物继承源法杖等级(至少+8，`EndWandEvolution.evolve`)，真实等级 `level()`/`buffedLvl()` 均按原等级；充能上限提升至 **20**（`updateLevel`：10 起步、每级 +1、上限20）。(此前曾用 buffedLvl 假偏移的方案已删)
+- **灵炎**：新 buff `SpiritFire`(复制原版 `Burning`，仅去掉"站水里熄灭"判定)；爆炎进化用它替换普通燃烧。
+- **B2/B4 模式改版**：湮解/棱光改为可手选双形态(见 `dea3080` UI 修复前的 `notes-B2-B4.md` 设计)；`EndModeWand` 接口 + `WndUseItem` 形态选择行。
+- 同时修 desktop 运行空指针(version 恒非空、null-safe vendor/segment)。
+
+### [已提交] `61eac4c` — fix(desktop): Game.version 恒非空
+- `Game.version` 不可为 null（缺包描述时回落常量），避免 `isDebug`/`Document` 等判空崩溃。
+
+### [已提交] `5ae9722` — fix(desktop): 未打包运行缺 Implementation-* 元数据时 null-safe
+- vendor/version 段判空，桌面 IDE 直跑不再抛异常。
+
 ### [已提交] `6bc7ced` — 便利测试挑战 + 移除决斗家/牧师可选
 - 新增第 10 个“挑战”项 `Challenges.CONVENIENCE`(=512)，
   - 同步 `MAX_VALUE`→1023、`MAX_CHALS`→10、`NAME_IDS`/`MASKS` 各追加 `convenience` / `CONVENIENCE`；

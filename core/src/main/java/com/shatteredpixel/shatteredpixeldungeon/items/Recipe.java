@@ -58,6 +58,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.spells.WildEnergy;
 import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.Trinket;
 import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.TrinketCatalyst;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.SpiritBow;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.MissileWeapon;
 import com.watabou.utils.Reflection;
 
@@ -168,7 +169,9 @@ public abstract class Recipe {
 	//*******
 
 	private static Recipe[] variableRecipes = new Recipe[]{
-			//none for now
+			//END 灵能弓改造：任意槽数均可判定的两条动态配方(核心 + 四选一锻造)
+			new com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.SpiritBowCoreRecipe(),
+			new com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolveSpiritBowRecipe()
 	};
 	
 	private static Recipe[] oneIngredientRecipes = new Recipe[]{
@@ -275,7 +278,9 @@ public abstract class Recipe {
 		//only upgradeable thrown weapons and wands allowed among equipment items
 		if (item instanceof EquipableItem){
 			return item.cursedKnown && !item.cursed &&
-					item instanceof MissileWeapon && item.isUpgradable();
+					//END 灵能弓改造：未受诅咒的神弓(及共子类)可作为炼金原料
+					((item instanceof MissileWeapon && item.isUpgradable())
+							|| item instanceof SpiritBow);
 		} else if (item instanceof Wand) {
 			return item.cursedKnown && !item.cursed;
 		} else {
