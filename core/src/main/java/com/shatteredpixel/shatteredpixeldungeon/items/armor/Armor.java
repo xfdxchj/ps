@@ -610,7 +610,21 @@ public class Armor extends EquipableItem {
 	@Override
 	public String info() {
 		String info = super.info();
-		
+
+		//END gem: 说明里显示“已嵌宝石 / 提供 +X …”(护甲为防御/闪避/生命类)
+		if (hasGem() && gemType() != null) {
+			int lvl = buffedLvl();
+			int val = com.shatteredpixel.shatteredpixeldungeon.endcontent.EndGemProfile.of(gemType()).bonusAt(lvl);
+			String kindName;
+			switch (gemType()){
+				case DEFENSE: kindName = "防御"; break;
+				case EVASION:  kindName = "闪避"; break;
+				case MAX_HP:   kindName = "生命"; break;
+				default:       kindName = gemType().name(); break;
+			}
+			info += "\n\n镶嵌宝石：" + kindName + "宝石(等级"+lvl+") → 提供 +" + val;
+		}
+
 		if (levelKnown) {
 
 			info += "\n\n" + Messages.get(Armor.class, "curr_absorb", tier, DRMin(), DRMax(), STRReq());
