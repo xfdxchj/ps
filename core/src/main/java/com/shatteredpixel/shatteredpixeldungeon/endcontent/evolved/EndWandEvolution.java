@@ -75,8 +75,8 @@ public final class EndWandEvolution {
         } catch (Exception e) {
             return null; // 防御：注册的进化类都应有无参构造
         }
-        // 终焉·进化基础：等级归零；强度锚定+8/成长+20%/最大充能20 由各 Evolved 子类统一覆写
-        evolved.level( 0 );
+        // 终焉·进化基础：真实等级+8(保留原属性，level()/buffedLvl() 全按8级)；充能上限20 由子类覆写
+        evolved.level( 8 );
         evolved.updateLevel();
         evolved.curCharges = Math.min( evolved.maxCharges, source.curCharges );
         return evolved;

@@ -139,15 +139,10 @@ public class EvolvedWandOfLightning extends WandOfLightning {
 		callback.call();
 	}
 
-	// ---- 终焉·进化基础(统一13把)：等级归零后强度锚定+8并成长+20%、最大充能20 ----
-	@Override
-	public int buffedLvl() {
-		return 8 + Math.round(super.buffedLvl() * 1.2f);
-	}
-
+	// ---- 终焉·进化基础(统一13把)：真实等级+8、充能上限20(10起步,每级+1) ----
 	@Override
 	public void updateLevel() {
-		maxCharges = 20;
+		maxCharges = Math.min(initialCharges() + level(), 20);
 		curCharges = Math.min(curCharges, maxCharges);
 	}
 }

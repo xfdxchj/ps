@@ -22,11 +22,13 @@
 package com.shatteredpixel.shatteredpixeldungeon.windows;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndModeWand;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.ui.InventoryPane;
 import com.shatteredpixel.shatteredpixeldungeon.ui.ItemJournalButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.RedButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Window;
+import com.watabou.noosa.Game;
 
 import java.util.ArrayList;
 
@@ -77,6 +79,36 @@ public class WndUseItem extends WndInfoItem {
 
 			}
 			y = layoutButtons(buttons, width, y);
+
+			//终焉扩展:进化法杖在“使用它”的详情窗口里提供发射形态手动选择
+			if (item instanceof EndModeWand) {
+				final EndModeWand emw = (EndModeWand) item;
+				y += GAP;
+				ArrayList<RedButton> modeBtns = new ArrayList<>();
+				for (int i = 0; i < emw.modeCount(); i++) {
+					final int idx = i;
+					RedButton mb = new RedButton(emw.modeName(idx), 8) {
+						@Override
+						protected void onClick() {
+							//切换形态并即时高亮当前选中,不必关窗
+							emw.setModeIndex( idx );
+							Item.updateQuickslot();
+							//重开本窗口刷新选中态
+							hide();
+							if (Game.scene() != null && Dungeon.hero.isAlive()
+									&& Dungeon.hero.belongings.contains( item )){
+								Game.scene().addToFront( new WndUseItem( owner, item ) );
+							}
+						}
+					};
+					mb.setSize( mb.reqWidth(), BUTTON_HEIGHT );
+					if (i == emw.modeIndex()){
+						mb.textColor( TITLE_COLOR ); //高亮当前形态
+					}
+					modeBtns.add( mb );
+				}
+				y = layoutButtons( modeBtns, width, y );
+			}
 
 			ItemJournalButton btn = new ItemJournalButton(item, this);
 			btn.setRect(width - 16, 0, 16, 16);
