@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Shattered Pixel Dungeon: End —《破碎的像素地牢：终焉扩展》
  * M2 量产样板：WandOfCorrosion → 蚀骨法杖（进化新物品 + 独特附魔光泽）。
  * 对应开发.txt 描述：腐蚀:命中附加1回合缠绕(机制TODO)

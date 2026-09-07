@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Shattered Pixel Dungeon: End —《破碎的像素地牢：终焉扩展》
  * M2 量产样板：WandOfTransfusion → 汲魂法杖（进化新物品 + 独特附魔光泽）。
  * 对应开发.txt 描述：注魂:获护盾时吸20%生命(TODO)
