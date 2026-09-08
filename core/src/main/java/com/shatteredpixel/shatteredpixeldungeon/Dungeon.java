@@ -328,6 +328,11 @@ public class Dungeon {
 			com.shatteredpixel.shatteredpixeldungeon.items.LiquidMetal lm = new com.shatteredpixel.shatteredpixeldungeon.items.LiquidMetal(); lm.quantity(150); lm.identify(); lm.collect();
 			for (int i=0; i<3; i++){ com.shatteredpixel.shatteredpixeldungeon.endcontent.items.SpiritBowCore core = new com.shatteredpixel.shatteredpixeldungeon.endcontent.items.SpiritBowCore(); core.identify(); core.collect(); }
 
+			//END 便利：进阶弓三选一配齐“特殊料” 雷鸣魔药 / 唤魔晶柱（随上面升级卷轴即可锻三把），并配一把原版灵能弓当合成基底
+			for (int i=0; i<3; i++){ com.shatteredpixel.shatteredpixeldungeon.items.potions.brews.ShockingBrew sb = new com.shatteredpixel.shatteredpixeldungeon.items.potions.brews.ShockingBrew(); sb.identify(); sb.collect(); }
+			for (int i=0; i<3; i++){ com.shatteredpixel.shatteredpixeldungeon.items.spells.SummonElemental se = new com.shatteredpixel.shatteredpixeldungeon.items.spells.SummonElemental(); se.identify(); se.collect(); }
+			com.shatteredpixel.shatteredpixeldungeon.items.weapon.SpiritBow bow0 = new com.shatteredpixel.shatteredpixeldungeon.items.weapon.SpiritBow(); bow0.identify(); bow0.collect(); //作铁匠炉基底
+
 			//END 便利：把终焉新造物标记“已见”(Catalog) + 记入本局 discovered(日志)
 			markEndContentSeen();
 		}

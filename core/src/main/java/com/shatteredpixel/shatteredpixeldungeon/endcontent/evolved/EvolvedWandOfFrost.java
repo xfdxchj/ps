@@ -157,13 +157,12 @@ public class EvolvedWandOfFrost extends WandOfFrost implements EndModeWand {
 		}
 	}
 
-	/** 形态 1：以命中点为中心铺开 3×3 冰雪区域(持续 FIELD_TURNS 回合)。 */
+	/** 形态 1：以“玩家选定的命中点”为中心铺开 3×3 冰雪区域(持续 FIELD_TURNS 回合)，
+	 *  允许在视野内任意指定落点位置。 */
 	private void onZapField(Ballistica bolt) {
 
-		//需求⑦：冰雪区域不再可任意指定落点——按法术直线向前推进，到撞墙(首个无法通行处)停下，
-		//区域铺在“撞墙前一格”的可行地面上，不会飘到墙里或远处空地的任意处。
-		int center = lastPassableBeforeSolid( bolt );
-		if (center < 0 || !Dungeon.level.insideMap( center )){
+		int center = bolt.collisionPos;
+		if (!Dungeon.level.insideMap( center )){
 			return;
 		}
 
@@ -190,24 +189,6 @@ public class EvolvedWandOfFrost extends WandOfFrost implements EndModeWand {
 		}
 
 		Sample.INSTANCE.play( Assets.Sounds.HIT_MAGIC, 1, 1.1f * Random.Float(0.87f, 1.15f) );
-	}
-
-	/** 沿弹道取“最远可行地面格”：从起点顺 path 前进，遇首个 solid 即停，返回前一可行格。
-	 *  无实体会被拦时其终点即最后一格可行地——冰雪区域只会在法术正前方铺到撞墙前,不再任意远放。 */
-	private int lastPassableBeforeSolid( Ballistica bolt ){
-		//先看是否真的撞到墙(终点 solid)：若终点自身可行(空地/出口)则原地即为最远可达。
-		if (bolt.collisionPos >= 0 && Dungeon.level.insideMap( bolt.collisionPos )
-				&& !Dungeon.level.solid[ bolt.collisionPos ] && Dungeon.level.passable[ bolt.collisionPos ]){
-			return bolt.collisionPos;
-		}
-		int hi = Math.min( bolt.path.size() - 1, bolt.dist );
-		for (int i = hi; i > 0; i--){
-			int c = bolt.path.get( i );
-			if (Dungeon.level.insideMap( c ) && !Dungeon.level.solid[ c ] && Dungeon.level.passable[ c ]){
-				return c;
-			}
-		}
-		return bolt.collisionPos;
 	}
 
 	// ---- 形态持久化 ----
