@@ -179,16 +179,19 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 		}
 	}
 
-	/** 从正面向全池抽样(可含稀有)、类不重复，最多 n 个。 */
+	/** 从 8 种“可感、支援加法触发”的附魔中抽样(类不重复)，最多 n 个——保证选中本体必然被加法口覆盖。 */
 	private Enchantment[] samplePositiveEnchantments( int n ){
 		ArrayList<Enchantment> got = new ArrayList<>();
 		int guard = 0;
-		while (got.size() < n && guard < 80){
+		while (got.size() < n && guard < 60 && got.size() < CURATED_ENCHANTS.length){
 			guard++;
 			Enchantment e = null;
 			try {
-				e = Enchantment.random();     // 随机正面向附魔(常见/稀见/稀有)，不含诅咒
-			} catch (Exception ignore) { continue; }
+				String id = CURATED_ENCHANTS[ com.watabou.utils.Random.Int( CURATED_ENCHANTS.length ) ];
+				Class<?> c = Class.forName(
+						"com.shatteredpixel.shatteredpixeldungeon.items.weapon.enchantments." + id );
+				e = (Enchantment) com.watabou.utils.Reflection.newInstance( c );
+			} catch (Exception ignore){ continue; }
 			if (e == null) continue;
 			boolean dup = false;
 			for (Enchantment have : got){

@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 /**
  * END 灵能弓· 成品 ②「雷鸣」。
- * 命中主目标后，以主目标为中心向外跳 1 格的闪电链，命中怪各吃 20% 原始伤害。
+ * 命中主目标后，以主目标为中心向外跳 1 格的闪电链，命中怪各吃 50% 原始伤害。
  * 电弧收集/动效复用原生 Shocking.arc 助手；只对存活敌对额外结算，避免劈到射击者自己。
  *
  * 额外：雷鸣灵弓自身攻击速度 +50%（它射得比普通灵能弓快一半）；
@@ -21,7 +21,7 @@ public class EndSpiritBowStorm extends SpiritBow {
 
 	@Override
 	public String desc() {
-		return "进化·雷鸣灵弓：命中主目标后，以它为圆心向外跳 1 格的雷链会弹伤周围敌对单位，每个各吃该击 20% 的箭伤（绝不波及友军或你自己）。\n\n"
+		return "进化·雷鸣灵弓：命中主目标后，以它为圆心向外跳 1 格的雷链会弹伤周围敌对单位，每个各吃该击 50% 的箭伤（绝不波及友军或你自己）。\n\n"
 				+ "雷鸣灵弓自身的攻击速度还提升 50%，出手更快。伤害比原版灵能弓高 20%，随角色等级成长、无法用升级卷轴强化。";
 	}
 
@@ -43,7 +43,7 @@ public class EndSpiritBowStorm extends SpiritBow {
 
 		if (defender == null || !defender.isAlive() || defender == attacker) return damage;
 
-		int bolt = Math.round(damage * 0.2f);
+		int bolt = Math.round(damage * 0.5f);   //闪电链每怪吃 50% 箭伤
 		if (bolt < 1) bolt = 1;
 
 		ArrayList<Char> chained = new ArrayList<>();
