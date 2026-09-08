@@ -36,6 +36,12 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 	/* ---------------- 元信息 / EndModeWand ---------------- */
 	@Override public String name() { return "附魔灵弓"; }
 
+	/** 进阶弓整体伤害比原版灵能弓高 20%（仍随角色等级成长、不可被升级卷轴）。 */
+	@Override
+	public int damageRoll( Char owner ){
+		return Math.round( super.damageRoll( owner ) * 1.2f );
+	}
+
 	@Override public int modeCount()          { return 2; }
 	@Override public int modeIndex()          { return mode; }
 	@Override

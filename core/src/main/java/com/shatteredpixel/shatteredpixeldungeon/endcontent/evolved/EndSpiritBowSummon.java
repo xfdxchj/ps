@@ -35,6 +35,12 @@ public class EndSpiritBowSummon extends SpiritBow {
 
 	@Override public String name() { return "唤魔灵弓"; }
 
+	/** 进阶弓整体伤害比原版灵能弓高 20%（随角色等级成长、不可用升级卷轴）。 */
+	@Override
+	public int damageRoll( Char owner ){
+		return Math.round( super.damageRoll( owner ) * 1.2f );
+	}
+
 	@Override
 	public int proc(Char attacker, Char defender, int damage) {
 		damage = super.proc(attacker, defender, damage);

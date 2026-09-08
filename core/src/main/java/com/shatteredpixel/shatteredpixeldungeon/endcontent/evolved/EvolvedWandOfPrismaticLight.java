@@ -95,14 +95,12 @@ public class EvolvedWandOfPrismaticLight extends WandOfPrismaticLight implements
 	/* ---------------- 充能/形态 ---------------- */
 
 	/**
-	 * 按所选形态决定每次施放消耗：
-	 * 普攻 1 点；灵光光束 3 点。
-	 * Wand 的施放门槛(tryToZap)与扣充(wandUsed)都走这一处，因此若充能不足 3 却开着
-	 * 灵光光束，本次就无法施放(会 fizzle)，直到攒满 3 点——与"灵光光束耗 3"匹配。
+	 * 棱光每次施放统一耗 1 点充能（普攻与灵光光束都 1）。
+	 * Wand 的施放门槛(tryToZap)与扣充(wandUsed)都走这一处。
 	 */
 	@Override
 	protected int chargesPerCast() {
-		return mode == MODE_BEAM ? 3 : 1;
+		return 1;
 	}
 
 	/** 灵光光束形态瞄准需能穿过单位(只有实墙才停)，否则退回父类的魔弹式单点停止瞄准。 */

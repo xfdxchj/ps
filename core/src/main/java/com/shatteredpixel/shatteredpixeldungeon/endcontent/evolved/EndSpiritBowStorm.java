@@ -25,6 +25,12 @@ public class EndSpiritBowStorm extends SpiritBow {
 		return super.speedMultiplier( owner ) * 1.5f;
 	}
 
+	/** 进阶弓整体伤害比原版灵能弓高 20%（随角色等级成长、不可用升级卷轴）。 */
+	@Override
+	public int damageRoll( Char owner ){
+		return Math.round( super.damageRoll( owner ) * 1.2f );
+	}
+
 	@Override
 	public int proc(Char attacker, Char defender, int damage) {
 		damage = super.proc(attacker, defender, damage);

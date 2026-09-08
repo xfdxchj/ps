@@ -112,6 +112,8 @@ public class EvolvedWandOfWarding extends WandOfWarding {
 				}
 			}
 		}
+		//end 需求：哨位法杖能维持的哨位总能量上限提升 30%
+		maxWardEnergy = (int)Math.floor( maxWardEnergy * 1.3f );
 
 		return currentWardEnergy < maxWardEnergy;
 	}

@@ -324,6 +324,10 @@ public class Dungeon {
 			for (int i=0; i<30; i++){ com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfUpgrade su = new com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfUpgrade(); su.identify(); su.collect(); }
 			for (int i=0; i<6; i++){ com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfAugmentation st = new com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfAugmentation(); st.identify(); st.collect(); }
 
+			//END 便利：为灵能弓改造(炼金 2升级卷轴+50液金→灵能核心 等)准备足量液金与核心/料
+			com.shatteredpixel.shatteredpixeldungeon.items.LiquidMetal lm = new com.shatteredpixel.shatteredpixeldungeon.items.LiquidMetal(); lm.quantity(150); lm.identify(); lm.collect();
+			for (int i=0; i<3; i++){ com.shatteredpixel.shatteredpixeldungeon.endcontent.items.SpiritBowCore core = new com.shatteredpixel.shatteredpixeldungeon.endcontent.items.SpiritBowCore(); core.identify(); core.collect(); }
+
 			//END 便利：把终焉新造物标记“已见”(Catalog) + 记入本局 discovered(日志)
 			markEndContentSeen();
 		}
