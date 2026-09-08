@@ -321,8 +321,9 @@ public class Dungeon {
 				} catch (Exception ex){ /*忽略单件失败*/ }
 			}
 
-			for (int i=0; i<15; i++){ com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfUpgrade su = new com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfUpgrade(); su.identify(); su.collect(); }
-			for (int i=0; i<6; i++){ com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfAugmentation st = new com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfAugmentation(); st.identify(); st.collect(); }
+			//END 便利：同堆(而非几十个散件)，屏幕少图标、不易埋在别物后
+			com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfUpgrade su = new com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfUpgrade(); su.quantity(15); su.identify(); su.collect();
+			com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfAugmentation stz = new com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfAugmentation(); stz.quantity(6); stz.identify(); stz.collect();
 
 			//END 便利：一并给一只卷轴袋，容纳上面那些卷轴/符石之类的纸品
 			com.shatteredpixel.shatteredpixeldungeon.items.bags.ScrollHolder scrollBag = new com.shatteredpixel.shatteredpixeldungeon.items.bags.ScrollHolder();
@@ -330,11 +331,11 @@ public class Dungeon {
 
 			//END 便利：为灵能弓改造(炼金 2升级卷轴+50液金→灵能核心 等)准备足量液金与核心/料
 			com.shatteredpixel.shatteredpixeldungeon.items.LiquidMetal lm = new com.shatteredpixel.shatteredpixeldungeon.items.LiquidMetal(); lm.quantity(150); lm.identify(); lm.collect();
-			for (int i=0; i<3; i++){ com.shatteredpixel.shatteredpixeldungeon.endcontent.items.SpiritBowCore core = new com.shatteredpixel.shatteredpixeldungeon.endcontent.items.SpiritBowCore(); core.identify(); core.collect(); }
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.items.SpiritBowCore coreSt = new com.shatteredpixel.shatteredpixeldungeon.endcontent.items.SpiritBowCore(); coreSt.quantity(3); coreSt.identify(); coreSt.collect();
 
 			//END 便利：进阶弓三选一配齐“特殊料” 雷鸣魔药 / 唤魔晶柱（随上面升级卷轴即可锻三把），并配一把原版灵能弓当合成基底
-			for (int i=0; i<3; i++){ com.shatteredpixel.shatteredpixeldungeon.items.potions.brews.ShockingBrew sb = new com.shatteredpixel.shatteredpixeldungeon.items.potions.brews.ShockingBrew(); sb.identify(); sb.collect(); }
-			for (int i=0; i<3; i++){ com.shatteredpixel.shatteredpixeldungeon.items.spells.SummonElemental se = new com.shatteredpixel.shatteredpixeldungeon.items.spells.SummonElemental(); se.identify(); se.collect(); }
+			com.shatteredpixel.shatteredpixeldungeon.items.potions.brews.ShockingBrew sbS = new com.shatteredpixel.shatteredpixeldungeon.items.potions.brews.ShockingBrew(); sbS.quantity(3); sbS.identify(); sbS.collect();
+			com.shatteredpixel.shatteredpixeldungeon.items.spells.SummonElemental seS = new com.shatteredpixel.shatteredpixeldungeon.items.spells.SummonElemental(); seS.quantity(3); seS.identify(); seS.collect();
 			com.shatteredpixel.shatteredpixeldungeon.items.weapon.SpiritBow bow0 = new com.shatteredpixel.shatteredpixeldungeon.items.weapon.SpiritBow(); bow0.identify(); bow0.collect(); //作铁匠炉基底
 
 			//END 便利：把终焉新造物标记“已见”(Catalog) + 记入本局 discovered(日志)
