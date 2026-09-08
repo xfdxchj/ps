@@ -344,6 +344,11 @@ public class Dungeon {
 			com.shatteredpixel.shatteredpixeldungeon.items.spells.SummonElemental seS = new com.shatteredpixel.shatteredpixeldungeon.items.spells.SummonElemental(); seS.quantity(3); seS.identify(); seS.collect();
 			com.shatteredpixel.shatteredpixeldungeon.items.weapon.SpiritBow bow0 = new com.shatteredpixel.shatteredpixeldungeon.items.weapon.SpiritBow(); bow0.identify(); bow0.collect(); //作铁匠炉基底
 
+			//END 便利：三把进化/进阶弓各送一把(identified)，方便直接试用
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndSpiritBowMight   mBow = new com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndSpiritBowMight();   mBow.identify(); mBow.collect();
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndSpiritBowStorm   sBow = new com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndSpiritBowStorm();   sBow.identify(); sBow.collect();
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndSpiritBowSummon  uBow = new com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndSpiritBowSummon();  uBow.identify(); uBow.collect();
+
 			//END 便利：把终焉新造物标记“已见”(Catalog) + 记入本局 discovered(日志)
 			markEndContentSeen();
 		}

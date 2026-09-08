@@ -102,11 +102,11 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 		}
 		ArrayList<String> opts = new ArrayList<>();
 		for (Enchantment e : sample){
-			opts.add( Messages.titleCase( e.getClass().getSimpleName() ) );
+			opts.add( cnEnchantName( e ) );   //汉化：显示中文附魔名而非英文类名
 		}
 		GameScene.show( new WndOptions(
 				Messages.titleCase( name() ),
-				"请为本弓挑一个本体附魔：\n(模式<稳固>会触发它，并附 +50% 奥术等价加成；模式<随机>则不用它)。",
+				"请为本弓挑一个本体附魔：\n(模式<稳固本体>会触发它并获得约 3 颗奥术的触发加成；切到<随机附魔>则每击另掷一个)。",
 				opts.toArray( new String[0] ) ) {
 			@Override
 			protected void onSelect( int index ){
@@ -117,6 +117,28 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 				}
 			}
 		});
+	}
+
+	/** 附魔英文类名 → 可读中文展示名（用于 5选1 弹窗选项）。 */
+	private static String cnEnchantName( Enchantment e ){
+		if (e == null) return "？";
+		String sn = e.getClass().getSimpleName();
+		switch (sn){
+			case "Blazing":        return "灼热(点燃/火焰)";
+			case "Shocking":       return "震击(电)";
+			case "Chilling":       return "寒霜(冻结)";
+			case "Kinetic":        return "动能(存伤爆发)";
+			case "Blocking":       return "格挡";
+			case "Blooming":       return "开花(致盲/长草)";
+			case "Elastic":        return "弹性(击退)";
+			case "Lucky":          return "幸运";
+			case "Projecting":     return "投射(透墙)";
+			case "Unstable":       return "混沌(随机附魔)";
+			case "Corrupting":     return "腐化";
+			case "Grim":           return "狞笑(斩杀)";
+			case "Vampiric":       return "嗜血";
+			default:               return sn;  //兜底
+		}
 	}
 
 	/** 从正面向全池抽样(可含稀有)、类不重复，最多 n 个。 */
