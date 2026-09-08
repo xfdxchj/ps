@@ -38,7 +38,7 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 	/** 供 Weapon 询问当前是否正有本弓的命中正在进行。 */
 	public static boolean forcingNow(){ return forcingDuringHit; }
 
-	/** 稳固本体当前命中要追加的“加法触发率”(字面 +0.5、非乘)，命中期间置 0.5，平时 0。 */
+	/** 稳固本体当前命中要追加的“加法触发率”(字面 +0.3、非乘)，命中期间置 0.3，平时 0。 */
 	private static volatile float additiveDuringHit = 0f;
 	public static void setHitAdditive( float v ){ additiveDuringHit = v; }
 	/** 各正面向附魔判定时加进 chance(封顶在 1 由判定处自行处理)。 */
@@ -117,7 +117,7 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 		}
 		GameScene.show( new WndOptions(
 				Messages.titleCase( name() ),
-				"请为本弓挑一个本体附魔：\n(模式<稳固本体>会触发它并获得约 3 颗奥术的触发加成；切到<随机附魔>则每击另掷一个)。",
+				"请为本弓挑一个本体附魔(候选含 13 种正面，含恒动 Kinetic 等)：\n(模式<稳固本体>会让本体触发的当次判机 +0.3(加法、不乘)；切到<随机附魔>则每击掷 13 中 1 个)。",
 				opts.toArray( new String[0] ) ) {
 			@Override
 			protected void onSelect( int index ){
@@ -162,10 +162,12 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 		} catch (Exception ignore){ /* 显示失败忽略 */ }
 	}
 
-	/** 随机模式只在这 8 种正可感附魔里掷（其余 Kinetic/Projecting/Unstable 等因无即时表现被排除）。 */
+	/** 本弓可选/随机掷的候选(共 13 种，含恒动 Kinetic、索敌 Projecting、紊乱 Unstable 等；
+	 *  不再额外做数值加成——只有带真实触发判定的正面才在稳固命中吃到 activeAdd(=0.3)，非乘)。 */
 	private static final String[] CURATED_ENCHANTS = {
-			"Blazing","Chilling","Shocking","Blooming",
-			"Elastic","Lucky","Grim","Vampiric"
+			"Blazing","Chilling","Shocking",
+			"Blocking","Blooming","Corrupting","Elastic","Lucky",
+			"Vampiric","Grim","Unstable","Kinetic","Projecting"
 	};
 
 	private Enchantment curatedEnchantRoll(){
