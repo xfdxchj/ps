@@ -16,6 +16,12 @@ public class EvolvedWandOfLivingEarth extends WandOfLivingEarth {
 	}
 
 	@Override
+	public String desc() {
+		return "进化·灵壤大地法杖（源：活体大地法杖）：唤出的灵壤大地守卫更强——伤害与它所携带的泥沙护甲量都同时提升 40%（两者源自同一股土系力量）。\n\n"
+				+ "真实等级 +8，充能上限提升到 20，随角色等级成长。";
+	}
+
+	@Override
 	public ItemSprite.Glowing glowing() {
 		return new ItemSprite.Glowing( 13152368, 1.7f );
 	}

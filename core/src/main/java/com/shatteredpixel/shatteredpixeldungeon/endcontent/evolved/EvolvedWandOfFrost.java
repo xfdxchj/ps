@@ -45,6 +45,15 @@ public class EvolvedWandOfFrost extends WandOfFrost implements EndModeWand {
 	}
 
 	@Override
+	public String desc() {
+		return "进化·凝霜法杖（源：冰霜法杖）：拥有两种发射形态，可在背包-法杖窗口切换。\n\n"
+				+ "▍形态 0·冰霜直击（默认，耗 1 充）：命中点单目标冰冻/寒冷，并把落点周围 3×3 内其它敌人附上寒冷。\n"
+				+ "▍形态 1·冰雪区域（耗 2 充）：在你指定的落点铺开 3×3 持续冰雪区域（4 回合）——"
+				+ "区域每回合对敌人造成 50% 面板伤害并附上寒冷；对已被冻结的敌人破除冻结并造成 150% 面板伤害。\n\n"
+				+ "充能上限提升到 20，随角色等级成长（真实等级 +8）。";
+	}
+
+	@Override
 	public ItemSprite.Glowing glowing() {
 		return new ItemSprite.Glowing( 11923711, 1.5f );
 	}

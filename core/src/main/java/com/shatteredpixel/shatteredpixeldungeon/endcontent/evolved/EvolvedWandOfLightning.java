@@ -39,6 +39,12 @@ public class EvolvedWandOfLightning extends WandOfLightning {
 	}
 
 	@Override
+	public String desc() {
+		return "进化·雷髓法杖（源：闪电法杖）：你的电弧若会反噬到自己，不再损失生命，而是转化为等量护盾（Barrier，取造成自伤约 40%）来抵御接下来的伤害。对其它目标仍按闪电链常规造成伤害，落于水中更强。\n\n"
+				+ "真实等级 +8，充能上限提升到 20，随角色等级成长。";
+	}
+
+	@Override
 	public ItemSprite.Glowing glowing() {
 		// 独特的电蓝/白弧光泽
 		return new ItemSprite.Glowing( 0x9FF5FF, 1.2f );

@@ -45,6 +45,12 @@ public class EvolvedWandOfRegrowth extends WandOfRegrowth {
 	}
 
 	@Override
+	public String desc() {
+		return "进化·繁生法杖（源：再生法杖）：解除了普通再生法杖“用得太多会贫瘠秃地”的限制，每次都能正常大面积催生高草与植物；锥形范围内敌人会被缠绕，越集充催生越多。\n\n"
+				+ "真实等级 +8，充能上限提升到 20，随角色等级成长。";
+	}
+
+	@Override
 	public ItemSprite.Glowing glowing() {
 		return new ItemSprite.Glowing( 10020979, 1.8f );
 	}

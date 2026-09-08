@@ -35,6 +35,12 @@ public class EndSpiritBowSummon extends SpiritBow {
 
 	@Override public String name() { return "唤魔灵弓"; }
 
+	@Override
+	public String desc() {
+		return "进化·唤魔灵弓：被你真正击杀的敌人有 10% 概率在倒下处召出一名随机的元素盟友（火/霜/雷之一）帮忙作战——它先以盟友满血现身，随即把生命压制到自身最大生命的约 30%（至少 1），每一击都独立判定、没有次数上限。\n\n"
+				+ "伤害比原版灵能弓高 20%，随角色等级成长、无法用升级卷轴强化。";
+	}
+
 	/** 进阶弓整体伤害比原版灵能弓高 20%（随角色等级成长、不可用升级卷轴）。 */
 	@Override
 	public int damageRoll( Char owner ){

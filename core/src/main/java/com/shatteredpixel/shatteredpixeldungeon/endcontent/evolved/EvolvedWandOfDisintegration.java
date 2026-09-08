@@ -51,6 +51,14 @@ public class EvolvedWandOfDisintegration extends WandOfDisintegration implements
 	}
 
 	@Override
+	public String desc() {
+		return "进化·湮解法杖（源：解离法杖）：拥有两种发射形态，可在背包-法杖窗口切换。\n\n"
+				+ "▍形态 0·湮解·单线（默认，耗 1 充）：一条穿透直射柱，越穿越痛，伤害 ×1.2。\n"
+				+ "▍形态 1·湮解·分裂（耗 1 充）：在瞄准方向双侧各偏转 45° 补两条，共 3 条穿多段覆盖多目标。\n\n"
+				+ "两形态弹壁均可摧毁易燃地形；射程随 buffedLvl ×2 + 6；充能上限 20、真实等级 +8。";
+	}
+
+	@Override
 	public ItemSprite.Glowing glowing() {
 		return new ItemSprite.Glowing( 10477823, 1.1f );
 	}

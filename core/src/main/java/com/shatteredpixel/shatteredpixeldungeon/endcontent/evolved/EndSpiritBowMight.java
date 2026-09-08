@@ -36,6 +36,14 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 	/* ---------------- 元信息 / EndModeWand ---------------- */
 	@Override public String name() { return "附魔灵弓"; }
 
+	@Override
+	public String desc() {
+		return "进化·附魔灵弓：“随机附魔工匠”。(可选)先在锻造/背包中从全池正向附魔里 5 选 1 定出【本体附魔】(仅次一次)，随后在背包-弓窗口可切两种用法：\n\n"
+				+ "▍稳固本体：每击触发本体附魔，并给这把弓 +50% 奥术等价加成，让本体几乎必触发、溢出变强；\n"
+				+ "▍随机附魔：每击打出一个全池【随机】附魔(含稀有)，不计本体。\n\n"
+				+ "伤害比原版灵能弓高 20%，随角色等级成长；无法用升级卷轴强化。";
+	}
+
 	/** 进阶弓整体伤害比原版灵能弓高 20%（仍随角色等级成长、不可被升级卷轴）。 */
 	@Override
 	public int damageRoll( Char owner ){

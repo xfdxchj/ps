@@ -19,6 +19,12 @@ public class EndSpiritBowStorm extends SpiritBow {
 
 	@Override public String name() { return "雷鸣灵弓"; }
 
+	@Override
+	public String desc() {
+		return "进化·雷鸣灵弓：命中主目标后，以它为圆心向外跳 1 格的雷链会弹伤周围敌对单位，每个各吃该击 20% 的箭伤（绝不波及友军或你自己）。\n\n"
+				+ "雷鸣灵弓自身的攻击速度还提升 50%，出手更快。伤害比原版灵能弓高 20%，随角色等级成长、无法用升级卷轴强化。";
+	}
+
 	/** 雷鸣灵弓自身 +50% 攻击速度。 */
 	@Override
 	protected float speedMultiplier( Char owner ){

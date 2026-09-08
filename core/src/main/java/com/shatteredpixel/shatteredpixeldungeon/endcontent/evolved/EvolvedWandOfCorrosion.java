@@ -32,6 +32,12 @@ public class EvolvedWandOfCorrosion extends WandOfCorrosion {
 	}
 
 	@Override
+	public String desc() {
+		return "进化·蚀骨法杖（源：腐蚀法杖）：腐蚀在落点留下的 3×3 酸蚀气几乎不变，但现在命中区域内的每个敌人都会被缠绕（Roots）1 回合，难以脱身地吃着持续的腐蚀伤害。\n\n"
+				+ "真实等级 +8，充能上限提升到 20，随角色等级成长。";
+	}
+
+	@Override
 	public ItemSprite.Glowing glowing() {
 		return new ItemSprite.Glowing( 10215546, 1.6f );
 	}

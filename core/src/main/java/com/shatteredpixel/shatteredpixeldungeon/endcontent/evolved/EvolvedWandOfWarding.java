@@ -29,6 +29,12 @@ public class EvolvedWandOfWarding extends WandOfWarding {
 	}
 
 	@Override
+	public String desc() {
+		return "进化·灵哨法杖（源：哨卫法杖）：发射时可消耗当前充能的一部分（约 30%，上限 3）一次生成更高阶的守卫哨兵；对已在场的哨兵瞄准时可在守卫能量允许内升级或治疗它，并能同时维持的哨兵总能量上限提升 30%。\n\n"
+				+ "真实等级 +8，充能上限提升到 20，随角色等级成长。";
+	}
+
+	@Override
 	public ItemSprite.Glowing glowing() {
 		return new ItemSprite.Glowing( 9090280, 1.3f );
 	}

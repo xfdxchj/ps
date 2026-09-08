@@ -65,6 +65,14 @@ public class EvolvedWandOfPrismaticLight extends WandOfPrismaticLight implements
 	}
 
 	@Override
+	public String desc() {
+		return "进化·棱辉法杖（源：棱光法杖）：拥有两种发射形态，可在背包-法杖窗口切换。\n\n"
+				+ "▍形态 0·普攻·直射（默认，耗 1 充）：直射单目标，照亮落点周围 3×3，有概率致盲并对亡灵/恶魔增伤。\n"
+				+ "▍形态 1·灵光光束（耗 1 充）：射出 3 格宽的矩形光带，光带内每个敌对单位独立承受致盲/伤害判定，并照亮沿途地形。\n\n"
+				+ "充能上限提升到 20，真实等级 +8，随角色等级成长。";
+	}
+
+	@Override
 	public ItemSprite.Glowing glowing() {
 		return new ItemSprite.Glowing( 16762598, 1.2f );
 	}
