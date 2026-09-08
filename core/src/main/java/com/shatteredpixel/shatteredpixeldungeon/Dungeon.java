@@ -699,7 +699,9 @@ public class Dungeon {
 			Bundle bundle = new Bundle();
 
 			bundle.put( INIT_VER, initialVersion );
-			bundle.put( VERSION, version = Game.versionCode );
+			//与 Level.store 一致:开发态(未打包)桌面 Game.versionCode 可能为 -1,禁止写盘以免
+			//读档被 Level/Dungeon 版本门(需 >=v2_5_4)判成 “old save”。下限 v2_5_4。
+			bundle.put( VERSION, version = Math.max( Game.versionCode, ShatteredPixelDungeon.v2_5_4 ) );
 			bundle.put( SEED, seed );
 			bundle.put( CUSTOM_SEED, customSeedText );
 			bundle.put( DAILY, daily );

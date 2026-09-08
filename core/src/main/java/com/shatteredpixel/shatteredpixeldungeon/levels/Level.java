@@ -458,7 +458,10 @@ public abstract class Level implements Bundlable {
 	
 	@Override
 	public void storeInBundle( Bundle bundle ) {
-		bundle.put( VERSION, Game.versionCode );
+		//桌面未打包直达 = 无 Implementation-Version → Game.versionCode 会退成 -1/0；
+		//不能把 -1 落盘,否则读档 Level.restore 会把它当 <v2_5_4 “old save” 而崩。
+		//这里兜底:以当前最低可支持版本为止下限,让开发态存档也可正常回读。
+		bundle.put( VERSION, Math.max( Game.versionCode, ShatteredPixelDungeon.v2_5_4 ) );
 		bundle.put( WIDTH, width );
 		bundle.put( HEIGHT, height );
 		bundle.put( MAP, map );
