@@ -201,36 +201,38 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 			System.out.println("[MIGHT] mode="+mode+" body="+(enchantment!=null?enchantment.getClass().getSimpleName():"none")+" dmg="+damage); //临调试
 		}
 
-		//整次命中把“本弓正在触发”置位：Weapon 据此把触发乘数顶满→本体/选中附魔必触发
-		forceHit();
-		try {
-
-			if ( mode == 1 ){
-				//模式 B(随机)：临时摘下本体，让父级不去触发它；再由下面每击放一个全池(8种)随机附魔。
-				Enchantment carried = enchantment;
-				if (carried != null) enchantment = null;
-				try {
-					damage = super.proc( attacker, defender, damage );
-				} finally {
-					if (carried != null) enchantment = carried;
-				}
-
-				if (defender != null && defender.isAlive()){
-					Enchantment roll = null;
-					try { roll = curatedEnchantRoll(); } catch (Exception ignore){}
-					if (roll != null){
-						try { damage = roll.proc( this, attacker, defender, damage ); }
-						catch (Exception ignore){}
-						popEnchantTrigger( defender, roll );
-					}
-				}
-			} else {
-				//模式 A(稳固)：把本体附魔留给 Weapon.proc 触发，命中必本体(见 Weapon 顶满触发)。
+		if ( mode == 1 ){
+			//模式 B(随机)：每击都掷一个 8 种可感随机附魔并(force)保证该发成功，弹出名字。
+			Enchantment carried = enchantment;
+			if (carried != null) enchantment = null;
+			try {
 				damage = super.proc( attacker, defender, damage );
+			} finally {
+				if (carried != null) enchantment = carried;
 			}
 
-		} finally {
-			forceEnd();
+			if (defender != null && defender.isAlive()){
+				Enchantment roll = null;
+				try { roll = curatedEnchantRoll(); } catch (Exception ignore){}
+				if (roll != null){
+					forceHit();
+					try { damage = roll.proc( this, attacker, defender, damage ); }
+					finally { forceEnd(); }
+					popEnchantTrigger( defender, roll );
+				}
+			}
+		} else {
+			//模式 A(稳固)：本体附魔以 50% 概率在该击触发；未触发时本击不附加该本体。
+			if ( com.watabou.utils.Random.Float() < 0.50f ){
+				forceHit();
+				try { damage = super.proc( attacker, defender, damage ); }
+				finally { forceEnd(); }
+			} else {
+				Enchantment c = enchantment;
+				enchantment = null;                     //本击不触发本体
+				try { damage = super.proc( attacker, defender, damage ); }
+				finally { if (c != null) enchantment = c; }
+			}
 		}
 		return damage;
 	}

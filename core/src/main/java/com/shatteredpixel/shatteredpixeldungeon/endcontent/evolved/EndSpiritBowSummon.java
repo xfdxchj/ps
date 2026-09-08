@@ -61,9 +61,9 @@ public class EndSpiritBowSummon extends SpiritBow {
 			}
 			@Override
 			protected boolean act() {
-				//一次判定：目标已死则以 50% 掷出召唤（早期 10% 几乎不出，实测改成 50% 更符合预期）
-				if (!victim.isAlive() && Random.Float() < 0.50f){
-					System.out.println("[SUMMON] trigger 50% -> spawn"); //临调试
+				//召唤触发率 20%：目标已死则以 20% 掷出召唤。
+				if (!victim.isAlive() && Random.Float() < 0.20f){
+					System.out.println("[SUMMON] trigger 20% -> spawn"); //临调试
 					spawnAllyAt( victim.pos );
 				}
 				Actor.remove(this);
