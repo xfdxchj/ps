@@ -83,12 +83,15 @@ public class EndSpiritBowSummon extends SpiritBow {
 		System.out.println("[SUMMON] making "+element.getClass().getSimpleName()
 				+" at "+spawn+" (solid="+(Dungeon.level.solid[spawn])+")");
 		GameScene.add( element );
+		//关键：把自己阵营设为友方并寻敌，否则会生成成敌对怪反过来劈主角
 		element.setSummonedALly();
+		element.alignment = Char.Alignment.ALLY;
+		element.state = Char.HUNTING;
 		//先让它以“盟友缩放后”的满血实体在场,再把存活压到其自身最大生命 ~30%
 		element.HP = element.HT;
 		ScrollOfTeleportation.appear( element, spawn );
 		element.HP = Math.max( 1, Math.round( element.HT * 0.30f ) );
-		System.out.println("[SUMMON] placed ok? pos="+element.pos+" hp="+element.HP);
+		System.out.println("[SUMMON] placed ok? pos="+element.pos+" hp="+element.HP+" ally="+(element.alignment==Char.Alignment.ALLY));
 	}
 
 	/** 在 atPos 附近挑一个可站且无人占用的格子放元素。 */

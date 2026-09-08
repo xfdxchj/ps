@@ -44,8 +44,8 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 	@Override
 	public String desc() {
 		return "进化·附魔灵弓：“随机附魔工匠”。(可选)先在锻造/背包中从全池正向附魔里 5 选 1 定出【本体附魔】(仅次一次)，随后在背包-弓窗口可切两种用法：\n\n"
-				+ "▍稳固本体：把本体附魔的触发抬到**100% 必触发**（任何本弓命中都会触发选定本体，溢出仍自然转强）；\n"
-				+ "▍随机附魔：每击打出一个全池【随机】附魔(含稀有)，不计本体。\n\n"
+				+ "▍稳固本体：每击按本体附魔本身正常强度触发（增强应轻微，不加爆）；\n"
+				+ "▍随机附魔：每击打出一个全池(8 种中的 1)【随机】附魔并弹名，含稀有在内。\n\n"
 				+ "伤害比原版灵能弓高 20%，随角色等级成长；无法用升级卷轴强化。";
 	}
 
@@ -65,7 +65,7 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 	@Override
 	public String modeName( int index ){
 		switch (index){
-			case 0:  return "稳固本体 (100%触发)";
+			case 0:  return "稳固本体";
 			case 1:  return "随机附魔";
 			default: return "";
 		}
@@ -222,17 +222,8 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 				}
 			}
 		} else {
-			//模式 A(稳固)：本体附魔以 50% 概率在该击触发；未触发时本击不附加该本体。
-			if ( com.watabou.utils.Random.Float() < 0.50f ){
-				forceHit();
-				try { damage = super.proc( attacker, defender, damage ); }
-				finally { forceEnd(); }
-			} else {
-				Enchantment c = enchantment;
-				enchantment = null;                     //本击不触发本体
-				try { damage = super.proc( attacker, defender, damage ); }
-				finally { if (c != null) enchantment = c; }
-			}
+			//模式 A(稳固)：本体照“正常触发生效”——不加爆、不加幅；仅此击走弓身本体（见下方 Weapon 处）。
+			damage = super.proc( attacker, defender, damage );
 		}
 		return damage;
 	}
