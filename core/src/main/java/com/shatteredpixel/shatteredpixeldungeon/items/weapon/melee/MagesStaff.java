@@ -342,9 +342,18 @@ public class MagesStaff extends MeleeWeapon {
 		if (wand == null) {
 			return super.name();
 		} else {
-			String name = Messages.get(wand, "staff_name");
+			String name = evolvedWandImbued()
+					? wand.name()                                  //进化杖: 亮出它自己的名(凝霜法杖…)
+					: Messages.get(wand, "staff_name");
 			return enchantment != null && (cursedKnown || !enchantment.curse()) ? enchantment.name( name ) : name;
 		}
+	}
+
+	/** 该魔杖当前嵌入的是一把“终焉进化法杖”(位于 endcontent.evolved 包, 自带中文名/无消息键)。 */
+	private boolean evolvedWandImbued(){
+		return wand != null
+				&& wand.getClass().getName().startsWith(
+						"com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.");
 	}
 
 	@Override
@@ -352,7 +361,8 @@ public class MagesStaff extends MeleeWeapon {
 		String info = super.info();
 
 		if (wand != null){
-			info += "\n\n" + Messages.get(this, "has_wand", Messages.get(wand, "name"));
+			String title = evolvedWandImbued() ? wand.name() : Messages.get(wand, "name");
+			info += "\n\n" + Messages.get(this, "has_wand", title);
 			if ((!cursed && !hasCurseEnchant()) || !cursedKnown)    info += " " + wand.statsDesc();
 			else                                                    info += " " + Messages.get(this, "cursed_wand");
 
