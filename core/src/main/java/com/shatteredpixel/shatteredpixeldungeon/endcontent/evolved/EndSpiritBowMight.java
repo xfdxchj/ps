@@ -232,7 +232,7 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 			}
 		} else {
 			//模式 A(稳固)：仅给本体触发概率+0.5(加法、不乘、不加幅)后走本体正常一次。
-			setHitAdditive( 0.5f );
+			setHitAdditive( 0.3f );   //稳固：加法触发 +0.3(百分点)
 			try { damage = super.proc( attacker, defender, damage ); }
 			finally { setHitAdditive( 0f ); }
 		}
