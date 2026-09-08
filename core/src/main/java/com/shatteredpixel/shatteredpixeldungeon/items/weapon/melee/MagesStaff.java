@@ -65,6 +65,8 @@ public class MagesStaff extends MeleeWeapon {
 
 	public static final String AC_IMBUE = "IMBUE";
 	public static final String AC_ZAP	= "ZAP";
+	/** 老魔杖内嵌的进化法杖若是“可切形态”(EndModeWand)，提供切换动作。 */
+	public static final String AC_FORM = "MAGE_FORM";
 
 	private static final float STAFF_SCALE_FACTOR = 0.75f;
 
@@ -108,12 +110,22 @@ public class MagesStaff extends MeleeWeapon {
 		if (wand!= null && wand.curCharges > 0) {
 			actions.add( AC_ZAP );
 		}
+		//老魔杖内嵌的是双形态进化法杖(凝霜/棱辉/湮解)时，允许在老魔杖身上切形态
+		if (wand instanceof com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndModeWand){
+			actions.add( AC_FORM );
+		}
 		return actions;
 	}
 
 	@Override
 	public String defaultAction() {
 		return AC_ZAP;
+	}
+
+	@Override
+	public String actionName( String action, Hero hero ){
+		if (action.equals( AC_FORM )) return "形态";
+		return super.actionName( action, hero );
 	}
 
 	@Override
@@ -151,7 +163,32 @@ public class MagesStaff extends MeleeWeapon {
 			if (cursed || hasCurseEnchant()) wand.cursed = true;
 			else                             wand.cursed = false;
 			wand.execute(hero, AC_ZAP);
+
+		} else if (action.equals(AC_FORM)){
+			//老魔杖里切内嵌进化法杖的形态(如凝霜冰雪区域/棱光光束/湮解分裂)
+			showStaffWandModePicker();
 		}
+	}
+
+	/** 弹一组按钮，让玩家在当前注入法杖的各个形态间切换(选择随杖存档保留)。 */
+	private void showStaffWandModePicker(){
+		if (!(wand instanceof com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndModeWand)) return;
+		final com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndModeWand emw =
+				(com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndModeWand) wand;
+		int n = emw.modeCount();
+		String[] opts = new String[n];
+		for (int i = 0; i < n; i++) opts[i] = emw.modeName(i);
+		GameScene.show(new WndOptions(Messages.titleCase(name()),
+				"选择当前进化法杖的形态：",
+				opts){
+			@Override
+			protected void onSelect(int index){
+				if (index >= 0 && index < emw.modeCount()){
+					emw.setModeIndex(index);
+					Item.updateQuickslot();
+				}
+			}
+		});
 	}
 
 	@Override
