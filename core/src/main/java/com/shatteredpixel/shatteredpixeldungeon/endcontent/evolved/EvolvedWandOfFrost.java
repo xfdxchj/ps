@@ -87,11 +87,12 @@ public class EvolvedWandOfFrost extends WandOfFrost implements EndModeWand {
 		return mode == MODE_FROST_FIELD ? 2 : 1;
 	}
 
-	/** 铺地形态也需要能选中地面空格，瞄准沿用父类(法杖默认弹道)。 */
+	/** 铺地形态：冰雪区域可在视野内你点击的任意空地上铺开——弹道不因中途的墙/实体提前终止，
+	 *  直接落在所选落点。 */
 	@Override
 	public int collisionProperties( int target ){
 		if (mode == MODE_FROST_FIELD){
-			return Ballistica.STOP_SOLID | Ballistica.IGNORE_SOFT_SOLID;
+			return Ballistica.WONT_STOP;   //完全不停，命中点==你点的目标格
 		}
 		return super.collisionProperties( target );
 	}
