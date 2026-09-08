@@ -119,25 +119,25 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 		});
 	}
 
-	/** 附魔英文类名 → 可读中文展示名（用于 5选1 弹窗选项）。 */
+	/** 附魔英文类名 → 原版官方汉化前缀名(对齐 items_zh enchantments.*.name，不自造词)。 */
 	private static String cnEnchantName( Enchantment e ){
 		if (e == null) return "？";
 		String sn = e.getClass().getSimpleName();
 		switch (sn){
-			case "Blazing":        return "灼热(点燃/火焰)";
-			case "Shocking":       return "震击(电)";
-			case "Chilling":       return "寒霜(冻结)";
-			case "Kinetic":        return "动能(存伤爆发)";
-			case "Blocking":       return "格挡";
-			case "Blooming":       return "开花(致盲/长草)";
-			case "Elastic":        return "弹性(击退)";
-			case "Lucky":          return "幸运";
-			case "Projecting":     return "投射(透墙)";
-			case "Unstable":       return "混沌(随机附魔)";
-			case "Corrupting":     return "腐化";
-			case "Grim":           return "狞笑(斩杀)";
-			case "Vampiric":       return "嗜血";
-			default:               return sn;  //兜底
+			case "Blazing":      return "烈焰";  //items.weapon.enchantments.blazing.name=烈焰%s
+			case "Shocking":     return "电击";
+			case "Chilling":     return "寒霜";
+			case "Kinetic":      return "恒动";
+			case "Blocking":     return "招架";
+			case "Blooming":     return "繁茂";
+			case "Elastic":      return "弹性";
+			case "Lucky":        return "幸运";
+			case "Projecting":   return "索敌";
+			case "Unstable":     return "紊乱";
+			case "Corrupting":   return "腐化";
+			case "Grim":         return "死神";
+			case "Vampiric":     return "血饮";
+			default:             return sn; //未收录则退回类名
 		}
 	}
 
