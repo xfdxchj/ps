@@ -61,6 +61,9 @@ public class EndSpiritBowSummon extends SpiritBow {
 			}
 			@Override
 			protected boolean act() {
+				//[临调试] 看死亡判定与是否触发随机
+				System.out.println("[SUMMON] act victimAlive="+victim.isAlive()
+						+" roll="+(victim.isAlive()?-1f:Random.Float()));
 				if (!victim.isAlive() && Random.Float() < 0.10f){
 					spawnAllyAt( victim.pos );
 				}
@@ -74,15 +77,19 @@ public class EndSpiritBowSummon extends SpiritBow {
 
 	private void spawnAllyAt( int atPos ){
 		Elemental element = (Elemental) Reflection.newInstance( Random.element( summonKinds ) );
-		if (element == null) return;
+		if (element == null){ System.out.println("[SUMMON] newEpic fail"); return; }
 
 		int spawn = nearFreeCell( atPos );
+		//[临调试] 生成前打印要放的格与场地是否可用
+		System.out.println("[SUMMON] making "+element.getClass().getSimpleName()
+				+" at "+spawn+" (solid="+(Dungeon.level.solid[spawn])+")");
 		GameScene.add( element );
 		element.setSummonedALly();
 		//先让它以“盟友缩放后”的满血实体在场,再把存活压到其自身最大生命 ~30%
 		element.HP = element.HT;
 		ScrollOfTeleportation.appear( element, spawn );
 		element.HP = Math.max( 1, Math.round( element.HT * 0.30f ) );
+		System.out.println("[SUMMON] placed ok? pos="+element.pos+" hp="+element.HP);
 	}
 
 	/** 在 atPos 附近挑一个可站且无人占用的格子放元素。 */

@@ -192,6 +192,13 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 	@Override
 	public int proc( Char attacker, Char defender, int damage ){
 
+		if (defender != null){
+			//[临调试]看到每次命中带本体与否、走哪档
+			System.out.println("[MIGHT] mode="+mode
+					+" body="+(enchantment!=null?enchantment.getClass().getSimpleName():"none")
+					+" dmg="+damage);
+		}
+
 		if ( mode == 1 ){
 			//模式 B(随机)：临时摘下本体，让父级不去触发它；再由下面每击放一个全池随机附魔。
 			Enchantment carried = enchantment;

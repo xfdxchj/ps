@@ -597,6 +597,7 @@ abstract public class Weapon extends KindOfWeapon {
 							((Hero)attacker).belongings.weapon();
 				if (b.modeIndex() == 0){          //0 = 稳固本体
 					multi = Math.max( multi, 4f );   //稳固=必触发
+					System.out.println("[MIGHT mult] stable procMulti="+multi);   //临调试
 				}
 			}
 
