@@ -39,7 +39,7 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 	@Override
 	public String desc() {
 		return "进化·附魔灵弓：“随机附魔工匠”。(可选)先在锻造/背包中从全池正向附魔里 5 选 1 定出【本体附魔】(仅次一次)，随后在背包-弓窗口可切两种用法：\n\n"
-				+ "▍稳固本体：本体附魔照常触发，且这把弓额外给它约 3 颗奥术戒当量的触发加成(≈×1.62)——不保证必然，但明显更常触发、溢出仍自然转强；\n"
+				+ "▍稳固本体：把本体附魔的触发抬到**100% 必触发**（任何本弓命中都会触发选定本体，溢出仍自然转强）；\n"
 				+ "▍随机附魔：每击打出一个全池【随机】附魔(含稀有)，不计本体。\n\n"
 				+ "伤害比原版灵能弓高 20%，随角色等级成长；无法用升级卷轴强化。";
 	}
@@ -60,7 +60,7 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 	@Override
 	public String modeName( int index ){
 		switch (index){
-			case 0:  return "稳固本体 (≈3 奥术)";
+			case 0:  return "稳固本体 (100%触发)";
 			case 1:  return "随机附魔";
 			default: return "";
 		}
@@ -151,6 +151,23 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 		} catch (Exception ignore){ /* 显示失败忽略 */ }
 	}
 
+	/** 随机模式只在这 8 种正可感附魔里掷（其余 Kinetic/Projecting/Unstable 等因无即时表现被排除）。 */
+	private static final String[] CURATED_ENCHANTS = {
+			"Blazing","Chilling","Shocking","Blooming",
+			"Elastic","Lucky","Grim","Vampiric"
+	};
+
+	private Enchantment curatedEnchantRoll(){
+		try {
+			String id = CURATED_ENCHANTS[ com.watabou.utils.Random.Int( CURATED_ENCHANTS.length ) ];
+			Class<?> c = Class.forName(
+					"com.shatteredpixel.shatteredpixeldungeon.items.weapon.enchantments." + id );
+			return (Enchantment) com.watabou.utils.Reflection.newInstance( c );
+		} catch (Throwable t){
+			return null;
+		}
+	}
+
 	/** 从正面向全池抽样(可含稀有)、类不重复，最多 n 个。 */
 	private Enchantment[] samplePositiveEnchantments( int n ){
 		ArrayList<Enchantment> got = new ArrayList<>();
@@ -187,7 +204,7 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 
 			if (defender != null && defender.isAlive()){
 				Enchantment roll = null;
-				try { roll = Enchantment.random(); } catch (Exception ignore){}
+				try { roll = curatedEnchantRoll(); } catch (Exception ignore){}
 				if (roll != null){
 					try { damage = roll.proc( this, attacker, defender, damage ); }
 					catch (Exception ignore){}
