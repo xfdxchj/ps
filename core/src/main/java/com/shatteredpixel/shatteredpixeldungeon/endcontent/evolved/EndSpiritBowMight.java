@@ -141,6 +141,16 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 		}
 	}
 
+	/** 在目标头上弹出“本次触发哪个附魔”的小字，像伤害字带提示。 */
+	private void popEnchantTrigger( Char defender, Enchantment roll ){
+		if (defender == null || defender.sprite == null) return;
+		try {
+			defender.sprite.showStatus(
+					com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite.WARNING,
+					cnEnchantName( roll ) );
+		} catch (Exception ignore){ /* 显示失败忽略 */ }
+	}
+
 	/** 从正面向全池抽样(可含稀有)、类不重复，最多 n 个。 */
 	private Enchantment[] samplePositiveEnchantments( int n ){
 		ArrayList<Enchantment> got = new ArrayList<>();
@@ -181,6 +191,7 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 				if (roll != null){
 					try { damage = roll.proc( this, attacker, defender, damage ); }
 					catch (Exception ignore){}
+					popEnchantTrigger( defender, roll );   //在敌人头顶弹出本次触发的附魔名
 				}
 			}
 			return damage;
