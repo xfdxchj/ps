@@ -45,6 +45,7 @@ public class Grim extends Weapon.Enchantment {
 		//scales from 0 - 50% based on how low hp the enemy is, plus 0-5% per level
 		float maxChance = 0.5f + .05f*level;
 		maxChance *= procChanceMultiplier(attacker);
+		maxChance = Math.min(1f, maxChance + activeChanceAdd());    //附魔灵弓稳固体加法(默认0, 仅本弓)
 
 		//we defer logic using an actor here so we can know the true final damage
 		//see Char.damage

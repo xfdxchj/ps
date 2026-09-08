@@ -42,6 +42,7 @@ public class Vampiric extends Weapon.Enchantment {
 		float healChance = 0.05f + .25f*missingPercent;
 
 		healChance *= procChanceMultiplier(attacker);
+		healChance = Math.min(1f, healChance + activeChanceAdd());   //附魔灵弓稳固体加法(默认0, 仅本弓)
 		
 		if (Random.Float() < healChance
 				&& attacker.alignment != defender.alignment
