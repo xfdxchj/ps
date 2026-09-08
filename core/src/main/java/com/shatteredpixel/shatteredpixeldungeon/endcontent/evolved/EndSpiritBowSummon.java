@@ -86,7 +86,7 @@ public class EndSpiritBowSummon extends SpiritBow {
 		//关键：把自己阵营设为友方并寻敌，否则会生成成敌对怪反过来劈主角
 		element.setSummonedALly();
 		element.alignment = Char.Alignment.ALLY;
-		element.state = Char.HUNTING;
+		element.state = element.HUNTING;
 		//先让它以“盟友缩放后”的满血实体在场,再把存活压到其自身最大生命 ~30%
 		element.HP = element.HT;
 		ScrollOfTeleportation.appear( element, spawn );
