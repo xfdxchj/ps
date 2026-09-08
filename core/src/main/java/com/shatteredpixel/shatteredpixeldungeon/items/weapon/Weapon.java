@@ -586,8 +586,8 @@ abstract public class Weapon extends KindOfWeapon {
 				multi += 0.2f;
 			}
 
-			//END 成品弓① 附魔灵弓 模式A「稳固本体」：给该弓本体的附魔再加 +0.5 触发倍率
-			//等价于“额外半颗奥术戒”；仅当本弓以模式A(稳固)装备时叠加，摘/换其它弓或切到模式B即失效。
+			//END 成品弓① 附魔灵弓 模式A「稳固本体」：让该弓本体附魔的触发按“约3颗奥术戒”等效加成。
+			//奥术戒系数 = 1.175^bonus;3 颗 ≈ 1.175^3 ≈ 1.623 → 把本弓参与判定的生成倍率再乘上这段。
 			if (attacker instanceof Hero && ((Hero)attacker).belongings.weapon() != null
 					&& ((Hero)attacker).belongings.weapon()
 						instanceof com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndSpiritBowMight){
@@ -595,7 +595,7 @@ abstract public class Weapon extends KindOfWeapon {
 						= (com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndSpiritBowMight)
 							((Hero)attacker).belongings.weapon();
 				if (b.modeIndex() == 0){          //0 = 稳固本体
-					multi += 0.5f;                //+50% 奥术等价
+					multi *= (float) java.lang.Math.pow( 1.175d, 3d );   //≈ ×1.623 ≈ +3 颗奥术
 				}
 			}
 
