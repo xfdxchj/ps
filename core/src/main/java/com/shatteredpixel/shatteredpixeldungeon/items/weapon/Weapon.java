@@ -596,6 +596,11 @@ abstract public class Weapon extends KindOfWeapon {
 			return multi;
 		}
 
+		/** 正向附魔判定时可叠加的“加法触发概率”(当前 Might 稳固命中时为 +0.5，否则 0；非乘)。 */
+		public static float activeChanceAdd() {
+			return com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndSpiritBowMight.activeAdd();
+		}
+
 		public String name() {
 			if (!curse())
 				return name( Messages.get(this, "enchant"));

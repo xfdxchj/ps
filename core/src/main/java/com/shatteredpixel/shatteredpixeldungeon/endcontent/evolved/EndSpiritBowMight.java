@@ -38,6 +38,12 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 	/** 供 Weapon 询问当前是否正有本弓的命中正在进行。 */
 	public static boolean forcingNow(){ return forcingDuringHit; }
 
+	/** 稳固本体当前命中要追加的“加法触发率”(字面 +0.5、非乘)，命中期间置 0.5，平时 0。 */
+	private static volatile float additiveDuringHit = 0f;
+	public static void setHitAdditive( float v ){ additiveDuringHit = v; }
+	/** 各正面向附魔判定时加进 chance(封顶在 1 由判定处自行处理)。 */
+	public static float activeAdd(){ return additiveDuringHit; }
+
 	/* ---------------- 元信息 / EndModeWand ---------------- */
 	@Override public String name() { return "附魔灵弓"; }
 
@@ -222,8 +228,10 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 				}
 			}
 		} else {
-			//模式 A(稳固)：本体照“正常触发生效”——不加爆、不加幅；仅此击走弓身本体（见下方 Weapon 处）。
-			damage = super.proc( attacker, defender, damage );
+			//模式 A(稳固)：仅给本体触发概率+0.5(加法、不乘、不加幅)后走本体正常一次。
+			setHitAdditive( 0.5f );
+			try { damage = super.proc( attacker, defender, damage ); }
+			finally { setHitAdditive( 0f ); }
 		}
 		return damage;
 	}
