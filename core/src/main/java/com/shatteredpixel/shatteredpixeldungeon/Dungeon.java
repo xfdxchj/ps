@@ -313,6 +313,16 @@ public class Dungeon {
 				g.collect();
 			}
 
+			//END 便利：先给几只储物(子包)容器——它们能收纳对应物、相当于把背包“扩大”，
+			//后面那堆法杖/卷轴/药水/种子自然不会散到找不见。
+			for (com.shatteredpixel.shatteredpixeldungeon.items.bags.Bag b : new com.shatteredpixel.shatteredpixeldungeon.items.bags.Bag[]{
+					new com.shatteredpixel.shatteredpixeldungeon.items.bags.MagicalHolster(),   //装法杖
+					new com.shatteredpixel.shatteredpixeldungeon.items.bags.ScrollHolder(),    //装卷轴/符石
+					new com.shatteredpixel.shatteredpixeldungeon.items.bags.PotionBandolier(), //装药水/合剂
+					new com.shatteredpixel.shatteredpixeldungeon.items.bags.VelvetPouch()}){   //装种子/植物
+				b.collect();
+			}
+
 			for (Class<?> e : new Class<?>[]{EvolvedWandOfMagicMissile.class, EvolvedWandOfFireblast.class, EvolvedWandOfLightning.class,EvolvedWandOfBlastWave.class,EvolvedWandOfCorrosion.class,EvolvedWandOfCorruption.class,EvolvedWandOfDisintegration.class,EvolvedWandOfFrost.class,EvolvedWandOfLivingEarth.class,EvolvedWandOfPrismaticLight.class,EvolvedWandOfRegrowth.class,EvolvedWandOfTransfusion.class,EvolvedWandOfWarding.class}){
 				try {
 					Item w = (Item)(e.getDeclaredConstructor().newInstance());
@@ -324,10 +334,6 @@ public class Dungeon {
 			//END 便利：同堆(而非几十个散件)，屏幕少图标、不易埋在别物后
 			com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfUpgrade su = new com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfUpgrade(); su.quantity(15); su.identify(); su.collect();
 			com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfAugmentation stz = new com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfAugmentation(); stz.quantity(6); stz.identify(); stz.collect();
-
-			//END 便利：一并给一只卷轴袋，容纳上面那些卷轴/符石之类的纸品
-			com.shatteredpixel.shatteredpixeldungeon.items.bags.ScrollHolder scrollBag = new com.shatteredpixel.shatteredpixeldungeon.items.bags.ScrollHolder();
-			scrollBag.collect();   //开局初暂无 level,满兜放弃掉即可(便利档通常够位)
 
 			//END 便利：为灵能弓改造(炼金 2升级卷轴+50液金→灵能核心 等)准备足量液金与核心/料
 			com.shatteredpixel.shatteredpixeldungeon.items.LiquidMetal lm = new com.shatteredpixel.shatteredpixeldungeon.items.LiquidMetal(); lm.quantity(150); lm.identify(); lm.collect();
