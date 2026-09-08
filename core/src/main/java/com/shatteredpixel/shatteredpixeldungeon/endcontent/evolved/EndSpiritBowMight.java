@@ -33,6 +33,11 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 	private int mode = 0;                 //0=稳固本体(A),1=随机(B)
 	private boolean bodyChosen = false;   //锻造后是否已选定过本体(未定每次点击选本体都再弹)
 
+	/** 处理“本弓正在命中附加/本体”期间置位，让 Weapon 里据此把触发抬满，保证每击必附魔。 */
+	private static volatile boolean forcingDuringHit = false;
+	/** 供 Weapon 询问当前是否正有本弓的命中正在进行。 */
+	public static boolean forcingNow(){ return forcingDuringHit; }
+
 	/* ---------------- 元信息 / EndModeWand ---------------- */
 	@Override public String name() { return "附魔灵弓"; }
 
@@ -193,38 +198,45 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 	public int proc( Char attacker, Char defender, int damage ){
 
 		if (defender != null){
-			//[临调试]看到每次命中带本体与否、走哪档
-			System.out.println("[MIGHT] mode="+mode
-					+" body="+(enchantment!=null?enchantment.getClass().getSimpleName():"none")
-					+" dmg="+damage);
+			System.out.println("[MIGHT] mode="+mode+" body="+(enchantment!=null?enchantment.getClass().getSimpleName():"none")+" dmg="+damage); //临调试
 		}
 
-		if ( mode == 1 ){
-			//模式 B(随机)：临时摘下本体，让父级不去触发它；再由下面每击放一个全池随机附魔。
-			Enchantment carried = enchantment;
-			if (carried != null) enchantment = null;
-			try {
-				damage = super.proc( attacker, defender, damage );
-			} finally {
-				if (carried != null) enchantment = carried;      //无论是否异常都还原本体
-			}
+		//整次命中把“本弓正在触发”置位：Weapon 据此把触发乘数顶满→本体/选中附魔必触发
+		forceHit();
+		try {
 
-			if (defender != null && defender.isAlive()){
-				Enchantment roll = null;
-				try { roll = curatedEnchantRoll(); } catch (Exception ignore){}
-				if (roll != null){
-					try { damage = roll.proc( this, attacker, defender, damage ); }
-					catch (Exception ignore){}
-					popEnchantTrigger( defender, roll );   //在敌人头顶弹出本次触发的附魔名
+			if ( mode == 1 ){
+				//模式 B(随机)：临时摘下本体，让父级不去触发它；再由下面每击放一个全池(8种)随机附魔。
+				Enchantment carried = enchantment;
+				if (carried != null) enchantment = null;
+				try {
+					damage = super.proc( attacker, defender, damage );
+				} finally {
+					if (carried != null) enchantment = carried;
 				}
-			}
-			return damage;
-		}
 
-		//模式 A(稳固)：把本体附魔留给 Weapon.proc 正常触发（本体就是上述选的 enchantment）；
-		//  “+50% 奥术”通过 genericProcChanceMultiplier 在本模式叠加，这里不需要绕过。
-		return super.proc( attacker, defender, damage );
+				if (defender != null && defender.isAlive()){
+					Enchantment roll = null;
+					try { roll = curatedEnchantRoll(); } catch (Exception ignore){}
+					if (roll != null){
+						try { damage = roll.proc( this, attacker, defender, damage ); }
+						catch (Exception ignore){}
+						popEnchantTrigger( defender, roll );
+					}
+				}
+			} else {
+				//模式 A(稳固)：把本体附魔留给 Weapon.proc 触发，命中必本体(见 Weapon 顶满触发)。
+				damage = super.proc( attacker, defender, damage );
+			}
+
+		} finally {
+			forceEnd();
+		}
+		return damage;
 	}
+
+	private static void forceHit(){ forcingDuringHit = true; }
+	private static void forceEnd(){ forcingDuringHit = false; }
 
 	/* ---------------- 持久化 mode / bodyChosen ---------------- */
 	@Override

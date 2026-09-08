@@ -586,19 +586,11 @@ abstract public class Weapon extends KindOfWeapon {
 				multi += 0.2f;
 			}
 
-			//END 成品弓① 附魔灵弓 模式A「稳固本体」：100% 触发本体附魔。
-			//附魔触发由各附魔 Random.Float()<base*multi 判定；对本弓把 multi 钳到足够大(≥4)
-			//使任意正向附魔 base*multi≥1，从而每次命中都必然触发本体，且 >100% 溢出部分自然变强。
-			if (attacker instanceof Hero && ((Hero)attacker).belongings.weapon() != null
-					&& ((Hero)attacker).belongings.weapon()
-						instanceof com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndSpiritBowMight){
-				com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndSpiritBowMight b
-						= (com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndSpiritBowMight)
-							((Hero)attacker).belongings.weapon();
-				if (b.modeIndex() == 0){          //0 = 稳固本体
-					multi = Math.max( multi, 4f );   //稳固=必触发
-					System.out.println("[MIGHT mult] stable procMulti="+multi);   //临调试
-				}
+			//END 成品弓① 附魔灵弓：命中(forceDuringHit)期间任何本体/选中附魔 必触发。
+			//Might.proc 会置位 static，使此处把 genericProcChanceMultiplier 顶到足够大，
+			//从而各附魔内部 Random 判定必成功；不再依赖查找 equipped 槽位。
+			if (com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndSpiritBowMight.forcingNow()){
+				multi = Math.max( multi, 100f );
 			}
 
 			return multi;
