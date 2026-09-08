@@ -45,7 +45,7 @@ public class Shocking extends Weapon.Enchantment {
 		int level = Math.max( 0, weapon.buffedLvl() );
 
 		// flat 33% proc chance, effect scales with level via damage dealt
-		float procChance = (1/3f) * procChanceMultiplier(attacker);
+		float procChance = Math.min(1f, (1/3f) * procChanceMultiplier(attacker) + activeChanceAdd());
 		if (Random.Float() < procChance) {
 
 			float powerMulti = Math.max(1f, procChance);

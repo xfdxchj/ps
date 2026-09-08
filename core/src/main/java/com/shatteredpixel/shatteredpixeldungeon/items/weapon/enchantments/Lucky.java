@@ -42,7 +42,7 @@ public class Lucky extends Weapon.Enchantment {
 		// lvl 0 - 10%
 		// lvl 1 ~ 12%
 		// lvl 2 ~ 14%
-		float procChance = (level+4f)/(level+40f) * procChanceMultiplier(attacker);
+		float procChance = Math.min(1f, (level+4f)/(level+40f) * procChanceMultiplier(attacker) + activeChanceAdd());
 		if (Random.Float() < procChance){
 
 			float powerMulti = Math.max(1f, procChance);
