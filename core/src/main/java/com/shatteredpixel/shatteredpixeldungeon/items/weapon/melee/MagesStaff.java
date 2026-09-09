@@ -67,6 +67,8 @@ public class MagesStaff extends MeleeWeapon {
 	public static final String AC_ZAP	= "ZAP";
 	/** 老魔杖内嵌的进化法杖若是“可切形态”(EndModeWand)，提供切换动作。 */
 	public static final String AC_FORM = "MAGE_FORM";
+	/** 老魔杖内嵌的是震岳(冲击波进化)时,提供“冲击距离”循环(1/3/5) 。 */
+	public static final String AC_BLAST_DIST = "MAGE_BLAST_DIST";
 
 	private static final float STAFF_SCALE_FACTOR = 0.75f;
 
@@ -114,6 +116,9 @@ public class MagesStaff extends MeleeWeapon {
 		if (wand instanceof com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndModeWand){
 			actions.add( AC_FORM );
 		}
+		if (wand instanceof com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfBlastWave){
+			actions.add( AC_BLAST_DIST );
+		}
 		return actions;
 	}
 
@@ -125,6 +130,7 @@ public class MagesStaff extends MeleeWeapon {
 	@Override
 	public String actionName( String action, Hero hero ){
 		if (action.equals( AC_FORM )) return "形态";
+		if (action.equals( AC_BLAST_DIST )) return "冲击距离";
 		return super.actionName( action, hero );
 	}
 
@@ -167,6 +173,15 @@ public class MagesStaff extends MeleeWeapon {
 		} else if (action.equals(AC_FORM)){
 			//老魔杖里切内嵌进化法杖的形态(如凝霜冰雪区域/棱光光束/湮解分裂)
 			showStaffWandModePicker();
+		} else if (action.equals( AC_BLAST_DIST ) && wand
+				instanceof com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfBlastWave){
+			//老魔杖里可调节内嵌震岳的冲击距离(1→3→5循环)
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfBlastWave bw
+					= (com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfBlastWave) wand;
+			bw.thrustDistance = (bw.thrustDistance == 5) ? 1 : (bw.thrustDistance == 1) ? 3 : 5;
+			com.shatteredpixel.shatteredpixeldungeon.utils.GLog.i(
+					"冲击距离已设为 " + bw.thrustDistance + " 格");
+			Item.updateQuickslot();
 		}
 	}
 
