@@ -13,6 +13,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.CellSelector;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.MissileSprite;
+import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 import com.watabou.utils.Callback;
 
@@ -66,6 +67,7 @@ public class FlyWeaponSeal extends BrokenSeal {
 				});
 				hero.spend(1f);
 				Buff.affect(hero, ThrowWeaponCooldown.class, COOLDOWN);
+				BuffIndicator.refreshHero();
 				Item.updateQuickslot();
 			}
 		});

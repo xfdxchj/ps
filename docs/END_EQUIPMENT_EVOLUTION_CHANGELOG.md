@@ -56,3 +56,14 @@
 ## CI 记录（填你在正常机器跑的结果）
 1. build result（成功 / 报错文件列表）
 2. 报错行 → 应改哪
+
+## 六、复核后新增改动（本轮）
+- 盗贼/开 `Actor/HeroClass.initRogue`：开局投掷物改用 `AssassinDagger`（命中传送+与 ThrowingKnife 数值一致）。
+- `AssassinDagger`：改 **stackable 投掷垛、defaultQuantity()=3**（避免掷后快捷整格消失；数量扣至 0 熄、可拾回续用）；保留基础“命中传送(behind+隐身+TeleportCooldown)”。
+- 破印护甲技能：`Armor.actions` 不再因冷却/资源把技能键整个去掉（键常留）；`*Seal.armorSkillEffect` 开头若处冷却弹「…仍冷却 x 回合」并 return；`FlyWeaponSeal` 改为**不耗邪能**。
+- `DaggerTrident`：由 `HeavyBoomerang`(会回旋) 改为普通 `MissileWeapon` 高数值投掷（不回旋），STRReq 12。
+- 冷却 Buff(TeleportCooldown/Execution/Rage/BloodShield/ThrowWeapon) 目前**只在抛/回时生效,角色 Buff 条上不显示读秒** —— 见下方待办。
+
+## 七、待办（下次开工）
+- 让这 5 个冷却 FlavourBuff 在角色 BuffIndicator 条上成为**可见、读数一致的冷却图标**（需先看 `ui/BuffIndicator` 的 icon 槽/PixelScene 并挑选稳定未被占用的槽位,再补 `icon()/tintIcon/iconTextDisplay()` 与 `BuffIndicator.reload` 触发）。改完后本地仍须 `./gradlew :core:compileJava` 验一次。
+- “刺杀只给一把”与“投掷垛可拾回续用”二者在非回手模型下冲突：当前取 `defaultQuantity()=3`(垛)。若要真单把+不消失只能走“回手/virtual 本体留”模型,请下轮确认。

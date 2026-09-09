@@ -6,6 +6,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.FlavourBuff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.endcontent.artifacts.buffs.BloodShieldCooldown;
 import com.shatteredpixel.shatteredpixeldungeon.items.BrokenSeal;
+import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 
 /**
@@ -36,6 +37,7 @@ public class BladeShieldSeal extends BrokenSeal {
 		hero.HP = Math.max(1, hero.HP - Math.round(hero.HP * 0.20f));
 		Buff.affect(hero, Barrier.class).setShield(Math.round(hero.HT * 0.30f));
 		Buff.affect(hero, BloodShieldCooldown.class, COOLDOWN);
+		BuffIndicator.refreshHero();
 	}
 
 	@Override public String info(){

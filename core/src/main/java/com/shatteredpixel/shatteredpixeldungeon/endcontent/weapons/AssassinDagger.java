@@ -10,6 +10,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfTeleportat
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.MissileWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
+import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
 import com.watabou.utils.Point;
 
 /**
@@ -21,11 +22,11 @@ import com.watabou.utils.Point;
  */
 public class AssassinDagger extends MissileWeapon {
 
-	{//数值/感官同 ThrowingKnife(tier1)
+	{//数值/感官同 ThrowingKnife(tier1); 可成堆,抛掷按质量减、可拾回续用
 		image = ItemSpriteSheet.THROWING_KNIFE;
 		hitSound = com.shatteredpixel.shatteredpixeldungeon.Assets.Sounds.HIT_STAB;
 		hitSoundPitch = 1.f;
-		stackable = false;
+		stackable = true;
 		bones = false;
 		tier = 1;
 		baseUses = 5;
@@ -35,6 +36,9 @@ public class AssassinDagger extends MissileWeapon {
 	private static final float TELE_STEALTH = 1f;
 
 	@Override public String name(){ return "刺杀匕首"; }
+
+	//像初始投掷物 ThrowingKnife 一样开局 3 把(如需“真的单把”去数量=1 需改为回手模型,非普通投掷垛)
+	@Override public int defaultQuantity(){ return 3; }
 
 	//与 ThrowingKnife 一致的伤害区间/命中
 	@Override public int min(int lvl){ return 2 + lvl; }
@@ -68,6 +72,7 @@ public class AssassinDagger extends MissileWeapon {
 				}
 			}
 			Buff.affect(attacker, TeleportCooldown.class, TELE_COOLDOWN);
+			if (attacker == Dungeon.hero) BuffIndicator.refreshHero();
 		}
 		return out;
 	}
