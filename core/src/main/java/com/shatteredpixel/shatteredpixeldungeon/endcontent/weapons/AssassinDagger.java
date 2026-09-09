@@ -112,8 +112,11 @@ public class AssassinDagger extends MissileWeapon {
 	}
 
 	private void cd(Hero hero, boolean exec){
-		Buff.affect(hero, exec ? ExecutionCooldown.class : RecoverCooldown.class,
-				exec ? 50f : 30f);
+		if (exec){
+			Buff.affect(hero, ExecutionCooldown.class, 50f);
+		} else {
+			Buff.affect(hero, RecoverCooldown.class, 30f);
+		}
 	}
 
 	private void clear(){
