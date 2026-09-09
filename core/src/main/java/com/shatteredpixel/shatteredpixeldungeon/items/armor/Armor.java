@@ -195,10 +195,10 @@ public class Armor extends EquipableItem {
 	public ArrayList<String> actions(Hero hero) {
 		ArrayList<String> actions = super.actions(hero);
 		if (seal != null) actions.add(AC_DETACH);
-		//END: 若贴在本甲上的破印属于“进阶技能破印”且护甲正被穿戴，追加该技能键(如血盾/狂暴/飞掷)
+		//END: 只要贴了“进阶技能破印”且护甲正被穿戴，技能键一律保留（冷却/资源由子类在 effect 里裁决，键不消失）
 		if (isEquipped(hero) && seal != null){
 			String skill = seal.armorSkillKey();
-			if (skill != null && seal.armorSkillUsable(hero)) actions.add(skill);
+			if (skill != null) actions.add(skill);
 		}
 		return actions;
 	}

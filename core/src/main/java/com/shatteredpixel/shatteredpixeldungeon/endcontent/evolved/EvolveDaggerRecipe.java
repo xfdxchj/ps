@@ -28,7 +28,7 @@ public class EvolveDaggerRecipe extends Recipe {
 
 	/** 方向料 → 对应进阶匕首成品。易改之处就在这。 */
 	private Class<? extends MissileWeapon> pickClass( Item special ){
-		if (special instanceof com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHaste)   return DaggerTrident.class;   //速度→三叉
+		if (special instanceof com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHaste)   return DaggerTrident.class;   //速度→三叉(高数值,不回旋)
 		if (special instanceof com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfLevitation) return DaggerTeleport.class; //浮空→传送
 		if (special instanceof com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfRetribution) return DaggerExecution.class; //复仇→处决
 		return null;

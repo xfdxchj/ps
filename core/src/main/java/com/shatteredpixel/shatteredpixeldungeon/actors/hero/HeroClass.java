@@ -46,6 +46,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.rogue.Smok
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.warrior.Endure;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.warrior.HeroicLeap;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.warrior.Shockwave;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons.AssassinDagger;
 import com.shatteredpixel.shatteredpixeldungeon.items.BrokenSeal;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.Waterskin;
@@ -208,11 +209,12 @@ public enum HeroClass {
 		(hero.belongings.artifact = cloak).identify();
 		hero.belongings.artifact.activate( hero );
 
-		ThrowingKnife knives = new ThrowingKnife();
-		knives.identify().collect();
+		//END: 盗贼初始投掷物改用本 fork 的“刺杀匕首(基础)”:数值同 ThrowingKnife,命中可向目标背后传送
+		AssassinDagger blades = new AssassinDagger();
+		blades.identify().collect();
 
 		Dungeon.quickslot.setSlot(0, cloak);
-		Dungeon.quickslot.setSlot(1, knives);
+		Dungeon.quickslot.setSlot(1, blades);
 
 		new ScrollOfMagicMapping().identify();
 		new PotionOfInvisibility().identify();
