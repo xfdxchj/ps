@@ -102,6 +102,19 @@ public class BrokenSeal extends Item {
 		return glyph != null ? glyph.glowing() : null;
 	}
 
+	//=== END: 破印·进阶“护甲技能键”抽口 =====================================
+	//终焉破印子类可覆写下列方法，把一枚“贴到护甲上的技能”暴露为护甲右键多出的一行动作。
+	//基类全部为无操作默认值，因此原版破印/普通破印行为完全不受影响。
+
+	/** 若本破印贴到护甲且护甲已装备时想提供一个“技能键”，返回其动作串(如 BLADE_SHIELD)；默认无。 */
+	public String armorSkillKey(){ return null; }
+
+	/** 该技能此刻是否可点(常结合冷却 Buff 判断)；默认 true。 */
+	public boolean armorSkillUsable(Hero hero){ return true; }
+
+	/** 点下护甲技能键后的实际效果；由子类覆写其血盾/狂暴/飞掷逻辑。 */
+	public void armorSkillEffect(Hero hero){ }
+
 	@Override
 	public ArrayList<String> actions(Hero hero) {
 		ArrayList<String> actions =  super.actions(hero);

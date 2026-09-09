@@ -529,9 +529,14 @@ public class Generator {
 			MIS_T5.classes = new Class<?>[]{
 					Trident.class,
 					ThrowingHammer.class,
-					ForceCube.class
+					ForceCube.class,
+					//END 装备进化族：刺杀进阶匕首不入世界掉落(prob 0)，仅入图鉴投掷组
+					com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons.AssassinDagger.class,
+					com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons.DaggerTrident.class,
+					com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons.DaggerTeleport.class,
+					com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons.DaggerExecution.class
 			};
-			MIS_T5.defaultProbs = new float[]{ 3, 3, 3 };
+			MIS_T5.defaultProbs = new float[]{ 3, 3, 3, 0, 0, 0, 0 };
 			MIS_T5.probs = MIS_T5.defaultProbs.clone();
 			
 			FOOD.classes = new Class<?>[]{

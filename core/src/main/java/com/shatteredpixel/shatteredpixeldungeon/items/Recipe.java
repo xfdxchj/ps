@@ -171,7 +171,10 @@ public abstract class Recipe {
 	private static Recipe[] variableRecipes = new Recipe[]{
 			//END 灵能弓改造：任意槽数均可判定的两条动态配方(核心 + 四选一锻造)
 			new com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.SpiritBowCoreRecipe(),
-			new com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolveSpiritBowRecipe()
+			new com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolveSpiritBowRecipe(),
+			//END 装备进化族：破印进阶与刺杀匕首进阶(3 料,任意槽数判定)
+			new com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolveSealRecipe(),
+			new com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolveDaggerRecipe()
 	};
 	
 	private static Recipe[] oneIngredientRecipes = new Recipe[]{

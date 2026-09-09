@@ -242,6 +242,11 @@ public enum Catalog {
 
 		MISC_EQUIPMENT.addItems(BrokenSeal.class, SpiritBow.class, Waterskin.class, VelvetPouch.class,
 				PotionBandolier.class, ScrollHolder.class, MagicalHolster.class, Amulet.class);
+		//END 装备进化族：破印进阶三成品也入“破印族”图鉴
+		MISC_EQUIPMENT.addItems(
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.armor.BladeShieldSeal.class,
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.armor.BloodRageSeal.class,
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.armor.FlyWeaponSeal.class);
 
 
 

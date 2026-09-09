@@ -195,6 +195,11 @@ public class Armor extends EquipableItem {
 	public ArrayList<String> actions(Hero hero) {
 		ArrayList<String> actions = super.actions(hero);
 		if (seal != null) actions.add(AC_DETACH);
+		//END: 若贴在本甲上的破印属于“进阶技能破印”且护甲正被穿戴，追加该技能键(如血盾/狂暴/飞掷)
+		if (isEquipped(hero) && seal != null){
+			String skill = seal.armorSkillKey();
+			if (skill != null && seal.armorSkillUsable(hero)) actions.add(skill);
+		}
 		return actions;
 	}
 
@@ -210,6 +215,11 @@ public class Armor extends EquipableItem {
 			if (!detaching.collect()){
 				Dungeon.level.drop(detaching, hero.pos);
 			}
+			updateQuickslot();
+		} else if (action != null && isEquipped(hero) && seal != null
+				&& action.equals(seal.armorSkillKey())){
+			//END: 交由贴附的进阶破印实现其技能(子类覆写 armorSkillEffect)
+			seal.armorSkillEffect(hero);
 			updateQuickslot();
 		}
 	}
