@@ -2,6 +2,7 @@ package com.shatteredpixel.shatteredpixeldungeon.endcontent.artifacts;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Barrier;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.endcontent.artifacts.buffs.BloodShieldCooldown;
 import com.shatteredpixel.shatteredpixeldungeon.endcontent.artifacts.buffs.RageBuff;
@@ -40,8 +41,6 @@ public class WarbandSeal extends Artifact {
 
 	{
 		image = com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet.ARTIFACT_TALISMAN;
-		exp = 0;
-		level = 0;
 	}
 
 	@Override public String name(){ return "破印·军令"; }
@@ -67,7 +66,7 @@ public class WarbandSeal extends Artifact {
 			case AC_PICK: chooseBranch(hero);                       break;
 			case AC_BLOOD_SHIELD:
 				hero.HP = Math.max(1, hero.HP - Math.round(hero.HP * 0.20f));
-				hero.shielding += Math.round(hero.HT * 0.30f);
+				Buff.affect(hero, Barrier.class).setShield( Math.round(hero.HT * 0.30f) );
 				Buff.affect(hero, BloodShieldCooldown.class, BLOOD_DURATION);
 				updateQuickslot();
 				break;
