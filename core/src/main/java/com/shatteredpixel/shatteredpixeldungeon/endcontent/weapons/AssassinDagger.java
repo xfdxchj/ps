@@ -93,7 +93,7 @@ public class AssassinDagger extends MissileWeapon {
 
 	/** 核心：先传送到被嵌怪“背后”(相对向量方位),再进行背刺/处决。 */
 	private void backstab(Hero hero){
-		if (stuckEnemy == null){ clear(); return; }
+		if (stuckEnemy == null){ clean(hero); return; }
 		int spot = -1;
 		if (type != Type.TELEPORT){
 			spot = behindPos(hero, stuckEnemy);       //回到怪物反方向格
