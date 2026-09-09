@@ -349,6 +349,18 @@ public class Dungeon {
 			com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndSpiritBowStorm   sBow = new com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndSpiritBowStorm();   sBow.identify(); sBow.collect();
 			com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndSpiritBowSummon  uBow = new com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndSpiritBowSummon();  uBow.identify(); uBow.collect();
 
+			//END 便利：破印/刺杀匕首三-branch 玩法的相关料
+			try {
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.artifacts.WarbandSeal seal = new com.shatteredpixel.shatteredpixeldungeon.endcontent.artifacts.WarbandSeal();
+				seal.identify(); seal.collect();
+			} catch (Exception ignore){ /*单件失败忽略*/ }
+			com.shatteredpixel.shatteredpixeldungeon.items.quest.MetalShard shardN = new com.shatteredpixel.shatteredpixeldungeon.items.quest.MetalShard();
+			shardN.quantity(6); shardN.identify(); shardN.collect();
+			try {
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons.AssassinDagger dag = new com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons.AssassinDagger();
+				dag.identify(); dag.collect();
+			} catch (Exception ignore){ /*单件失败忽略*/ }
+
 			//END 便利：把终焉新造物标记“已见”(Catalog) + 记入本局 discovered(日志)
 			markEndContentSeen();
 		}

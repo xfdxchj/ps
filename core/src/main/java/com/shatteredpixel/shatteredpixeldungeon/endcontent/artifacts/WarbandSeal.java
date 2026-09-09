@@ -72,18 +72,46 @@ public class WarbandSeal extends Artifact {
 				break;
 			case AC_RAGE:
 				hero.HP = Math.max(1, hero.HP - Math.round(hero.HP * 0.50f));
-				Buff.affect(hero, RageBuff.class, RageBuff.DURATION);
+				Buff.affect(hero, com.shatteredpixel.shatteredpixeldungeon.actors.buffs.EndRageAttack.class,
+						com.shatteredpixel.shatteredpixeldungeon.actors.buffs.EndRageAttack.DURATION); //攻击+100%
 				Buff.affect(hero, RageCooldown.class, RAGE_DURATION);
 				updateQuickslot();
 				break;
-			case AC_THROW:
-				if (hero.belongings.weapon() != null){
-					hero.spend(1f);
-					Buff.affect(hero, ThrowWeaponCooldown.class, THROW_DURATION);
-					updateQuickslot();
-				}
-				break;
+			case AC_THROW: startFlyout(hero);    break;
 		}
+	}
+
+	// ---------- 飞行武器：把当前近战武器“单程飞出”为目标，造成其 80% 伤害 ----------
+	private void startFlyout(final Hero hero){
+		com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.selectCell(
+				new com.shatteredpixel.shatteredpixeldungeon.scenes.CellSelector.Listener(){
+			@Override public String prompt(){ return "掷出武器进行飞击…"; }
+			@Override public void onSelect(Integer cell){
+				if (cell == null || cell < 0) return;
+				com.shatteredpixel.shatteredpixeldungeon.actors.Char ch =
+						com.shatteredpixel.shatteredpixeldungeon.actors.Actor.findChar(cell);
+				com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon wp =
+						(com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon) hero.belongings.weapon();
+				if (wp == null || ch == null) return;
+				// 飞行动画：把当前武器当作投射物从玩家飞到目标处(Item 级 Missile 通用)
+				com.shatteredpixel.shatteredpixeldungeon.sprites.MissileSprite flying =
+						(com.shatteredpixel.shatteredpixeldungeon.sprites.MissileSprite)
+								hero.sprite.parent.recycle(com.shatteredpixel.shatteredpixeldungeon.sprites.MissileSprite.class);
+				flying.reset( hero.pos, ch.pos, wp,
+						new com.watabou.utils.Callback(){
+							@Override public void call(){
+								com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero cur = Dungeon.hero!=null?Dungeon.hero:hero;
+								if (ch.isAlive()){
+									int dmg = Math.round( wp.damageRoll(cur) * 0.8f );
+									ch.damage( Math.max(1,dmg), wp );
+								}
+							}
+						});
+				hero.spend(1f);
+				Buff.affect(hero, ThrowWeaponCooldown.class, THROW_DURATION);
+				updateQuickslot();
+			}
+		});
 	}
 
 	/** NONE：消耗 1 枚邪能(MetalShard)，弹窗选一次分支。 */

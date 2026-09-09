@@ -432,6 +432,10 @@ public abstract class Char extends Actor {
 			if (buff( Fury.class ) != null) {
 				dmg *= 1.5f;
 			}
+			//END 破印·狂暴：攻击伤害 +100%（不影响攻速）
+			if (buff( com.shatteredpixel.shatteredpixeldungeon.actors.buffs.EndRageAttack.class ) != null){
+				dmg *= 2f;
+			}
 
 			if (buff( PowerOfMany.PowerBuff.class) != null){
 				if (buff( BeamingRay.BeamingRayBoost.class) != null
