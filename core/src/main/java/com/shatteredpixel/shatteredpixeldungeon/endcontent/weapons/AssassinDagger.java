@@ -38,7 +38,7 @@ public class AssassinDagger extends MissileWeapon {
 	public static final String AC_TELE    = "DAG_TEL";
 
 	{
-		image = ItemSpriteSheet.DART_TIPPED;
+		image = ItemSpriteSheet.THROWING_KNIFE;
 		stackable = false;
 		usesTargeting = true;
 	}
