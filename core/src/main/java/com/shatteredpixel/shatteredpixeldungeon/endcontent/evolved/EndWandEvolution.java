@@ -29,7 +29,7 @@ import java.util.Map;
 
 public final class EndWandEvolution {
 
-    /** 蜕变所需的原始法杖最低强化等级。 */
+    /** 曾要求 ≥+8；需求改为“无需等级即可进阶”，故 isEligible 不再判该等级(此常量仅留文档)。 */
     public static final int MIN_EVOLUTION_LEVEL = 8;
 
     /** 由“来源法杖类型”索引到“其进化后所成新法杖”。 */
@@ -54,9 +54,9 @@ public final class EndWandEvolution {
         return wand != null && REGISTRY.containsKey( wand.getClass() );
     }
 
-    /** 一支法杖当前是否达到/超过蜕变线。 */
+    /** 一支源法杖是否可进化：只要有进化映射即可，不再要求≥+8。 */
     public static boolean isEligible( Wand wand ){
-        return hasEvolution(wand) && wand.buffedLvl() >= MIN_EVOLUTION_LEVEL;
+        return hasEvolution(wand);
     }
 
     /**
@@ -75,8 +75,8 @@ public final class EndWandEvolution {
         } catch (Exception e) {
             return null; // 防御：注册的进化类都应有无参构造
         }
-        // 终焉·进化基础：继承源法杖原有等级(至少+8)；充能上限20 由子类覆写
-        int inherited = Math.max( MIN_EVOLUTION_LEVEL, source.level() );
+        // 终焉·进化基础：继承源法杖原有等级(无需+8地板，直接沿其现状)；充能上限20 由子类覆写
+        int inherited = Math.max( 0, source.level() );
         evolved.level( inherited );
         evolved.updateLevel();
         evolved.curCharges = Math.min( evolved.maxCharges, source.curCharges );

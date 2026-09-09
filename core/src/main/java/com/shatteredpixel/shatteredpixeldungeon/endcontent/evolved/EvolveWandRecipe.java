@@ -12,6 +12,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.Recipe;
 import com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfAugmentation;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand;
 import com.shatteredpixel.shatteredpixeldungeon.journal.Catalog;
+import com.shatteredpixel.shatteredpixeldungeon.plants.Starflower;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 
 import java.util.ArrayList;
@@ -20,21 +21,24 @@ public class EvolveWandRecipe extends Recipe {
 
 	@Override
 	public boolean testIngredients(ArrayList<Item> ingredients) {
-		if (ingredients.size() != 2) return false;
+		if (ingredients.size() != 3) return false;
 
-		boolean hasWand = false;
+		boolean hasWand  = false;
 		boolean hasStone = false;
+		boolean hasSeed  = false;
 		for (Item it : ingredients){
 			if (it instanceof Wand){
-				//只能用于干净、已鉴定且 ≥+8 的可进化法杖
+				//干净、已鉴定；无需≥+8（isEligible 已不再查等级）
 				hasWand = it.isIdentified() && !it.cursed && EndWandEvolution.isEligible((Wand) it);
 			} else if (it instanceof StoneOfAugmentation){
 				hasStone = true;
+			} else if (it instanceof Starflower.Seed){
+				hasSeed = true;
 			} else {
 				return false;
 			}
 		}
-		return hasWand && hasStone;
+		return hasWand && hasStone && hasSeed;
 	}
 
 	@Override
