@@ -377,5 +377,6 @@ public class Assets {
 		public static final String NCSBR            = "sprites/hollow/New_Cerberus.png";
 		public static final String BLEED_SENTRY     = "sprites/hollow/bleed_star.png";
 		public static final String YOW_SENTRY       = "sprites/boss/yellow_star.png";
+		public static final String ASDW             = "sprites/Viaw.png";
 	}
 }
