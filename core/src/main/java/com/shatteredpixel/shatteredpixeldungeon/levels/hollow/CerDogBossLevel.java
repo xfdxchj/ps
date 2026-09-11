@@ -653,16 +653,18 @@ public class CerDogBossLevel extends Level {
             });
         }
         return false;
-    } else if(Statistics.bossRushMode && transition.type == LevelTransition.Type.REGULAR_ENTRANCE){
-            TimekeepersHourglass.timeFreeze timeFreeze = Dungeon.hero.buff(TimekeepersHourglass.timeFreeze.class);
-            if (timeFreeze != null) timeFreeze.disarmPresses();
-            Swiftthistle.TimeBubble timeBubble = Dungeon.hero.buff(Swiftthistle.TimeBubble.class);
-            if (timeBubble != null) timeBubble.disarmPresses();
-            InterlevelScene.mode = InterlevelScene.Mode.DESCEND;
-            InterlevelScene.curTransition = new LevelTransition();
-            InterlevelScene.curTransition.destDepth = 38;
-            InterlevelScene.curTransition.destType = LevelTransition.Type.REGULAR_ENTRANCE;
-            InterlevelScene.curTransition.destBranch = 0;
+    } else if(transition.type == LevelTransition.Type.REGULAR_ENTRANCE){
+        //END(修复): 原版此处只有在 bossRushMode 下才跳转，导致正常流程下打完冥犬
+        //踩楼梯**卡在 31F**。现改为：无邀请函时正常下到 32F（剧院层）。
+        TimekeepersHourglass.timeFreeze timeFreeze = Dungeon.hero.buff(TimekeepersHourglass.timeFreeze.class);
+        if (timeFreeze != null) timeFreeze.disarmPresses();
+        Swiftthistle.TimeBubble timeBubble = Dungeon.hero.buff(Swiftthistle.TimeBubble.class);
+        if (timeBubble != null) timeBubble.disarmPresses();
+        InterlevelScene.mode = InterlevelScene.Mode.DESCEND;
+        InterlevelScene.curTransition = new LevelTransition();
+        InterlevelScene.curTransition.destDepth = Dungeon.depth + 1;   // → 32F
+        InterlevelScene.curTransition.destType = LevelTransition.Type.REGULAR_ENTRANCE;
+        InterlevelScene.curTransition.destBranch = 0;
             InterlevelScene.curTransition.type = LevelTransition.Type.REGULAR_ENTRANCE;
             InterlevelScene.curTransition.centerCell = -1;
             Game.switchScene(InterlevelScene.class);

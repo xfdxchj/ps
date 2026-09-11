@@ -98,7 +98,12 @@ public class HollowExitLevel extends Level {
 
     @Override
     public boolean activateTransition(Hero hero, LevelTransition transition) {
-        if (transition.type == LevelTransition.Type.BRANCH_EXIT && depth == 26) {
+        //END(修复): 原只处理 BRANCH_EXIT，但地图上实际可走的楼梯是 REGULAR_ENTRANCE(格279)，
+        //导致类型不匹配 → 走 super → 卡在 26F 无法下到 27F。
+        //现改为：26F 上任何出口类过渡都直接送往 27F。
+        if (depth == 26 && (transition.type == LevelTransition.Type.BRANCH_EXIT
+                || transition.type == LevelTransition.Type.REGULAR_ENTRANCE
+                || transition.type == LevelTransition.Type.REGULAR_EXIT)) {
             Game.runOnRenderThread(new Callback() {
                 @Override
                 public void call() {
@@ -108,7 +113,7 @@ public class HollowExitLevel extends Level {
                     if (timeBubble != null) timeBubble.disarmPresses();
                     InterlevelScene.mode = InterlevelScene.Mode.DESCEND;
                     InterlevelScene.curTransition = new LevelTransition();
-                    InterlevelScene.curTransition.destDepth = depth + 1;
+                    InterlevelScene.curTransition.destDepth = depth + 1;   // → 27F
                     InterlevelScene.curTransition.destType = LevelTransition.Type.REGULAR_ENTRANCE;
                     InterlevelScene.curTransition.destBranch = 0;
                     InterlevelScene.curTransition.type = LevelTransition.Type.REGULAR_ENTRANCE;
