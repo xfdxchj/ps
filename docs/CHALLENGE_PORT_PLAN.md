@@ -423,6 +423,55 @@ DeadDogCerberusSprite.java:104  cannot find symbol: class DeadDogCerberus (Hunte
 → **这 5 个错就是"下一轮 CI 会报的错"**，且**全部由"`DeadDogCerberus` 本体未搬"引起**。
 额外发现：搬 `DeadDogCerberus` 时**必须连带两个内部类** `HaloDeadBite`、`DeadHaloFire`（`BleedCrystal` 依赖它们）。
 
+## 六点十三、★ 重大突破 + 第7轮（Hollow 主链贯通）
+
+### 1. 本机可编译（推翻旧结论）
+- 用 **`tools/localcompile.ps1`**（javac 直编 1364 个源文件，依赖 jar 在 `新建文件夹\lib`，**不需要 gradle / Android SDK / 网络**）
+- 用法：`cd _EndShatteredBuild; & .\tools\localcompile.ps1` → 打印 `COMPILE OK` 或错误摘要
+  （**摘要会被截断，真实错误一律看 `E:\破碎的地牢\_javac_out\javac.log`**）
+- **意义：每轮先本地验，再交 CI。**
+
+### 2. 大文件移植的正确姿势（重要经验）
+**不要派子代理搬大文件** —— 连续两次都在"读完源码、正要写文件"时耗尽 token。
+**正确做法：复制源文件 → 用 `edit` 打补丁 → 本地编译迭代。**
+
+### 3. 本轮已搬（本地编译通过 ✅）
+| 文件 | 行数 | 说明 |
+|---|---|---|
+| `actors/mobs/bosses/hollow/DeadDogCerberus.java` | 1151 | **冥犬 Boss 本体** |
+| `levels/hollow/CerDogBossLevel.java` | 715 | **冥犬 Boss 层**，已接到 **31F** |
+| `assets/sprites/boss/yellow_star.png` | — | YellowStar 精灵 |
+
+**Hollow 链路现已贯通**：
+```
+开局勾选「空洞遗迹」→ 主线 1-25F → 26F HollowExitLevel(入口)
+→ 27..30F HollowLevel(刷空洞怪、27F 有 NPC) → 31F CerDogBossLevel(冥犬 Boss)
+```
+
+### 4. DeadDogCerberus 的框架翻译（本 fork 无魔绫 `actors/Boss` 基类）
+- `extends Boss` → `extends Mob`；`initProperty/initBaseStatus/initStatus` → 直接赋值 `defenseSkill=26; HP=HT=1000; EXP=100;`
+- 去 `DamageType`（`damage(int,Object,DamageType)` → `damage(int,Object)`）
+- 删 `GameRules.PropsScore()` / `GetBossLoot(pos)` / `Typhon` 生成块
+- `Effects.Type.RED_CHAIN` → `CHAIN`
+- 删 `GameScene.bossReady()`；`playBossMusic()` → 删或换
+- **`Char.move(int)` 是本 fork 的 `final`** → 回血逻辑移入 `act()`
+- `GameScene.scene` 非 public → `sprite.parent`
+
+### 5. CerDogBossLevel 的降级
+- `UnsignedInvitationLetter`(通关道具，本 fork 无) → **改用 `Amulet`**；`PaswordBadges.ALLCS` → 删；**新增 `Badge.CITY_END(154)` + `Badges.CITY_END()`**
+- `Bones.get()`（跨局遗物）→ 删；`ZeroBoat`/`YellowStar` 实例化 → 删（`YellowStar` 内部类保留）
+- `Level.playBossMusic()` override → 删
+- `Statistics.difficultyDLCEXLevel` 难度加成整段 → 删（本 fork 无该字段，`ChampionEnemy` 子类也不全）
+- `Assets.Music.BOSSDOG` → 换 `HOLLOW_CITY_HARD`；`Assets.Sprites.YOW_SENTRY` → **加键** + 复制 `yellow_star.png`
+- `Statistics.RandMode` → 删（用 `bossRushMode`）
+
+### 6. Hollow 剩余未搬
+- 其余 Boss 14 个（Tower 系列 8、ShubNiggurath、MyCoreHeart、Nyarlathotep、Morphs、YogSoul）
+- 小游戏关 6 个（Pacman/MoveBox/AllSearch/Morpheus/Theatre/ZeroHalls；CerDog 已搬）
+- 房型 `rooms/hollow/*`、剧情 plot、`WndDialog`
+- 剩余怪物：ApprenticeWitch、Frankenstein
+- **`buffs.png` 补帧**（SCARY 等图标会 nofound）
+
 ## 七、当前阻塞 / 待办
 
 
