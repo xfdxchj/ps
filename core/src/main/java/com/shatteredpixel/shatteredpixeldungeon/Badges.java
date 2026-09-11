@@ -217,10 +217,10 @@ public class Badges {
 		CHAMPION_2                  ( 126 ),
 		CHAMPION_3                  ( 127 ),
 		//END(移植自魔绫·挑战区): 空洞遗迹相关徽章
-		KILL_DOG                    ( 152 ),
-		HALOFIRE_DIED               ( 153 ),
-		CITY_END                    ( 154 ),
-		NYZ_SHOP                    ( 155 );
+		KILL_DOG                    ( 112 ), //END(修复): 原152超出 badges.png 容量(128个)
+		HALOFIRE_DIED               ( 113 ), //END(修复)
+		CITY_END                    ( 114 ), //END(修复)
+		NYZ_SHOP                    ( 115 ); //END(修复)
 
 		public boolean meta;
 

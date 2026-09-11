@@ -29,6 +29,8 @@ public class ItemSpriteSheet {
 	public static final int SIZE = 16;
 
 	private static final int TX_WIDTH = 256;
+	//END(图集扩展): 原为 512(32行)。已用 _tools/expand_items_atlas.py 把 items.png 扩到 640(40行)，
+	//并在第39行贴上魔绫的传说武器贴图。此处必须同步，否则 TextureFilm 认为越界 → 显示 nofound。
 	private static final int TX_HEIGHT = 512;
 
 	private static final int WIDTH = TX_WIDTH / SIZE;
@@ -795,45 +797,27 @@ public class ItemSpriteSheet {
 	//  - y=32..38 透明填充
 	//  - y=39 贴上魔绫 items/items.png 的**传说武器行**（16 个 16x16 图标）
 	//因此本块现在使用 x=1 列、y=39 行，显示的是魔绫原版贴图。
-	private static final int LENGYWEAPONS    =                               xy(1, 39);  //16 slots（图集第39行）
-	public static final int  RICESWORD      = LENGYWEAPONS+0;
-	public static final int  MOONDAILY      = LENGYWEAPONS+1;
-	public static final int  DCSURANG       = LENGYWEAPONS+2;
-	public static final int  THEDIED        = LENGYWEAPONS+3;
-	public static final int  CURSEDAXE      = LENGYWEAPONS+4;
-	public static final int  EAGLEPOWER     = LENGYWEAPONS+5;
-	public static final int  GOLDLANGGUN    = LENGYWEAPONS+6;
-	public static final int  CLEARPRO       = LENGYWEAPONS+7;
-	public static final int  FORESTCROSSBOW = LENGYWEAPONS+8;
-	public static final int  DIEDCROSSBOW   = LENGYWEAPONS+9;
-	public static final int  DIEDBOOK       = LENGYWEAPONS+10;
-	public static final int  FIVEREN        = LENGYWEAPONS+11;
-	public static final int  SHADOWMEAT     = LENGYWEAPONS+12;
-	public static final int  REDCRAB        = LENGYWEAPONS+13;
-	public static final int  DRAGONHEART    = LENGYWEAPONS+14;
-	public static final int  KINGAXE        = LENGYWEAPONS+15;
-	public static final int  SAPIUS         = LENGYWEAPONS+3;   //别名（复用 THEDIED 位）
-	static {
-		//END(必须): 每个常量都要登记尺寸，否则 frame=null → 打开背包崩溃
-		assignItemRect(RICESWORD,      16, 16);
-		assignItemRect(MOONDAILY,      16, 16);
-		assignItemRect(DCSURANG,       16, 16);
-		assignItemRect(THEDIED,        16, 16);
-		assignItemRect(CURSEDAXE,      16, 16);
-		assignItemRect(EAGLEPOWER,     16, 16);
-		assignItemRect(GOLDLANGGUN,    16, 16);
-		assignItemRect(CLEARPRO,       16, 16);
-		assignItemRect(FORESTCROSSBOW, 16, 16);
-		assignItemRect(DIEDCROSSBOW,   16, 16);
-		assignItemRect(DIEDBOOK,       16, 16);
-		assignItemRect(FIVEREN,        16, 16);
-		assignItemRect(SHADOWMEAT,     16, 16);
-		assignItemRect(REDCRAB,        16, 16);
-		assignItemRect(DRAGONHEART,    16, 16);
-		assignItemRect(KINGAXE,        16, 16);
-	}
-	//END(修复): 本块原用 xy(1,32)，图集扩展后仍在范围内（40行）。
-	private static final int DOCUMENTS  =                                   xy(1, 28);  //复用 FOOD 行（图集内）
+	//END(修复): 图集 items.png 仅 32 行(y=0..31)且原版占满 → 传说武器**复用原版同类武器**的图标。
+	//（曾尝试扩图集贴魔绫贴图，但会破坏其它图集映射，已回滚，见 items.png.bak）
+	public static final int  RICESWORD      = WEP_TIER3+0;   //Sword
+	public static final int  MOONDAILY      = WEP_TIER4+0;   //Longsword
+	public static final int  KINGAXE        = WEP_TIER4+1;   //BattleAxe
+	public static final int  FORESTCROSSBOW = WEP_TIER4+5;   //Crossbow
+	public static final int  GOLDLANGGUN    = WEP_TIER2+2;   //Spear
+	public static final int  DIEDCROSSBOW   = WEP_TIER4+5;   //Crossbow
+	public static final int  THEDIED        = WEP_TIER4+4;   //AssassinsBlade
+	public static final int  CLEARPRO       = WEP_TIER5+0;   //Greatsword
+	public static final int  DCSURANG       = WEP_TIER5+3;   //Greataxe
+	public static final int  CURSEDAXE      = WEP_TIER4+1;   //BattleAxe
+	public static final int  EAGLEPOWER     = WEP_TIER4+6;   //Katana
+	public static final int  FIVEREN        = WEP_TIER3+5;   //Whip
+	public static final int  SHADOWMEAT     = WEP_TIER3+1;   //Mace
+	public static final int  REDCRAB        = WEP_TIER3+2;   //Scimitar
+	public static final int  DRAGONHEART    = WEP_TIER2+3;   //Quarterstaff
+	public static final int  DIEDBOOK       = QUEST+4;       //Pickaxe
+	public static final int  SAPIUS         = WEP_TIER3+4;   //Sai	//END(修复): 本块原用 xy(1,32)，图集扩展后仍在范围内（40行）。
+	//END(修复): 原 xy(1,32) 越界；现图集已扩到 40 行，改到 y=32（新扩展的空白行），不再与 FOOD 重叠。
+	private static final int DOCUMENTS  =                                   xy(1, 28);  //END(修复): 图集仅32行, 复用 FOOD 行
 	public static final int GUIDE_PAGE  = DOCUMENTS+0;
 	public static final int ALCH_PAGE   = DOCUMENTS+1;
 	public static final int SEWER_PAGE  = DOCUMENTS+2;

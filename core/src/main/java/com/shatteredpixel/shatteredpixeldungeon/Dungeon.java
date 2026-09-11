@@ -392,13 +392,20 @@ public class Dungeon {
 				com.shatteredpixel.shatteredpixeldungeon.endcontent.items.EndFloorSkip skip =
 						new com.shatteredpixel.shatteredpixeldungeon.endcontent.items.EndFloorSkip();
 				skip.identify();
-				if (!skip.collect()) {
-					//背包满 → 直接塞进背包容器，确保测试道具一定到手
-					hero.belongings.backpack.items.add(skip);
-					com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w("传送符已强制放入背包");
+				boolean ok = false;
+				try { ok = skip.collect(); } catch (Exception ignored) {}
+				if (!ok) {
+					//背包收不进去 → 强制塞入背包（绕过 canHold 的 LostInventory/容量检查）
+					try {
+						hero.belongings.backpack.items.add(skip);
+						ok = true;
+					} catch (Exception ignored) {}
 				}
+				com.shatteredpixel.shatteredpixeldungeon.utils.GLog.p(
+						ok ? "[便利] 已发放：深渊传送符（使用可逐站跳层）"
+						   : "[便利] 传送符发放失败！");
 			} catch (Exception e){
-				com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w("传送符发放失败: " + e);
+				com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w("[便利] 传送符异常: " + e);
 			}
 
 			//板甲(原版 PlateArmor)，已鉴定
