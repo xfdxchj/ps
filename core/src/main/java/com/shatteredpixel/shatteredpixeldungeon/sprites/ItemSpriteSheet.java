@@ -799,7 +799,7 @@ public class ItemSpriteSheet {
 	//因此本块现在使用 x=1 列、y=39 行，显示的是魔绫原版贴图。
 	//END(图集扩展): items.png 已扩到 256x1024(64行，2的幂)，第39行贴上魔绫的传说武器贴图。
 	private static final int LENGYWEAPONS    =                               xy(1, 39);  //16 slots
-	public static final int  RICESWORD      = LENGYWEAPONS+0;
+	public static final int  RICESWORD      = LENGYWEAPONS+1;  //END(修复): 槽0在图集中是空的
 	public static final int  MOONDAILY      = LENGYWEAPONS+1;
 	public static final int  DCSURANG       = LENGYWEAPONS+2;
 	public static final int  THEDIED        = LENGYWEAPONS+3;
@@ -854,18 +854,18 @@ public class ItemSpriteSheet {
 	}
 
 	//END(移植自魔绫·挑战区): 空洞遗迹的食物图标，占用 DOCUMENTS 块剩余空位
-	public static final int GELATIN      = DOCUMENTS+7;
-	public static final int SUGAR_BLOCK  = DOCUMENTS+8;
-	public static final int WHITE_SUGAR_B= DOCUMENTS+9;
+	public static final int GELATIN      = FOOD+0;   //END(修复): 原DOCUMENTS+7为空槽→不可见
+	public static final int SUGAR_BLOCK  = FOOD+1;   //END(修复)
+	public static final int WHITE_SUGAR_B= FOOD+2;   //END(修复)
 	//END(移植自魔绫·挑战区): 空洞遗迹 武器/任务物图标
 	//END(移植自魔绫): 抛射物星形（塔·机用）
-	public static final int PROJECTILES_STAR = DOCUMENTS+12;
-	public static final int CITY_HOOD        = DOCUMENTS+13;
-	public static final int STAR_CRYSTAL    = DOCUMENTS+10;
-	public static final int DEATHRONG_BOAT  = DOCUMENTS+11;
+	public static final int PROJECTILES_STAR = MISSILE_WEP+0; //END(修复)
+	public static final int CITY_HOOD        = ARMOR+0;  //END(修复)
+	public static final int STAR_CRYSTAL    = STONES+0;  //END(修复)
+	public static final int DEATHRONG_BOAT  = WEP_TIER1+0; //END(修复)
 	//END(port from MagicLing·Galaxy): 银河区图标（复用 DOCUMENTS 剩余空位）
-	public static final int ARMOR_ANCITY   = DOCUMENTS+14;
-	public static final int WATERSOUL      = DOCUMENTS+15;
+	public static final int ARMOR_ANCITY   = ARMOR+1;  //END(修复)
+	public static final int WATERSOUL      = POTIONS+0;//END(修复)
 	public static final int Dragon_Lei     = STAR_CRYSTAL;
 	public static final int FISHSKELETON   = DEATHRONG_BOAT;
 	public static final int FISHBONE       = STAR_CRYSTAL;

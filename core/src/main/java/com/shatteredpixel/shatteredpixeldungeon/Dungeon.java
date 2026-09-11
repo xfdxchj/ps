@@ -386,24 +386,18 @@ public class Dungeon {
 				} catch (Exception ignore){ /*单件失败忽略*/ }
 			}
 
-			//END 便利：跳关测试道具 + 板甲 + 传说武器（放在最前，避免背包满导致收不进去）
+			//END 便利：跳关测试道具 + 板甲 + 传说武器
+			//★ 注意：背包容量仅 20 格，而本便利块会发放 22+ 组物品 → 后面发的会挤出行外看不见。
+			//   因此传送符必须**插到 items 列表最前面**（第 0 位），保证一定可见。
 			//深渊传送符：多次使用可逐站前进（25F→26F→31F→32F→33F→38F）。
 			try {
 				com.shatteredpixel.shatteredpixeldungeon.endcontent.items.EndFloorSkip skip =
 						new com.shatteredpixel.shatteredpixeldungeon.endcontent.items.EndFloorSkip();
 				skip.identify();
-				boolean ok = false;
-				try { ok = skip.collect(); } catch (Exception ignored) {}
-				if (!ok) {
-					//背包收不进去 → 强制塞入背包（绕过 canHold 的 LostInventory/容量检查）
-					try {
-						hero.belongings.backpack.items.add(skip);
-						ok = true;
-					} catch (Exception ignored) {}
-				}
+				//直接插到最前，绕过容量检查（测试道具，必须拿到）
+				hero.belongings.backpack.items.add(0, skip);
 				com.shatteredpixel.shatteredpixeldungeon.utils.GLog.p(
-						ok ? "[便利] 已发放：深渊传送符（使用可逐站跳层）"
-						   : "[便利] 传送符发放失败！");
+						"[便利] 已发放：深渊传送符（背包第 1 格，使用可逐站跳层）");
 			} catch (Exception e){
 				com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w("[便利] 传送符异常: " + e);
 			}

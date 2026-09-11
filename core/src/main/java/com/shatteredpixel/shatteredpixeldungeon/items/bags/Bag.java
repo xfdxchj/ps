@@ -52,6 +52,15 @@ public class Bag extends Item implements Iterable<Item> {
 	public ArrayList<Item> items = new ArrayList<>();
 
 	public int capacity(){
+		//END(便利测试): 便利挑战下把背包容量放宽。
+		//原因：便利块会发放 22+ 组物品，超出容量的部分虽在 items 列表里，
+		//但 WndBag 只渲染 capacity 格 → 后面的物品"看不见"。测试模式下放宽到 60。
+		//注意：主背包就是 Bag 本身（没有独立的 Backpack 类），故用"是否恰好是 Bag"判断。
+		if (getClass() == Bag.class
+				&& com.shatteredpixel.shatteredpixeldungeon.Dungeon.isChallenged(
+						com.shatteredpixel.shatteredpixeldungeon.Challenges.CONVENIENCE)) {
+			return 60;
+		}
 		return 20; // default container size
 	}
 
