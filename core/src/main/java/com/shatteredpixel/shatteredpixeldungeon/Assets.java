@@ -378,5 +378,12 @@ public class Assets {
 		public static final String BLEED_SENTRY     = "sprites/hollow/bleed_star.png";
 		public static final String YOW_SENTRY       = "sprites/boss/yellow_star.png";
 		public static final String ASDW             = "sprites/Viaw.png";
+		//END(移植自魔绫·挑战区): 空洞遗迹 NPC 精灵
+		public static final String BOAT             = "sprites/hollow/boat.png";
+		public static final String TYPHON           = "sprites/hollow/typhon.png";
+		public static final String SCSR             = "sprites/hollow/Cerberus_sleep.png";
+		public static final String MPHON            = "sprites/hollow/morpheus.png";
+		public static final String BBAT             = "sprites/bloodbat.png";
+		public static final String BATEX            = "sprites/BrownBat.png";
 	}
 }
