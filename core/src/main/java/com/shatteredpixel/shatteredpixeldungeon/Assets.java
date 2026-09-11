@@ -357,5 +357,15 @@ public class Assets {
 		public static final String SWTICH           = "sprites/hollow/Silence_Witch.png";
 		public static final String SWTICH_ALTER     = "sprites/hollow/silence_altar.png";
 		public static final String ZEROBOAT         = "sprites/hollow/death.png";
+		public static final String GHOST_HE         = "sprites/hollow/ghost_halloween.png";
+		public static final String GHOST_HP         = "sprites/hollow/pumpkin_ghost.png";
+		public static final String BTSLIMH          = "sprites/hollow/butcher.png";
+		public static final String CRUMB            = "sprites/hollow/crumb.png";
+		public static final String ZOMBIE           = "sprites/hollow/frankenstein.png";
+		public static final String APWHEEL          = "sprites/hollow/apprentice_witch.png";
+		//注：魔绫原名 BOMB 指向 gingerbread.png，为避免与“炸弹”语义混淆，此处改名为 HOLLOW_BOMBER
+		public static final String HOLLOW_BOMBER    = "sprites/hollow/gingerbread.png";
+		public static final String GHOST_MINI       = "sprites/hollow/minigame/ghosts.png";
+		public static final String TELE_FOCU        = "sprites/hollow/minigame/teleportation_focu.png";
 	}
 }

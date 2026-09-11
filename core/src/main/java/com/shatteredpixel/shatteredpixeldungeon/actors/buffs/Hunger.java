@@ -130,6 +130,14 @@ public class Hunger extends Buff implements Hero.Doom {
 		affectHunger( energy, false );
 	}
 
+	//END(移植自魔绫·挑战区): 额外增加饥饿值（用于「面包屑」怪物的偷食效果）
+	public void damgeExtraHungry(int value) {
+		target.sprite.showStatusWithIcon(com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite.NEGATIVE,
+				String.valueOf(value),
+				com.shatteredpixel.shatteredpixeldungeon.effects.FloatingText.HUNGER);
+		affectHunger( -value, false );
+	}
+
 	public void affectHunger(float energy ){
 		affectHunger( energy, false );
 	}
