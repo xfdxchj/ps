@@ -35,7 +35,9 @@ public class Terrain {
 	public static final int EXIT			= 8;
 	public static final int EMBERS			= 9;
 	public static final int LOCKED_DOOR		= 10;
-	public static final int HERO_LKD_DR     = 38; //a door that was locked by the skeleton key
+	public static final int HERO_LKD_DR     = 38;
+	//END(port from MagicLing·Galaxy): 岩浆
+	public static final int LAVA            = 39; //a door that was locked by the skeleton key
 	public static final int CRYSTAL_DOOR	= 31;
 	public static final int PEDESTAL		= 11;
 	public static final int WALL_DECO		= 12;
@@ -116,6 +118,7 @@ public class Terrain {
 
 		flags[CUSTOM_DECO_EMPTY] = flags[EMPTY];
 		flags[CUSTOM_DECO] = SOLID;
+		flags[LAVA] = PASSABLE | LIQUID | AVOID; //END(port)
 		flags[STATUE] = SOLID;
 		flags[STATUE_SP] = flags[STATUE];
 

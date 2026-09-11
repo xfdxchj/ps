@@ -24,7 +24,7 @@ public final class ChallengeArea {
 	//==== 注册表 ====
 	public static final ChallengeArea HOLLOW      = new ChallengeArea(1, "空洞遗迹", true);
 	public static final ChallengeArea BOSS_RUSH   = new ChallengeArea(2, "Boss Rush", false);
-	public static final ChallengeArea GALAXY      = new ChallengeArea(3, "银河深渊", false);
+	public static final ChallengeArea GALAXY      = new ChallengeArea(3, "银河深渊", true);
 	public static final ChallengeArea PEACH       = new ChallengeArea(4, "桃神试炼", false);
 	public static final ChallengeArea DEEP_SHADOW = new ChallengeArea(5, "深影领域", false);
 	public static final ChallengeArea FOREST_HARD = new ChallengeArea(6, "森林灾厄", false);
@@ -49,5 +49,6 @@ public final class ChallengeArea {
 	 */
 	public static void applySelection(int mask) {
 		com.shatteredpixel.shatteredpixeldungeon.Statistics.Hollow_Holiday = isSelected(mask, HOLLOW);
+		com.shatteredpixel.shatteredpixeldungeon.Statistics.Galaxy_Rules   = isSelected(mask, GALAXY);
 	}
 }

@@ -80,6 +80,7 @@ import com.shatteredpixel.shatteredpixeldungeon.levels.HallsLevel;
 import com.shatteredpixel.shatteredpixeldungeon.levels.LastLevel;
 //END(移植自魔绫·挑战区)
 import com.shatteredpixel.shatteredpixeldungeon.levels.HollowExitLevel;
+import com.shatteredpixel.shatteredpixeldungeon.levels.GalaxyLevel;
 import com.shatteredpixel.shatteredpixeldungeon.levels.HollowLevel;
 import com.shatteredpixel.shatteredpixeldungeon.levels.Level;
 import com.shatteredpixel.shatteredpixeldungeon.levels.MiningLevel;
@@ -137,6 +138,7 @@ public class Dungeon {
 		BAT_HP,
 		WARLOCK_HP,
 		HUNR_HP, //END(移植自魔绫): 猎人(ShieldHuntsman)生命药水掉落
+		ICERAT_HP, //END(port from MagicLing·Galaxy)
 		//Demon spawners are already limited in their spawnrate, no need to limit their health drops
 		//alchemy
 		COOKING_HP,
@@ -533,6 +535,16 @@ public class Dungeon {
 					break;
 				case 33:
 					level = Statistics.Hollow_Holiday ? new com.shatteredpixel.shatteredpixeldungeon.levels.hollow.MorpheusBossLevel() : new DeadEndLevel();
+					break;
+				//END(移植自魔绫·挑战区): 34-37F 银河深渊常规层 / 38F 火龙 Boss 层
+				case 34:
+				case 35:
+				case 36:
+				case 37:
+					level = Statistics.Galaxy_Rules ? new GalaxyLevel() : new DeadEndLevel();
+					break;
+				case 38:
+					level = Statistics.Galaxy_Rules ? new com.shatteredpixel.shatteredpixeldungeon.levels.LaveCavesBossLevel() : new DeadEndLevel();
 					break;
 				default:
 					level = new DeadEndLevel();

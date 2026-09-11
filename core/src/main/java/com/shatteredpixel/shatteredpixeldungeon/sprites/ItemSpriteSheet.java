@@ -841,6 +841,24 @@ public class ItemSpriteSheet {
 	public static final int CITY_HOOD        = DOCUMENTS+13;
 	public static final int STAR_CRYSTAL    = DOCUMENTS+10;
 	public static final int DEATHRONG_BOAT  = DOCUMENTS+11;
+	//END(port from MagicLing·Galaxy): 银河区图标（复用 DOCUMENTS 剩余空位）
+	public static final int ARMOR_ANCITY   = DOCUMENTS+14;
+	public static final int WATERSOUL      = DOCUMENTS+15;
+	public static final int Dragon_Lei     = STAR_CRYSTAL;
+	public static final int FISHSKELETON   = DEATHRONG_BOAT;
+	public static final int FISHBONE       = STAR_CRYSTAL;
+	public static final int LINGPEA        = DEATHRONG_BOAT;
+	public static final int DARKCRYSTAL    = STAR_CRYSTAL;
+	public static final int HITLCRYSTAL    = DEATHRONG_BOAT;
+	public static final int DRAGONSHILED   = CITY_HOOD;
+	public static final int POTION_BLUE    = STAR_CRYSTAL;
+	public static final int POTION_DEPS    = DEATHRONG_BOAT;
+	public static final int ICERAT_HP      = STAR_CRYSTAL;
+	public static final int SMALLB         = DEATHRONG_BOAT;
+	public static final int TOXIC_VENT     = STAR_CRYSTAL;
+	public static final int ARVING         = DEATHRONG_BOAT;
+	public static final int ANCITYBOSS     = STAR_CRYSTAL;
+	public static final int FROSTFIRE      = DEATHRONG_BOAT;
 	static{
 		assignItemRect(GELATIN,       12, 12);
 		assignItemRect(SUGAR_BLOCK,   12, 12);
@@ -858,6 +876,10 @@ public class ItemSpriteSheet {
 		public static final int SIZE = 8;
 
 		public static TextureFilm film = new TextureFilm( Assets.Sprites.ITEM_ICONS, SIZE, SIZE );
+
+		//END(port from MagicLing·Galaxy)
+		public static final int POTION_BLUE = 0;
+		public static final int POTION_DEPS = 1;
 
 		private static int xy(int x, int y){
 			x -= 1; y -= 1;

@@ -89,6 +89,9 @@ public class MagicMissile extends Emitter {
 	public static final int BLOOD_CONE      = 113;
 
 	//use SPECK + the constant of the Speck you want. e.g. MagicMissile.SPECK + Speck.TOXIC
+	//END(port from MagicLing·Galaxy)
+	public static final int TOXIC_VENT = POISON;
+	public static final int SWORDLING  = FORCE;
 	public static final int SPECK           = 1000;
 	
 	public void reset( int type, int from, int to, Callback callback ) {

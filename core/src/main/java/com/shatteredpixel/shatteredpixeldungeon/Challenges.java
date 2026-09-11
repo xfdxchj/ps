@@ -39,6 +39,8 @@ public class Challenges {
 	//END(便利测试挑战): 勾选后开局携带测试便利包(金币/宝石/法杖等),便于快速验证商店宝石、法杖蜕变等.
 	//此项对游戏本身并不“更难”，仅作测试用途,未勾选时完全无影响。
 	public static final int CONVENIENCE	= 512;
+	//END(port from MagicLing·Galaxy)
+	public static final int DHXD = 8192;
 
 	//END(正式挑战)：炼金无望 —— 在炼金台完成合成需要 1.5× 炼金能量。
 	public static final int COSTLY_ALCHEMY	= 1024;

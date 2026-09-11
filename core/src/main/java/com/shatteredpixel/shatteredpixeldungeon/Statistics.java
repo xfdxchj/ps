@@ -76,6 +76,7 @@ public class Statistics {
 	//END(移植自魔绫·挑战区): 区域开关与规则位
 	/** 是否进入「空洞遗迹(Hollow)」挑战区：true 时 26F=HollowExitLevel、27-30=HollowLevel、31/33=Boss关。 */
 	public static boolean Hollow_Holiday = false;
+	public static boolean Galaxy_Rules = false; //END(port): 银河深渊挑战区
 	/** 深渊城规则位(0=关,1=?,2=古堡第二幕)。 */
 	public static int AbyssCityRules = 0;
 	/** END(移植自魔绫·挑战区): 是否暂停计时（HollowExitLevel 用）。 */
@@ -84,6 +85,13 @@ public class Statistics {
 	public static boolean defalult_deaddog = false;
 	//END(port from MagicLing)
 	public static int RepaierTowerCount = 0;
+	//END(port from MagicLing·Galaxy)
+	public static int sakaBackStage = 0;
+	public static boolean lanterfireactive = false;
+	public static boolean noGoReadHungry = false;
+	public static boolean GameKillFireDargon = false;
+	public static int anCityQuest2Progress = 0;
+	public static int survey_research_points = 0;
 	public static boolean isOldDay = false;
 	/** END(移植自魔绫·挑战区): 是否处于 Boss Rush 模式（影响部分 Boss 掉落/层表）。 */
 	public static boolean bossRushMode = false;

@@ -68,6 +68,11 @@ public class Assets {
 		public static final String GALAXY_BACKGROUND = "environment/custom_tiles/galaxy_background.png"; //END(port)
 		public static final String TILES_MORGALAXY   = "environment/tiles_morpheus.png"; //END(port)
 		public static final String TILES_THEATRE     = "environment/custom_tiles/theatre.png"; //END(port)
+		//END(port from MagicLing·Galaxy)
+		public static final String TILES_FIRE       = "environment/tiles_fire.png";
+		public static final String LAVACAVE_OP      = "environment/custom_tiles/lavecave_behind.png";
+		public static final String LAVACAVE_OP_HRAD = "environment/custom_tiles/lavecave_behind_hard.png";
+		public static final String LAVACAVE_PO      = "environment/custom_tiles/lavecave_above.png";
 		public static final String WATER_HOLLOW    = "environment/water7.png";
 		public static final String HOLLOW_OP       = "environment/custom_tiles/cerberus_behind.png";
 		public static final String HOLLOW_PO       = "environment/custom_tiles/cerberus_above.png";
@@ -403,6 +408,11 @@ public class Assets {
 		public static final String MPHON            = "sprites/hollow/morpheus.png";
 		public static final String BBAT             = "sprites/bloodbat.png";
 		public static final String BATEX            = "sprites/BrownBat.png";
+		//END(port from MagicLing·Galaxy)
+		public static final String COLDRAT = "sprites/hollow/coldrat.png";
+		public static final String DER     = "sprites/hollow/diedclear.png";
+		public static final String FRDG    = "sprites/boss/firedragon.png";
+		public static final String CLGR    = "sprites/boss/overworld/clearelemt_guard.png";
 		//END(移植自魔绫·挑战区): 空洞遗迹 Boss 精灵与剧情立绘
 		public static final String MYSTIC_CORE   = "sprites/hollow/mystic_core.png";
 		public static final String NYARLATHOTEP  = "sprites/hollow/nyarlathotep.png";

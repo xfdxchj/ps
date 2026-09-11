@@ -151,6 +151,10 @@ public class BuffIndicator extends Component {
 	public static final int ROSEBARRIER = BARKSKIN;    //原魔绫 56
 	//END(port): 灯笼火（复用既有帧，避免超范围）
 	public static final int LANTERFIRE_FIVE = FIRE;
+	//END(port from MagicLing·Galaxy)
+	public static final int GOBUFF_UPRD  = FURY;
+	public static final int DEBUFF_DOWN  = WEAKNESS;
+	public static final int NIGHT_CAT    = TERROR;
 
 	public static final int SIZE_SMALL  = 7;
 	public static final int SIZE_LARGE  = 16;
