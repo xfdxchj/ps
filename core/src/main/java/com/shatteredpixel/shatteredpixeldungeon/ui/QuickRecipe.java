@@ -365,9 +365,9 @@ public class QuickRecipe extends Component {
 					};
 					for (Object[] d : daggerDirs){
 						ArrayList<Item> in = new ArrayList<>(Arrays.asList(
-								new com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons.AssassinDagger(),
-								shard,
-								(Item) d[0]));
+								(Item) new com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons.AssassinDagger().identify(),
+								shard.identify(),
+								((Item) d[0]).identify()));
 						Item outD = rd.sampleOutput(in);
 						if (outD != null) result.add(new QuickRecipe(rd, in, outD));
 					}
@@ -380,11 +380,51 @@ public class QuickRecipe extends Component {
 					};
 					for (Object[] d : sealDirs){
 						ArrayList<Item> in = new ArrayList<>(Arrays.asList(
-								new com.shatteredpixel.shatteredpixeldungeon.items.BrokenSeal(),
-								shard,
-								(Item) d[0]));
+								(Item) new com.shatteredpixel.shatteredpixeldungeon.items.BrokenSeal().identify(),
+								shard.identify(),
+								((Item) d[0]).identify()));
 						Item outS = rs.sampleOutput(in);
 						if (outS != null) result.add(new QuickRecipe(rs, in, outS));
+					}
+
+					//END 灵能弓三向: 灵能核心(2升级卷轴+50液金) → 核心；再 灵能弓+核心+方向料 → 三把成品弓
+					com.shatteredpixel.shatteredpixeldungeon.items.Recipe rCore =
+							new com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.SpiritBowCoreRecipe();
+					com.shatteredpixel.shatteredpixeldungeon.items.Recipe rBow =
+							new com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolveSpiritBowRecipe();
+
+					{
+						ArrayList<Item> inCore = new ArrayList<>(Arrays.asList(
+								(Item) new com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfUpgrade().quantity(2).identify(),
+								(Item) new com.shatteredpixel.shatteredpixeldungeon.items.LiquidMetal().quantity(50).identify()));
+						Item outCore = rCore.sampleOutput(inCore);
+						if (outCore != null) result.add(new QuickRecipe(rCore, inCore, outCore));
+					}
+
+					Item[][] bowDirs = new Item[][]{
+							{ new com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfUpgrade() },      //① 附魔灵弓
+							{ new com.shatteredpixel.shatteredpixeldungeon.items.potions.brews.ShockingBrew() },     //② 雷鸣灵弓
+							{ new com.shatteredpixel.shatteredpixeldungeon.items.spells.SummonElemental() },         //③ 唤魔灵弓
+					};
+					for (Item[] d : bowDirs){
+						ArrayList<Item> in = new ArrayList<>(Arrays.asList(
+								(Item) new com.shatteredpixel.shatteredpixeldungeon.items.weapon.SpiritBow().identify(),
+								(Item) new com.shatteredpixel.shatteredpixeldungeon.endcontent.items.SpiritBowCore().identify(),
+								(Item) d[0].identify()));
+						Item outB = rBow.sampleOutput(in);
+						if (outB != null) result.add(new QuickRecipe(rBow, in, outB));
+					}
+
+					//END 法杖进阶: 法杖 + 强化符石 + 星陨花之种 → 对应进化法杖(此处以魔弹杖为例)
+					com.shatteredpixel.shatteredpixeldungeon.items.Recipe rWand =
+							new com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolveWandRecipe();
+					{
+						ArrayList<Item> inW = new ArrayList<>(Arrays.asList(
+								(Item) new com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfMagicMissile().identify(),
+								(Item) new com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfAugmentation().identify(),
+								(Item) new com.shatteredpixel.shatteredpixeldungeon.plants.Starflower.Seed().identify()));
+						Item outW = rWand.sampleOutput(inW);
+						if (outW != null) result.add(new QuickRecipe(rWand, inW, outW));
 					}
 				}
 				return result;
