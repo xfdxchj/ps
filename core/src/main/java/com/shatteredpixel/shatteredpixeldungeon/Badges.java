@@ -217,7 +217,8 @@ public class Badges {
 		CHAMPION_2                  ( 126 ),
 		CHAMPION_3                  ( 127 ),
 		//END(移植自魔绫·挑战区): 空洞遗迹相关徽章
-		KILL_DOG                    ( 152 );
+		KILL_DOG                    ( 152 ),
+		HALOFIRE_DIED               ( 153 );
 
 		public boolean meta;
 
@@ -1155,6 +1156,11 @@ public class Badges {
 	//END(移植自魔绫·挑战区): 击败空洞遗迹的冥犬(Cerberus)后授予
 	public static void KILL_DOG() {
 		displayBadge( Badge.KILL_DOG );
+	}
+
+	//END(移植自魔绫·挑战区): 死于卤甲烷燃烧
+	public static void HALOFIRE_DIED() {
+		displayBadge( Badge.HALOFIRE_DIED );
 	}
 
 	public static void validateChampion( int challenges ) {

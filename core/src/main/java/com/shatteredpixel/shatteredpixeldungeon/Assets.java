@@ -367,5 +367,12 @@ public class Assets {
 		public static final String HOLLOW_BOMBER    = "sprites/hollow/gingerbread.png";
 		public static final String GHOST_MINI       = "sprites/hollow/minigame/ghosts.png";
 		public static final String TELE_FOCU        = "sprites/hollow/minigame/teleportation_focu.png";
+		//END(移植自魔绫·挑战区): 空洞遗迹 Boss(塔系列)精灵
+		public static final String MINDCODE         = "sprites/hollow/messy_code.png";
+		public static final String TowerGods        = "sprites/hollow/tower_gods.png";
+		public static final String TowerTime        = "sprites/hollow/tower_time.png";
+		public static final String TowerMind        = "sprites/hollow/tower_mind.png";
+		public static final String TowerMachine     = "sprites/hollow/tower_machine.png";
+		public static final String REDWRAITH        = "sprites/bluewraith.png";
 	}
 }
