@@ -395,8 +395,8 @@ public class QuickRecipe extends Component {
 
 					{
 						ArrayList<Item> inCore = new ArrayList<>(Arrays.asList(
-								(Item) new com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfUpgrade().quantity(2).identify(),
-								(Item) new com.shatteredpixel.shatteredpixeldungeon.items.LiquidMetal().quantity(50).identify()));
+								(Item) new com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfAugmentation().identify(),
+								(Item) new com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfRemoveCurse().identify()));
 						Item outCore = rCore.sampleOutput(inCore);
 						if (outCore != null) result.add(new QuickRecipe(rCore, inCore, outCore));
 					}

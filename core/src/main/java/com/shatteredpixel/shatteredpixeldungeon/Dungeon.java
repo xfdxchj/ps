@@ -335,8 +335,10 @@ public class Dungeon {
 			com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfUpgrade su = new com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfUpgrade(); su.quantity(15); su.identify(); su.collect();
 			com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfAugmentation stz = new com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfAugmentation(); stz.quantity(6); stz.identify(); stz.collect();
 
-			//END 便利：为灵能弓改造(炼金 2升级卷轴+50液金→灵能核心 等)准备足量液金与核心/料
+			//END 便利：为灵能弓改造准备料——灵能核心现由「强化符石 + 驱邪卷轴」合成(见 SpiritBowCoreRecipe)，
+			//故额外给若干驱邪卷轴(强化符石上面已给 6)，并保留液金/核心备用。
 			com.shatteredpixel.shatteredpixeldungeon.items.LiquidMetal lm = new com.shatteredpixel.shatteredpixeldungeon.items.LiquidMetal(); lm.quantity(150); lm.identify(); lm.collect();
+			com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfRemoveCurse rc = new com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfRemoveCurse(); rc.quantity(6); rc.identify(); rc.collect();
 			com.shatteredpixel.shatteredpixeldungeon.endcontent.items.SpiritBowCore coreSt = new com.shatteredpixel.shatteredpixeldungeon.endcontent.items.SpiritBowCore(); coreSt.quantity(3); coreSt.identify(); coreSt.collect();
 
 			//END 便利：进阶弓三选一配齐“特殊料” 雷鸣魔药 / 唤魔晶柱（随上面升级卷轴即可锻三把），并配一把原版灵能弓当合成基底
