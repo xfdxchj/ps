@@ -351,6 +351,38 @@ CI 跑 `./gradlew :desktop:compileJava :desktop:installDist` 报 **13 个错误*
 8. **`isAnimal` 字段**：本 fork `Mob` 无，删掉
 9. **`Char.Property.*`**：魔绫新增项（如 `HOLLOW`）需自己加到枚举
 
+## 六点十一、DeadDogCerberus（冥犬 Boss）移植方案（已勘定，待执行）
+
+### 关键障碍：魔绫有 `Boss` 基类，本 fork 没有
+- 魔绫：`actors/Boss.java`（自造基类），提供 `initProperty()` / `initBaseStatus(min,max,acc,eva,ht,mid,mad)` / `initStatus(exp)` 与字段 `baseMin/baseMax/baseAcc/baseEva/baseHT/baseMinDef/baseMaxDef`
+- **本 fork 无 `actors/Boss.java`**；本 fork 的 Boss（Goo/DwarfKing/Tengu/YogDzewa）**全部 `extends Mob`**，在 init 块里直接写 `HP/HT/EXP/defenseSkill`，并各自 override `damageRoll()/attackSkill()`
+
+### 好消息：`DeadDogCerberus` 只用这套框架 5 处
+| 行 | 魔绫写法 | 本 fork 改写 |
+|---|---|---|
+| 118 | `initProperty();` | 直接 `properties.add(...)`（init 块里已手写 BOSS/DEMONIC/ACIDIC） |
+| 119 | `initBaseStatus(20,60,20,26,1000,0,0)` | `damageRoll()`→`Random.NormalFloat(20,60)`；`attackSkill()`→20；`defenseSkill`→26；`HP=HT`→1000 |
+| 120 | `initStatus(100);` | `EXP = 100;` |
+| 174 | `damage(int dmg, Object src, DamageType type)` | `damage(int dmg, Object src)`（本 fork 无 DamageType） |
+| 1152 | `GetBossLoot(pos);` | 省略或替换（BossRush 掉落，非必需） |
+
+### 其它必须降级的地方
+- `import items.props.Prop`（第 49 行）**实际未被使用** → 删掉；`Prop` 还牵出 `Conducts` + `Statistics.propPositive*` 整套"道具词条"系统，**不值得为未使用的 import 去搬**
+- `GameRules.PropsScore()`（1157）→ **省略**（道具计分，非核心；`GameRules` 还依赖 `com.nlf.calendar.Lunar/Solar` 农历库，本 fork 无）
+- `Typhon`（1163-1165，死后生成剧情 NPC）→ **省略**（依赖 `TyphonPlot`+`WndDialog` 未搬）；可留 TODO
+- `DriedRose.GhostHero`（149）→ 需确认本 fork 有此内部类（`items/artifacts/DriedRose` 存在，内部类待核）
+- `ComboAttackThis` / `HunterReady` / `CriticalBite` 等字段被 `DeadDogCerberusSprite` 读取，**必须保留同名 public 字段**
+
+### 前置件状态
+- ✅ 已搬：`DeadDogCerberusSprite`、`LanFireGo`、`RoseShiled`、`DeadFireFlameParticle`、`Assets.Sprites.NCSBR`、`BuffIndicator.ROSEBARRIER`
+- ✅ 判断为**不必搬**：`GameRules`、`Typhon`、`Prop`（理由见上）
+
+### 执行顺序建议
+1. 按上表把 `DeadDogCerberus` 改成 `extends Mob` 版本（5 处改写 + 3 处降级）
+2. 确认 `DriedRose.GhostHero` 存在（否则删该 for 循环）
+3. 搬 `levels/hollow/CerDogBossLevel`（Boss 层）并接到 30F 之后
+4. 跑 CI
+
 ## 七、当前阻塞 / 待办
 
 
