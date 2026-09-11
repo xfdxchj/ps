@@ -386,13 +386,20 @@ public class Dungeon {
 				} catch (Exception ignore){ /*单件失败忽略*/ }
 			}
 
-			//END 便利：跳关测试道具 + 板甲 + 传说武器
-			//深渊传送符：使用后直接到 25F（主线终点），便于跳过 1-24F 直接测挑战区。
+			//END 便利：跳关测试道具 + 板甲 + 传说武器（放在最前，避免背包满导致收不进去）
+			//深渊传送符：多次使用可逐站前进（25F→26F→31F→32F→33F→38F）。
 			try {
 				com.shatteredpixel.shatteredpixeldungeon.endcontent.items.EndFloorSkip skip =
 						new com.shatteredpixel.shatteredpixeldungeon.endcontent.items.EndFloorSkip();
-				skip.identify(); skip.collect();
-			} catch (Exception ignore){ /*单件失败忽略*/ }
+				skip.identify();
+				if (!skip.collect()) {
+					//背包满 → 直接塞进背包容器，确保测试道具一定到手
+					hero.belongings.backpack.items.add(skip);
+					com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w("传送符已强制放入背包");
+				}
+			} catch (Exception e){
+				com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w("传送符发放失败: " + e);
+			}
 
 			//板甲(原版 PlateArmor)，已鉴定
 			try {
