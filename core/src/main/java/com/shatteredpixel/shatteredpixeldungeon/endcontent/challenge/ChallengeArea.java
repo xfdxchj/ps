@@ -5,7 +5,6 @@ import com.shatteredpixel.shatteredpixeldungeon.levels.DeadEndLevel;
 import com.shatteredpixel.shatteredpixeldungeon.levels.GalaxyLevel;
 import com.shatteredpixel.shatteredpixeldungeon.levels.HollowExitLevel;
 import com.shatteredpixel.shatteredpixeldungeon.levels.HollowLevel;
-import com.shatteredpixel.shatteredpixeldungeon.levels.LastLevel;
 import com.shatteredpixel.shatteredpixeldungeon.levels.Level;
 
 /**
@@ -14,12 +13,19 @@ import com.shatteredpixel.shatteredpixeldungeon.levels.Level;
  * <h3>机制（多选串联）</h3>
  * 主线 1-25F 走完后，从 26F 起把「选中的区域」按 id 顺序**串联**成一条区间：
  * <pre>
- *   例：只选 Hollow            → Hollow  占 26..33F（8层）
- *   例：只选 Galaxy            → Galaxy  占 26..30F（5层）
- *   例：Hollow + Galaxy + 方舟  → Hollow 26..33F，Galaxy 34..38F，方舟 39..XX
+ *   只选 Hollow          → Hollow 占 26..33F（8层）
+ *   只选 Galaxy          → Galaxy 占 26..30F（5层）
+ *   Hollow + Galaxy      → Hollow 26..33F，Galaxy 34..38F
  * </pre>
  * 每层关卡由 {@link #createAreaLevel(int, int, int)} 按「区内偏移」决定，
- * 因此**单选任意一个区都能独立走通**（这是关键：层号是动态算的，不是硬编码的）。
+ * 因此**单选任意一个区都能独立走通**（层号是动态算的，不是硬编码的）。
+ *
+ * <h3>关于 7 个「塔·堕落」等 Boss</h3>
+ * ShubNiggurath / Nyarlathotep / YogSoul / MyCoreHeart /
+ * TowerGodsBad / TowerTimeBad / TowerMachineBad / TowerMindBad
+ * **不是独立 Boss** —— 它们由 Morphs 在 Hollow 33F 的 MorpheusBossLevel 里
+ * 按三阶段依次登场（见 Morphs.act()）。因此本注册表**不单列 BossRush 区**，
+ * 这些 Boss 在 33F 正常打即可。
  */
 public final class ChallengeArea {
 
@@ -40,9 +46,8 @@ public final class ChallengeArea {
 	}
 
 	//==== 注册表（id 顺序 = 进入顺序）====
-	//魔绫 3 区（已实装）
+	//魔绫 2 区（已实装）
 	public static final ChallengeArea HOLLOW      = new ChallengeArea(1, "空洞遗迹", 8, true);
-	public static final ChallengeArea BOSS_RUSH   = new ChallengeArea(2, "Boss Rush", 7, true);
 	public static final ChallengeArea GALAXY      = new ChallengeArea(3, "银河深渊", 5, true);
 	//方舟 3 区（待实装；方舟内容与原版体系自包含，与魔绫无耦合）
 	public static final ChallengeArea IBERIA      = new ChallengeArea(4, "伊比利亚·海嗣", 4, false);
@@ -50,7 +55,7 @@ public final class ChallengeArea {
 	public static final ChallengeArea SIESTA      = new ChallengeArea(6, "汐斯塔·海滨", 4, false);
 
 	public static final ChallengeArea[] ALL = {
-			HOLLOW, BOSS_RUSH, GALAXY, IBERIA, GAVIAL, SIESTA
+			HOLLOW, GALAXY, IBERIA, GAVIAL, SIESTA
 	};
 
 	/** 挑战区起始层（主线 25F 之后）。 */
@@ -66,14 +71,11 @@ public final class ChallengeArea {
 		return mask ^ (1 << area.id);
 	}
 
-	/**
-	 * 把选中的区域写入 Statistics。应在开局（英雄创建完成）时调用一次。
-	 */
+	/** 把选中的区域写入 Statistics。应在开局（英雄创建完成）时调用一次。 */
 	public static void applySelection(int mask) {
-		Statistics.Hollow_Holiday  = isSelected(mask, HOLLOW);
-		Statistics.Galaxy_Rules    = isSelected(mask, GALAXY);
-		Statistics.BossRush_Rules  = isSelected(mask, BOSS_RUSH);
-		Statistics.challengeMask   = mask;
+		Statistics.Hollow_Holiday = isSelected(mask, HOLLOW);
+		Statistics.Galaxy_Rules   = isSelected(mask, GALAXY);
+		Statistics.challengeMask  = mask;
 	}
 
 	/**
@@ -102,7 +104,7 @@ public final class ChallengeArea {
 	 *
 	 * @param areaId  区 id
 	 * @param floorIn 区内偏移（0 起）
-	 * @param depth   绝对层号（给需要知道的关卡用）
+	 * @param depth   绝对层号
 	 */
 	public static Level createAreaLevel(int areaId, int floorIn, int depth) {
 
@@ -123,12 +125,7 @@ public final class ChallengeArea {
 			return new GalaxyLevel();
 		}
 
-		if (areaId == BOSS_RUSH.id) {
-			//BossRush：7 层各一个 Boss（用已搬的 7 个「编外 Boss」）
-			return new com.shatteredpixel.shatteredpixeldungeon.levels.BossRushLevel(floorIn);
-		}
-
-		//未实装区域：占位（正常流程走不到，因为 areaAtDepth 只返回 implemented 的区）
+		//未实装区域（方舟 3 区）：占位（正常流程走不到，areaAtDepth 只返回 implemented 的区）
 		return new DeadEndLevel();
 	}
 }
