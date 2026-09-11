@@ -78,6 +78,8 @@ public class Statistics {
 	public static boolean Hollow_Holiday = false;
 	/** 深渊城规则位(0=关,1=?,2=古堡第二幕)。 */
 	public static int AbyssCityRules = 0;
+	/** END(移植自魔绫·挑战区): 是否暂停计时（HollowExitLevel 用）。 */
+	public static boolean NoTime = false;
 	public static boolean gameWon = false;
 	public static boolean ascended = false;
 	
@@ -124,6 +126,7 @@ public class Statistics {
 		//END(挑战区)
 		Hollow_Holiday = false;
 		AbyssCityRules = 0;
+		NoTime = false;
 		gameWon = false;
 		ascended = false;
 		
@@ -171,6 +174,7 @@ public class Statistics {
 	//END(挑战区)
 	private static final String HOLLOW_DAY      = "HOLLOW_DAY";
 	private static final String ABYSS_RULES     = "AbyssRules";
+	private static final String NO_TIME         = "NOTIME";
 	private static final String WON		        = "won";
 	private static final String ASCENDED		= "ascended";
 	
@@ -220,6 +224,7 @@ public class Statistics {
 		//END(挑战区)
 		bundle.put( HOLLOW_DAY,  Hollow_Holiday );
 		bundle.put( ABYSS_RULES, AbyssCityRules );
+		bundle.put( NO_TIME,     NoTime );
 		bundle.put( WON,        gameWon );
 		bundle.put( ASCENDED,   ascended );
 	}
@@ -284,6 +289,7 @@ public class Statistics {
 		//END(挑战区)
 		if (bundle.contains( HOLLOW_DAY ))  Hollow_Holiday = bundle.getBoolean( HOLLOW_DAY );
 		if (bundle.contains( ABYSS_RULES )) AbyssCityRules = bundle.getInt( ABYSS_RULES );
+		if (bundle.contains( NO_TIME ))     NoTime = bundle.getBoolean( NO_TIME );
 		gameWon         = bundle.getBoolean( WON );
 		ascended        = bundle.getBoolean( ASCENDED );
 	}

@@ -56,6 +56,8 @@ public class Window extends Group implements Signal.Listener<KeyEvent> {
 
 	//END(移植自魔绫): 粉色调，恐惧免疫等图标着色用
 	public static final int Pink_COLOR = 0xFF1493;
+	//END(移植自魔绫·挑战区): 霜焰光晕色
+	public static final int GDX_COLOR = 0xE44D3C;
 	
 	public Window() {
 		this( 0, 0, Chrome.get( Chrome.Type.WINDOW ) );

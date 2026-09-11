@@ -68,6 +68,9 @@ public class Assets {
 		public static final String WATER_HOLLOW    = "environment/water7.png";
 		public static final String HOLLOW_OP       = "environment/custom_tiles/cerberus_behind.png";
 		public static final String HOLLOW_PO       = "environment/custom_tiles/cerberus_above.png";
+		//END(移植自魔绫·挑战区): HollowExitLevel 的自定义图层
+		public static final String HALL_OPX        = "environment/custom_tiles/hall_behind-opendoor.png";
+		public static final String HALL_POX        = "environment/custom_tiles/hall_above_b.png";
 	}
 	
 	//TODO include other font assets here? Some are platform specific though...
@@ -348,5 +351,8 @@ public class Assets {
 		public static final String FUNGAL_SPINNER   = "sprites/fungal_spinner.png";
 		public static final String FUNGAL_SENTRY    = "sprites/fungal_sentry.png";
 		public static final String FUNGAL_CORE      = "sprites/fungal_core.png";
+
+		//END(移植自魔绫·挑战区): 空洞遗迹怪物精灵
+		public static final String VAMPIRE          = "sprites/hollow/vampire.png";
 	}
 }

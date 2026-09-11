@@ -807,6 +807,16 @@ public class ItemSpriteSheet {
 		assignItemRect(HALLS_PAGE,  10, 11);
 	}
 
+	//END(移植自魔绫·挑战区): 空洞遗迹的食物图标，占用 DOCUMENTS 块剩余空位
+	public static final int GELATIN      = DOCUMENTS+7;
+	public static final int SUGAR_BLOCK  = DOCUMENTS+8;
+	public static final int WHITE_SUGAR_B= DOCUMENTS+9;
+	static{
+		assignItemRect(GELATIN,       12, 12);
+		assignItemRect(SUGAR_BLOCK,   12, 12);
+		assignItemRect(WHITE_SUGAR_B, 12, 12);
+	}
+
 	//for smaller 8x8 icons that often accompany an item sprite
 	public static class Icons {
 

@@ -78,6 +78,9 @@ import com.shatteredpixel.shatteredpixeldungeon.levels.DeadEndLevel;
 import com.shatteredpixel.shatteredpixeldungeon.levels.HallsBossLevel;
 import com.shatteredpixel.shatteredpixeldungeon.levels.HallsLevel;
 import com.shatteredpixel.shatteredpixeldungeon.levels.LastLevel;
+//END(移植自魔绫·挑战区)
+import com.shatteredpixel.shatteredpixeldungeon.levels.HollowExitLevel;
+import com.shatteredpixel.shatteredpixeldungeon.levels.HollowLevel;
 import com.shatteredpixel.shatteredpixeldungeon.levels.Level;
 import com.shatteredpixel.shatteredpixeldungeon.levels.MiningLevel;
 import com.shatteredpixel.shatteredpixeldungeon.levels.PrisonBossLevel;
@@ -475,7 +478,15 @@ public class Dungeon {
 					level = new HallsBossLevel();
 					break;
 				case 26:
-					level = new LastLevel();
+					//END(移植自魔绫·挑战区): 选了「空洞遗迹」则 26F 进入挑战区入口
+					level = !Statistics.Hollow_Holiday ? new LastLevel() : new HollowExitLevel();
+					break;
+				//END(移植自魔绫·挑战区): 27-30F 为空洞遗迹常规楼层
+				case 27:
+				case 28:
+				case 29:
+				case 30:
+					level = Statistics.Hollow_Holiday ? new HollowLevel() : new DeadEndLevel();
 					break;
 				default:
 					level = new DeadEndLevel();
