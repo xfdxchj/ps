@@ -58,6 +58,11 @@ public class Window extends Group implements Signal.Listener<KeyEvent> {
 	public static final int Pink_COLOR = 0xFF1493;
 	//END(移植自魔绫·挑战区): 霜焰光晕色
 	public static final int GDX_COLOR = 0xE44D3C;
+	//END(移植自魔绫·挑战区): 空洞遗迹 Boss 用到的基础色
+	public static final int R_COLOR      = 0xFF0000;
+	public static final int ORAGNECOLOR  = 0xFFA500;
+	public static final int WATA_COLOR   = 0x55AAFF;
+	public static final int CBLACK       = 0x808080;
 	
 	public Window() {
 		this( 0, 0, Chrome.get( Chrome.Type.WINDOW ) );
