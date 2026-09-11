@@ -516,38 +516,28 @@ public class Dungeon {
 					level = new HallsBossLevel();
 					break;
 				case 26:
-					//END(移植自魔绫·挑战区): 选了「空洞遗迹」则 26F 进入挑战区入口
-					level = !Statistics.Hollow_Holiday ? new LastLevel() : new HollowExitLevel();
-					break;
-				//END(移植自魔绫·挑战区): 27-30F 为空洞遗迹常规楼层
-				case 27:
-				case 28:
-				case 29:
-				case 30:
-					level = Statistics.Hollow_Holiday ? new HollowLevel() : new DeadEndLevel();
-					break;
-				//END(移植自魔绫·挑战区): 31F 冥犬 Boss 层 / 32F 剧院 / 33F Morpheus Boss层(四柱)
-				case 31:
-					level = Statistics.Hollow_Holiday ? new com.shatteredpixel.shatteredpixeldungeon.levels.hollow.CerDogBossLevel() : new DeadEndLevel();
-					break;
-				case 32:
-					level = Statistics.Hollow_Holiday ? new com.shatteredpixel.shatteredpixeldungeon.levels.hollow.TheatreLevel() : new DeadEndLevel();
-					break;
-				case 33:
-					level = Statistics.Hollow_Holiday ? new com.shatteredpixel.shatteredpixeldungeon.levels.hollow.MorpheusBossLevel() : new DeadEndLevel();
-					break;
-				//END(移植自魔绫·挑战区): 34-37F 银河深渊常规层 / 38F 火龙 Boss 层
-				case 34:
-				case 35:
-				case 36:
-				case 37:
-					level = Statistics.Galaxy_Rules ? new GalaxyLevel() : new DeadEndLevel();
-					break;
-				case 38:
-					level = Statistics.Galaxy_Rules ? new com.shatteredpixel.shatteredpixeldungeon.levels.LaveCavesBossLevel() : new DeadEndLevel();
+					//END(移植自魔绫·挑战区): 26F 起按「选中的区域顺序」动态分配层号。
+					// 见 ChallengeArea.floorPlan()：把选中的区域串成一条层号区间，单选也能走通。
+					int[] plan = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeArea
+							.areaAtDepth(depth);
+					if (plan == null) {
+						level = new LastLevel();      //没选任何挑战区 → 正常主线结局
+					} else {
+						level = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeArea
+								.createAreaLevel(plan[0], plan[1], depth);
+					}
 					break;
 				default:
-					level = new DeadEndLevel();
+					//END: 26F 之后的层号全部交给挑战区动态分配（未分配则视为终局）
+					int[] plan2 = (depth > 26)
+							? com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeArea.areaAtDepth(depth)
+							: null;
+					if (plan2 != null) {
+						level = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeArea
+								.createAreaLevel(plan2[0], plan2[1], depth);
+					} else {
+						level = new DeadEndLevel();
+					}
 			}
 		} else if (branch == 1) {
 			switch (depth) {

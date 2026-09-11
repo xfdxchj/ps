@@ -77,6 +77,8 @@ public class Statistics {
 	/** 是否进入「空洞遗迹(Hollow)」挑战区：true 时 26F=HollowExitLevel、27-30=HollowLevel、31/33=Boss关。 */
 	public static boolean Hollow_Holiday = false;
 	public static boolean Galaxy_Rules = false; //END(port): 银河深渊挑战区
+	public static boolean BossRush_Rules = false; //END(port): Boss Rush 挑战区
+	public static int challengeMask = 0;         //END(port): 开局勾选的挑战区位掩码
 	/** 深渊城规则位(0=关,1=?,2=古堡第二幕)。 */
 	public static int AbyssCityRules = 0;
 	/** END(移植自魔绫·挑战区): 是否暂停计时（HollowExitLevel 用）。 */
