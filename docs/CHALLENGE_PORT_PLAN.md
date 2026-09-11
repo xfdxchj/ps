@@ -388,10 +388,45 @@ CI 跑 `./gradlew :desktop:compileJava :desktop:installDist` 报 **13 个错误*
 3. 搬 `levels/hollow/CerDogBossLevel`（Boss 层）并接到 30F 之后
 4. 跑 CI
 
+## 六点十二、★ 本机可编译了（重要突破 · 推翻"本机无法编译"结论）
+
+**此前"本机无法编译"的判断有误** —— Gradle 走不通，但 **`javac` 直编完全可行**：
+
+- 机器上存在一套**完整的依赖 jar**：`E:\破碎的地牢\新建文件夹\lib\`（67 个 jar，含 `gdx-1.14.0`、`lwjgl-3.3.3`、`core-0.0.1-end.jar`）
+- JDK：`openjdk 21.0.3`（已装）
+- 因此 **不需要 Gradle / 不需要 Android SDK / 不需要联网**，直接把 `SPD-classes` + `core` 源码喂给 `javac` 即可
+
+### 已固化为脚本：`tools/localcompile.ps1`
+```powershell
+cd _EndShatteredBuild
+& .\tools\localcompile.ps1      # 编译 1362 个源文件
+```
+- 成功 → 打印 `COMPILE OK`，exit 0
+- 失败 → 打印 `文件:行 / 错误信息` 摘要，完整日志在 `E:\破碎的地牢\_javac_out\javac.log`，exit 1
+
+> ⚠️ 脚本内**故意不写中文路径**：Windows PowerShell 5.1 按 ANSI 读脚本，中文字面量会乱码 →
+> 改为按内容（含 `gdx-1.14.0.jar`）自动定位 jar 目录。
+> ⚠️ javac 报错会按终端宽度**折行**，摘要里可能被截断 → **看全文一律读 `javac.log`**。
+
+### 意义
+**每一轮改动都能在本机先验一遍再交 CI**，不再靠"读源码保证正确性"、不再烧 CI 轮次。
+
+### 首次本地编译结果（基线）
+```
+COMPILE FAILED - 5 errors
+DeadDogCerberusSprite.java:5    cannot find symbol: class DeadDogCerberus (import)
+BleedCrystal.java:28            package DeadDogCerberus does not exist  (DeadDogCerberus.HaloDeadBite)
+BleedCrystal.java:30            package DeadDogCerberus does not exist  (DeadDogCerberus.DeadHaloFire)
+DeadDogCerberusSprite.java:86   cannot find symbol: class DeadDogCerberus (ComboAttackThis)
+DeadDogCerberusSprite.java:104  cannot find symbol: class DeadDogCerberus (HunterReady)
+```
+→ **这 5 个错就是"下一轮 CI 会报的错"**，且**全部由"`DeadDogCerberus` 本体未搬"引起**。
+额外发现：搬 `DeadDogCerberus` 时**必须连带两个内部类** `HaloDeadBite`、`DeadHaloFire`（`BleedCrystal` 依赖它们）。
+
 ## 七、当前阻塞 / 待办
 
 
 
-- **本机不能编译验证**（wrapper 需 gradle 9.4.0、无外网、沙箱只写工作区）→ 每步仍需在你机器或 GitHub CI 上 `./gradlew :core:compileJava` 验证。
+- **~~本机不能编译验证~~** → ✅ **已解决**：用 `tools/localcompile.ps1`（javac 直编，见「六点十二」）。每步先本地验，再交 CI。
 - **方舟三区**：需反编译器（推荐 CFR：`https://www.benf.org/other/cfr/cfr-0.152.jar`，放到 `E:\破碎的地牢\cfr.jar`）。
 - 本地有 **7 个提交未 push**（`680abe4` … 加本轮）；建议先推基线再继续大改。
