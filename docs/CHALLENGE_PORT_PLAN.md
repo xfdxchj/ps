@@ -328,6 +328,29 @@
 - Hollow 30F 之后的 Boss 层接线（`levels/hollow/CerDogBossLevel` 等）
 - 其余 5 区；方舟 3 区
 
+## 六点十、首次 CI 编译反馈与修复（重要 · 移植避坑清单）
+
+CI 跑 `./gradlew :desktop:compileJava :desktop:installDist` 报 **13 个错误**，全部是"用了本 fork 不存在的符号"。
+已修复（commit `fc90529`）：
+
+| 错误 | 文件 | 修复方式 |
+|---|---|---|
+| `Terrain.SIGN` / `Terrain.SIGN_SP` 找不到（4 处） | `HollowExitLevel` | 本 fork 无这两个地形：`SIGN`→`CUSTOM_DECO`(SOLID，注释即"旧 sign 用的 ID")、`SIGN_SP`→`CUSTOM_DECO_EMPTY`(可通行)。**并把 `tileName/tileDesc` 的 switch 合并**（否则 case 重复） |
+| `PotionOfHolyWater` 找不到（4 处） | `HollowLevel` | 本 fork 无圣水：改用 `PotionOfPurity`（现有净化药水，语义最接近） |
+| `Weakness.set(int)` 找不到（1 处） | `Vampire` | 本 fork 的 `Weakness` 是 `FlavourBuff`（无 `set()`）：改用 `Buff.prolong(enemy, Weakness.class, duration)` |
+
+### ⚠️ 由此得出的移植避坑清单（后续区域务必先查）
+移植任何魔绫类之前，**先 grep 本 fork 是否真的存在**这些高频"魔绫扩展"：
+1. **地形**：`Terrain.SIGN`/`SIGN_SP`/`HOLES` 等 —— 本 fork 无，用 `CUSTOM_DECO`/`CUSTOM_DECO_EMPTY`/`REGION_DECO` 替代
+2. **物品**：`PotionOfHolyWater` 等 —— 用本 fork 现有同类替代
+3. **Buff 接口**：魔绫很多 buff 有 `set(int)`/`set(int,int)`；本 fork 多数 `FlavourBuff` 只能用 `Buff.affect(cls, dur)` / `Buff.prolong(cls, dur)`
+4. **`Char.DamageType`**：魔绫 `damage(int,Object,DamageType)` / `attack(...,DamageType)` —— 本 fork **无 DamageType**，一律去掉该参数
+5. **`CharSprite.State`**：魔绫有 `HALOMETHANEBURNING`/`ROSESHIELDED` 等 —— 本 fork 无，改用现有 `State`（如 `AURA`/`BURNING`）或省略纯视觉
+6. **`Assets.Sprites.*` / `Assets.Music.*` / `Assets.Environment.*`**：魔绫的键本 fork 大多没有，需自己加键（**图集帧数有限**，如 `buffs.png` 仅 128×64 → 大片 32 帧，索引 ≥32 会 `nofound`）
+7. **`ItemSpriteSheet.EMPTY`**：本 fork 无，用 `SOMETHING`
+8. **`isAnimal` 字段**：本 fork `Mob` 无，删掉
+9. **`Char.Property.*`**：魔绫新增项（如 `HOLLOW`）需自己加到枚举
+
 ## 七、当前阻塞 / 待办
 
 
