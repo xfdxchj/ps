@@ -144,6 +144,8 @@ public class BuffIndicator extends Component {
 	public static final int IMELSAZE    = 89;
 	//END(移植自魔绫·挑战区): 卤甲烷燃烧
 	public static final int HALOMETHANEBURNING = 90;
+	//END(移植自魔绫·挑战区): 玫瑰护盾
+	public static final int ROSEBARRIER = 91;
 
 	public static final int SIZE_SMALL  = 7;
 	public static final int SIZE_LARGE  = 16;

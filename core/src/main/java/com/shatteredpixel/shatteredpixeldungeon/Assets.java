@@ -374,5 +374,6 @@ public class Assets {
 		public static final String TowerMind        = "sprites/hollow/tower_mind.png";
 		public static final String TowerMachine     = "sprites/hollow/tower_machine.png";
 		public static final String REDWRAITH        = "sprites/bluewraith.png";
+		public static final String NCSBR            = "sprites/hollow/New_Cerberus.png";
 	}
 }
