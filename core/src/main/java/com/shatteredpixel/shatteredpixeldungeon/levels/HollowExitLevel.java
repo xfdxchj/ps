@@ -133,10 +133,16 @@ public class HollowExitLevel extends Level {
         setSize(WIDTH, HEIGHT);
         map = code_map.clone();
 
-        //END(修复): 地图里唯一的 ENTRANCE(地形M) 在【格 240】(行18列6)。
-        //原代码把过渡绑在 32/279/19 上，但那几格地形是 EMPTY_SP/CUSTOM_DECO，玩家不会当楼梯踩
-        //→ 结果 26F 踩楼梯毫无反应。现改为绑到真正的楼梯格 240。
-        int enter = 279;   //END(修复): 工具算出的真实 ENTRANCE 格
+        //END(修复): 从 25F(Boss层) 下来时可能残留 LockedFloor / locked 状态，
+        //而 Hero.actTransition 要求 !level.locked 才能踩楼梯 → 必须清掉。
+        unseal();
+        com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.detach(
+                com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero,
+                com.shatteredpixel.shatteredpixeldungeon.actors.buffs.LockedFloor.class);
+
+        //END(修复): 地图里唯一的 ENTRANCE(地形M) 在【格 279】。
+        //（原先手工数成 240，用 _tools/locate_stairs.py 算出真实值是 279）
+        int enter = 279;
         LevelTransition entrance = new LevelTransition(this, enter, LevelTransition.Type.REGULAR_EXIT);
         transitions.add(entrance);
 

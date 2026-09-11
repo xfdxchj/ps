@@ -1,5 +1,6 @@
 package com.shatteredpixel.shatteredpixeldungeon.actors;
 
+import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Corruption;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Terror;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
@@ -72,6 +73,26 @@ abstract public class Boss extends Mob {
 		defenseSkill = Math.round( baseEva );
 		EXP = exp;
 		HP = HT = Math.round( baseHT );
+	}
+
+	/**
+	 * END(修复): Boss 死亡时统一解锁关卡。
+	 * 挑战区的 Boss 层（CerDogBossLevel/MorpheusBossLevel）进关会 seal() 锁门，
+	 * 而魔绫的多个 Boss（TowerXxx / MyCoreHeart 等）在 die() 里没有 unseal(),
+	 * 导致打完 Boss 门还锁着 → 玩家走不了楼梯。此处统一兜底。
+	 */
+	@Override
+	public void die( Object cause ) {
+		super.die( cause );
+		if (Dungeon.level != null && Dungeon.level.locked) {
+			Dungeon.level.unseal();
+		}
+		if (Dungeon.hero != null && Dungeon.hero.buff(
+				com.shatteredpixel.shatteredpixeldungeon.actors.buffs.LockedFloor.class) != null) {
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.detach(
+					Dungeon.hero,
+					com.shatteredpixel.shatteredpixeldungeon.actors.buffs.LockedFloor.class);
+		}
 	}
 
 	@Override

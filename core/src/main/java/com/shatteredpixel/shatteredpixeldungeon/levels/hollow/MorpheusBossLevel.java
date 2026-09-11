@@ -98,6 +98,12 @@ public class MorpheusBossLevel extends Level {
 
     @Override
     protected boolean build() {
+        //END(修复): 清理残留锁（上一层的 LockedFloor 会让踩楼梯失效）
+        unseal();
+        com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.detach(
+                com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero,
+                com.shatteredpixel.shatteredpixeldungeon.actors.buffs.LockedFloor.class);
+
         setSize(WIDTH, HEIGHT);
         map = code_map.clone();
 

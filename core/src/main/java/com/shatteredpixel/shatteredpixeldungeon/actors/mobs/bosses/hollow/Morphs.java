@@ -194,6 +194,9 @@ public class Morphs extends Boss {
     @Override
     public void die( Object cause ) {
         super.die(cause);
+        //END(修复): 原版这里没有 unseal()，导致 33F 进关时 seal() 锁门后
+        //打完四柱门仍然锁着 → 走不了楼梯。此处补上解锁。
+        com.shatteredpixel.shatteredpixeldungeon.Dungeon.level.unseal();
         GameScene.bossSlain();
     }
 
