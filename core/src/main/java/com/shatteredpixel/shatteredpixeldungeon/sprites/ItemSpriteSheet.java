@@ -797,6 +797,20 @@ public class ItemSpriteSheet {
 	//  - y=32..38 透明填充
 	//  - y=39 贴上魔绫 items/items.png 的**传说武器行**（16 个 16x16 图标）
 	//因此本块现在使用 x=1 列、y=39 行，显示的是魔绫原版贴图。
+	//END(图集扩展): Hollow/Galaxy 物品图标 —— 魔绫原版贴图，贴在 y=33 行
+	private static final int HOLLOW_ICONS    =                               xy(1, 33);  //9 个已用
+	static {
+		assignItemRect(HOLLOW_ICONS+0, 16, 16);   //Gelatin
+		assignItemRect(HOLLOW_ICONS+1, 16, 16);   //Sugar_Block
+		assignItemRect(HOLLOW_ICONS+2, 16, 16);   //WhiteSugar_B
+		assignItemRect(HOLLOW_ICONS+3, 16, 16);   //StarCrystal
+		assignItemRect(HOLLOW_ICONS+4, 16, 16);   //DeathRongBoat
+		assignItemRect(HOLLOW_ICONS+5, 16, 16);   //ProjectilesStar
+		assignItemRect(HOLLOW_ICONS+6, 16, 16);   //CityHood(传送符)
+		assignItemRect(HOLLOW_ICONS+7, 16, 16);   //AncityArmor
+		assignItemRect(HOLLOW_ICONS+8, 16, 16);   //WaterSoul
+	}
+
 	//END(图集扩展): items.png 已扩到 256x1024(64行，2的幂)，第39行贴上魔绫的传说武器贴图。
 	private static final int LENGYWEAPONS    =                               xy(1, 39);  //16 slots
 	public static final int  RICESWORD      = LENGYWEAPONS+1;  //END(修复): 槽0在图集中是空的
@@ -854,18 +868,18 @@ public class ItemSpriteSheet {
 	}
 
 	//END(移植自魔绫·挑战区): 空洞遗迹的食物图标，占用 DOCUMENTS 块剩余空位
-	public static final int GELATIN      = FOOD+0;   //END(修复): 原DOCUMENTS+7为空槽→不可见
-	public static final int SUGAR_BLOCK  = FOOD+1;   //END(修复)
-	public static final int WHITE_SUGAR_B= FOOD+2;   //END(修复)
+	public static final int GELATIN      = HOLLOW_ICONS+0;  //END: 魔绫原版贴图
+	public static final int SUGAR_BLOCK  = HOLLOW_ICONS+1;  //END: 魔绫原版贴图
+	public static final int WHITE_SUGAR_B= HOLLOW_ICONS+2;  //END: 魔绫原版贴图
 	//END(移植自魔绫·挑战区): 空洞遗迹 武器/任务物图标
 	//END(移植自魔绫): 抛射物星形（塔·机用）
-	public static final int PROJECTILES_STAR = MISSILE_WEP+0; //END(修复)
-	public static final int CITY_HOOD        = ARMOR+0;  //END(修复)
-	public static final int STAR_CRYSTAL    = STONES+0;  //END(修复)
-	public static final int DEATHRONG_BOAT  = WEP_TIER1+0; //END(修复)
+	public static final int PROJECTILES_STAR = HOLLOW_ICONS+5;  //END: 魔绫原版贴图
+	public static final int CITY_HOOD        = HOLLOW_ICONS+6;  //END: 魔绫原版贴图(传送符)
+	public static final int STAR_CRYSTAL    = HOLLOW_ICONS+3;  //END: 魔绫原版贴图
+	public static final int DEATHRONG_BOAT  = HOLLOW_ICONS+4;  //END: 魔绫原版贴图
 	//END(port from MagicLing·Galaxy): 银河区图标（复用 DOCUMENTS 剩余空位）
-	public static final int ARMOR_ANCITY   = ARMOR+1;  //END(修复)
-	public static final int WATERSOUL      = POTIONS+0;//END(修复)
+	public static final int ARMOR_ANCITY   = HOLLOW_ICONS+7;  //END: 魔绫原版贴图
+	public static final int WATERSOUL      = HOLLOW_ICONS+8;  //END: 魔绫原版贴图
 	public static final int Dragon_Lei     = STAR_CRYSTAL;
 	public static final int FISHSKELETON   = DEATHRONG_BOAT;
 	public static final int FISHBONE       = STAR_CRYSTAL;
