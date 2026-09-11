@@ -472,6 +472,33 @@ DeadDogCerberusSprite.java:104  cannot find symbol: class DeadDogCerberus (Hunte
 - 剩余怪物：ApprenticeWitch、Frankenstein
 - **`buffs.png` 补帧**（SCARY 等图标会 nofound）
 
+## 六点十四、第8轮（剩余怪物 + NPC）与 MorphsNPC/Typhon 暂缓
+
+### 本轮已完成（本地编译 OK）
+| 项 | 内容 |
+|---|---|
+| **剩余怪物 2** | `ApprenticeWitch`（见习魔女，199行）、`Frankenstein`（科学怪人，172行）+ 各自精灵 |
+| **NPC** | `ZeroBoat`（渡船 218行）、`DeathRongShop`、`SliceAlter`、`CerbusSleep` |
+| **NPC 依赖链** | `TrueInvisibiity`(107) / `Pets`(82) / `BloodBat`(312) / `TestBatLock`(81) / `BlueBatSprite`(99) / `ZeroBoatSprite`(26) / `DeathRongSprite`/`TyphonSprite`/`SliceAlterSprite`/`DeadDogSleepCerberusSprite`/`MorpheusSprite` |
+| **剧情 plot** | `SliceAlterPlot`(108) / `SliceDogPlot`(106) |
+| **资源** | `boat.png`/`typhon.png`/`Cerberus_sleep.png`/`morpheus.png`/`bloodbat.png`/`BrownBat.png`/`Silence` 立绘×5 |
+| **扩展点** | `Assets.Sprites`: BOAT/TYPHON/SCSR/MPHON/BBAT/BATEX；`Assets.Splashes`: Silence_1/Silence_4；`Char.Property.PETS`；`Window.CYELLOW/CWHITE` |
+
+### 移植调整（本轮）
+- `Property.PETS`（魔绫有，本 fork 无）→ **新增枚举项**
+- `TrueInvisibiity` 的 `CharSprite.State.TRUE_INVISIBLE` → `INVISIBLE`
+- `BloodBat`：`hero.isSubclass(X)` → `hero.subClass == X`；`Buff.affect(x,Y.class).prolong(z)` → `Buff.affect(x,Y.class).extend(z)`（`ArtifactRecharge` 非 FlavourBuff）
+- `MagicMissile.HALOFIRE` → `FIRE`；`Icons.SKIP` → `CHEVRON`；`Assets.Sounds.DOG_ANAGY` → `GHOST`
+- `Property.UNKNOWN` → `IMMOVABLE`；`PaswordBadges.*` 全部省略
+
+### ⏸ 暂缓：`MorphsNPC` + `Typhon`（连同 9 个依赖文件）
+**原因**：这两个 NPC 属于「小游戏/Theatre 关卡」的剧情 NPC，而**那些关卡本身还没搬**（Pacman/MoveBox/Theatre/Morpheus）。且依赖链很深：
+- `GodNPC` / `LingBag` / `StarCrystal` / `UnsignedInvitationLetter`
+- `MorphsNPCPlot` / `MorphsEndTheaterPlot` / `MorphsGodEndTheaterPlot` / `MorphsAllEndPlot`(712行) / `TyphonPlot`
+- **更深**：`items/books/*` 整个书籍体系(16 文件) + `items/wands/SelectableWand` + `actors/mobs/BruteBot` + `actors/mobs/bosses/Cerberus` + `Statistics.miniGamesTotalLevel`
+
+**已复制的 11 个文件暂存于 `E:\破碎的地牢\_port_pending\`**（含目录结构），待搬入小游戏关时一并放回并补齐依赖。
+
 ## 七、当前阻塞 / 待办
 
 
