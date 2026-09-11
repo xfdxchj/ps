@@ -40,15 +40,17 @@ public final class ChallengeArea {
 	}
 
 	//==== 注册表（id 顺序 = 进入顺序）====
+	//魔绫 3 区（已实装）
 	public static final ChallengeArea HOLLOW      = new ChallengeArea(1, "空洞遗迹", 8, true);
 	public static final ChallengeArea BOSS_RUSH   = new ChallengeArea(2, "Boss Rush", 7, true);
 	public static final ChallengeArea GALAXY      = new ChallengeArea(3, "银河深渊", 5, true);
-	public static final ChallengeArea PEACH       = new ChallengeArea(4, "桃神试炼", 3, false);
-	public static final ChallengeArea DEEP_SHADOW = new ChallengeArea(5, "深影领域", 3, false);
-	public static final ChallengeArea FOREST_HARD = new ChallengeArea(6, "森林灾厄", 3, false);
+	//方舟 3 区（待实装；方舟内容与原版体系自包含，与魔绫无耦合）
+	public static final ChallengeArea IBERIA      = new ChallengeArea(4, "伊比利亚·海嗣", 4, false);
+	public static final ChallengeArea GAVIAL      = new ChallengeArea(5, "嘉维尔·雨林", 4, false);
+	public static final ChallengeArea SIESTA      = new ChallengeArea(6, "汐斯塔·海滨", 4, false);
 
 	public static final ChallengeArea[] ALL = {
-			HOLLOW, BOSS_RUSH, GALAXY, PEACH, DEEP_SHADOW, FOREST_HARD
+			HOLLOW, BOSS_RUSH, GALAXY, IBERIA, GAVIAL, SIESTA
 	};
 
 	/** 挑战区起始层（主线 25F 之后）。 */
