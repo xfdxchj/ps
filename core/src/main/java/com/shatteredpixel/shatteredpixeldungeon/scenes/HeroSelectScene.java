@@ -627,6 +627,8 @@ public class HeroSelectScene extends PixelScene {
 		private ArrayList<ColorBlock> spacers;
 
 		protected StyledButton challengeButton;
+		//END(移植自魔绫·挑战区)
+		protected StyledButton areaButton;
 
 		@Override
 		protected void createChildren() {
@@ -817,6 +819,24 @@ public class HeroSelectScene extends PixelScene {
 			challengeButton.icon(Icons.get(SPDSettings.challenges() > 0 ? Icons.CHALLENGE_COLOR : Icons.CHALLENGE_GREY));
 			add(challengeButton);
 			buttons.add(challengeButton);
+
+			//END(移植自魔绫·挑战区): 开局多选“挑战区域”（主线 25F 之后按 id 顺序依次进入）
+			areaButton = new StyledButton(Chrome.Type.BLANK, "挑战区域", 6){
+				@Override
+				protected void onClick() {
+					ShatteredPixelDungeon.scene().addToFront(new com.shatteredpixel.shatteredpixeldungeon.windows.WndChallengeAreas(SPDSettings.challengeAreas(), true) {
+						public void onBackPressed() {
+							super.onBackPressed();
+							icon(Icons.get(SPDSettings.challengeAreas() > 0 ? Icons.CHALLENGE_COLOR : Icons.CHALLENGE_GREY));
+							updateOptionsColor();
+						}
+					} );
+				}
+			};
+			areaButton.leftJustify = true;
+			areaButton.icon(Icons.get(SPDSettings.challengeAreas() > 0 ? Icons.CHALLENGE_COLOR : Icons.CHALLENGE_GREY));
+			add(areaButton);
+			buttons.add(areaButton);
 
 			int unlockedCount = 0;
 			for (HeroClass cls : HeroClass.values()){

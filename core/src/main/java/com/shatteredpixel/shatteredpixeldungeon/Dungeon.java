@@ -253,6 +253,9 @@ public class Dungeon {
 
 		initialVersion = version = Game.versionCode;
 		challenges = SPDSettings.challenges();
+		//END(移植自魔绫·挑战区): 把开局勾选的挑战区域写入 Statistics（Hollow 等）
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeArea
+				.applySelection(SPDSettings.challengeAreas());
 		mobsToChampion = 1;
 
 		Actor.clear();

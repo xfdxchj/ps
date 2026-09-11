@@ -251,6 +251,17 @@ public class SPDSettings extends GameSettings {
 		return getInt( KEY_CHALLENGES, 0, 0, Challenges.MAX_VALUE );
 	}
 
+	//END(移植自魔绫·挑战区): 开局选择的“挑战区域”位掩码（bit i = 第 i 个区域被选中）
+	public static final String KEY_CHALLENGE_AREAS = "challenge_areas";
+
+	public static void challengeAreas( int value ) {
+		put( KEY_CHALLENGE_AREAS, value );
+	}
+
+	public static int challengeAreas() {
+		return getInt( KEY_CHALLENGE_AREAS, 0, 0, 0x7FFFFFFF );
+	}
+
 	public static void customSeed( String value ){
 		put( KEY_CUSTOM_SEED, value );
 	}
