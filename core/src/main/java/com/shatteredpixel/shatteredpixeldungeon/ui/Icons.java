@@ -78,6 +78,7 @@ public enum Icons {
 	SCROLL_COLOR,
 	COPY,
 	PASTE,
+	COLOR_TARGET, //END(移植自魔绫)
 
 	BACKPACK_LRG,
 	TALENT,

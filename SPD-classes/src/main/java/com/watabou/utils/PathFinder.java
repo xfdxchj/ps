@@ -44,6 +44,10 @@ public class PathFinder {
 	public static int[] NEIGHBOURS4;
 	public static int[] NEIGHBOURS8;
 	public static int[] NEIGHBOURS9;
+	//END(port from MagicLing): 更大范围邻居表
+	public static int[] NEIGHBOURS13;
+	public static int[] NEIGHBOURS13_4;
+	public static int[] NEIGHBOURS49;
 
 	//similar to their equivalent neighbour arrays, but the order is clockwise.
 	//Useful for some logic functions, but is slower due to lack of array-access order.
@@ -71,6 +75,9 @@ public class PathFinder {
 		NEIGHBOURS4 = new int[]{-width, -1, +1, +width};
 		NEIGHBOURS8 = new int[]{-width-1, -width, -width+1, -1, +1, +width-1, +width, +width+1};
 		NEIGHBOURS9 = new int[]{-width-1, -width, -width+1, -1, 0, +1, +width-1, +width, +width+1};
+		NEIGHBOURS13 = new int[]{-width*2, -width-1, -width, -width+1, -2, -1, +1, +2, +width-1, +width, +width+1, +width*2};
+		NEIGHBOURS13_4 = new int[]{-width*2, -width-1, -width, -width+1, -2, -1, 0, +1, +2, +width-1, +width, +width+1, +width*2};
+		NEIGHBOURS49 = new int[]{-width-1, -width, -width+1, -1, 0, +1, +width-1, +width, +width+1, -2*width-1, -2*width, -2*width+1, -width-2, -width+2, +2*width-1, +2*width, +2*width+1, +width-2, +width+2, -2*width-2, -2*width+2, +2*width-2, +2*width+2};
 
 		CIRCLE4 = new int[]{-width, +1, +width, -1};
 		CIRCLE8 = new int[]{-width-1, -width, -width+1, +1, +width+1, +width, +width-1, -1};

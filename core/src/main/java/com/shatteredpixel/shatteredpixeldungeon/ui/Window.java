@@ -65,6 +65,9 @@ public class Window extends Group implements Signal.Listener<KeyEvent> {
 	//END(移植自魔绫·挑战区)
 	public static final int CYELLOW = 0xFFFF00;
 	public static final int CWHITE  = 0xFFFFFF;
+	public static final int DeepPK_COLOR = 0x792F9E;
+	public static final int ANSDO_COLOR  = 0xDDA0DD;
+	public static final int RED_COLOR2   = 0xFF0000;
 	public static final int CBLACK       = 0x808080;
 	
 	public Window() {

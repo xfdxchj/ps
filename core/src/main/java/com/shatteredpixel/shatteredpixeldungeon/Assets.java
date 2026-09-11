@@ -80,6 +80,7 @@ public class Assets {
 
 	public static class Interfaces {
 		public static final String ARCS_BG  = "interfaces/arcs1.png";
+		public static final String WHITE_RECT  = "interfaces/white_rect.png";
 		public static final String ARCS_FG  = "interfaces/arcs2.png";
 
 		public static final String BANNERS  = "interfaces/banners.png";
@@ -264,9 +265,18 @@ public class Assets {
 		public static final String CAVES    = "splashes/caves.jpg";
 		public static final String CITY     = "splashes/city.jpg";
 		public static final String HALLS    = "splashes/halls.jpg";
-		//END(移植自魔绫·挑战区): 空洞遗迹 NPC 立绘
+		//END(port from MagicLing): Hollow 剧情立绘
+		public static final String Silence_0 = "splashes/hollow/Silence/silence_portraits(0).png";
 		public static final String Silence_1 = "splashes/hollow/Silence/silence_portraits(1).png";
+		public static final String Silence_2 = "splashes/hollow/Silence/silence_portraits(2).png";
+		public static final String Silence_3 = "splashes/hollow/Silence/silence_portraits(3).png";
 		public static final String Silence_4 = "splashes/hollow/Silence/silence_portraits(4).png";
+		public static final String Morphs_0 = "splashes/hollow/Morphs/morpheus_portraits(0).png";
+		public static final String Morphs_2 = "splashes/hollow/Morphs/morpheus_portraits(2).png";
+		public static final String Morphs_5 = "splashes/hollow/Morphs/morpheus_portraits(5).png";
+		public static final String Morphs_6 = "splashes/hollow/Morphs/morpheus_portraits(6).png";
+		public static final String Morphs_7 = "splashes/hollow/Morphs/morpheus_portraits(7).png";
+		//END(移植自魔绫·挑战区): 空洞遗迹 NPC 立绘
 
 		public static class Title {
 			public static final String ARCHS         = "splashes/title/archs.png";
@@ -388,5 +398,10 @@ public class Assets {
 		public static final String MPHON            = "sprites/hollow/morpheus.png";
 		public static final String BBAT             = "sprites/bloodbat.png";
 		public static final String BATEX            = "sprites/BrownBat.png";
+		//END(移植自魔绫·挑战区): 空洞遗迹 Boss 精灵与剧情立绘
+		public static final String MYSTIC_CORE   = "sprites/hollow/mystic_core.png";
+		public static final String NYARLATHOTEP  = "sprites/hollow/nyarlathotep.png";
+		public static final String YOG_SOUL      = "sprites/hollow/yogsoul.png";
+		public static final String SHUBNIGGURATH = "sprites/hollow/shubniggurath.png";
 	}
 }

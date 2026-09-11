@@ -35,6 +35,11 @@ public class Effects {
 		ETHEREAL_CHAIN,
 		DEATH_RAY,
 		LIGHT_RAY,
+		//END(port from MagicLing)
+		M_CHAIN,
+		D_CHAIN,
+		P_CHAIN,
+		L_CHAIN,
 		HEALTH_RAY
 	}
 	

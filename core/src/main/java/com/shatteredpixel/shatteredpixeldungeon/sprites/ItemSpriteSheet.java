@@ -836,6 +836,9 @@ public class ItemSpriteSheet {
 	public static final int SUGAR_BLOCK  = DOCUMENTS+8;
 	public static final int WHITE_SUGAR_B= DOCUMENTS+9;
 	//END(移植自魔绫·挑战区): 空洞遗迹 武器/任务物图标
+	//END(移植自魔绫): 抛射物星形（塔·机用）
+	public static final int PROJECTILES_STAR = DOCUMENTS+12;
+	public static final int CITY_HOOD        = DOCUMENTS+13;
 	public static final int STAR_CRYSTAL    = DOCUMENTS+10;
 	public static final int DEATHRONG_BOAT  = DOCUMENTS+11;
 	static{
@@ -843,6 +846,8 @@ public class ItemSpriteSheet {
 		assignItemRect(SUGAR_BLOCK,   12, 12);
 		assignItemRect(WHITE_SUGAR_B, 12, 12);
 		assignItemRect(STAR_CRYSTAL,  12, 12);
+		assignItemRect(PROJECTILES_STAR, 9, 9);
+		assignItemRect(CITY_HOOD, 12, 12);
 		assignItemRect(DEATHRONG_BOAT,14, 10);
 	}
 

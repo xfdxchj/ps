@@ -136,6 +136,7 @@ public class Dungeon {
 		NECRO_HP,
 		BAT_HP,
 		WARLOCK_HP,
+		HUNR_HP, //END(移植自魔绫): 猎人(ShieldHuntsman)生命药水掉落
 		//Demon spawners are already limited in their spawnrate, no need to limit their health drops
 		//alchemy
 		COOKING_HP,

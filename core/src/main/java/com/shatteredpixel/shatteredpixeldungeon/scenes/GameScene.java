@@ -1109,6 +1109,13 @@ public class GameScene extends PixelScene {
 		}
 	}
 	
+	//END(移植自魔绫): 白屏渐变（剧情收尾用）
+	public static void fadeToWhite(float duration, float delay) {
+		Banner bossSlain = new Banner( BannerSprites.get( BannerSprites.Type.BOSS_SLAIN ) ); //END(port): 本fork无 Type.NULL（纹理由下一行覆盖为白图）
+		bossSlain.texture(Assets.Interfaces.WHITE_RECT);
+		bossSlain.show(Window.CBLACK, duration, delay);
+		scene.showBanner(bossSlain);
+	}
 	private void showBanner( Banner banner ) {
 		banner.camera = uiCamera;
 

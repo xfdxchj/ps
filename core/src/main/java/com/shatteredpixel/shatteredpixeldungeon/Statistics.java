@@ -82,6 +82,9 @@ public class Statistics {
 	public static boolean NoTime = false;
 	/** END(移植自魔绫·挑战区): 冥犬剧情标志（DeathRong 对话分支用，拼写沿用原版）。 */
 	public static boolean defalult_deaddog = false;
+	//END(port from MagicLing)
+	public static int RepaierTowerCount = 0;
+	public static boolean isOldDay = false;
 	/** END(移植自魔绫·挑战区): 是否处于 Boss Rush 模式（影响部分 Boss 掉落/层表）。 */
 	public static boolean bossRushMode = false;
 	public static boolean gameWon = false;

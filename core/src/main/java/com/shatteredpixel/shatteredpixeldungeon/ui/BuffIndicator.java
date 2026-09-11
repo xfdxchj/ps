@@ -149,6 +149,8 @@ public class BuffIndicator extends Component {
 	public static final int HALOMETHANEBURNING = FIRE; //原魔绫 57
 	//END(移植自魔绫·挑战区): 玫瑰护盾
 	public static final int ROSEBARRIER = BARKSKIN;    //原魔绫 56
+	//END(port): 灯笼火（复用既有帧，避免超范围）
+	public static final int LANTERFIRE_FIVE = FIRE;
 
 	public static final int SIZE_SMALL  = 7;
 	public static final int SIZE_LARGE  = 16;
