@@ -282,10 +282,14 @@ public class Assets {
 		public static final String Silence_3 = "splashes/hollow/Silence/silence_portraits(3).png";
 		public static final String Silence_4 = "splashes/hollow/Silence/silence_portraits(4).png";
 		public static final String Morphs_0 = "splashes/hollow/Morphs/morpheus_portraits(0).png";
+		public static final String Morphs_1 = "splashes/hollow/Morphs/morpheus_portraits(1).png";
 		public static final String Morphs_2 = "splashes/hollow/Morphs/morpheus_portraits(2).png";
+		public static final String Morphs_3 = "splashes/hollow/Morphs/morpheus_portraits(3).png";
+		public static final String Morphs_4 = "splashes/hollow/Morphs/morpheus_portraits(4).png";
 		public static final String Morphs_5 = "splashes/hollow/Morphs/morpheus_portraits(5).png";
 		public static final String Morphs_6 = "splashes/hollow/Morphs/morpheus_portraits(6).png";
 		public static final String Morphs_7 = "splashes/hollow/Morphs/morpheus_portraits(7).png";
+		public static final String Morphs_8 = "splashes/hollow/Morphs/morpheus_portraits(8).png";
 		//END(移植自魔绫·挑战区): 空洞遗迹 NPC 立绘
 
 		public static class Title {

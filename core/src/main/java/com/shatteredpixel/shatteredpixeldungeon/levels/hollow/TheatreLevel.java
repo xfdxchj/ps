@@ -118,7 +118,11 @@ public class TheatreLevel extends Level {
 
     @Override
     protected void createItems() {
-        //END(port): MorphsNPC/LingBag 未搬（依赖小游戏系统），剧院层暂不生成 NPC
+        //END: 生成剧情 NPC 莫菲斯（小游戏相关分支已裁剪）
+        com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.hollow.MorphsNPC npc =
+                new com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.hollow.MorphsNPC();
+        npc.pos = 136;
+        mobs.add(npc);
     }
 
     @Override
