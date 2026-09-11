@@ -264,6 +264,9 @@ public class Assets {
 		public static final String CAVES    = "splashes/caves.jpg";
 		public static final String CITY     = "splashes/city.jpg";
 		public static final String HALLS    = "splashes/halls.jpg";
+		//END(移植自魔绫·挑战区): 空洞遗迹 NPC 立绘
+		public static final String Silence_1 = "splashes/hollow/Silence/silence_portraits(1).png";
+		public static final String Silence_4 = "splashes/hollow/Silence/silence_portraits(4).png";
 
 		public static class Title {
 			public static final String ARCHS         = "splashes/title/archs.png";
