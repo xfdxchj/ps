@@ -1,4 +1,4 @@
-package com.shatteredpixel.shatteredpixeldungeon.levels;
+﻿package com.shatteredpixel.shatteredpixeldungeon.levels;
 
 import static com.shatteredpixel.shatteredpixeldungeon.Dungeon.depth;
 
@@ -15,7 +15,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.food.hollow.Gelatin;
 import com.shatteredpixel.shatteredpixeldungeon.items.food.hollow.Sugar_Block;
 import com.shatteredpixel.shatteredpixeldungeon.items.food.hollow.WhiteSugar_B;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHealing;
-import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHolyWater;
+import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfPurity;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfUpgrade;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.exotic.ScrollOfAntiMagic;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.exotic.ScrollOfChallenge;
@@ -47,13 +47,7 @@ import com.watabou.utils.PointF;
 import com.watabou.utils.Random;
 
 /**
- * END(移植自魔绫·挑战区): 空洞遗迹(Hollow) 常规楼层(27-30F)。
- * 移植说明：
- * - 音乐走已补的 {@code Music.playModeBGM}；资源键 {@code Assets.Environment.*HOLLOW} 已补。
- * - {@code Statistics.Hollow_Holiday} / {@code Badges.Badge.KILL_DOG} 已补。
- * - **TODO(待搬)**：魔绫此处还会在 depth27 生成 NPC `SliceGirl`（依赖 NTNPC/SlicePlot/WndDialog/SliceGirlSprite 一整条链），
- *   本轮未搬，故该分支暂缺；搬完 `npcs/hollow/*` 后在此处恢复。
- */
+ * END(绉绘鑷瓟缁锋寫鎴樺尯): 绌烘礊閬楄抗(Hollow) 甯歌妤煎眰(27-30F)銆? * 绉绘璇存槑锛? * - 闊充箰璧板凡琛ョ殑 {@code Music.playModeBGM}锛涜祫婧愰敭 {@code Assets.Environment.*HOLLOW} 宸茶ˉ銆? * - {@code Statistics.Hollow_Holiday} / {@code Badges.Badge.KILL_DOG} 宸茶ˉ銆? * - **TODO(寰呮惉)**锛氶瓟缁澶勮繕浼氬湪 depth27 鐢熸垚 NPC `SliceGirl`锛堜緷璧?NTNPC/SlicePlot/WndDialog/SliceGirlSprite 涓€鏁存潯閾撅級锛? *   鏈疆鏈惉锛屾晠璇ュ垎鏀殏缂猴紱鎼畬 `npcs/hollow/*` 鍚庡湪姝ゅ鎭㈠銆? */
 public class HollowLevel extends RegularLevel {
 
     {
@@ -87,9 +81,9 @@ public class HollowLevel extends RegularLevel {
 
     @Override
     protected void createItems() {
-        PotionOfHolyWater potionOfHolyWater = new PotionOfHolyWater();
-        potionOfHolyWater.quantity(Random.NormalIntRange(1,3));
-        addItemToSpawn(potionOfHolyWater);
+        PotionOfPurity potionOfPurity = new PotionOfPurity();
+        potionOfPurity.quantity(Random.NormalIntRange(1,3));
+        addItemToSpawn(potionOfPurity);
 
         switch (depth){
             case 28: case 30:
@@ -143,9 +137,9 @@ public class HollowLevel extends RegularLevel {
                 w = Generator.randomUsingDefaults( Generator.Category.POTION );
                 break;
             case 4:
-                PotionOfHolyWater potionOfHolyWater = new PotionOfHolyWater();
-                potionOfHolyWater.quantity(1);
-                w = potionOfHolyWater;
+                PotionOfPurity potionOfPurity = new PotionOfPurity();
+                potionOfPurity.quantity(1);
+                w = potionOfPurity;
                 break;
             case 5:
                 w = Generator.randomUsingDefaults( Generator.Category.SCROLL );
@@ -200,7 +194,7 @@ public class HollowLevel extends RegularLevel {
             }
         }
 
-        //END(移植自魔绫·挑战区): 27F 生成 NPC SliceGirl（古堡剧情）
+        //END(绉绘鑷瓟缁锋寫鎴樺尯): 27F 鐢熸垚 NPC SliceGirl锛堝彜鍫″墽鎯咃級
         if(Statistics.AbyssCityRules == 2 && depth == 27  && Statistics.Hollow_Holiday){
             SliceGirl sliceGirl = new SliceGirl();
             sliceGirl.pos = exit();

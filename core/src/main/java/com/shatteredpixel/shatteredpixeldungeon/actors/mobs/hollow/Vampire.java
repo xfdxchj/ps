@@ -131,7 +131,7 @@ public class Vampire extends Mob {
         }
         //33% 虚弱
         if(Random.Float() <= 33f){
-            Buff.affect( enemy, Weakness.class ).set(Random.Int(5, 7) );
+            Buff.prolong( enemy, Weakness.class, Random.Int(5, 7) );
         }
         int reg = (int) Math.min( damage * 0.8f, HT - HP );
         //33% 吸血

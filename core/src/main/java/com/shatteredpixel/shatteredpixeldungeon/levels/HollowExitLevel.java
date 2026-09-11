@@ -2,11 +2,10 @@ package com.shatteredpixel.shatteredpixeldungeon.levels;
 
 import static com.shatteredpixel.shatteredpixeldungeon.Dungeon.depth;
 import static com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.CUSTOM_DECO;
+import static com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.CUSTOM_DECO_EMPTY;
 import static com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.EMPTY_SP;
 import static com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.ENTRANCE;
 import static com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.HIGH_GRASS;
-import static com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.SIGN;
-import static com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.SIGN_SP;
 import static com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.WALL;
 import static com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.WALL_DECO;
 
@@ -58,8 +57,8 @@ public class HollowExitLevel extends Level {
 
     private static final int O = EMPTY_SP;
 
-    private static final int S = SIGN_SP;
-    private static final int K = SIGN;
+    private static final int S = CUSTOM_DECO_EMPTY;   //原魔绫 SIGN_SP(可通行记号)
+    private static final int K = CUSTOM_DECO;         //原魔绫 SIGN(墙上记号)
     private static final int X = CUSTOM_DECO;
 
     private static final int G = HIGH_GRASS;
@@ -166,7 +165,7 @@ public class HollowExitLevel extends Level {
                 group.add( new TorchB( i ) );
                 group.add( new TorchC( i ) );
             }
-            if (level.map[i] == SIGN_SP) {
+            if (level.map[i] == CUSTOM_DECO_EMPTY) {
                 group.add( new TorchD( i ) );
                 group.add( new TorchE( i ) );
                 group.add( new TorchF( i ) );
@@ -477,26 +476,19 @@ public class HollowExitLevel extends Level {
 
     @Override
     public String tileName( int tile ) {
-        switch (tile) {
-            case CUSTOM_DECO:
-                return Messages.get(LastLevel.class, "candle_name");
-            case SIGN:
-                return Messages.get(LastLevel.class, "candle_top_name");
-            default:
-                return super.tileName( tile );
+        //注：本 fork 无魔绫的 SIGN/SIGN_SP 地形，墙上记号映射为 CUSTOM_DECO（故两个 case 合并）
+        if (tile == CUSTOM_DECO) {
+            return Messages.get(LastLevel.class, "candle_name");
         }
+        return super.tileName( tile );
     }
 
     @Override
     public String tileDesc(int tile) {
-        switch (tile) {
-            case CUSTOM_DECO:
-                return Messages.get(LastLevel.class, "candle_desc");
-            case SIGN:
-                return Messages.get(LastLevel.class, "candle_top_desc");
-            default:
-                return super.tileDesc( tile );
+        if (tile == CUSTOM_DECO) {
+            return Messages.get(LastLevel.class, "candle_desc");
         }
+        return super.tileDesc( tile );
     }
 
 }
