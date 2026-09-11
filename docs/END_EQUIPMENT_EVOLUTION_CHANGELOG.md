@@ -64,6 +64,12 @@
 - `DaggerTrident`：由 `HeavyBoomerang`(会回旋) 改为普通 `MissileWeapon` 高数值投掷（不回旋），STRReq 12。
 - 冷却 Buff(TeleportCooldown/Execution/Rage/BloodShield/ThrowWeapon) 目前**只在抛/回时生效,角色 Buff 条上不显示读秒** —— 见下方待办。
 
-## 七、待办（下次开工）
-- 让这 5 个冷却 FlavourBuff 在角色 BuffIndicator 条上成为**可见、读数一致的冷却图标**（需先看 `ui/BuffIndicator` 的 icon 槽/PixelScene 并挑选稳定未被占用的槽位,再补 `icon()/tintIcon/iconTextDisplay()` 与 `BuffIndicator.reload` 触发）。改完后本地仍须 `./gradlew :core:compileJava` 验一次。
+## 七、待办（部分已完成，见第八节）
 - “刺杀只给一把”与“投掷垛可拾回续用”二者在非回手模型下冲突：当前取 `defaultQuantity()=3`(垛)。若要真单把+不消失只能走“回手/virtual 本体留”模型,请下轮确认。
+
+## 八、第四轮改动（用户复核后）
+1. **冷却 Buff 显示 `nofound` 修复**：本 fork `core/src/main/assets/interfaces/buffs.png` 仅 **128×64** → 大图集(16×16)=32 帧、小图集(7×7)=162 帧。原先选用的 `RAGE=38 / THROWN_WEP=85 / TARGETED=54` 超出大片帧数故显示 nofound。已改为 **索引<32**：`BloodShieldCooldown=ARMOR(20)`、`RageCooldown=FURY(18)`、`ThrowWeaponCooldown=MARK(27)`、`TeleportCooldown=INVISIBLE(12)`、`ExecutionCooldown=CRIPPLE(23)`；并在 4 处施加点补 `BuffIndicator.refreshHero()` 让图标即时出现。
+2. **老法杖灌注进阶杖上限仍 10**：根因＝`items/weapon/melee/MagesStaff.java` 的 `updateWand()`(L378) 与 `restoreFromBundle()`(L453) 只用 `instanceof EndModeWand` 豁免，13 把 `EvolvedWand*` 不实现该接口 → 仍被 “+1 封顶 10”。已改为**同时用既有 `evolvedWandImbued()`（包名 endcontent.evolved.）豁免**，进阶杖保留自身 `updateLevel()` 的 20 上限。
+3. **炼金手册看不到配方**：手册＝`ui/QuickRecipe.getRecipes(pageIdx)` 的硬编码分页（0..8，对应 `Document.ALCHEMY_GUIDE` 的 9 个页）。已把 dagger/seal 两条进化配方各 3 个方向样例追加到 **case 6（Weapons/装备页）**，并对 `sampleOutput` 做 null 守卫。
+4. **移除监狱牢笼/木桶装饰**：`levels/PrisonBossLevel.addCagesToCells()` 原逻辑是在墙边随机放至多 5 个 `Terrain.REGION_DECO`（该区域装饰＝牢笼/木桶）。已改为**空方法体**（3 处调用点与其它逻辑不动，随时可恢复）。
+

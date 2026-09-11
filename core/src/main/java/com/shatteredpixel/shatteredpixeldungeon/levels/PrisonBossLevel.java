@@ -381,21 +381,8 @@ public class PrisonBossLevel extends Level {
 
 	//randomly places up to 5 cages on tiles that are aside walls (but not torches or doors!)
 	public void addCagesToCells(){
-		Random.pushGenerator(Dungeon.seedCurDepth());
-			for (int i = 0; i < 5; i++){
-				int cell = randomPrisonCellPos();
-				boolean valid = false;
-				for (int j : PathFinder.NEIGHBOURS4){
-					if (map[cell+j] == Terrain.WALL){
-						valid = true;
-					}
-				}
-				if (valid){
-					Painter.set(this, cell, Terrain.REGION_DECO);
-				}
-			}
-
-		Random.popGenerator();
+		//END: 按需求移除“监狱牢笼/木桶”这类区域装饰(REGION_DECO)生成——不再摆放任何装饰物。
+		//（保留空方法体，三处调用点不动，便于以后需要时恢复原逻辑。）
 	}
 	
 	@Override

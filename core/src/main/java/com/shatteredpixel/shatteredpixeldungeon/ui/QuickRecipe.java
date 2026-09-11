@@ -348,6 +348,45 @@ public class QuickRecipe extends Component {
 				result.add(new QuickRecipe( new ArcaneResin.Recipe(),
 						new ArrayList<Item>(Arrays.asList(new Wand.PlaceHolder())),
 						new ArcaneResin()));
+				//END 装备进化族:把破印进阶与刺杀匕首进阶配方也列进“炼金手册-武器/装备”页
+				{
+					com.shatteredpixel.shatteredpixeldungeon.items.Recipe rd =
+							new com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolveDaggerRecipe();
+					com.shatteredpixel.shatteredpixeldungeon.items.Recipe rs =
+							new com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolveSealRecipe();
+					com.shatteredpixel.shatteredpixeldungeon.items.Item shard =
+							new com.shatteredpixel.shatteredpixeldungeon.items.quest.MetalShard();
+
+					//匕首:基底 + 邪能 + 速度/浮空/复仇 方向料 → 三叉/传送/处决
+					Object[][] daggerDirs = new Object[][]{
+							{ new com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHaste() },
+							{ new com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfLevitation() },
+							{ new com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfRetribution() },
+					};
+					for (Object[] d : daggerDirs){
+						ArrayList<Item> in = new ArrayList<>(Arrays.asList(
+								new com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons.AssassinDagger(),
+								shard,
+								(Item) d[0]));
+						Item outD = rd.sampleOutput(in);
+						if (outD != null) result.add(new QuickRecipe(rd, in, outD));
+					}
+
+					//破印:原版破印 + 邪能 + 方向料 → 血盾/狂暴/飞掷
+					Object[][] sealDirs = new Object[][]{
+							{ new com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHaste() },
+							{ new com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfLevitation() },
+							{ new com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfRetribution() },
+					};
+					for (Object[] d : sealDirs){
+						ArrayList<Item> in = new ArrayList<>(Arrays.asList(
+								new com.shatteredpixel.shatteredpixeldungeon.items.BrokenSeal(),
+								shard,
+								(Item) d[0]));
+						Item outS = rs.sampleOutput(in);
+						if (outS != null) result.add(new QuickRecipe(rs, in, outS));
+					}
+				}
 				return result;
 			case 7:
 				result.add(new QuickRecipe(new UnstableBrew.Recipe(), new ArrayList<>(Arrays.asList(new Potion.PlaceHolder(), new  Plant.Seed.PlaceHolder())), new UnstableBrew()));

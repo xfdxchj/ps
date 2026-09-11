@@ -374,8 +374,9 @@ public class MagesStaff extends MeleeWeapon {
 			int curCharges = wand.curCharges;
 			wand.level(level());
 			//gives the wand one additional max charge
-			//进化法杖(EndModeWand)有自己的 updateLevel 上限(可到 20)，不要被老魔杖压回 10
-			if (!(wand instanceof com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndModeWand)){
+			//END: 进化法杖/终焉进阶法杖自带 updateLevel 上限(可达 20)，不要被老魔杖的 +1/封顶10 压回 10
+			if (!(wand instanceof com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndModeWand)
+					&& !evolvedWandImbued()){
 				wand.maxCharges = Math.min(wand.maxCharges + 1, 10);
 			}
 			wand.curCharges = Math.min(curCharges + (levelled ? 1 : 0), wand.maxCharges);
@@ -449,8 +450,9 @@ public class MagesStaff extends MeleeWeapon {
 		super.restoreFromBundle(bundle);
 		wand = (Wand) bundle.get(WAND);
 		if (wand != null) {
-			//进化法杖(EndModeWand)有自己的 updateLevel 充能上限(可到 20)，不要被老魔杖压回 10
-			if (!(wand instanceof com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndModeWand)){
+			//END: 同上——终焉进化/进阶法杖保留其自带上限(可达 20)，不被老魔杖封顶到 10
+			if (!(wand instanceof com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EndModeWand)
+					&& !evolvedWandImbued()){
 				wand.maxCharges = Math.min(wand.maxCharges + 1, 10);
 			}
 		}
