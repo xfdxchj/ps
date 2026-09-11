@@ -8,6 +8,7 @@ import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.hollow.HollowMimic;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.hollow.Vampire;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.hollow.SliceGirl;
 import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.food.hollow.Gelatin;
@@ -199,7 +200,16 @@ public class HollowLevel extends RegularLevel {
             }
         }
 
-        //TODO(待搬): 魔绫在 depth27 会生成 NPC SliceGirl（依赖 npcs/hollow 整条链），搬完后在此恢复。
+        //END(移植自魔绫·挑战区): 27F 生成 NPC SliceGirl（古堡剧情）
+        if(Statistics.AbyssCityRules == 2 && depth == 27  && Statistics.Hollow_Holiday){
+            SliceGirl sliceGirl = new SliceGirl();
+            sliceGirl.pos = exit();
+            mobs.add(sliceGirl);
+        } else if((Badges.isUnlocked(Badges.Badge.KILL_DOG)) && depth == 27 && Statistics.Hollow_Holiday && Statistics.AbyssCityRules != 1) {
+            SliceGirl sliceGirl = new SliceGirl();
+            sliceGirl.pos = exit();
+            mobs.add(sliceGirl);
+        }
 
         super.createMobs();
     }

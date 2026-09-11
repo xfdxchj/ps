@@ -47,5 +47,17 @@ public abstract class NPC extends Mob {
 	@Override
 	public void beckon( int cell ) {
 	}
+
+	//END(移植自魔绫·挑战区): 把 NPC 脚下的物品堆推到相邻格（避免挡路）
+	protected void throwItem() {
+		com.shatteredpixel.shatteredpixeldungeon.items.Heap heap = Dungeon.level.heaps.get( pos );
+		if (heap != null && heap.type == com.shatteredpixel.shatteredpixeldungeon.items.Heap.Type.HEAP) {
+			int n;
+			do {
+				n = pos + com.watabou.utils.PathFinder.NEIGHBOURS8[com.watabou.utils.Random.Int( 8 )];
+			} while (!Dungeon.level.passable[n] && !Dungeon.level.avoid[n]);
+			Dungeon.level.drop( heap.pickUp(), n ).sprite.drop( pos );
+		}
+	}
 	
 }

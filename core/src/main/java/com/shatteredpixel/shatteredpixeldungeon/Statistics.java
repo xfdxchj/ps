@@ -80,6 +80,8 @@ public class Statistics {
 	public static int AbyssCityRules = 0;
 	/** END(移植自魔绫·挑战区): 是否暂停计时（HollowExitLevel 用）。 */
 	public static boolean NoTime = false;
+	/** END(移植自魔绫·挑战区): 冥犬剧情标志（DeathRong 对话分支用，拼写沿用原版）。 */
+	public static boolean defalult_deaddog = false;
 	public static boolean gameWon = false;
 	public static boolean ascended = false;
 	
@@ -127,6 +129,7 @@ public class Statistics {
 		Hollow_Holiday = false;
 		AbyssCityRules = 0;
 		NoTime = false;
+		defalult_deaddog = false;
 		gameWon = false;
 		ascended = false;
 		
@@ -175,6 +178,7 @@ public class Statistics {
 	private static final String HOLLOW_DAY      = "HOLLOW_DAY";
 	private static final String ABYSS_RULES     = "AbyssRules";
 	private static final String NO_TIME         = "NOTIME";
+	private static final String DEADDOD         = "defalult_deaddog";
 	private static final String WON		        = "won";
 	private static final String ASCENDED		= "ascended";
 	
@@ -225,6 +229,7 @@ public class Statistics {
 		bundle.put( HOLLOW_DAY,  Hollow_Holiday );
 		bundle.put( ABYSS_RULES, AbyssCityRules );
 		bundle.put( NO_TIME,     NoTime );
+		bundle.put( DEADDOD,     defalult_deaddog );
 		bundle.put( WON,        gameWon );
 		bundle.put( ASCENDED,   ascended );
 	}
@@ -290,6 +295,7 @@ public class Statistics {
 		if (bundle.contains( HOLLOW_DAY ))  Hollow_Holiday = bundle.getBoolean( HOLLOW_DAY );
 		if (bundle.contains( ABYSS_RULES )) AbyssCityRules = bundle.getInt( ABYSS_RULES );
 		if (bundle.contains( NO_TIME ))     NoTime = bundle.getBoolean( NO_TIME );
+		if (bundle.contains( DEADDOD ))     defalult_deaddog = bundle.getBoolean( DEADDOD );
 		gameWon         = bundle.getBoolean( WON );
 		ascended        = bundle.getBoolean( ASCENDED );
 	}

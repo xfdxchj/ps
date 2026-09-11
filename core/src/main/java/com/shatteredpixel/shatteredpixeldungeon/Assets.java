@@ -354,5 +354,8 @@ public class Assets {
 
 		//END(移植自魔绫·挑战区): 空洞遗迹怪物精灵
 		public static final String VAMPIRE          = "sprites/hollow/vampire.png";
+		public static final String SWTICH           = "sprites/hollow/Silence_Witch.png";
+		public static final String SWTICH_ALTER     = "sprites/hollow/silence_altar.png";
+		public static final String ZEROBOAT         = "sprites/hollow/death.png";
 	}
 }
