@@ -137,7 +137,54 @@
 
 ---
 
+## 六点五、实测依赖链（A 方案=老实体搬，本轮实测）
+
+按用户选择"老实体搬"，已实测 Hollow 的依赖链深度。**结论：依赖是链式的，一层层向外扩**。
+
+### 已补的零散符号（本轮，已提交）
+- `Badges.Badge.KILL_DOG(152)` + `Badges.KILL_DOG()`（`HollowLevel:200` 用到）
+- `Char.Property.HOLLOW`（`Char.java` 枚举，加在 `DEMONIC` 之后）
+- `BuffIndicator.SCARY(86) / SCARY_PINK(87) / SCARY_RED(88) / IMELSAZE(89)`
+  - ⚠️ **注意**：本 fork `buffs.png` 只有 128×64 → 大片(16×16)=32 帧。**索引 ≥32 会显示 `nofound`**（此前冷却图标就踩过这个坑）。这 4 个图标要想正常显示，**必须往 `assets/interfaces/buffs.png` 补 4 帧**，否则只能先借 <32 的既有索引。
+- `Window.Pink_COLOR = 0xFF1493`
+
+### `ElementalBuff` 体系（6 文件 / 约 390 行，HollowMimic 依赖）
+源路径 `actors/buffs/ElementalBuff/`：
+- `ElementalBuff.java`(79) — abstract extends Buff；只用 Buff/Hero/Bundle ✅可直搬
+- `ElementalBaseBuff.java`(62) — 同上 ✅可直搬
+- `ElementalFABuff.java`(6) — abstract extends FlavourBuff ✅可直搬
+- `BaseBuff/ScaryBuff.java`(103) — 依赖 ↓
+- `DamageBuff/ScaryDamageBuff.java`(97) — 依赖 ↓
+- `Immunities/ScaryImmunitiesBuff.java`(46) — 依赖 ↓
+
+### 该体系牵出的**新符号**（本 fork 全部缺失，需补）
+| 符号 | 本 fork 状态 | 备注 |
+|---|---|---|
+| `BuffIndicator.SCARY / SCARY_PINK / SCARY_RED / IMELSAZE` | ❌ 无（本 fork 最高 `THROWN_WEP=85`） | 加 4 个常量即可（建议 86..89） |
+| `Window.Pink_COLOR` | ❌ 无 | 魔绫定义 `0xFF1493`；本 fork `Window` 无颜色常量区，需加 |
+| `IconFloatingText.HEARTDEMON` | ❌ **本 fork 无 `effects/IconFloatingText.java` 整个类** | 魔绫该类 208 行（自定义浮动文字体系），搬它需连带其依赖 |
+| `TimeReset.MobsWither` | ❌ 本 fork 无 `TimeReset` | 且 `MobsWither extends DwarfGeneral.Wither` → **又牵出魔绫 Boss 类 `DwarfGeneral`** |
+
+### 其他已确认缺失（HollowLevel/HollowMimic 直接需要）
+- `Char.Property.HOLLOW` — 本 fork `Char.Property` 无此项（有 BOSS/MINIBOSS/UNDEAD/DEMONIC/INORGANIC/FIERY/ICY/ACIDIC/ELECTRIC/LARGE/IMMOVABLE…）→ 加枚举项
+- `MimicSprite.HollowWall` — 本 fork `MimicSprite` 只有 `Golden/Crystal/Ebony` → 加内部类 + 精灵图
+- `Mimic.items/setLevel/generatePrize` — ✅ 本 fork 都有（`Mimic.java:67/259/332`）
+- `Terrain.CUSTOM_DECO`(23) / `REGION_DECO`(33) — ✅ 已有
+
+### 实测结论（供下轮直接照做）
+搬 `HollowMimic` 这一小组的顺序应为：
+1. 补 `Char.Property.HOLLOW`、`BuffIndicator.SCARY*`、`Window.Pink_COLOR`
+2. 搬 `ElementalBuff` 全 6 文件（此时会缺 `IconFloatingText`、`TimeReset.MobsWither`）
+3. 决定 `IconFloatingText` / `TimeReset` 的处置：
+   - **保真(A)**：连 `IconFloatingText`(208行) 与 `TimeReset`(172行，含 `DwarfGeneral.Wither`) 一起搬 → 继续扩链
+   - **实用(B)**：把 `showStatusWithIcon(...IconFloatingText.HEARTDEMON)` 降级为普通 `showStatus`；把 `MobsWither` 降级为本 fork 已有的等价 debuff
+4. 补 `MimicSprite.HollowWall` + 精灵资源
+5. 再搬 `HollowMimic` → `HollowPainter` → `HollowLevel`/`HollowExitLevel`
+
+> ⚠️ 越往上（Boss/painter/plot）依赖越重，`bosses/hollow/*` 那 15 个大概率还挂别的体系。**建议每搬一层就立刻在你机器上 `:core:compileJava` 验一次**，否则错误会累积。
+
 ## 七、当前阻塞 / 待办
+
 
 - **本机不能编译验证**（wrapper 需 gradle 9.4.0、无外网、沙箱只写工作区）→ 每步仍需在你机器或 GitHub CI 上 `./gradlew :core:compileJava` 验证。
 - **方舟三区**：需反编译器（推荐 CFR：`https://www.benf.org/other/cfr/cfr-0.152.jar`，放到 `E:\破碎的地牢\cfr.jar`）。

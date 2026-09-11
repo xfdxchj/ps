@@ -137,6 +137,12 @@ public class BuffIndicator extends Component {
 	public static final int SEAL_SHIELD = 84;
 	public static final int THROWN_WEP  = 85;
 
+	//END(移植自魔绫): 恐惧(Scary)与免疫系图标（空洞遗迹/元素buff体系用）
+	public static final int SCARY       = 86;
+	public static final int SCARY_PINK  = 87;
+	public static final int SCARY_RED   = 88;
+	public static final int IMELSAZE    = 89;
+
 	public static final int SIZE_SMALL  = 7;
 	public static final int SIZE_LARGE  = 16;
 	

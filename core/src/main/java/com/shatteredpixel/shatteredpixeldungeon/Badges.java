@@ -215,7 +215,9 @@ public class Badges {
 		GAMES_PLAYED_5              ( 124, BadgeType.GLOBAL ),
 		HIGH_SCORE_5                ( 125 ),
 		CHAMPION_2                  ( 126 ),
-		CHAMPION_3                  ( 127 );
+		CHAMPION_3                  ( 127 ),
+		//END(移植自魔绫·挑战区): 空洞遗迹相关徽章
+		KILL_DOG                    ( 152 );
 
 		public boolean meta;
 
@@ -1148,6 +1150,11 @@ public class Badges {
 			local.add( Badge.PACIFIST_ASCENT );
 			displayBadge( Badge.PACIFIST_ASCENT );
 		}
+	}
+
+	//END(移植自魔绫·挑战区): 击败空洞遗迹的冥犬(Cerberus)后授予
+	public static void KILL_DOG() {
+		displayBadge( Badge.KILL_DOG );
 	}
 
 	public static void validateChampion( int challenges ) {

@@ -1372,6 +1372,8 @@ public abstract class Char extends Actor {
 		BOSS_MINION,
 		UNDEAD,
 		DEMONIC,
+		//END(移植自魔绫·挑战区): 空洞遗迹(Hollow)生物属性
+		HOLLOW,
 		INORGANIC ( new HashSet<Class>(),
 				new HashSet<Class>( Arrays.asList(Bleeding.class, ToxicGas.class, Poison.class) )),
 		FIERY ( new HashSet<Class>( Arrays.asList(WandOfFireblast.class, Elemental.FireElemental.class)),
