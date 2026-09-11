@@ -385,6 +385,38 @@ public class Dungeon {
 				} catch (Exception ignore){ /*单件失败忽略*/ }
 			}
 
+			//END 便利：跳关测试道具 + 板甲 + 传说武器
+			//深渊传送符：使用后直接到 25F（主线终点），便于跳过 1-24F 直接测挑战区。
+			try {
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.items.EndFloorSkip skip =
+						new com.shatteredpixel.shatteredpixeldungeon.endcontent.items.EndFloorSkip();
+				skip.identify(); skip.collect();
+			} catch (Exception ignore){ /*单件失败忽略*/ }
+
+			//板甲(原版 PlateArmor)，已鉴定
+			try {
+				com.shatteredpixel.shatteredpixeldungeon.items.armor.PlateArmor plate =
+						new com.shatteredpixel.shatteredpixeldungeon.items.armor.PlateArmor();
+				plate.identify(); plate.collect();
+			} catch (Exception ignore){ /*单件失败忽略*/ }
+
+			//传说武器一把(随机从 9 把里取，已鉴定)。若想固定某把，把下行的类替换即可。
+			try {
+				Class<?>[] legend = new Class<?>[]{
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.legend.ClearSword.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.legend.DiedCrossBow.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.legend.ForestBow.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.legend.GoldLongGun.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.legend.KingAxe.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.legend.MoonDao.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.legend.RiceSword.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.legend.SaiPlus.class};
+				Class<?> pick = legend[com.watabou.utils.Random.Int(legend.length)];
+				com.shatteredpixel.shatteredpixeldungeon.items.Item lw =
+						(com.shatteredpixel.shatteredpixeldungeon.items.Item)pick.getDeclaredConstructor().newInstance();
+				lw.identify(); lw.collect();
+			} catch (Exception ignore){ /*单件失败忽略*/ }
+
 			//END 便利：把终焉新造物标记“已见”(Catalog) + 记入本局 discovered(日志)
 			markEndContentSeen();
 		}
