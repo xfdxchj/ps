@@ -256,6 +256,43 @@
   已改为等价的 `WndQuest` 文本对话（**保留 NPC 出现与交互，剧情演出待搬**）。两者代码内均留 `TODO(待搬)`。
 - 需要补的 messages 键：`actors.mobs.npcs.hollow.slicegirl.hello`、`...deathrong.hello` / `hello_end`（**尚未加，需补文案**）
 
+## 六点八、搬运进度（第 5 轮 · 常规怪物 + 刷怪接线）
+
+### 已搬入的怪物（7 个，含各自精灵）
+| 怪物 | 文件 | 精灵 |
+|---|---|---|
+| Vampire | `mobs/hollow/Vampire` | `VampireSprite` |
+| HollowMimic | `mobs/hollow/HollowMimic` | `MimicSprite.HollowWall` |
+| Butcher | `mobs/hollow/Butcher` | `ButcherSprite` |
+| Crumb | `mobs/hollow/Crumb` | `CrumbSprite` |
+| Ghost_Halloween | `mobs/hollow/Ghost_Halloween` | `GhostHalloweenSprite` |
+| Pumking_Ghost | `mobs/hollow/Pumking_Ghost` | `PumkingGhostSprite` |
+| PumkingBomber | `mobs/hollow/PumkingBomber` | `PumkingBomberSprite` |
+
+### 为它们补的扩展点
+- `Assets.Sprites`：`GHOST_HE`/`GHOST_HP`/`BTSLIMH`/`CRUMB`/`ZOMBIE`/`APWHEEL`/`SWTICH`/`SWTICH_ALTER`/`ZEROBOAT`/`GHOST_MINI`/`TELE_FOCU`
+  - ⚠️ 魔绫原键名 `BOMB`（指向 gingerbread.png）已改名为 **`HOLLOW_BOMBER`**，避免与“炸弹”语义混淆
+- `Hunger.damgeExtraHungry(int)`（Crumb 偷食加饥饿）
+- `Bomb.explodeMobs(int)`（PumkingBomber 落点只炸怪不炸物品）
+- `NPC.throwItem()`、`WndQuest` 多段对话（上轮）
+
+### 刷怪接线（关键）
+- `actors/mobs/MobSpawner.getMobRotation(depth)`：新增 **depth 27/28/29/30** 的空洞怪物轮换表
+  （27: Butcher/Crumb/Ghost_Halloween；28: +PumkingBomber/Pumking_Ghost；29/30: +Vampire）
+  → 这样 `HollowLevel` 的 `super.createMobs()` 就会真的在这些层刷出它们。
+
+### 移植调整（与魔绫原版的差异）
+1. **attack 签名**：魔绫 `attack(Char,float,float,float,DamageType)`（5参）→ 本 fork `attack(Char,float,float,float)`（4参，无 DamageType）
+   （涉及 `Ghost_Halloween`、`Pumking_Ghost`）
+2. `Crumb` 用到的 `Hunger.damgeExtraHungry` 已按本 fork 的 `affectHunger` 语义重实现
+3. `PumkingBomber` 用到的 `Bomb.explodeMobs` 已移植（去掉 `DrTerror` 与 DamageType）
+4. `PumkingBomberSprite` 的纹理键 `BOMB` → `HOLLOW_BOMBER`
+
+### 仍未搬
+- `mobs/hollow/` 剩余：`ApprenticeWitch`（需 `blobs/HalomethaneFire` + `buffs/HalomethaneBurning`）、`Frankenstein`（需 `PaswordBadges`）、`allsearch/*`（属未搬小游戏关）、`minigame/*`（同上）
+- Boss 15 个、小游戏关 7 个、房型、剧情 plot、`WndDialog`(546行)
+- 多选 UI + `Hollow_Holiday` 置位入口；`buffs.png` 补帧；其余 5 区；方舟 3 区
+
 ## 七、当前阻塞 / 待办
 
 
