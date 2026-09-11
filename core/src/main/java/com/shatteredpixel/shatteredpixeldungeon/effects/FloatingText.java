@@ -107,6 +107,10 @@ public class FloatingText extends RenderedTextBlock {
 	public static int GOLD      = 23;
 	public static int ENERGY    = 24;
 
+	//END(移植自魔绫·挑战区): 恐惧(Scary)相关浮动图标
+	public static int HEARTDEMON     = 26;
+	public static int HEARTDEMON_DMG = 28;
+
 	//hit reason icons
 	public static int HIT_WEP   = 36;
 	public static int HIT_ARM   = 37;

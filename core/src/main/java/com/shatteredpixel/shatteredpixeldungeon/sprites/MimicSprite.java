@@ -141,4 +141,45 @@ public class MimicSprite extends MobSprite {
 		}
 	}
 
+	//END(移植自魔绫·挑战区): 空洞遗迹的“墙”拟态
+	public static class HollowWall extends MimicSprite{
+		@Override
+		protected int texOffset() {
+			return 80;
+		}
+
+		@Override
+		public void link(Char ch) {
+			super.link(ch);
+			ch.sprite.add(CharSprite.State.ILLUMINATED);
+		}
+
+		public HollowWall() {
+			super();
+
+			int c = texOffset();
+
+			texture( Assets.Sprites.MIMIC );
+
+			TextureFilm frames = new TextureFilm( texture, 16, 16 );
+
+			hiding = new Animation( 8, true );
+			hiding.frames( frames, 0+c, 1+c, 2+c, 3+c);
+
+			idle = new Animation( 8, true );
+			idle.frames( frames, 0+c,1+c,2+c,3+c );
+
+			run = new Animation( 16, true );
+			run.frames( frames, 0+c,1+c,2+c,3+c );
+
+			attack = new Animation( 16, false );
+			attack.frames( frames, 4+c, 5+c, 6+c );
+
+			die = new Animation( 16, false );
+			die.frames( frames, 7+c,8+c, 9+c,10+c,11+c,12+c );
+
+			play( idle );
+		}
+	}
+
 }
