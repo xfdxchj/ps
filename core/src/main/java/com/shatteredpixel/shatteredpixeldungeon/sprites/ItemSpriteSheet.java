@@ -808,10 +808,23 @@ public class ItemSpriteSheet {
 	public static final int  KINGAXE        = LENGYWEAPONS+15;
 	public static final int  RICESWORD      = LENGYWEAPONS+0;
 	static {
-		assignItemRect(DIEDCROSSBOW, 16, 16);
-		assignItemRect(FIVEREN,     16, 13);
-		assignItemRect(SHADOWMEAT,  16, 14);
-		assignItemRect(CLEARPRO,    15, 15);
+		//END(必须): 本块每个常量都要登记尺寸，否则 ItemSprite.frame 为 null → 打开背包崩溃
+		assignItemRect(RICESWORD,      16, 16);
+		assignItemRect(MOONDAILY,      16, 16);
+		assignItemRect(THEDIED,        16, 13);
+		assignItemRect(CURSEDAXE,      16, 16);
+		assignItemRect(EAGLEPOWER,     16, 16);
+		assignItemRect(GOLDLANGGUN,    16, 16);
+		assignItemRect(CLEARPRO,       15, 15);
+		assignItemRect(FORESTCROSSBOW, 16, 16);
+		assignItemRect(DIEDCROSSBOW,   16, 16);
+		assignItemRect(DIEDBOOK,       16, 16);
+		assignItemRect(FIVEREN,        16, 13);
+		assignItemRect(SHADOWMEAT,     16, 14);
+		assignItemRect(REDCRAB,        16, 16);
+		assignItemRect(DRAGONHEART,    16, 16);
+		assignItemRect(KINGAXE,        16, 16);
+		assignItemRect(DCSURANG,       16, 16);
 	}
 	private static final int DOCUMENTS  =                                   xy(1, 32);  //16 slots
 	public static final int GUIDE_PAGE  = DOCUMENTS+0;
@@ -866,6 +879,8 @@ public class ItemSpriteSheet {
 		assignItemRect(STAR_CRYSTAL,  12, 12);
 		assignItemRect(PROJECTILES_STAR, 9, 9);
 		assignItemRect(CITY_HOOD, 12, 12);
+		assignItemRect(ARMOR_ANCITY, 15, 14); //END(port from MagicLing·Galaxy)
+		assignItemRect(WATERSOUL,    16, 16); //END(port from MagicLing·Galaxy)
 		assignItemRect(DEATHRONG_BOAT,14, 10);
 	}
 
