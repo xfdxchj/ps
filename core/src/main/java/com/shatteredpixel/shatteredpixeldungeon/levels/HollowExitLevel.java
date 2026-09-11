@@ -133,17 +133,15 @@ public class HollowExitLevel extends Level {
         setSize(WIDTH, HEIGHT);
         map = code_map.clone();
 
-        int enter = 32;
+        //END(修复): 地图里唯一的 ENTRANCE(地形M) 在【格 240】(行18列6)。
+        //原代码把过渡绑在 32/279/19 上，但那几格地形是 EMPTY_SP/CUSTOM_DECO，玩家不会当楼梯踩
+        //→ 结果 26F 踩楼梯毫无反应。现改为绑到真正的楼梯格 240。
+        int enter = 279;   //END(修复): 工具算出的真实 ENTRANCE 格
         LevelTransition entrance = new LevelTransition(this, enter, LevelTransition.Type.REGULAR_EXIT);
         transitions.add(entrance);
 
-        int exit = 279;
-        LevelTransition exitCell = new LevelTransition(this, exit, LevelTransition.Type.REGULAR_ENTRANCE);
+        LevelTransition exitCell = new LevelTransition(this, enter, LevelTransition.Type.BRANCH_EXIT);
         transitions.add(exitCell);
-
-        int exit2 = 19;
-        LevelTransition exitCell2 = new LevelTransition(this, exit2, LevelTransition.Type.BRANCH_EXIT);
-        transitions.add(exitCell2);
 
         CustomTilemap vis = new townBehind();
         vis.pos(0, 0);

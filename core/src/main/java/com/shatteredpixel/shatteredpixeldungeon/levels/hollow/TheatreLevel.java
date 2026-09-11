@@ -72,8 +72,8 @@ public class TheatreLevel extends Level {
         setSize(WIDTH, HEIGHT);
         map = code_map.clone();
 
-        int entrance = 325;
-        int exit = 136;
+        int entrance = 115;   //END(修复): 真实 ENTRANCE 格
+        int exit = 346;   //END(修复): 真实 EXIT 格
 
         LevelTransition enter = new LevelTransition(this, entrance, LevelTransition.Type.REGULAR_ENTRANCE);
         transitions.add(enter);

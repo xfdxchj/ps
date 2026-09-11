@@ -17,6 +17,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.bosses.hollow.TowerM
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.bosses.hollow.TowerMind;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.bosses.hollow.TowerTime;
 import com.shatteredpixel.shatteredpixeldungeon.levels.Level;
+import com.shatteredpixel.shatteredpixeldungeon.levels.Terrain;
 import com.shatteredpixel.shatteredpixeldungeon.levels.features.LevelTransition;
 import com.shatteredpixel.shatteredpixeldungeon.levels.traps.AlarmTrap;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
@@ -101,7 +102,11 @@ public class MorpheusBossLevel extends Level {
         map = code_map.clone();
 
         int entrance = 412;
-        int exit = 0;
+        int exit = 312;   //END(修复): 原为 0(=CHASM 深渊，玩家走不到) → 改用场地中心空地
+
+        //END(修复): 地图里没有 ENTRANCE/EXIT 地形，直接写进 map，否则踩不上/掉深渊
+        map[entrance] = Terrain.ENTRANCE;
+        map[exit]     = Terrain.EXIT;
 
         LevelTransition enter = new LevelTransition(this, entrance, LevelTransition.Type.REGULAR_ENTRANCE);
         transitions.add(enter);
