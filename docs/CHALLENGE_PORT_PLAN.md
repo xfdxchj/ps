@@ -183,7 +183,61 @@
 
 > ⚠️ 越往上（Boss/painter/plot）依赖越重，`bosses/hollow/*` 那 15 个大概率还挂别的体系。**建议每搬一层就立刻在你机器上 `:core:compileJava` 验一次**，否则错误会累积。
 
+## 六点六、搬运进度（第 3 轮 · Hollow 主体已落地）
+
+### 已搬入本 fork 的 Hollow 内容（commit `4241245`，+1236 行）
+**关卡（3）**
+- `levels/HollowLevel.java`（extends RegularLevel，289 行）— 27–30F 常规层
+- `levels/HollowExitLevel.java`（extends Level，502 行）— 26F 入口层，含 `BRANCH_EXIT`→depth+1 的下楼切换
+- `levels/painters/HollowPainter.java`（76 行）
+
+**怪物（2）**
+- `actors/mobs/hollow/Vampire.java`（172 行）+ `sprites/VampireSprite.java`（75 行）
+- `actors/mobs/hollow/HollowMimic.java`（93 行）
+
+**恐惧/元素体系（7）**：`actors/buffs/ElementalBuff/` 下
+`ElementalBuff` / `ElementalBaseBuff` / `ElementalFABuff` / `BaseBuff/ScaryBuff` / `DamageBuff/ScaryDamageBuff` / `DamageBuff/Wither`(抽自 DwarfGeneral) / `Immunities/ScaryImmunitiesBuff`
+
+**物品（3）**：`items/food/hollow/` 的 `Gelatin`、`Sugar_Block`、`WhiteSugar_B`
+
+**特效（1）**：`effects/particles/FrostFlameParticle`
+
+### 为搬运而补的扩展点
+| 文件 | 新增 |
+|---|---|
+| `SPD-classes/.../Music.java` | `playModeBGM(String,boolean)` |
+| `Assets.java` | Environment: TILES_HOLLOW / TILES_HOLLOW_CS / WATER_HOLLOW / HOLLOW_OP / HOLLOW_PO / HALL_OPX / HALL_POX；Music: HOLLOW_CITY / HOLLOW_CITY_HARD；Sprites: VAMPIRE |
+| `Statistics.java` | `Hollow_Holiday` / `AbyssCityRules` / `NoTime`（含 reset + 存读档） |
+| `levels/Level.java` | `extraGlass` |
+| `ui/BuffIndicator.java` | `SCARY(86)/SCARY_PINK(87)/SCARY_RED(88)/IMELSAZE(89)` ⚠️需补图集帧 |
+| `ui/Window.java` | `Pink_COLOR` / `GDX_COLOR` |
+| `effects/FloatingText.java` | `HEARTDEMON(26)` / `HEARTDEMON_DMG(28)` |
+| `sprites/ItemSpriteSheet.java` | `GELATIN/SUGAR_BLOCK/WHITE_SUGAR_B`（占用 DOCUMENTS 块空位 DOCUMENTS+7..9） |
+| `sprites/MimicSprite.java` | 内部类 `HollowWall` |
+| `Badges.java` | `Badge.KILL_DOG(152)` + `KILL_DOG()` |
+| `actors/Char.java` | `Property.HOLLOW` |
+| `Dungeon.java` | 26F→`HollowExitLevel`、27–30F→`HollowLevel`（由 `Statistics.Hollow_Holiday` 开关） |
+
+### 移植时的“降级/省略”记录（与魔绫原版的差异）
+1. `Vampire` 的 `isAnimal = true` 已略去（本 fork `Mob` 无该字段/等价属性）。
+2. `HollowLevel.createMobs()` 中 **depth27 生成 NPC `SliceGirl` 的分支暂缺**（依赖 NTNPC/SlicePlot/WndDialog/WndQuest/SliceGirlSprite 整条链），代码内已留 `TODO(待搬)`。
+3. `HollowExitLevel` 的消息键由魔绫 `NewLastLevel` 改为本 fork 已有的 `LastLevel`。
+4. `ScaryBuff` 的 `IconFloatingText.HEARTDEMON` → 本 fork 的 `FloatingText.HEARTDEMON`；`TimeReset.MobsWither` → 抽出的独立 `Wither`。
+5. `BuffIndicator.SCARY*(86-89)` 超出本 fork `buffs.png`(128×64→大片32帧) 范围 → **会显示 nofound，必须补图集帧**。
+
+### 仍未搬（下轮继续）
+- NPC：`npcs/hollow/*`（SliceGirl/SliceAlter/MorphsNPC/CerbusSleep/DeathRong*/Typhon/ZeroBoat）
+- 怪物：`mobs/hollow/` 其余（Butcher/Crumb/Frankenstein/ApprenticeWitch/Ghost_Halloween/Pumking*/allsearch/minigame）
+- Boss：`bosses/hollow/*`（约 15 个，含 TowerGods/Morphs/Nyarlathotep/ShubNiggurath/DeadDogCerberus…）
+- 小游戏关：`levels/hollow/*`（AllSearch/MoveBox/Pacman/CerdoG/Morpheus/Theatre/ZeroHalls）
+- 房型 `rooms/hollow/*`、剧情 `custom/utils/plot/hollow/*`、`items/food/hollow/Sugar.java`
+- **资源文件**：`environment/tiles_halloween*.png`、`environment/water7.png`、`music/hollow/*.ogg`、`sprites/hollow/vampire.png`、`custom_tiles/hall_*.png`、`cerberus_*.png`、`text_icons.png` 帧、`buffs.png` 帧、`messages` 文案
+- **选中/进入 UI**（多选区域 → 26F 起按 id 顺序串）与 `Statistics.Hollow_Holiday` 的置位入口
+- 其余 5 区（BossRush/Galaxy/Peach/DeepShadow/ForestHard）
+- 方舟 3 区（等 `cfr.jar` 反编译）
+
 ## 七、当前阻塞 / 待办
+
 
 
 - **本机不能编译验证**（wrapper 需 gradle 9.4.0、无外网、沙箱只写工作区）→ 每步仍需在你机器或 GitHub CI 上 `./gradlew :core:compileJava` 验证。
