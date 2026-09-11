@@ -80,7 +80,6 @@ import com.shatteredpixel.shatteredpixeldungeon.levels.HallsLevel;
 import com.shatteredpixel.shatteredpixeldungeon.levels.LastLevel;
 //END(移植自魔绫·挑战区)
 import com.shatteredpixel.shatteredpixeldungeon.levels.HollowExitLevel;
-import com.shatteredpixel.shatteredpixeldungeon.levels.GalaxyLevel;
 import com.shatteredpixel.shatteredpixeldungeon.levels.HollowLevel;
 import com.shatteredpixel.shatteredpixeldungeon.levels.Level;
 import com.shatteredpixel.shatteredpixeldungeon.levels.MiningLevel;

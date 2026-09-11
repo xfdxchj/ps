@@ -231,6 +231,39 @@ public class MobSpawner extends Actor {
 						com.shatteredpixel.shatteredpixeldungeon.actors.mobs.hollow.Vampire.class,
 						com.shatteredpixel.shatteredpixeldungeon.actors.mobs.hollow.PumkingBomber.class,
 						com.shatteredpixel.shatteredpixeldungeon.actors.mobs.hollow.Pumking_Ghost.class));
+
+			//END(移植自魔绫·挑战区): 34-37F 银河深渊常规层（熔岩洞主题）
+			//注意：若不在此登记，会落到 case 1 的 default → 刷出下水道的老鼠/蛇。
+			case 34:
+				//2x bat, 2x brute, 1x shaman, 1x DM-200
+				return new ArrayList<>(Arrays.asList(
+						Bat.class, Bat.class,
+						Brute.class, Brute.class,
+						Shaman.random(),
+						DM200.class));
+			case 35:
+				//1x bat, 2x brute, 2x shaman, 1x spinner, 1x DM-200
+				return new ArrayList<>(Arrays.asList(
+						Bat.class,
+						Brute.class, Brute.class,
+						Shaman.random(), Shaman.random(),
+						Spinner.class,
+						DM200.class));
+			case 36:
+				//2x brute, 2x shaman, 2x spinner, 1x DM-300
+				return new ArrayList<>(Arrays.asList(
+						Brute.class, Brute.class,
+						Shaman.random(), Shaman.random(),
+						Spinner.class, Spinner.class,
+						DM300.class));
+			case 37:
+				//1x bat, 1x brute, 2x shaman, 2x spinner, 2x DM-300
+				return new ArrayList<>(Arrays.asList(
+						Bat.class,
+						Brute.class,
+						Shaman.random(), Shaman.random(),
+						Spinner.class, Spinner.class,
+						DM300.class, DM300.class));
 		}
 
 	}

@@ -2,7 +2,6 @@ package com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge;
 
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
 import com.shatteredpixel.shatteredpixeldungeon.levels.DeadEndLevel;
-import com.shatteredpixel.shatteredpixeldungeon.levels.GalaxyLevel;
 import com.shatteredpixel.shatteredpixeldungeon.levels.HollowExitLevel;
 import com.shatteredpixel.shatteredpixeldungeon.levels.HollowLevel;
 import com.shatteredpixel.shatteredpixeldungeon.levels.Level;
@@ -14,8 +13,8 @@ import com.shatteredpixel.shatteredpixeldungeon.levels.Level;
  * 主线 1-25F 走完后，从 26F 起把「选中的区域」按 id 顺序**串联**成一条区间：
  * <pre>
  *   只选 Hollow          → Hollow 占 26..33F（8层）
- *   只选 Galaxy          → Galaxy 占 26..30F（5层）
- *   Hollow + Galaxy      → Hollow 26..33F，Galaxy 34..38F
+ *   只选 Galaxy          → 26F 直接进火龙的场地（1层）
+ *   Hollow + Galaxy      → Hollow 26..33F，Galaxy 34F（火龙）
  * </pre>
  * 每层关卡由 {@link #createAreaLevel(int, int, int)} 按「区内偏移」决定，
  * 因此**单选任意一个区都能独立走通**（层号是动态算的，不是硬编码的）。
@@ -48,7 +47,7 @@ public final class ChallengeArea {
 	//==== 注册表（id 顺序 = 进入顺序）====
 	//魔绫 2 区（已实装）
 	public static final ChallengeArea HOLLOW      = new ChallengeArea(1, "空洞遗迹", 8, true);
-	public static final ChallengeArea GALAXY      = new ChallengeArea(3, "银河深渊", 5, true);
+	public static final ChallengeArea GALAXY      = new ChallengeArea(3, "银河深渊·火龙", 1, true);
 	//方舟 3 区（待实装；方舟内容与原版体系自包含，与魔绫无耦合）
 	public static final ChallengeArea IBERIA      = new ChallengeArea(4, "伊比利亚·海嗣", 4, false);
 	public static final ChallengeArea GAVIAL      = new ChallengeArea(5, "嘉维尔·雨林", 4, false);
@@ -120,9 +119,8 @@ public final class ChallengeArea {
 		}
 
 		if (areaId == GALAXY.id) {
-			//Galaxy：0-3=常规熔岩层 4=火龙 Boss 层
-			if (floorIn >= 4) return new com.shatteredpixel.shatteredpixeldungeon.levels.LaveCavesBossLevel();
-			return new GalaxyLevel();
+			//END: Galaxy 简化为「直接打火龙」—— 不含常规层，进入即在火龙的场地。
+			return new com.shatteredpixel.shatteredpixeldungeon.levels.LaveCavesBossLevel();
 		}
 
 		//未实装区域（方舟 3 区）：占位（正常流程走不到，areaAtDepth 只返回 implemented 的区）

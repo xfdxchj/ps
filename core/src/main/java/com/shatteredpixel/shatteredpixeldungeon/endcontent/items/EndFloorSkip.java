@@ -59,19 +59,38 @@ public class EndFloorSkip extends Item {
 			Swiftthistle.TimeBubble timeBubble = hero.buff(Swiftthistle.TimeBubble.class);
 			if (timeBubble != null) timeBubble.disarmPresses();
 
-			//END: 传送到 25F（主线终点）。branch 归 0（主线分支）。
+			//END: 传送到下一个「关键层」。每使用一次前进一站：
+			//  1) 主线终点 25F
+			//  2) 挑战区入口 26F
+			//  3) 各 Boss 层（冥犬31 / 剧院32 / 四柱33 / 火龙38）
+			//这样可以直接跳到想测的地方，不必一层层走。
+			int target = nextTarget();
+
 			InterlevelScene.mode = InterlevelScene.Mode.DESCEND;
 			InterlevelScene.curTransition = new LevelTransition();
-			InterlevelScene.curTransition.destDepth = 25;
+			InterlevelScene.curTransition.destDepth = target;
 			InterlevelScene.curTransition.destBranch = 0;
 			InterlevelScene.curTransition.destType = LevelTransition.Type.REGULAR_ENTRANCE;
 			InterlevelScene.curTransition.type = LevelTransition.Type.REGULAR_ENTRANCE;
 			InterlevelScene.curTransition.centerCell = -1;
 
-			GLog.p(Messages.get(this, "teleport"));
+			GLog.p(Messages.get(this, "teleport") + " (" + target + "F)");
 			Game.switchScene(InterlevelScene.class);
 		}
 	}
+
+	/** 站点表：按层号顺序排列的「关键层」。 */
+	private static final int[] STOPS = { 25, 26, 31, 32, 33, 38, 45 };
+
+	/** 下一个站点（当前层之后最近的一个）。 */
+	private static int nextTarget() {
+		int cur = Dungeon.depth;
+		for (int s : STOPS) {
+			if (s > cur) return s;
+		}
+		return STOPS[STOPS.length - 1];   //已到末尾则停在最后一站
+	}
+
 
 	@Override
 	public boolean isUpgradable() {

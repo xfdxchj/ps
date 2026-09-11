@@ -789,44 +789,32 @@ public class ItemSpriteSheet {
 		assignItemRect(VIAL,        12, 12);
 	}
 
-	//END(移植自魔绫): 传奇武器图标块（xy(1,39)，本fork该行空闲）
-	private static final int LENGYWEAPONS    =                               xy(1, 39);  //16 slots
-	public static final int  MOONDAILY      = LENGYWEAPONS+1;
-	public static final int  DCSURANG       = LENGYWEAPONS+2;
-	public static final int  THEDIED        = LENGYWEAPONS+3;
-	public static final int  CURSEDAXE      = LENGYWEAPONS+4;
-	public static final int  EAGLEPOWER     = LENGYWEAPONS+5;
-	public static final int  GOLDLANGGUN    = LENGYWEAPONS+6;
-	public static final int  CLEARPRO       = LENGYWEAPONS+7;
-	public static final int  FORESTCROSSBOW = LENGYWEAPONS+8;
-	public static final int  DIEDCROSSBOW   = LENGYWEAPONS+9;
-	public static final int  DIEDBOOK       = LENGYWEAPONS+10;
-	public static final int  FIVEREN        = LENGYWEAPONS+11;
-	public static final int  SHADOWMEAT     = LENGYWEAPONS+12;
-	public static final int  REDCRAB        = LENGYWEAPONS+13;
-	public static final int  DRAGONHEART    = LENGYWEAPONS+14;
-	public static final int  KINGAXE        = LENGYWEAPONS+15;
-	public static final int  RICESWORD      = LENGYWEAPONS+0;
+	//END(修复): 原图集 items.png 仅 256x512 → 16px 格子只有 32 行(y=0..31)，且已被原版占满。
+	//因此传说/传奇武器与道具的图标**复用原版同类物品**的图（否则图集外会显示 nofound）。
+	public static final int  RICESWORD      = WEP_TIER3+0;   //原版 Sword
+	public static final int  MOONDAILY      = WEP_TIER4+0;   //原版 Longsword
+	public static final int  KINGAXE        = WEP_TIER4+1;   //原版 BattleAxe
+	public static final int  FORESTCROSSBOW = WEP_TIER4+5;   //原版 Crossbow
+	public static final int  GOLDLANGGUN    = WEP_TIER2+2;   //原版 Spear
+	public static final int  DIEDCROSSBOW   = WEP_TIER4+5;   //原版 Crossbow
+	public static final int  THEDIED        = WEP_TIER4+4;   //原版 AssassinsBlade
+	public static final int  CLEARPRO       = WEP_TIER5+0;   //原版 Greatsword
+	public static final int  DCSURANG       = WEP_TIER5+3;   //原版 Greataxe
+	public static final int  CURSEDAXE      = WEP_TIER4+1;   //原版 BattleAxe
+	public static final int  EAGLEPOWER     = WEP_TIER4+6;   //原版 Katana
+	public static final int  FIVEREN        = WEP_TIER3+5;   //原版 Whip
+	public static final int  SHADOWMEAT     = WEP_TIER3+1;   //原版 Mace
+	public static final int  REDCRAB        = WEP_TIER3+2;   //原版 Scimitar
+	public static final int  DRAGONHEART    = WEP_TIER2+3;   //原版 Quarterstaff
+	public static final int  DIEDBOOK       = QUEST+4;       //原版 Pickaxe（占位）
+	public static final int  SAPIUS         = WEP_TIER3+4;   //原版 Sai
 	static {
-		//END(必须): 本块每个常量都要登记尺寸，否则 ItemSprite.frame 为 null → 打开背包崩溃
-		assignItemRect(RICESWORD,      16, 16);
-		assignItemRect(MOONDAILY,      16, 16);
-		assignItemRect(THEDIED,        16, 13);
-		assignItemRect(CURSEDAXE,      16, 16);
-		assignItemRect(EAGLEPOWER,     16, 16);
-		assignItemRect(GOLDLANGGUN,    16, 16);
-		assignItemRect(CLEARPRO,       15, 15);
-		assignItemRect(FORESTCROSSBOW, 16, 16);
-		assignItemRect(DIEDCROSSBOW,   16, 16);
-		assignItemRect(DIEDBOOK,       16, 16);
-		assignItemRect(FIVEREN,        16, 13);
-		assignItemRect(SHADOWMEAT,     16, 14);
-		assignItemRect(REDCRAB,        16, 16);
-		assignItemRect(DRAGONHEART,    16, 16);
 		assignItemRect(KINGAXE,        16, 16);
 		assignItemRect(DCSURANG,       16, 16);
 	}
-	private static final int DOCUMENTS  =                                   xy(1, 32);  //16 slots
+	//END(修复): 本块原用 xy(1,32)，但图集只有 32 行(y=0..31) → 溢出显示 nofound。
+	//改为复用原版已有的指南/说明页图标槽（图集内）。
+	private static final int DOCUMENTS  =                                   xy(1, 28);  //END(修复): 复用 FOOD 行（图集内），原 xy(1,32) 溢出致 nofound
 	public static final int GUIDE_PAGE  = DOCUMENTS+0;
 	public static final int ALCH_PAGE   = DOCUMENTS+1;
 	public static final int SEWER_PAGE  = DOCUMENTS+2;
