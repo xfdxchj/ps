@@ -293,6 +293,41 @@
 - Boss 15 个、小游戏关 7 个、房型、剧情 plot、`WndDialog`(546行)
 - 多选 UI + `Hollow_Holiday` 置位入口；`buffs.png` 补帧；其余 5 区；方舟 3 区
 
+## 六点九、搬运进度（第 6 轮 · 进入挑战区的入口）
+
+### 新增“挑战区域”入口（commit `a9f6f86`）
+| 文件 | 作用 |
+|---|---|
+| `endcontent/challenge/ChallengeArea.java` | **区域注册表**：id / 中文名 / 是否已实装；`isSelected`/`toggle`/`applySelection(mask)` |
+| `windows/WndChallengeAreas.java` | 开局**多选窗口**（仿 `WndChallenges` 的 CheckBox 列表） |
+| `SPDSettings.challengeAreas()` | 保存勾选结果（位掩码，bit = 区域 id） |
+| `scenes/HeroSelectScene.java` | 开局界面新增「挑战区域」按钮（在原「挑战」按钮下方） |
+| `Dungeon.init()` | 开局时 `ChallengeArea.applySelection(SPDSettings.challengeAreas())` → 写入 `Statistics.Hollow_Holiday` |
+
+区域 id（进入顺序）：1 空洞遗迹(已实装) / 2 Boss Rush / 3 银河深渊 / 4 桃神试炼 / 5 深影领域 / 6 森林灾厄
+（后 5 个在窗口里显示为「（未实装）」且不可勾选，避免选了没反应）
+
+### 完整链路（现已贯通）
+```
+开局勾选「空洞遗迹」
+   → Dungeon.init() 置 Statistics.Hollow_Holiday = true
+   → 主线 1F..25F 照常
+   → depth 26：Dungeon.newLevel() 因 Hollow_Holiday 生成 HollowExitLevel（入口层）
+   → 踩 BRANCH_EXIT 楼梯 → depth 27..30 的 HollowLevel（27 有 NPC、27-30 刷空洞怪）
+   → 30F 之后未接 Boss（Boss 尚未搬完）
+```
+
+### ⚠️ 设计后果（重要，需你确认是否接受）
+本 fork 的 **26F 原本是 `LastLevel`（放护符/结局的层）**。按魔绫的一致设计，`Hollow_Holiday=true` 时 **26F 被替换为 `HollowExitLevel`**：
+- **即：选了挑战区域后，主线 26F 的护符/结局被挑战区取代**（走挑战 → 之后才能回主线结局）。
+- 这与魔绫行为一致，但**改变了主线收尾流程**。若你希望“先拿护符结束主线、再另开挑战”，需要另设计入口（例如 26F 之后再加一层），请明确。
+
+### 仍未做
+- `buffs.png` 补帧（否则 SCARY 等图标 nofound）
+- Boss 15 个、小游戏关 7 个、房型、剧情 plot
+- Hollow 30F 之后的 Boss 层接线（`levels/hollow/CerDogBossLevel` 等）
+- 其余 5 区；方舟 3 区
+
 ## 七、当前阻塞 / 待办
 
 
