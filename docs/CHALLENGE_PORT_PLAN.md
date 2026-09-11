@@ -236,6 +236,26 @@
 - 其余 5 区（BossRush/Galaxy/Peach/DeepShadow/ForestHard）
 - 方舟 3 区（等 `cfr.jar` 反编译）
 
+## 六点七、搬运进度（第 4 轮 · 资源 + NPC 链）
+
+### 已复制的资源（commit `248b8d5`）
+- 环境贴图：`tiles_halloween.png`、`tiles_halloween-cs.png`、`water7.png`、`custom_tiles/{hall_behind-opendoor,hall_above_b,cerberus_behind,cerberus_above}.png`
+- 音乐：`music/hollow/*`（Mischief_Managed(-Easy).ogg、morpheus、movebox、pacman、seach）
+- 精灵：`sprites/hollow/**`（42 个文件，含 vampire/mimicry/Cerberus/morpheus/nyarlathotep/shub_niggurath/tower_*/yogsoul 等全部 Boss 图）
+
+### 已搬代码
+- `actors/mobs/npcs/NTNPC.java`（对话型 NPC 基类）
+- `actors/mobs/npcs/hollow/SliceGirl.java` + `sprites/SliceGirlSprite.java`
+- `actors/mobs/npcs/hollow/DeathRong.java` + `sprites/DeathRongSprite.java`
+- `effects/particles/HalomethaneFlameParticle.java`
+- 为它们补的扩展：`NPC.throwItem()`、`WndQuest` 的多段对话（`chating(...)`/3 参构造/hide 翻页）、`Assets.Sprites.SWTICH/SWTICH_ALTER/ZEROBOAT`、`Statistics.defalult_deaddog`
+- **恢复了 `HollowLevel` 27F 生成 `SliceGirl` 的分支**（原 TODO 已消除）
+
+### 本轮新增的“降级”记录
+- `SliceGirl.interact()` / `DeathRong.interact()`：魔绫原版打开 `WndDialog(plot)`（依赖未搬的 `custom/utils/plot/**` + `WndDialog`），
+  已改为等价的 `WndQuest` 文本对话（**保留 NPC 出现与交互，剧情演出待搬**）。两者代码内均留 `TODO(待搬)`。
+- 需要补的 messages 键：`actors.mobs.npcs.hollow.slicegirl.hello`、`...deathrong.hello` / `hello_end`（**尚未加，需补文案**）
+
 ## 七、当前阻塞 / 待办
 
 
