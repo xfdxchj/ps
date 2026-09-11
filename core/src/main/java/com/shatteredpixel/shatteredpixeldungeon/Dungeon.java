@@ -492,9 +492,15 @@ public class Dungeon {
 				case 30:
 					level = Statistics.Hollow_Holiday ? new HollowLevel() : new DeadEndLevel();
 					break;
-				//END(移植自魔绫·挑战区): 31F 为空洞遗迹 Boss 层(冥犬)
+				//END(移植自魔绫·挑战区): 31F 冥犬 Boss 层 / 32F 剧院 / 33F Morpheus Boss层(四柱)
 				case 31:
 					level = Statistics.Hollow_Holiday ? new com.shatteredpixel.shatteredpixeldungeon.levels.hollow.CerDogBossLevel() : new DeadEndLevel();
+					break;
+				case 32:
+					level = Statistics.Hollow_Holiday ? new com.shatteredpixel.shatteredpixeldungeon.levels.hollow.TheatreLevel() : new DeadEndLevel();
+					break;
+				case 33:
+					level = Statistics.Hollow_Holiday ? new com.shatteredpixel.shatteredpixeldungeon.levels.hollow.MorpheusBossLevel() : new DeadEndLevel();
 					break;
 				default:
 					level = new DeadEndLevel();

@@ -65,6 +65,9 @@ public class Assets {
 		//END(移植自魔绫): 空洞遗迹(Hollow) 关卡资源键
 		public static final String TILES_HOLLOW    = "environment/tiles_halloween.png";
 		public static final String TILES_HOLLOW_CS = "environment/tiles_halloween-cs.png";
+		public static final String GALAXY_BACKGROUND = "environment/custom_tiles/galaxy_background.png"; //END(port)
+		public static final String TILES_MORGALAXY   = "environment/tiles_morpheus.png"; //END(port)
+		public static final String TILES_THEATRE     = "environment/custom_tiles/theatre.png"; //END(port)
 		public static final String WATER_HOLLOW    = "environment/water7.png";
 		public static final String HOLLOW_OP       = "environment/custom_tiles/cerberus_behind.png";
 		public static final String HOLLOW_PO       = "environment/custom_tiles/cerberus_above.png";
@@ -81,6 +84,7 @@ public class Assets {
 	public static class Interfaces {
 		public static final String ARCS_BG  = "interfaces/arcs1.png";
 		public static final String WHITE_RECT  = "interfaces/white_rect.png";
+		public static final String BLACK_RECT  = "interfaces/black_rect.png"; //END(port)
 		public static final String ARCS_FG  = "interfaces/arcs2.png";
 
 		public static final String BANNERS  = "interfaces/banners.png";
@@ -162,6 +166,7 @@ public class Assets {
 
 		//END(移植自魔绫): 空洞遗迹(Hollow) 音乐键
 		public static final String HOLLOW_CITY      = "music/hollow/Mischief_Managed-Easy.ogg";
+		public static final String MORP_BOSS       = "music/hollow/morpheus.ogg"; //END(port)
 		public static final String HOLLOW_CITY_HARD = "music/hollow/Mischief_Managed.ogg";
 	}
 
