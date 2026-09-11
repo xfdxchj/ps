@@ -218,7 +218,8 @@ public class Badges {
 		CHAMPION_3                  ( 127 ),
 		//END(移植自魔绫·挑战区): 空洞遗迹相关徽章
 		KILL_DOG                    ( 152 ),
-		HALOFIRE_DIED               ( 153 );
+		HALOFIRE_DIED               ( 153 ),
+		CITY_END                    ( 154 );
 
 		public boolean meta;
 
@@ -1161,6 +1162,11 @@ public class Badges {
 	//END(移植自魔绫·挑战区): 死于卤甲烷燃烧
 	public static void HALOFIRE_DIED() {
 		displayBadge( Badge.HALOFIRE_DIED );
+	}
+
+	//END(移植自魔绫·挑战区): 通关空洞遗迹
+	public static void CITY_END() {
+		displayBadge( Badge.CITY_END );
 	}
 
 	public static void validateChampion( int challenges ) {

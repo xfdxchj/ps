@@ -491,6 +491,10 @@ public class Dungeon {
 				case 30:
 					level = Statistics.Hollow_Holiday ? new HollowLevel() : new DeadEndLevel();
 					break;
+				//END(移植自魔绫·挑战区): 31F 为空洞遗迹 Boss 层(冥犬)
+				case 31:
+					level = Statistics.Hollow_Holiday ? new com.shatteredpixel.shatteredpixeldungeon.levels.hollow.CerDogBossLevel() : new DeadEndLevel();
+					break;
 				default:
 					level = new DeadEndLevel();
 			}
