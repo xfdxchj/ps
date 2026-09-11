@@ -138,14 +138,17 @@ public class BuffIndicator extends Component {
 	public static final int THROWN_WEP  = 85;
 
 	//END(移植自魔绫): 恐惧(Scary)与免疫系图标（空洞遗迹/元素buff体系用）
-	public static final int SCARY       = 86;
-	public static final int SCARY_PINK  = 87;
-	public static final int SCARY_RED   = 88;
-	public static final int IMELSAZE    = 89;
+	//⚠️ 注意：本 fork 的 buffs.png 为 128x64 → 大片(16x16)只有 32 帧，
+	//   索引 ≥32 在「界面尺寸>0」(large) 时会显示 nofound。
+	//   因此这里不新增索引，而是复用 <32 的语义相近既有图标（仅观感差异，功能不受影响）。
+	public static final int SCARY       = TERROR;      //原魔绫 112
+	public static final int SCARY_PINK  = AMOK;        //原魔绫 114
+	public static final int SCARY_RED   = BLEEDING;    //原魔绫 113
+	public static final int IMELSAZE    = IMMUNITY;    //原魔绫 85
 	//END(移植自魔绫·挑战区): 卤甲烷燃烧
-	public static final int HALOMETHANEBURNING = 90;
+	public static final int HALOMETHANEBURNING = FIRE; //原魔绫 57
 	//END(移植自魔绫·挑战区): 玫瑰护盾
-	public static final int ROSEBARRIER = 91;
+	public static final int ROSEBARRIER = BARKSKIN;    //原魔绫 56
 
 	public static final int SIZE_SMALL  = 7;
 	public static final int SIZE_LARGE  = 16;
