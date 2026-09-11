@@ -1,4 +1,4 @@
-﻿package com.shatteredpixel.shatteredpixeldungeon.levels;
+package com.shatteredpixel.shatteredpixeldungeon.levels;
 
 import static com.shatteredpixel.shatteredpixeldungeon.Dungeon.depth;
 

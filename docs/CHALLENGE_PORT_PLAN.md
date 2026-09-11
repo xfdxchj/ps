@@ -350,6 +350,11 @@ CI 跑 `./gradlew :desktop:compileJava :desktop:installDist` 报 **13 个错误*
 7. **`ItemSpriteSheet.EMPTY`**：本 fork 无，用 `SOMETHING`
 8. **`isAnimal` 字段**：本 fork `Mob` 无，删掉
 9. **`Char.Property.*`**：魔绫新增项（如 `HOLLOW`）需自己加到枚举
+10. **⚠️ BOM 陷阱**：用 PowerShell `Set-Content` 写文件会**写入 UTF-8 BOM**（`\xEF\xBB\xBF`），
+    javac 会报 `非法字符: '\ufeff'` 且包名解析错乱。**改文件一律用 edit/write 工具，或写回时用 `New-Object System.Text.UTF8Encoding($false)`**。
+    （已踩过：`HollowLevel.java` 被 `Set-Content` 加了 BOM → CI 失败；已修复）
+11. **魔绫有 `actors/Boss.java` 基类，本 fork 没有**：本 fork 的 Boss 全部 `extends Mob`，并直接用 `HP/HT/EXP/defenseSkill` + 自写 `damageRoll()/attackSkill()`。
+    搬任何魔绫 Boss 都要做"框架翻译"（`initProperty/initBaseStatus/initStatus` → 直接赋值）
 
 ## 六点十一、DeadDogCerberus（冥犬 Boss）移植方案（已勘定，待执行）
 
