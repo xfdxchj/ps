@@ -195,6 +195,9 @@ public abstract class Level implements Bundlable {
 	public int color1 = 0x004400;
 	public int color2 = 0x88CC44;
 
+	//END(移植自魔绫): 是否绘制额外的玻璃/高光层；部分挑战区关卡(如 HollowLevel)会关掉它。
+	public boolean extraGlass = true;
+
 	private static final String VERSION     = "version";
 	private static final String WIDTH       = "width";
 	private static final String HEIGHT      = "height";

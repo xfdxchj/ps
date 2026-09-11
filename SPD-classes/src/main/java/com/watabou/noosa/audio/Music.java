@@ -50,7 +50,16 @@ public enum Music {
 	float[] trackChances;
 	private final ArrayList<String> trackQueue = new ArrayList<>();
 	boolean shuffle = false;
-	
+
+	//END(移植自魔绫): 桌面端高质量 ogg 的线程安全闪退规避——所有 BGM 切换统一走这个入口。
+	public static void playModeBGM(String name, boolean loop) {
+		if (DeviceCompat.isDesktop()) {
+			Game.runOnRenderThread(() -> Music.INSTANCE.play(name, loop));
+		} else {
+			Music.INSTANCE.play(name, loop);
+		}
+	}
+
 	public synchronized void play( String assetName, boolean looping ) {
 
 		//iOS cannot play ogg, so we use an mp3 alternative instead

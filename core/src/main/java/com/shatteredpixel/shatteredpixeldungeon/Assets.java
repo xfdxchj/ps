@@ -61,6 +61,13 @@ public class Assets {
 		public static final String CITY_QUEST        = "environment/custom_tiles/city_quest.png";
 		public static final String CITY_BOSS        = "environment/custom_tiles/city_boss.png";
 		public static final String HALLS_SP         = "environment/custom_tiles/halls_special.png";
+
+		//END(移植自魔绫): 空洞遗迹(Hollow) 关卡资源键
+		public static final String TILES_HOLLOW    = "environment/tiles_halloween.png";
+		public static final String TILES_HOLLOW_CS = "environment/tiles_halloween-cs.png";
+		public static final String WATER_HOLLOW    = "environment/water7.png";
+		public static final String HOLLOW_OP       = "environment/custom_tiles/cerberus_behind.png";
+		public static final String HOLLOW_PO       = "environment/custom_tiles/cerberus_above.png";
 	}
 	
 	//TODO include other font assets here? Some are platform specific though...
@@ -148,6 +155,10 @@ public class Assets {
 		public static final String HALLS_TENSE          = "music/halls_tense.ogg";
 		public static final String HALLS_BOSS           = "music/halls_boss.ogg";
 		public static final String HALLS_BOSS_FINALE    = "music/halls_boss_finale.ogg";
+
+		//END(移植自魔绫): 空洞遗迹(Hollow) 音乐键
+		public static final String HOLLOW_CITY      = "music/hollow/Mischief_Managed-Easy.ogg";
+		public static final String HOLLOW_CITY_HARD = "music/hollow/Mischief_Managed.ogg";
 	}
 
 	public static class Sounds {
