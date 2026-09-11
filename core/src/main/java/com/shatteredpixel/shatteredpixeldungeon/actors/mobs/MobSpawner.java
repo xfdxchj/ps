@@ -207,6 +207,30 @@ public class MobSpawner extends Actor {
 						Succubus.class,
 						Eye.class, Eye.class,
 						Scorpio.class, Scorpio.class, Scorpio.class));
+
+			//END(移植自魔绫·挑战区): 空洞遗迹 27-30F 的怪物轮换
+			case 27:
+				return new ArrayList<>(Arrays.asList(
+						com.shatteredpixel.shatteredpixeldungeon.actors.mobs.hollow.Butcher.class,
+						com.shatteredpixel.shatteredpixeldungeon.actors.mobs.hollow.Crumb.class,
+						com.shatteredpixel.shatteredpixeldungeon.actors.mobs.hollow.Ghost_Halloween.class));
+			case 28:
+				return new ArrayList<>(Arrays.asList(
+						com.shatteredpixel.shatteredpixeldungeon.actors.mobs.hollow.Butcher.class,
+						com.shatteredpixel.shatteredpixeldungeon.actors.mobs.hollow.PumkingBomber.class,
+						com.shatteredpixel.shatteredpixeldungeon.actors.mobs.hollow.Ghost_Halloween.class,
+						com.shatteredpixel.shatteredpixeldungeon.actors.mobs.hollow.Pumking_Ghost.class));
+			case 29:
+				return new ArrayList<>(Arrays.asList(
+						com.shatteredpixel.shatteredpixeldungeon.actors.mobs.hollow.Butcher.class,
+						com.shatteredpixel.shatteredpixeldungeon.actors.mobs.hollow.PumkingBomber.class,
+						com.shatteredpixel.shatteredpixeldungeon.actors.mobs.hollow.Pumking_Ghost.class,
+						com.shatteredpixel.shatteredpixeldungeon.actors.mobs.hollow.Vampire.class));
+			case 30:
+				return new ArrayList<>(Arrays.asList(
+						com.shatteredpixel.shatteredpixeldungeon.actors.mobs.hollow.Vampire.class,
+						com.shatteredpixel.shatteredpixeldungeon.actors.mobs.hollow.PumkingBomber.class,
+						com.shatteredpixel.shatteredpixeldungeon.actors.mobs.hollow.Pumking_Ghost.class));
 		}
 
 	}
