@@ -219,7 +219,8 @@ public class Badges {
 		//END(移植自魔绫·挑战区): 空洞遗迹相关徽章
 		KILL_DOG                    ( 152 ),
 		HALOFIRE_DIED               ( 153 ),
-		CITY_END                    ( 154 );
+		CITY_END                    ( 154 ),
+		NYZ_SHOP                    ( 155 );
 
 		public boolean meta;
 

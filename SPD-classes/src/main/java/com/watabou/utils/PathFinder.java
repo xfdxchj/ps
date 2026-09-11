@@ -49,6 +49,8 @@ public class PathFinder {
 	//Useful for some logic functions, but is slower due to lack of array-access order.
 	public static int[] CIRCLE4;
 	public static int[] CIRCLE8;
+    //END(移植自魔绫): 7格环形（本fork原无）
+    public static int[] CIRCLE7;
 	
 	public static void setMapSize( int width, int height ) {
 		
@@ -72,6 +74,7 @@ public class PathFinder {
 
 		CIRCLE4 = new int[]{-width, +1, +width, -1};
 		CIRCLE8 = new int[]{-width-1, -width, -width+1, +1, +width+1, +width, +width-1, -1};
+        CIRCLE7 = new int[]{-width-1, -width, -width+1, +1, +width+1, +width, -1};
 	}
 
 	public static Path find( int from, int to, boolean[] passable ) {

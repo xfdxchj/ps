@@ -722,4 +722,7 @@ public class Item implements Bundlable {
 			return Messages.get(Item.class, "prompt");
 		}
 	};
+
+	//END(移植自魔绫): 传奇武器标记接口（无成员）
+	public interface LengedsItem { }
 }

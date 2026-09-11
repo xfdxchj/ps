@@ -126,6 +126,15 @@ public class Hunger extends Buff implements Hero.Doom {
 		return true;
 	}
 
+	//END(移植自魔绫): 米剑按饥饿度加成伤害用（当前饥饿值 / 是否处于饥饿以下）
+	public float hungerDamage() {
+		return level / 100f;
+	}
+
+	public float hungerNoWEDamage() {
+		return level / 200f;
+	}
+
 	public void satisfy( float energy ) {
 		affectHunger( energy, false );
 	}

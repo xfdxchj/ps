@@ -254,6 +254,11 @@ public class SPDSettings extends GameSettings {
 	//END(移植自魔绫·挑战区): 开局选择的“挑战区域”位掩码（bit i = 第 i 个区域被选中）
 	public static final String KEY_CHALLENGE_AREAS = "challenge_areas";
 
+	//END(移植自魔绫): 传说武器解锁判断——需求为「无需打Boss」，故恒为 true
+	public static boolean isItemUnlock( String name ) {
+		return true;
+	}
+
 	public static void challengeAreas( int value ) {
 		put( KEY_CHALLENGE_AREAS, value );
 	}
