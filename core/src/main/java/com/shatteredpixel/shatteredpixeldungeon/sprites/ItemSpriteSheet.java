@@ -811,10 +811,15 @@ public class ItemSpriteSheet {
 	public static final int GELATIN      = DOCUMENTS+7;
 	public static final int SUGAR_BLOCK  = DOCUMENTS+8;
 	public static final int WHITE_SUGAR_B= DOCUMENTS+9;
+	//END(移植自魔绫·挑战区): 空洞遗迹 武器/任务物图标
+	public static final int STAR_CRYSTAL    = DOCUMENTS+10;
+	public static final int DEATHRONG_BOAT  = DOCUMENTS+11;
 	static{
 		assignItemRect(GELATIN,       12, 12);
 		assignItemRect(SUGAR_BLOCK,   12, 12);
 		assignItemRect(WHITE_SUGAR_B, 12, 12);
+		assignItemRect(STAR_CRYSTAL,  12, 12);
+		assignItemRect(DEATHRONG_BOAT,14, 10);
 	}
 
 	//for smaller 8x8 icons that often accompany an item sprite
