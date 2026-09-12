@@ -25,19 +25,16 @@ import java.util.ArrayList;
  *
  * 核心机制：
  *   · HP = 1，**永久无敌**，本体不参与战斗
- *   · 开战直接召唤 6 个「古神之拳」
+ *   · 开战直接召唤【原版】的 6 个古神之拳
  *   · 玩家无法通过打本体推进战斗，必须清掉六拳
+ *   · 六拳全灭后本体失去无敌，可被一击杀死
  *
- * END(用户指正·重要): 之前我用自建的 AncientFist + 方舟贴图实现，
- * 但【原版地牢本来就有"古神之拳"】——{@code YogFist}，共 6 种：
- *     燃烧之拳 / 泥土之拳 / 腐烂之拳 / 锈蚀之拳 / 光明之拳 / 黑暗之拳
- * 贴图 {@code sprites/yog_fists.png}，帧布局 TextureFilm(24, 17)。
- * 现在直接召唤这 6 种原版拳，既保真又自带各自的技能与特效。
+ * END(用户要求·重要): **不给古神之拳加任何 buff**。
+ * 玩家就是直接面对原版的 6 个古神之拳（燃烧/泥土/腐烂/锈蚀/光明/黑暗），
+ * 它们的血量、伤害、技能、特效全部保持原版数值，不做任何强化。
  *
- * 强化规则：
- *   · 击杀 3 个拳 → 剩余 3 个强化（伤害 +50%）
- *   · 只剩 1 个   → 该拳狂暴（攻速 +100%、受伤 −50%）
- *   · 6 个全灭    → 本体失去无敌，可被一击杀死
+ * 原版古神之拳（{@link YogFist}）：
+ *   贴图 sprites/yog_fists.png，帧布局 TextureFilm(24, 17)
  */
 public class GuidingKing extends Boss {
 
@@ -67,10 +64,6 @@ public class GuidingKing extends Boss {
     private final ArrayList<Mob> fists = new ArrayList<>();
     private boolean summoned = false;
 
-    /** 记录每个拳的强化等级 */
-    private static final java.util.HashMap<Mob, Integer> empower =
-            new java.util.HashMap<>();
-
     private static final String SUMMONED = "summoned";
 
     // ═══════════════════════════════════════════════
@@ -88,7 +81,7 @@ public class GuidingKing extends Boss {
         // 清理已死引用
         fists.removeIf( f -> f == null || !f.isAlive() );
 
-        // 只要还有拳活着，本体维持无敌
+        // 只要还有拳活着，本体维持无敌；全灭则解除
         if (!fists.isEmpty()) {
             if (buff(Invulnerability.class) == null) {
                 Buff.affect(this, Invulnerability.class);
@@ -97,18 +90,15 @@ public class GuidingKing extends Boss {
             Buff.detach(this, Invulnerability.class);
         }
 
-        checkEmpower();
-
         spend( TICK );
         return true;
     }
 
-    /** 召唤原版 6 种古神之拳 */
+    /** 召唤原版 6 种古神之拳（**不做任何强化**） */
     private void summonSixFists() {
 
         yell( Messages.get(this, "summon") );
 
-        // 原版的 6 种拳
         Class<? extends YogFist>[] kinds = new Class[]{
                 YogFist.BurningFist.class,   // 燃烧之拳
                 YogFist.SoiledFist.class,    // 泥土之拳
@@ -129,8 +119,7 @@ public class GuidingKing extends Boss {
                 YogFist fist = k.getDeclaredConstructor().newInstance();
                 fist.pos = cell;
                 fists.add( fist );
-                //END(注意): 这里是 act() 阶段（不是 level.createMobs()），
-                //Dungeon.level 已经存在，所以用 GameScene.add 是正确的。
+                //END: 这里是 act() 阶段，Dungeon.level 已存在，用 GameScene.add 正确。
                 GameScene.add( fist );
 
                 if (Dungeon.level != null && Dungeon.level.heroFOV[cell]) {
@@ -174,33 +163,6 @@ public class GuidingKing extends Boss {
         return -1;
     }
 
-    /** 强化判定 */
-    private void checkEmpower() {
-        int alive = fists.size();
-
-        if (alive == 3) {
-            boolean any = false;
-            for (Mob f : fists) {
-                if (empower.getOrDefault(f, 0) < 1) {
-                    empower.put(f, 1);
-                    // 原版 YogFist 的 HP 是 HT，直接加倍血量并提升伤害
-                    f.HT = Math.round(f.HT * 1.5f);
-                    f.HP = Math.min(f.HP + f.HT / 4, f.HT);
-                    any = true;
-                }
-            }
-            if (any) yell( Messages.get(this, "empower1") );
-
-        } else if (alive == 1) {
-            Mob last = fists.get(0);
-            if (empower.getOrDefault(last, 0) < 2) {
-                empower.put(last, 2);
-                Buff.prolong( last, com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Haste.class, 999f );
-                yell( Messages.get(this, "empower2") );
-            }
-        }
-    }
-
     // ═══════════════════════════════════════════════
     //  本体：只要还有拳活着就免伤
     // ═══════════════════════════════════════════════
@@ -218,7 +180,6 @@ public class GuidingKing extends Boss {
             if (f != null && f.isAlive()) f.die( null );
         }
         fists.clear();
-        empower.clear();
 
         super.die(cause);
         GameScene.bossSlain();
