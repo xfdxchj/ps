@@ -529,6 +529,11 @@ public abstract class Level implements Bundlable {
 		return m;
 	}
 
+	//END(port from Arknights): 方舟用 nMobs() 让关卡额外指定刷怪数量（默认0）。
+	//本 fork 的刷怪由 MobSpawner 按层号决定，此方法仅用于让方舟关卡编译/覆写。
+	public int nMobs() {
+		return 0;
+	}
 	abstract protected void createMobs();
 
 	abstract protected void createItems();
