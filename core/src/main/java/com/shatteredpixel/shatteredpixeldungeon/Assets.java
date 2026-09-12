@@ -68,6 +68,13 @@ public class Assets {
 		public static final String GALAXY_BACKGROUND = "environment/custom_tiles/galaxy_background.png"; //END(port)
 		public static final String TILES_MORGALAXY   = "environment/tiles_morpheus.png"; //END(port)
 		public static final String TILES_THEATRE     = "environment/custom_tiles/theatre.png"; //END(port)
+		//END(port from Arknights): 方舟 3 区地形图（512x512，从明日方舟地牢.jar 提取）
+		public static final String TILES_IBERIA    = "environment/tiles_iberia.png";    //伊比利亚·海嗣 第1章
+		public static final String TILES_IBERIA2   = "environment/tiles_iberia2.png";   //伊比利亚 第2章
+		public static final String TILES_SARGON    = "environment/tiles_sargon.png";    //嘉维尔·雨林 第1章
+		public static final String TILES_SARGON2   = "environment/tiles_sargon2.png";   //嘉维尔 第2章
+		public static final String TILES_SIESTA    = "environment/tiles_siesta.png";    //汐斯塔·海滨 第1章
+		public static final String TILES_SIESTA2   = "environment/tiles_siesta2.png";   //汐斯塔 第2章
 		//END(port from MagicLing·Galaxy)
 		public static final String TILES_FIRE       = "environment/tiles_fire.png";
 		public static final String LAVACAVE_OP      = "environment/custom_tiles/lavecave_behind.png";
