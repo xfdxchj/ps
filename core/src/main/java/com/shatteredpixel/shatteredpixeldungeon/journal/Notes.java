@@ -113,6 +113,8 @@ public class Notes {
 	}
 	
 	public enum Landmark {
+		//END(port from Arknights): 方舟的锡兰地标
+		CEYLON,
 		CHASM_FLOOR,
 		WATER_FLOOR,
 		GRASS_FLOOR,

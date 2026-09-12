@@ -200,7 +200,28 @@ public enum Talent {
 	//universal T4
 	HEROIC_ENERGY(26, 4), //See icon() and title() for special logic for this one
 	//Ratmogrify T4
-	RATSISTANCE(215, 4), RATLOMACY(216, 4), RATFORCEMENTS(217, 4);
+        RATSISTANCE(215,4),
+        SHARPSHOOTER(315, 3),
+        TARGET_FOCUSING(296),
+        SPARKOFLIFE(316),
+        WATER_PLAY(306, 3),
+        FLASH_SPEAR(206, 3),
+        GORGEOUS_VACATION(302, 3),
+        TECHNICAL(312, 4),
+        TAC_DEF(303, 3),
+        TELESCOPE(317),
+        LISKARM_DOLL(318),
+        AMMO1(319, 3),
+        AMMO2(320, 3),
+        BLITZKRIEG(172, 3),
+        TAC_SHOT(311, 4),
+        ZERO_RANGE_SHOT(313, 4),
+        FRUGALITY(305, 3),
+        PINPOINT(304, 3),
+        BF_RULL(314, 3),
+        RATLOMACY(216, 4),
+        RATFORCEMENTS(217,4),
+        SPSHOOTER(321, 3);
 
 	public static class ImprovisedProjectileCooldown extends FlavourBuff{
 		public int icon() { return BuffIndicator.TIME; }

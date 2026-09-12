@@ -59,8 +59,7 @@ extends NPC {
     public void damage(int dmg, Object src) {
     }
 
-    @Override
-    public void add(Buff buff) {
+        public void addBuffCompat(Buff buff) {
     }
 
     @Override

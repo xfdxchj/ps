@@ -161,23 +161,14 @@ extends NPC {
                     msg = (String)msg + Messages.get(this, "intro_huntress");
                     break;
                 }
-                case ROSECAT: {
-                    msg = (String)msg + Messages.get(this, "intro_rosecat");
-                    break;
-                }
-                case NEARL: {
-                    msg = (String)msg + Messages.get(this, "intro_nearl");
-                    break;
-                }
-                case CHEN: {
-                    msg = (String)msg + Messages.get(this, "intro_chen");
-                }
+                //END(移植调整): 原方舟另有三个自定义职业分支（rosecat/nearl/chen），
+                //本 fork 的 HeroClass 只有 5 个原版职业，故移除这些分支。
             }
             Object msgFinal = msg = (String)msg + Messages.get(this, "intro");
             Game.runOnRenderThread(new Callback(){
                 final /* synthetic */ String val$msgFinal;
                 {
-                    this.val$msgFinal = string;
+                    this.val$msgFinal = " ";
                 }
 
                 @Override

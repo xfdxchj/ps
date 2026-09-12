@@ -1576,6 +1576,16 @@ public class GameScene extends PixelScene {
 		}
 	}
 	
+	//END(port from Arknights): 方舟用 selectItem(Listener, Mode, prompt) 的形式选物品。
+	//本 fork 只有 ItemSelector，这里提供重载：把 Listener 适配成 ItemSelector。
+	public static WndBag selectItem( WndBag.Listener listener, WndBag.Mode mode, String prompt ) {
+		return selectItem( WndBag.adapt( listener, prompt ) );
+	}
+
+	public static WndBag selectItem( WndBag.Listener listener, WndBag.Mode mode ) {
+		return selectItem( WndBag.adapt( listener ) );
+	}
+
 	public static WndBag selectItem( WndBag.ItemSelector listener ) {
 		cancel();
 

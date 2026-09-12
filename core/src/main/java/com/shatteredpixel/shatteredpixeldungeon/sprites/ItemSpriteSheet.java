@@ -1155,4 +1155,36 @@ public class ItemSpriteSheet {
 	//END(port from Arknights): CHEN（方舟图集未找到，复用现有图标）
 	public static final int CHEN = WEP_TIER4+2;
 	static { assignItemRect(CHEN, 16, 16); }
+
+	//END(port from Arknights): CATGUN（枪械系统用，复用 AK_ICONS 行）
+	public static final int CATGUN = AK_ICONS+5;
+	static { assignItemRect(CATGUN, 16, 16); }
+	//END(port from Arknights): C1（枪械系统用，复用 AK_ICONS 行）
+	public static final int C1 = AK_ICONS+6;
+	static { assignItemRect(C1, 16, 16); }
+	//END(port from Arknights): AMMO1（枪械系统用，复用 AK_ICONS 行）
+	public static final int AMMO1 = AK_ICONS+7;
+	static { assignItemRect(AMMO1, 16, 16); }
+	//END(port from Arknights): AMMO2（枪械系统用，复用 AK_ICONS 行）
+	public static final int AMMO2 = AK_ICONS+8;
+	static { assignItemRect(AMMO2, 16, 16); }
+	//END(port from Arknights): BONK（枪械系统用，复用 AK_ICONS 行）
+	public static final int BONK = AK_ICONS+9;
+	static { assignItemRect(BONK, 16, 16); }
+	//END(port from Arknights): CLIFF（枪械系统用，复用 AK_ICONS 行）
+	public static final int CLIFF = AK_ICONS+10;
+	static { assignItemRect(CLIFF, 16, 16); }
+	//END(port from Arknights): BEENS（枪械系统用，复用 AK_ICONS 行）
+	public static final int BEENS = AK_ICONS+11;
+	static { assignItemRect(BEENS, 16, 16); }
+
+	//END(port from Arknights): TELESCOPE（枪械/天赋用，复用现有图标）
+	public static final int TELESCOPE = AK_ICONS+14;
+	static { assignItemRect(TELESCOPE, 16, 16); }
+	//END(port from Arknights): LISKARM_DOLL（枪械/天赋用，复用现有图标）
+	public static final int LISKARM_DOLL = AK_ICONS+14;
+	static { assignItemRect(LISKARM_DOLL, 16, 16); }
+	//END(port from Arknights): SPSHOOTER（枪械/天赋用，复用现有图标）
+	public static final int SPSHOOTER = AK_ICONS+14;
+	static { assignItemRect(SPSHOOTER, 16, 16); }
 }

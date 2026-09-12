@@ -486,4 +486,65 @@ public class WndBag extends WndTabbed {
 		public abstract boolean itemSelectable( Item item );
 		public abstract void onSelect( Item item );
 	}
+
+	//END(port from Arknights): 方舟用的是 WndBag.Listener 接口（只有 onSelect），
+	//本 fork 用 ItemSelector（要求更多方法）。这里提供一个兼容接口 + 适配器，
+	//让方舟代码可以原样使用。
+	public interface Listener {
+		void onSelect(Item item);
+	}
+
+	/** 把方舟的 Listener 适配成本 fork 的 ItemSelector。 */
+	public static ItemSelector adapt(final Listener listener) {
+		return adapt(listener, null);
+	}
+
+	public static ItemSelector adapt(final Listener listener, final String prompt) {
+		return new ItemSelector() {
+			@Override
+			public String textPrompt() {
+				return prompt != null ? prompt : "Select an item";
+			}
+			@Override
+			public boolean itemSelectable(Item item) {
+				return true;   //由 listener 自行判断
+			}
+			@Override
+			public void onSelect(Item item) {
+				listener.onSelect(item);
+			}
+		};
+	}
+
+	/** 方舟的 Mode 枚举（本 fork 原本没有，按其取值补齐以兼容）。 */
+	public enum Mode {
+		ALL,
+		UNIDENTIFED,
+		UNIDENTIFIED,
+		UNCURSABLE,
+		CURSABLE,
+		UPGRADEABLE,
+		QUICKSLOT,
+		FOR_SALE,
+		WEAPON,
+		MISSILEWEAPON,
+		MISSILE,
+		ARMOR,
+		RING,
+		ARTIFACT,
+		ENCHANTABLE,
+		ENCHANTABLE_STONE,
+		WAND,
+		SEED,
+		FOOD,
+		POTION,
+		SCROLL,
+		STONE,
+		INTUITIONABLE,
+		EQUIPMENT,
+		TRINKET,
+		BOMB,
+		SPELL,
+		IDENTIFIED
+	}
 }

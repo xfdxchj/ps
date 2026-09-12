@@ -63,6 +63,23 @@ public class MeleeWeapon extends Weapon {
 
 	public static String AC_ABILITY = "ABILITY";
 
+	//END(port from Arknights): 武器充能（方舟 Weapon 体系用；枪械技能消耗它）。
+	//方舟原版定义在其 MeleeWeapon 里，本 fork 原本没有，此处补齐。
+	public int charge = 100;
+	public int chargeCap = 100;
+
+	/** 消耗充能（不足则不消耗并返回 false）。 */
+	public boolean spendCharge(int amount) {
+		if (charge < amount) return false;
+		charge -= amount;
+		return true;
+	}
+
+	/** 是否充能足够。 */
+	public boolean isCharged(int amount) {
+		return charge >= amount;
+	}
+
 	@Override
 	public void activate(Char ch) {
 		super.activate(ch);
