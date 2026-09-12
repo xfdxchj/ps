@@ -3,6 +3,7 @@ package com.shatteredpixel.shatteredpixeldungeon.actors.mobs.bosses.sixkings;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Boss;
+import com.shatteredpixel.shatteredpixeldungeon.ui.BossHealthBar;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Invulnerability;
@@ -44,6 +45,7 @@ public class GuidingKing extends Boss {
         HT  = 1;            // 本体 1 血
         EXP = 120;
         baseHT = HT;
+        HP = HT;   //END(修复·关键): 原来只设了 HT 没设 HP，HP 默认 0 → 阶段判定/死亡判定立刻成立
 
         baseMin = 0;        // 本体不攻击
         baseMax = 0;
@@ -51,6 +53,12 @@ public class GuidingKing extends Boss {
         baseEva = 0;
         baseMinDef = 0;
         baseMaxDef = 0;
+
+        //END(修复): 默认视野太小 → "离开一格就看不见"
+
+        viewDistance = 31;
+
+        
 
         properties.add( Property.BOSS );
         properties.add( Property.IMMOVABLE );   // 本体不动
@@ -69,6 +77,11 @@ public class GuidingKing extends Boss {
     // ═══════════════════════════════════════════════
     @Override
     protected boolean act() {
+
+        //END(修复): 没有 assignBoss → Boss 血条不显示。"法术王没有血条"
+        if (!BossHealthBar.isAssigned()) {
+            BossHealthBar.assignBoss( this );
+        }
 
         // ── 开战：召唤 6 个古神之拳 ──
         if (!summoned) {

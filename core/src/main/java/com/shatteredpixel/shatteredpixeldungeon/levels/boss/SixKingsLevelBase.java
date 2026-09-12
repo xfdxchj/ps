@@ -19,8 +19,8 @@ import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
  */
 public abstract class SixKingsLevelBase extends Level {
 
-    protected static final int W = 17;
-    protected static final int H = 17;
+    protected static final int W = 29;
+    protected static final int H = 29;
 
     /** 子类返回该层要放的 Boss */
     protected abstract Mob createBoss();
@@ -45,7 +45,7 @@ public abstract class SixKingsLevelBase extends Level {
         }
 
         // ── 四角柱子（掩体，让战斗有走位空间）──
-        int[][] pillars = { {3,3}, {3,W-4}, {H-4,3}, {H-4,W-4} };
+        int[][] pillars = { {4,4}, {4,W-5}, {H-5,4}, {H-5,W-5} };
         for (int[] p : pillars) {
             map[p[0] * W + p[1]] = Terrain.WALL_DECO;
         }
@@ -93,6 +93,37 @@ public abstract class SixKingsLevelBase extends Level {
         if (boss != null) {
             boss.pos = (H / 2) * W + (W / 2);      // 场地正中
             mobs.add( boss );
+        }
+    }
+
+    /**
+     * END(修复·可以不战斗直接跑): 玩家反馈"六天王的战斗区域小，且可以不战斗直接跑"。
+     *
+     * <p>处理：
+     * <ol>
+     *   <li>进入关卡即 {@code seal()} 锁门 —— 未击败 Boss 无法离开。
+     *       本 fork 的 {@code Dungeon.level.locked} 会同时阻止踩楼梯
+     *       （见 {@code Hero.actTransition} 里的 {@code !Dungeon.level.locked} 判定）。</li>
+     *   <li>锁门期间玩家不会饿死（{@code LockedFloor} buff 自带该效果）。</li>
+     *   <li>Boss 死亡时 {@code Boss.die()} 会统一 {@code unseal()}，门自动打开。</li>
+     * </ol>
+     *
+     * <p>注意：NPC 层（第 1 层，{@link SixKingsLevel0}）不应该锁门，
+     * 所以那里把 {@link #sealOnEnter()} 覆写为 false。
+     */
+    protected boolean sealOnEnter() {
+        return true;
+    }
+
+    @Override
+    public void occupyCell( com.shatteredpixel.shatteredpixeldungeon.actors.Char ch ) {
+        super.occupyCell( ch );
+
+        // 玩家第一次踏上本层时锁门
+        if (sealOnEnter()
+                && ch == com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero
+                && !locked) {
+            seal();
         }
     }
 

@@ -2,6 +2,8 @@ package com.shatteredpixel.shatteredpixeldungeon.actors.mobs.bosses.sixkings;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Boss;
+import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
+import com.shatteredpixel.shatteredpixeldungeon.ui.BossHealthBar;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Burning;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
@@ -42,6 +44,7 @@ public class SpellKing extends Boss {
         HT  = 1000;
         EXP = 100;
         baseHT = HT;
+        HP = HT;   //END(修复·关键): 原来只设了 HT 没设 HP，HP 默认 0 → 阶段判定/死亡判定立刻成立
 
         baseMin = 25;
         baseMax = 25;
@@ -49,6 +52,12 @@ public class SpellKing extends Boss {
         baseEva = 15;
         baseMinDef = 0;
         baseMaxDef = 0;
+
+        //END(修复): 默认视野太小 → "离开一格就看不见"
+
+        viewDistance = 31;
+
+        
 
         properties.add( Property.BOSS );
         alignment = Alignment.ENEMY;
@@ -74,6 +83,11 @@ public class SpellKing extends Boss {
     
     @Override
     protected boolean act() {
+
+        //END(修复): 没有 assignBoss → Boss 血条不显示。"法术王没有血条"
+        if (!BossHealthBar.isAssigned()) {
+            BossHealthBar.assignBoss( this );
+        }
 
         updatePhase();
 

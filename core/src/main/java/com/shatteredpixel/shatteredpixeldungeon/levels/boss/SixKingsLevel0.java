@@ -21,4 +21,13 @@ public class SixKingsLevel0 extends SixKingsLevelBase {
     protected String levelName() {
         return "引路人之厅";
     }
+
+    /**
+     * END(修复): 第 1 层是剧情层（只有 NPC，没有 Boss），**不能锁门** ——
+     * 否则玩家听完故事就出不去了（没有 Boss 可杀来触发 unseal）。
+     */
+    @Override
+    protected boolean sealOnEnter() {
+        return false;
+    }
 }
