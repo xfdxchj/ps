@@ -221,21 +221,21 @@ public class Badges {
 		HALOFIRE_DIED               ( 113 ), //END(修复)
 		CITY_END                    ( 114 ), //END(修复)
 		NYZ_SHOP                    ( 115 ),
-        HIKARI ( 160 ),
-        SIESTA_PART1 ( 161 ),
-        SIESTA_PART2 ( 162 ),
-        GAVIAL_PART1 ( 163 ),
-        GAVIAL_PART2 ( 164 ),
-        IBERIA_PART1 ( 165 ),
-        IBERIA_PART2 ( 166 ),
-        WILL ( 167 ),
-        TALU_BOSS ( 168 ),
-        CERTIFICATE_1 ( 169 ),
-        CERTIFICATE_2 ( 170 ),
-        CERTIFICATE_3 ( 171 ),
-        CERTIFICATE_4 ( 172 ),
-        CERTIFICATE_5 ( 173 ),
-        CERTIFICATE_6 ( 174 ); //END(修复)
+        HIKARI ( 0 ),
+        SIESTA_PART1 ( 25 ),
+        SIESTA_PART2 ( 26 ),
+        GAVIAL_PART1 ( 27 ),
+        GAVIAL_PART2 ( 28 ),
+        IBERIA_PART1 ( 29 ),
+        IBERIA_PART2 ( 30 ),
+        WILL ( 31 ),
+        TALU_BOSS ( 58 ),
+        CERTIFICATE_1 ( 59 ),
+        CERTIFICATE_2 ( 60 ),
+        CERTIFICATE_3 ( 61 ),
+        CERTIFICATE_4 ( 62 ),
+        CERTIFICATE_5 ( 63 ),
+        CERTIFICATE_6 ( 88 ); //END(修复)
 
 		public boolean meta;
 
