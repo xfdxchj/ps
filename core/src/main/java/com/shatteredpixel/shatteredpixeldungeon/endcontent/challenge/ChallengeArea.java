@@ -130,36 +130,43 @@ public final class ChallengeArea {
 			return new com.shatteredpixel.shatteredpixeldungeon.levels.LaveCavesBossLevel();
 		}
 
-		//==== 方舟 3 区（阶段A：仅接入；关卡类尚未搬运 → 占位 DeadEndLevel，保证流程可走通不崩溃）====
+		//==== 方舟 3 区（地形阶段 T5：真实关卡已接入；怪物/Boss 仍为桩）====
+		//布局（每区 10 层）：0-3 第1章 / 4 Boss1 / 5-8 第2章 / 9 Boss2
 
 		if (areaId == IBERIA.id) {
-			//伊比利亚·海嗣：0-3=第1章(SeaLevel_part1) 4=SeaBossLevel1 5-8=第2章(SeaLevel_part2) 9=SeaBossLevel2
+			//伊比利亚·海嗣
 			switch (floorIn) {
-				case 4:  return new DeadEndLevel();   //TODO(方舟B1): return new SeaBossLevel1();
-				case 9:  return new DeadEndLevel();   //TODO(方舟B1): return new SeaBossLevel2();
-				default: return new DeadEndLevel();   //TODO(方舟B1): 0-3→SeaLevel_part1，5-8→SeaLevel_part2
+				case 4:  return new com.shatteredpixel.shatteredpixeldungeon.levels.SeaBossLevel1();
+				case 9:  return new com.shatteredpixel.shatteredpixeldungeon.levels.SeaBossLevel2();
+				case 5: case 6: case 7: case 8:
+					return new com.shatteredpixel.shatteredpixeldungeon.levels.SeaLevel_part2();
+				default: return new com.shatteredpixel.shatteredpixeldungeon.levels.SeaLevel_part1();  //0-3
 			}
 		}
 
 		if (areaId == GAVIAL.id) {
-			//嘉维尔·雨林：0-3=第1章(GavialLevel) 4=GavialBossLevel1 5-8=第2章(GavialLevel2) 9=GavialBossLevel2
+			//嘉维尔·雨林
 			switch (floorIn) {
-				case 4:  return new DeadEndLevel();   //TODO(方舟B1): return new GavialBossLevel1();
-				case 9:  return new DeadEndLevel();   //TODO(方舟B1): return new GavialBossLevel2();
-				default: return new DeadEndLevel();   //TODO(方舟B1): 0-3→GavialLevel，5-8→GavialLevel2
+				case 4:  return new com.shatteredpixel.shatteredpixeldungeon.levels.GavialBossLevel1();
+				case 9:  return new com.shatteredpixel.shatteredpixeldungeon.levels.GavialBossLevel2();
+				case 5: case 6: case 7: case 8:
+					return new com.shatteredpixel.shatteredpixeldungeon.levels.GavialLevel2();
+				default: return new com.shatteredpixel.shatteredpixeldungeon.levels.GavialLevel();     //0-3
 			}
 		}
 
 		if (areaId == SIESTA.id) {
-			//汐斯塔·海滨：0-3=第1章(SiestaLevel_part1) 4=SiestaBossLevel_part1 5-8=第2章(SiestaLevel_part2) 9=SiestaBossLevel_part2
+			//汐斯塔·海滨
 			switch (floorIn) {
-				case 4:  return new DeadEndLevel();   //TODO(方舟B1): return new SiestaBossLevel_part1();
-				case 9:  return new DeadEndLevel();   //TODO(方舟B1): return new SiestaBossLevel_part2();
-				default: return new DeadEndLevel();   //TODO(方舟B1): 0-3→SiestaLevel_part1，5-8→SiestaLevel_part2
+				case 4:  return new com.shatteredpixel.shatteredpixeldungeon.levels.SiestaBossLevel_part1();
+				case 9:  return new com.shatteredpixel.shatteredpixeldungeon.levels.SiestaBossLevel_part2();
+				case 5: case 6: case 7: case 8:
+					return new com.shatteredpixel.shatteredpixeldungeon.levels.SiestaLevel_part2();
+				default: return new com.shatteredpixel.shatteredpixeldungeon.levels.SiestaLevel_part1(); //0-3
 			}
 		}
 
-		//未知区：占位
+				//未知区：占位
 		return new DeadEndLevel();
 	}
 }
