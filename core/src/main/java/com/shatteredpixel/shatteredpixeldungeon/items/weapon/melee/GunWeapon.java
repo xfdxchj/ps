@@ -106,6 +106,13 @@ extends MeleeWeapon {
         @Override
         public void onSelect(Item item) {
             if (item != null) {
+                //END(修复·关键): 必须判类型再强转。
+                //之前只要 item 不是 UpMagazine 就走 else 分支强转 MissileWeapon，
+                //玩家若点到非弹药物品就会 ClassCastException 崩溃。
+                if (!(item instanceof MissileWeapon)) {
+                    GLog.w(Messages.get(GunWeapon.class, "need_ammo"));
+                    return;
+                }
                 if (item instanceof Thunderbolt) {
                     GunWeapon.this.bulletMax += 3;
                     GunWeapon.this.gamza = true;

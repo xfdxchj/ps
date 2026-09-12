@@ -496,10 +496,20 @@ public class WndBag extends WndTabbed {
 
 	/** 把方舟的 Listener 适配成本 fork 的 ItemSelector。 */
 	public static ItemSelector adapt(final Listener listener) {
-		return adapt(listener, null);
+		return adapt(listener, null, Mode.ALL);
 	}
 
 	public static ItemSelector adapt(final Listener listener, final String prompt) {
+		return adapt(listener, prompt, Mode.ALL);
+	}
+
+	/**
+	 * END(修复·关键): 之前 mode 参数被完全忽略，itemSelectable 永远返回 true，
+	 * 于是"选择弹药"的界面允许玩家选任何物品 → 方舟代码里的
+	 * ((MissileWeapon)item).tier 强转就抛 ClassCastException（"上子弹会崩溃"）。
+	 * 现在按 mode 真正过滤。
+	 */
+	public static ItemSelector adapt(final Listener listener, final String prompt, final Mode mode) {
 		return new ItemSelector() {
 			@Override
 			public String textPrompt() {
@@ -507,13 +517,62 @@ public class WndBag extends WndTabbed {
 			}
 			@Override
 			public boolean itemSelectable(Item item) {
-				return true;   //由 listener 自行判断
+				if (item == null) return false;
+				return matchesMode(item, mode);
 			}
 			@Override
 			public void onSelect(Item item) {
 				listener.onSelect(item);
 			}
 		};
+	}
+
+	/** 判断物品是否符合 Mode（只实现方舟用得到的那些，其余放行）。 */
+	public static boolean matchesMode(Item item, Mode mode) {
+		if (mode == null || mode == Mode.ALL) return true;
+
+		switch (mode) {
+			case MISSILEWEAPON:
+			case MISSILE:
+				return item instanceof com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.MissileWeapon;
+			case WEAPON:
+				return item instanceof com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon;
+			case ARMOR:
+				return item instanceof com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor;
+			case RING:
+				return item instanceof com.shatteredpixel.shatteredpixeldungeon.items.rings.Ring;
+			case ARTIFACT:
+				return item instanceof com.shatteredpixel.shatteredpixeldungeon.items.artifacts.Artifact;
+			case WAND:
+				return item instanceof com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand;
+			case SEED:
+				return item instanceof com.shatteredpixel.shatteredpixeldungeon.items.potions.Potion
+						|| item instanceof com.shatteredpixel.shatteredpixeldungeon.plants.Plant.Seed;
+			case FOOD:
+				return item instanceof com.shatteredpixel.shatteredpixeldungeon.items.food.Food;
+			case POTION:
+				return item instanceof com.shatteredpixel.shatteredpixeldungeon.items.potions.Potion;
+			case SCROLL:
+				return item instanceof com.shatteredpixel.shatteredpixeldungeon.items.scrolls.Scroll;
+			case STONE:
+				return item instanceof com.shatteredpixel.shatteredpixeldungeon.items.stones.Runestone;
+			case IDENTIFIED:
+				return item.isIdentified();
+			case UNIDENTIFIED:
+			case UNIDENTIFED:
+				return !item.isIdentified();
+			case UPGRADEABLE:
+				return item.isUpgradable();
+			case EQUIPMENT:
+				return item instanceof com.shatteredpixel.shatteredpixeldungeon.items.EquipableItem;
+			case ENCHANTABLE:
+			case ENCHANTABLE_STONE:
+				return item.isUpgradable();
+			case BOMB:
+				return item instanceof com.shatteredpixel.shatteredpixeldungeon.items.bombs.Bomb;
+			default:
+				return true;   //未实现的 Mode 放行（保持旧行为）
+		}
 	}
 
 	/** 方舟的 Mode 枚举（本 fork 原本没有，按其取值补齐以兼容）。 */

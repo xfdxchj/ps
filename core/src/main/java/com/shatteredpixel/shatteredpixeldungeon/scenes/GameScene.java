@@ -1578,12 +1578,14 @@ public class GameScene extends PixelScene {
 	
 	//END(port from Arknights): 方舟用 selectItem(Listener, Mode, prompt) 的形式选物品。
 	//本 fork 只有 ItemSelector，这里提供重载：把 Listener 适配成 ItemSelector。
+	//END(修复·关键): 之前 mode 参数被丢弃 → "选弹药"的界面允许选任何物品，
+	//方舟代码里的 ((MissileWeapon)item).tier 强转就会 ClassCastException（上子弹崩溃）。
 	public static WndBag selectItem( WndBag.Listener listener, WndBag.Mode mode, String prompt ) {
-		return selectItem( WndBag.adapt( listener, prompt ) );
+		return selectItem( WndBag.adapt( listener, prompt, mode ) );
 	}
 
 	public static WndBag selectItem( WndBag.Listener listener, WndBag.Mode mode ) {
-		return selectItem( WndBag.adapt( listener ) );
+		return selectItem( WndBag.adapt( listener, null, mode ) );
 	}
 
 	public static WndBag selectItem( WndBag.ItemSelector listener ) {
