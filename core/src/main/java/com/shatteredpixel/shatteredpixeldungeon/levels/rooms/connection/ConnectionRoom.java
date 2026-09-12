@@ -57,7 +57,7 @@ public abstract class ConnectionRoom extends Room {
 		rooms.add(RingBridgeRoom.class);
 	}
 	
-	private static float[][] chances = new float[27][];
+	private static float[][] chances = new float[48][];
 	static {
 		chances[1] =  new float[]{20, 1,    0, 2,       2, 1};
 		chances[4] =  chances[3] = chances[2] = chances[1];
@@ -76,9 +76,28 @@ public abstract class ConnectionRoom extends Room {
 		
 		chances[22] = new float[]{15, 4,    0, 2,       3, 2};
 		chances[26] = chances[25] = chances[24] = chances[23] = chances[22];
+
+		//END(修复·挑战区层号): 27F 及以后复用最深一段配置（挑战区层号可超 26）
+		for (int i = 27; i < chances.length; i++) {
+			chances[i] = chances[26];
+		}
 	}
 	
 	public static ConnectionRoom createRoom(){
-		return Reflection.newInstance(rooms.get(Random.chances(chances[Dungeon.depth])));
+		return Reflection.newInstance(rooms.get(Random.chances(safeChances(Dungeon.depth))));
+	}
+
+	//END(修复·挑战区层号): 深度索引的安全取值。
+	//原版 chances 只覆盖到 26F；挑战区会到 26F 之后，此处夹到有效区间。
+	private static float[] safeChances(int depth) {
+		int d = depth;
+		if (d < 0) d = 0;
+		if (d >= chances.length) d = chances.length - 1;
+		if (chances[d] == null) {
+			for (int i = d - 1; i >= 0; i--) {
+				if (chances[i] != null) { d = i; break; }
+			}
+		}
+		return chances[d] != null ? chances[d] : chances[1];
 	}
 }

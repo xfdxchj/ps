@@ -160,7 +160,7 @@ public class EntranceRoom extends StandardRoom {
 		rooms.add(RitualEntranceRoom.class);
 	}
 
-	private static float[][] chances = new float[27][];
+	private static float[][] chances = new float[48][];
 	static {
 		//first 2 floors only use simpler entrance rooms
 		chances[1] =  new float[]{4,3,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
@@ -179,10 +179,24 @@ public class EntranceRoom extends StandardRoom {
 
 		chances[21] = new float[]{0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 4,3,2,1};
 		chances[26] = chances[25] = chances[24] = chances[23] = chances[22] = chances[21];
+
+		//END(修复·挑战区层号): 27F 及以后复用最深一段配置（挑战区层号可超 26）
+		for (int i = 27; i < chances.length; i++) {
+			chances[i] = chances[26];
+		}
 	}
 
 	public static StandardRoom createEntrance(){
-		return Reflection.newInstance(rooms.get(Random.chances(chances[Dungeon.depth])));
+		//END(修复·关键): chances 数组只有 27 项(索引 0-26)，因为原版 SPD 最多 26 层。
+		//挑战区把层号扩展到 26F 之后 → Dungeon.depth 可达 30+，直接索引会越界崩溃
+		//（实测 "Index 30 out of bounds for length 27"，发生在 27-30F 上下楼时）。
+		//这里把超出范围的层号安全映射回最后一段（26F）的配置。
+		int d = Dungeon.depth;
+		if (d < 0 || d >= chances.length || chances[d] == null) {
+			d = chances.length - 1;   //26
+			if (chances[d] == null) d = 1;
+		}
+		return Reflection.newInstance(rooms.get(Random.chances(chances[d])));
 	}
 
 }
