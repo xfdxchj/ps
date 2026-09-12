@@ -92,6 +92,21 @@ extends RegularLevel {
     @Override
     protected ArrayList<Room> initRooms() {
         ArrayList<Room> rooms = super.initRooms();
+
+        //END(修复·地形错乱·关键): 剔除会写"方舟贴图里不存在的地形"的房间。
+        //RegularLevel 默认房间表可能放入 RegionDecoPatchEntranceRoom /
+        //LibraryHallEntranceRoom，它们会往地图写 Terrain.REGION_DECO(33) /
+        //REGION_DECO_ALT(34) / MINE_CRYSTAL(35) 等本 fork 独有的地形，
+        //而这些在方舟贴图里几乎是空白 → 显示错乱。
+        for (int i = rooms.size() - 1; i >= 0; i--) {
+            String cn = rooms.get(i).getClass().getName();
+            if (cn.contains("RegionDecoPatch")
+                    || cn.contains("LibraryHall")
+                    || cn.contains("RegionDeco")) {
+                rooms.remove(i);
+            }
+        }
+
         rooms.add(new CoreRoom());
         rooms.add(new CoreRoom());
         return rooms;
