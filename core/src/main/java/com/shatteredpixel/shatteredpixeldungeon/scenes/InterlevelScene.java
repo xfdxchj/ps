@@ -680,7 +680,14 @@ public class InterlevelScene extends PixelScene {
 
 			LevelTransition destTransition = level.getTransition(curTransition.destType);
 			curTransition = null;
-			Dungeon.switchLevel( level, destTransition.cell() );
+
+			//END(修复·挑战区): 与 ascend 同理 —— 目标层可能没有该类型的过渡，兜底避免 NPE。
+			if (destTransition == null && level.transitions != null && !level.transitions.isEmpty()) {
+				destTransition = level.transitions.get(0);
+			}
+			int destCell = (destTransition != null) ? destTransition.cell() : level.entrance();
+
+			Dungeon.switchLevel( level, destCell );
 		}
 
 	}
@@ -724,7 +731,18 @@ public class InterlevelScene extends PixelScene {
 
 		LevelTransition destTransition = level.getTransition(curTransition.destType);
 		curTransition = null;
-		Dungeon.switchLevel( level, destTransition.cell() );
+
+		//END(修复·挑战区): 挑战区关卡（含方舟 12 关）可能没有目标类型的过渡。
+		//例如上楼需要 REGULAR_EXIT，而某些关卡只有 REGULAR_ENTRANCE →
+		//原代码直接 destTransition.cell() 会 NPE 崩溃
+		//("Cannot invoke LevelTransition.cell() because destTransition is null")。
+		//兜底顺序：目标类型 → 任意过渡 → 关卡入口格。
+		if (destTransition == null && level.transitions != null && !level.transitions.isEmpty()) {
+			destTransition = level.transitions.get(0);
+		}
+		int destCell = (destTransition != null) ? destTransition.cell() : level.entrance();
+
+		Dungeon.switchLevel( level, destCell );
 	}
 	
 	private void returnTo() throws IOException {

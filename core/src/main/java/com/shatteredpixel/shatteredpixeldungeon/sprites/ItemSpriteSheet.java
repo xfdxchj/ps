@@ -813,6 +813,18 @@ public class ItemSpriteSheet {
 
 	//END(图集扩展): items.png 已扩到 256x1024(64行，2的幂)，第39行贴上魔绫的传说武器贴图。
 	private static final int LENGYWEAPONS    =                               xy(1, 39);  //16 slots
+	//END(port from Arknights): 方舟真实图标（从方舟 32x32 物品图集抠出，缩放为 16x16）
+	private static final int AK_ICONS = xy(1, 34);
+	public static final int AK_MUSH       = AK_ICONS+0;
+	public static final int AK_BARRI      = AK_ICONS+1;
+	public static final int AK_INFO_CERTI = AK_ICONS+2;
+	public static final int AK_SAINT_HAND = AK_ICONS+3;
+	static {
+		assignItemRect(AK_MUSH,       16, 16);
+		assignItemRect(AK_BARRI,      16, 16);
+		assignItemRect(AK_INFO_CERTI, 16, 16);
+		assignItemRect(AK_SAINT_HAND, 16, 16);
+	}
 	public static final int  RICESWORD      = LENGYWEAPONS+1;  //END(修复): 槽0在图集中是空的
 	public static final int  MOONDAILY      = LENGYWEAPONS+1;
 	public static final int  DCSURANG       = LENGYWEAPONS+2;
@@ -1080,21 +1092,21 @@ public class ItemSpriteSheet {
 
 
 	//END(port from Arknights): 圣手（SeaPlatform 用）；图集无此图，复用现有图标
-	public static final int SAINT_HAND = ARMOR+2;
-	static { assignItemRect(SAINT_HAND, 16, 16); }
+	public static final int SAINT_HAND = AK_SAINT_HAND;  //END: 方舟真实图标
+	
 
 	//END(port from Arknights): HIKARI（图集无此图，复用现有图标）
 	public static final int HIKARI = WEP_TIER5+0;
 	static { assignItemRect(HIKARI, 16, 16); }
 	//END(port from Arknights): MUSH（图集无此图，复用现有图标）
-	public static final int MUSH = FOOD+0;
-	static { assignItemRect(MUSH, 16, 16); }
+	public static final int MUSH = AK_MUSH;   //END: 方舟真实图标
+	
 	//END(port from Arknights): BARRI（图集无此图，复用现有图标）
-	public static final int BARRI = ARMOR+0;
-	static { assignItemRect(BARRI, 16, 16); }
+	public static final int BARRI = AK_BARRI;  //END: 方舟真实图标
+	
 	//END(port from Arknights): INFO_CERTI（图集无此图，复用现有图标）
-	public static final int INFO_CERTI = SCROLLS+0;
-	static { assignItemRect(INFO_CERTI, 16, 16); }
+	public static final int INFO_CERTI = AK_INFO_CERTI;  //END: 方舟真实图标
+	
 	//END(port from Arknights): GAVIAL_PART1（图集无此图，复用现有图标）
 	public static final int GAVIAL_PART1 = WEP_TIER4+0;
 	static { assignItemRect(GAVIAL_PART1, 16, 16); }

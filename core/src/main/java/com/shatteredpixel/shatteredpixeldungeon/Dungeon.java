@@ -630,6 +630,8 @@ public class Dungeon {
 	}
 	
 	public static boolean shopOnLevel() {
+		//END(修复·挑战区): 挑战区不额外生成商店（避免与方舟关卡布局冲突）
+		if (depth >= 26) return false;
 		return depth == 6 || depth == 11 || depth == 16;
 	}
 	
@@ -638,6 +640,13 @@ public class Dungeon {
 	}
 	
 	public static boolean bossLevel( int depth ) {
+		//END(修复·挑战区): 挑战区的 Boss 层由 ChallengeArea 决定（区内偏移 4 和 9）。
+		//原实现只认 5/10/15/20/25，挑战区永远不会被判定为 Boss 层。
+		if (depth >= 26) {
+			int[] info = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeArea.areaAtDepth(depth);
+			if (info != null && (info[1] == 4 || info[1] == 9)) return true;
+		}
 		return depth == 5 || depth == 10 || depth == 15 || depth == 20 || depth == 25;
 	}
 
@@ -786,6 +795,13 @@ public class Dungeon {
 	}
 
 	public static boolean labRoomNeeded(){
+		//END(修复·挑战区·关键): 挑战区（26F+）是定制关卡，**不该插原版实验室房**。
+		//原实现 region = 1+depth/5，挑战区 depth=26..45 → region=6..10，
+		//而 LAB_ROOM.count 最多到 5 → 条件恒真 → **每层都插实验室房**，
+		//挤占标准房间 → 实测症状："常规层只有一个小房间、没有下楼楼梯"。
+		//即使是正常打到 26F（count=5），region=6 仍然 > 5，同样每层触发。
+		if (depth >= 26) return false;
+
 		//one laboratory each floor set, in floor 3 or 4, 1/2 chance each floor
 		int region = 1+depth/5;
 		if (region > LimitedDrops.LAB_ROOM.count){
