@@ -565,69 +565,69 @@ public class SkeletonKey extends Artifact {
 
 		{
 			revivePersists = true;
-			ironKeysNeeded = new int[26];
+			ironKeysNeeded = new int[48]  /* END(修复·挑战区层号): 原为26，挑战区层号可超26 */;
 			Arrays.fill(ironKeysNeeded, -1);
-			goldenKeysNeeded = new int[26];
+			goldenKeysNeeded = new int[48]  /* END(修复·挑战区层号): 原为26，挑战区层号可超26 */;
 			Arrays.fill(goldenKeysNeeded, -1);
-			crystalKeysNeeded = new int[26];
+			crystalKeysNeeded = new int[48]  /* END(修复·挑战区层号): 原为26，挑战区层号可超26 */;
 			Arrays.fill(crystalKeysNeeded, -1);
 		}
 
 		public void setupKeysForDepth(){
-			ironKeysNeeded[Dungeon.depth] = 0;
-			goldenKeysNeeded[Dungeon.depth] = 0;
-			crystalKeysNeeded[Dungeon.depth] = 0;
+			ironKeysNeeded[Math.min(Dungeon.depth, ironKeysNeeded.length - 1)] = 0;
+			goldenKeysNeeded[Math.min(Dungeon.depth, goldenKeysNeeded.length - 1)] = 0;
+			crystalKeysNeeded[Math.min(Dungeon.depth, crystalKeysNeeded.length - 1)] = 0;
 
 			for (Heap h : Dungeon.level.heaps.valueList()){
 				if (h.type == Heap.Type.LOCKED_CHEST){
-					goldenKeysNeeded[Dungeon.depth]++;
+					goldenKeysNeeded[Math.min(Dungeon.depth, goldenKeysNeeded.length - 1)]++;
 				} else if (h.type == Heap.Type.CRYSTAL_CHEST){
-					crystalKeysNeeded[Dungeon.depth]++;
+					crystalKeysNeeded[Math.min(Dungeon.depth, crystalKeysNeeded.length - 1)]++;
 				}
 			}
 
 			for (int i = 0; i < Dungeon.level.length(); i++){
 				if (Dungeon.level.map[i] == Terrain.LOCKED_DOOR){
-					ironKeysNeeded[Dungeon.depth]++;
+					ironKeysNeeded[Math.min(Dungeon.depth, ironKeysNeeded.length - 1)]++;
 				} else if (Dungeon.level.map[i] == Terrain.CRYSTAL_DOOR){
-					crystalKeysNeeded[Dungeon.depth]++;
+					crystalKeysNeeded[Math.min(Dungeon.depth, crystalKeysNeeded.length - 1)]++;
 				}
 			}
 		}
 
 		//used if a level was reset, e.g. via unblessed ankh vs. boss
 		public void clearDepth(){
-			ironKeysNeeded[Dungeon.depth] = -1;
-			goldenKeysNeeded[Dungeon.depth] = -1;
-			crystalKeysNeeded[Dungeon.depth] = -1;
+			ironKeysNeeded[Math.min(Dungeon.depth, ironKeysNeeded.length - 1)] = -1;
+			goldenKeysNeeded[Math.min(Dungeon.depth, goldenKeysNeeded.length - 1)] = -1;
+			crystalKeysNeeded[Math.min(Dungeon.depth, crystalKeysNeeded.length - 1)] = -1;
 		}
 
 		public void processIronLockOpened(){
-			if (ironKeysNeeded[Dungeon.depth] == -1){
+			if (ironKeysNeeded[Math.min(Dungeon.depth, ironKeysNeeded.length - 1)] == -1){
 				setupKeysForDepth();
 			}
-			ironKeysNeeded[Dungeon.depth] -= 1;
+			ironKeysNeeded[Math.min(Dungeon.depth, ironKeysNeeded.length - 1)] -= 1;
 			processExcessKeys();
 		}
 
 		public void processGoldLockOpened(){
-			if (goldenKeysNeeded[Dungeon.depth] == -1){
+			if (goldenKeysNeeded[Math.min(Dungeon.depth, goldenKeysNeeded.length - 1)] == -1){
 				setupKeysForDepth();
 			}
-			goldenKeysNeeded[Dungeon.depth] -= 1;
+			goldenKeysNeeded[Math.min(Dungeon.depth, goldenKeysNeeded.length - 1)] -= 1;
 			processExcessKeys();
 		}
 
 		public void processCrystalLockOpened(){
-			if (crystalKeysNeeded[Dungeon.depth] == -1){
+			if (crystalKeysNeeded[Math.min(Dungeon.depth, crystalKeysNeeded.length - 1)] == -1){
 				setupKeysForDepth();
 			}
-			crystalKeysNeeded[Dungeon.depth] -= 1;
+			crystalKeysNeeded[Math.min(Dungeon.depth, crystalKeysNeeded.length - 1)] -= 1;
 			processExcessKeys();
 		}
 
 		public void processExcessKeys(){
-			int keysNeeded = ironKeysNeeded[Dungeon.depth];
+			int keysNeeded = ironKeysNeeded[Math.min(Dungeon.depth, ironKeysNeeded.length - 1)];
 			boolean removed = false;
 			if (keysNeeded >= 0) {
 				while (Notes.keyCount(new IronKey(Dungeon.depth)) > keysNeeded) {
@@ -635,14 +635,14 @@ public class SkeletonKey extends Artifact {
 					removed = true;
 				}
 			}
-			keysNeeded = goldenKeysNeeded[Dungeon.depth];
+			keysNeeded = goldenKeysNeeded[Math.min(Dungeon.depth, goldenKeysNeeded.length - 1)];
 			if (keysNeeded >= 0) {
 				while (Notes.keyCount(new GoldenKey(Dungeon.depth)) > keysNeeded) {
 					Notes.remove(new GoldenKey(Dungeon.depth));
 					removed = true;
 				}
 			}
-			keysNeeded = crystalKeysNeeded[Dungeon.depth];
+			keysNeeded = crystalKeysNeeded[Math.min(Dungeon.depth, crystalKeysNeeded.length - 1)];
 			if (keysNeeded >= 0) {
 				while (Notes.keyCount(new CrystalKey(Dungeon.depth)) > keysNeeded) {
 					Notes.remove(new CrystalKey(Dungeon.depth));

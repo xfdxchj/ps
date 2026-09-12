@@ -66,7 +66,8 @@ public class TrapsRoom extends SpecialRoom {
 				trapClass = null;
 				break;
 			default:
-				trapClass = Random.oneOf(levelTraps[Dungeon.depth/5]);
+				//END(修复·挑战区层号): levelTraps 只定义了 5 段(0-4)，挑战区 depth 可达 45 → 越界
+				trapClass = Random.oneOf(levelTraps[Math.min(Dungeon.depth/5, levelTraps.length-1)]);
 				break;
 		}
 

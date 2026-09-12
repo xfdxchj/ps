@@ -66,7 +66,9 @@ public abstract class SecretRoom extends SpecialRoom {
 	public static int secretsForFloor(int depth){
 		if (depth == 1) return 0;
 		
-		int region = depth/5;
+		//END(修复·挑战区层号): region 只定义了 5 段(0-4)，挑战区 depth 可达 45 → 越界。
+		//夹到最后一段（最深区域）的配置。
+		int region = Math.min(depth / 5, regionSecretsThisRun.length - 1);
 		int floor = depth%5;
 		
 		int floorsLeft = 5 - floor;
