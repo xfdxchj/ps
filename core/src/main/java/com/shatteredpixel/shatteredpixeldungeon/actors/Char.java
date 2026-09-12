@@ -1386,13 +1386,25 @@ public abstract class Char extends Actor {
 		ELECTRIC ( new HashSet<Class>( Arrays.asList(WandOfLightning.class, Shocking.class, Potential.class,
 										Electricity.class, ShockingDart.class, Elemental.ShockElemental.class )),
 				new HashSet<Class>()),
-		LARGE,
 		IMMOVABLE ( new HashSet<Class>(),
 				new HashSet<Class>( Arrays.asList(Vertigo.class) )),
 		//A character that acts in an unchanging manner. immune to AI state debuffs or stuns/slows
 		STATIC( new HashSet<Class>(),
 				new HashSet<Class>( Arrays.asList(AllyBuff.class, Dread.class, Terror.class, Amok.class, Charm.class, Sleep.class,
-									Paralysis.class, Frost.class, Chill.class, Slow.class, Speed.class) ));
+									Paralysis.class, Frost.class, Chill.class, Slow.class, Speed.class) )),
+
+		//END(port from Arknights): 方舟新增的生物属性。
+		//为避免引入尚未搬运的 buff 类，这里只声明枚举值，抗性/免疫集合留空
+		//（真实抗性在搬入相关 buff 后可按需补回）。
+		LARGE,
+		NO_KNOCKBACK,
+		DRONE,
+		SARKAZ,
+		NPC,
+		/** 海嗣（伊比利亚区生物） */
+		SEA,
+		/** 被源石感染 */
+		INFECTED;
 
 		private HashSet<Class> resistances;
 		private HashSet<Class> immunities;

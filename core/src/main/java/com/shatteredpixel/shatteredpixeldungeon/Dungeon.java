@@ -138,6 +138,7 @@ public class Dungeon {
 		WARLOCK_HP,
 		HUNR_HP, //END(移植自魔绫): 猎人(ShieldHuntsman)生命药水掉落
 		ICERAT_HP, //END(port from MagicLing·Galaxy)
+		SNIPER_HP, //END(port from Arknights): 汐斯塔狙击手生命药水掉落
 		//Demon spawners are already limited in their spawnrate, no need to limit their health drops
 		//alchemy
 		COOKING_HP,

@@ -13,6 +13,7 @@ public class Ceylon extends NPC {
         public static void spawn(com.shatteredpixel.shatteredpixeldungeon.levels.Level level) {
             spawned = true;
         }
+        public static void process(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob mob) { }
         public static boolean isSpawnd() {
             return spawned;
         }

@@ -887,4 +887,14 @@ public class CharSprite extends MovieClip implements Tweener.Listener, MovieClip
 			visual.shadowOffset = 0.25f - hVal*0.8f;
 		}
 	}
+
+	//END(port from Arknights): 护盾光环（方舟用来表现护盾值变化）
+	public void shieldHalo(int color) {
+		//简化实现：用高亮表示护盾存在
+		flash();
+	}
+
+	public void clearShieldHalo() {
+		//简化实现：无独立光环可清除
+	}
 }
