@@ -289,6 +289,15 @@ public class GameScene extends PixelScene {
 		levelVisuals = Dungeon.level.addVisuals();
 		add(levelVisuals);
 
+		//END(调试): 地形调试覆盖层 —— 排查"墙壁贴图错乱"时用。
+		//开启后屏幕左上角会显示鼠标所指格子的 Terrain 值与图案索引。
+		//不需要时把 TerrainDebugOverlay.enabled 改成 false 即可。
+		try {
+			com.shatteredpixel.shatteredpixeldungeon.ui.TerrainDebugOverlay.attachTo( this );
+		} catch (Throwable t) {
+			com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w("[调试] 覆盖层挂载失败: " + t);
+		}
+
 		floorEmitters = new Group();
 		add(floorEmitters);
 
