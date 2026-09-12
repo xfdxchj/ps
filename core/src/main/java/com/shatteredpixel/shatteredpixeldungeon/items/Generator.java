@@ -154,6 +154,11 @@ import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Gauntlet;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Glaive;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Gloves;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Greataxe;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.C1_9mm;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.CatGun;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.CrabGun;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.ShotgunWeapon;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.SnowHunter;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Greatshield;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Greatsword;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.HandAxe;
@@ -467,9 +472,13 @@ public class Generator {
 					Katana.class,
 					//END(移植自魔绫): 传说武器 —— 20-24层掉落，无需解锁
 					MoonDao.class,
-					GoldLongGun.class
+					GoldLongGun.class,
+					//END(port from Arknights): 枪械 —— 4 档（20-24 层可掉）
+					CatGun.class,
+					CrabGun.class,
+					C1_9mm.class
 			};
-			WEP_T4.defaultProbs = new float[]{ 2, 2, 2, 2, 2, 2, 2, 3, 3 };
+			WEP_T4.defaultProbs = new float[]{ 2, 2, 2, 2, 2, 2, 2, 3, 3, 2, 2, 2 };
 			WEP_T4.probs = WEP_T4.defaultProbs.clone();
 			
 			WEP_T5.classes = new Class<?>[]{
@@ -486,9 +495,12 @@ public class Generator {
 					KingAxe.class,
 					RiceSword.class,
 					ClearSword.class,
-					ForestBow.class
+					ForestBow.class,
+					//END(port from Arknights): 枪械 —— 5 档（25 层可掉）
+					ShotgunWeapon.class,
+					SnowHunter.class
 			};
-			WEP_T5.defaultProbs = new float[]{ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
+			WEP_T5.defaultProbs = new float[]{ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
 			WEP_T5.probs = WEP_T5.defaultProbs.clone();
 			
 			//see Generator.randomArmor

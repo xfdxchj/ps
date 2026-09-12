@@ -421,6 +421,29 @@ public class Dungeon {
 				com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w("[便利] 完整手记异常: " + e);
 			}
 
+			//END(便利): 枪械类武器各一把 + 弹药（用于测试枪械系统）
+			try {
+				Class<?>[] guns = new Class<?>[]{
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.CatGun.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.CrabGun.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.C1_9mm.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.ShotgunWeapon.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.SnowHunter.class
+				};
+				for (Class<?> g : guns) {
+					com.shatteredpixel.shatteredpixeldungeon.items.Item it =
+							(com.shatteredpixel.shatteredpixeldungeon.items.Item)
+									g.getDeclaredConstructor().newInstance();
+					it.identify();
+					if (!it.collect()) {
+						hero.belongings.backpack.items.add( it );
+					}
+				}
+				com.shatteredpixel.shatteredpixeldungeon.utils.GLog.p(
+						"[便利] 已发放：枪械 ×5（背包较满，可能需要腾格子）");
+			} catch (Exception e){
+				com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w("[便利] 枪械异常: " + e);
+			}
 			//END(便利): 9 张笔记残页各一份（用于测试 3 合 1）
 			try {
 				for (int i = 1; i <= 9; i++) {
