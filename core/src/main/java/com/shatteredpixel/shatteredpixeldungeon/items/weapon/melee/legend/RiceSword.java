@@ -1,5 +1,6 @@
 package com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.legend;
 
+import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import static com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero;
 
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
@@ -14,7 +15,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 
-public class RiceSword extends MeleeWeapon {
+public class RiceSword extends MeleeWeapon implements Item.LengedsItem {
 
     {
         image = ItemSpriteSheet.RICESWORD;

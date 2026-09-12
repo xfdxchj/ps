@@ -156,6 +156,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Gloves;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Greataxe;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.C1_9mm;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.CatGun;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.GunWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.CrabGun;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.ShotgunWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.SnowHunter;
@@ -240,6 +241,9 @@ public class Generator {
 		WEP_T3	( 0, 0, MeleeWeapon.class),
 		WEP_T4	( 0, 0, MeleeWeapon.class),
 		WEP_T5	( 0, 0, MeleeWeapon.class),
+		//END(port from Arknights): 枪械独立档位 —— 用户反馈枪械不是传说武器，
+		//不应混在 WEP_T4/T5 里。
+		GUN		( 0, 0, MeleeWeapon.class),
 		
 		ARMOR	( 2, 1, Armor.class ),
 		
@@ -472,13 +476,9 @@ public class Generator {
 					Katana.class,
 					//END(移植自魔绫): 传说武器 —— 20-24层掉落，无需解锁
 					MoonDao.class,
-					GoldLongGun.class,
-					//END(port from Arknights): 枪械 —— 4 档（20-24 层可掉）
-					CatGun.class,
-					CrabGun.class,
-					C1_9mm.class
+					GoldLongGun.class
 			};
-			WEP_T4.defaultProbs = new float[]{ 2, 2, 2, 2, 2, 2, 2, 3, 3, 2, 2, 2 };
+			WEP_T4.defaultProbs = new float[]{ 2, 2, 2, 2, 2, 2, 2, 3, 3 };
 			WEP_T4.probs = WEP_T4.defaultProbs.clone();
 			
 			WEP_T5.classes = new Class<?>[]{
@@ -495,13 +495,24 @@ public class Generator {
 					KingAxe.class,
 					RiceSword.class,
 					ClearSword.class,
-					ForestBow.class,
-					//END(port from Arknights): 枪械 —— 5 档（25 层可掉）
+					ForestBow.class
+			};
+			WEP_T5.defaultProbs = new float[]{ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
+			WEP_T5.probs = WEP_T5.defaultProbs.clone();
+
+			//END(port from Arknights): 枪械【单独档位】—— 用户反馈枪械不是传说武器，
+			//不该和传说武器混在 WEP_T4/T5 里。这里给它们独立的档位，
+			//掉落时由 randomWeapon() 按需从 GUN 池里取（见 randomGun）。
+			Category.GUN.classes = new Class<?>[]{
+					GunWeapon.class,
+					CatGun.class,
+					CrabGun.class,
+					C1_9mm.class,
 					ShotgunWeapon.class,
 					SnowHunter.class
 			};
-			WEP_T5.defaultProbs = new float[]{ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
-			WEP_T5.probs = WEP_T5.defaultProbs.clone();
+			Category.GUN.defaultProbs = new float[]{ 2, 2, 2, 2, 1, 1 };
+			Category.GUN.probs = Category.GUN.defaultProbs.clone();
 			
 			//see Generator.randomArmor
 			ARMOR.classes = new Class<?>[]{

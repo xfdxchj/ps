@@ -90,6 +90,11 @@ extends MeleeWeapon {
     }
 
     private boolean setbouns() {
+        //END(修复): 图鉴(WndJournal)会调用 Item.info() → desc()，
+        //那时 Dungeon.hero 为 null → 原来直接访问 belongings 会 NPE 崩溃。
+        if (Dungeon.hero == null || Dungeon.hero.belongings == null) {
+            return false;
+        }
         return Dungeon.hero.belongings.getItem(RingOfWealth.class) != null && Dungeon.hero.belongings.getItem(CustomeSet.class) != null && Dungeon.hero.belongings.getItem(RingOfWealth.class).isEquipped(Dungeon.hero) && Dungeon.hero.belongings.getItem(CustomeSet.class).isEquipped(Dungeon.hero);
     }
 

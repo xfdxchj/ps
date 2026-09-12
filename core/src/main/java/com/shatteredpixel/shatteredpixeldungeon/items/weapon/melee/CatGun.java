@@ -123,6 +123,12 @@ extends MeleeWeapon {
     }
 
     public static boolean catsetbouns() {
+        //END(修复): 图鉴(WndJournal)会调用 Item.info() → desc()，
+        //那时 Dungeon.hero 为 null → 原来直接访问 belongings 会 NPE。
+        if (Dungeon.hero == null || Dungeon.hero.belongings == null) {
+            return false;
+        }
+
         if (!(Dungeon.hero.belongings.weapon instanceof CatGun)) {
             return false;
         }
