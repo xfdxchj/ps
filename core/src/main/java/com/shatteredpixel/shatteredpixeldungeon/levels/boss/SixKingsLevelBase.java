@@ -84,11 +84,16 @@ public abstract class SixKingsLevelBase extends Level {
         return true;
     }
 
+    //END(修复·关键): createMobs() 执行时 Dungeon.level 还是 null，
+    //而 GameScene.add(mob) 内部用 Dungeon.level.mobs → 会 NPE。
+    //标准做法是直接往关卡自己的 mobs 列表里加（参考 CavesBossLevel）。
     @Override
     protected void createMobs() {
         Mob boss = createBoss();
-        boss.pos = (H / 2) * W + (W / 2);      // 场地正中
-        GameScene.add( boss );
+        if (boss != null) {
+            boss.pos = (H / 2) * W + (W / 2);      // 场地正中
+            mobs.add( boss );
+        }
     }
 
     @Override

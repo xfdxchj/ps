@@ -2,8 +2,6 @@ package com.shatteredpixel.shatteredpixeldungeon.levels.boss;
 
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.sixkings.SixKingsGuide;
-import com.shatteredpixel.shatteredpixeldungeon.levels.Terrain;
-import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 
 /**
  * 六王 · 第一层：引路人之厅
@@ -12,13 +10,11 @@ import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
  */
 public class SixKingsLevel0 extends SixKingsLevelBase {
 
+    //END(修复): 直接返回 NPC，由基类 createMobs 用 mobs.add 加入
+    //（createMobs 期间 Dungeon.level 为 null，不能用 GameScene.add）
     @Override
     protected Mob createBoss() {
-        // 这一层放 NPC
-        SixKingsGuide guide = new SixKingsGuide();
-        guide.pos = (H / 2) * W + (W / 2);
-        GameScene.add( guide );
-        return null;    // 没有 Boss
+        return new SixKingsGuide();
     }
 
     @Override
