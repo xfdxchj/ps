@@ -197,12 +197,43 @@ public class RangeKing extends Boss {
 
         for (int i = 0; i < shots; i++) {
             int dmg = boost( Random.NormalIntRange(30, 45) );
+
+            //END(视觉): 先画弹道再结算伤害，否则玩家只看到掉血看不到攻击
+            showBolt( enemy.pos, 0xFFFF00 );
             enemy.damage( dmg, this );
 
             if (Dungeon.level.heroFOV[enemy.pos]) {
-                CellEmitter.get(enemy.pos).burst( SparkParticle.FACTORY, 6 );
+                CellEmitter.get(enemy.pos).burst( SparkParticle.FACTORY, 8 );
             }
         }
+    }
+
+    /**
+     * END(视觉·新增): 从 Boss 到目标画一条弹道光束。
+     * 之前只有伤害没有表现，玩家反馈"感觉就是直接命中，没有反应"。
+     */
+    private void showBolt( int target, int color ) {
+        try {
+            if (sprite == null || sprite.parent == null) return;
+            if (enemy == null || enemy.sprite == null) return;
+
+            com.shatteredpixel.shatteredpixeldungeon.effects.Beam.LightRay ray =
+                    new com.shatteredpixel.shatteredpixeldungeon.effects.Beam.LightRay(
+                            sprite.center(), enemy.sprite.center() );
+            ray.hardlight( color );
+            sprite.parent.add( ray );
+
+            // 沿线撒粒子
+            com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica bolt =
+                    new com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica(
+                            pos, target,
+                            com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica.PROJECTILE );
+            for (int c : bolt.path) {
+                if (Dungeon.level.heroFOV[c]) {
+                    CellEmitter.get(c).burst( SparkParticle.FACTORY, 2 );
+                }
+            }
+        } catch (Throwable ignored) { }
     }
 
     // ═══════════════════════════════════════════════
@@ -214,15 +245,18 @@ public class RangeKing extends Boss {
         //END(穿透): 用 MAGIC_BOLT（只被角色阻挡，不被墙阻挡）实现穿透
         Ballistica bolt = new Ballistica( pos, enemy.pos, Ballistica.MAGIC_BOLT );
 
+        //END(视觉): 穿透弹用紫色光束，和普通射击区分开
+        showBolt( enemy.pos, 0xCC44FF );
+
         Char hit = Actor.findChar( bolt.collisionPos );
         if (hit != null && hit != this) {
             hit.damage( boost( Random.NormalIntRange(35, 50) ), this );
         }
 
-        // 视觉：沿路径打一条
+        // 视觉：沿路径打一条（穿透弹粒子更多）
         for (int c : bolt.path) {
             if (Dungeon.level.heroFOV[c]) {
-                CellEmitter.get(c).burst( SparkParticle.FACTORY, 3 );
+                CellEmitter.get(c).burst( SparkParticle.FACTORY, 5 );
             }
         }
     }

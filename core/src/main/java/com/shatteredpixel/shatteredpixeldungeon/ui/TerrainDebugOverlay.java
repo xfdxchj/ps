@@ -60,7 +60,9 @@ public class TerrainDebugOverlay extends Component {
         }
         try {
             TerrainDebugOverlay o = new TerrainDebugOverlay();
-            o.camera = Camera.main;
+            //END(修复·关键): 必须用 UI 相机。原来写成 Camera.main（游戏世界相机），
+            //UI 元素会被画到地图坐标系里 → 跑到屏幕外看不见。
+            o.camera = com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene.uiCamera;
             scene.add( o );
         } catch (Exception e) {
             com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w(
@@ -141,6 +143,7 @@ public class TerrainDebugOverlay extends Component {
     /** 屏幕坐标 -> 格子 */
     private int cellAtScreen( float x, float y ) {
         try {
+            //END(修复): 屏幕坐标 -> 地图格。用游戏世界相机做主转换。
             Camera cam = Camera.main;
             PointF world = cam.screenToCamera( (int) x, (int) y );
 
