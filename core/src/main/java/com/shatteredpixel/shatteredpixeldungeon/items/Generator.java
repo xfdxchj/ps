@@ -496,18 +496,20 @@ public class Generator {
 			WEP_T5.defaultProbs = new float[]{ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
 			WEP_T5.probs = WEP_T5.defaultProbs.clone();
 
-			//END(port from Arknights): 枪械【单独档位】—— 用户反馈枪械不是传说武器，
-			//不该和传说武器混在 WEP_T4/T5 里。这里给它们独立的档位，
-			//掉落时由 randomWeapon() 按需从 GUN 池里取（见 randomGun）。
+			//END(port from Arknights): 枪械档位。
+			//
+			//END(用户反馈·重要): 只有【真正的枪】才放这里。
+			//方舟的 CatGun / CrabGun / SnowHunter 虽然类名带 Gun，但实际不是枪：
+			//   CatGun      "我的希望"     —— 充能后召唤 Mon3tr（法杖类）
+			//   CrabGun     "磐蟹饲养员"   —— 攻击充能后召唤磐蟹（弩类）
+			//   SnowHunter  "雪境猎手"     —— 一条会变形的鞭子
+			//把它们当枪放进枪池是错的，已移除（类本身保留，只是不再掉落）。
 			Category.GUN.classes = new Class<?>[]{
 					GunWeapon.class,
-					CatGun.class,
-					CrabGun.class,
 					C1_9mm.class,
-					ShotgunWeapon.class,
-					SnowHunter.class
+					ShotgunWeapon.class
 			};
-			Category.GUN.defaultProbs = new float[]{ 2, 2, 2, 2, 1, 1 };
+			Category.GUN.defaultProbs = new float[]{ 2, 2, 1 };
 			Category.GUN.probs = Category.GUN.defaultProbs.clone();
 			
 			//see Generator.randomArmor

@@ -421,14 +421,19 @@ public class Dungeon {
 				com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w("[便利] 完整手记异常: " + e);
 			}
 
-			//END(便利): 枪械类武器各一把 + 弹药（用于测试枪械系统）
+			//END(便利): 真枪 + 弹药（用于测试枪械系统）
+			//END(用户反馈): CatGun/CrabGun/SnowHunter 名字里带 Gun，但其实不是枪
+			//（"我的希望"是召唤 Mon3tr 的武器、"磐蟹饲养员"是召唤弩、"雪境猎手"是鞭子），
+			//已从枪械池移除，这里也不再发放。
 			try {
 				Class<?>[] guns = new Class<?>[]{
-						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.CatGun.class,
-						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.CrabGun.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.GunWeapon.class,
 						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.C1_9mm.class,
 						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.ShotgunWeapon.class,
-						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.SnowHunter.class
+						//弹药
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.NormalMagazine.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.UpMagazine.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.Thunderbolt.class
 				};
 				for (Class<?> g : guns) {
 					com.shatteredpixel.shatteredpixeldungeon.items.Item it =
@@ -440,7 +445,7 @@ public class Dungeon {
 					}
 				}
 				com.shatteredpixel.shatteredpixeldungeon.utils.GLog.p(
-						"[便利] 已发放：枪械 ×5（背包较满，可能需要腾格子）");
+						"[便利] 已发放：枪械 ×3 + 弹药 ×3");
 			} catch (Exception e){
 				com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w("[便利] 枪械异常: " + e);
 			}
