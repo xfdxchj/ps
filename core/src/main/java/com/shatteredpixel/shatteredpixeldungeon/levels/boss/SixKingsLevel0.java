@@ -30,4 +30,11 @@ public class SixKingsLevel0 extends SixKingsLevelBase {
     protected boolean sealOnEnter() {
         return false;
     }
+
+	//END(六天王): 本层音乐
+	@Override
+	public void playLevelMusic() {
+		com.watabou.noosa.audio.Music.INSTANCE.play(
+				com.shatteredpixel.shatteredpixeldungeon.Assets.Music.SIXKINGS_GUIDE, true );
+	}
 }

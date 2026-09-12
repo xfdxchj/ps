@@ -186,6 +186,15 @@ public class Assets {
 		public static final String GAME_SIESTA2   = "music/game_siesta2.ogg";
 		public static final String BOSS_SIESTA1   = "music/boss_siesta1.ogg";
 		public static final String BOSS_SIESTA2   = "music/boss_siesta2.ogg";
+
+		//END(六天王): 音乐 —— 用户要求用方舟的区域音乐 + 5 首 Boss 音乐
+		public static final String SIXKINGS_GUIDE = "music/game_siesta1.ogg";   //26F 引路人之厅
+		public static final String SIXKINGS_1     = "music/boss.ogg";           //27F 法术王
+		public static final String SIXKINGS_2     = "music/boss2.ogg";          //28F 不灭追猎者
+		public static final String SIXKINGS_3     = "music/boss3.ogg";          //29F 疫病王
+		public static final String SIXKINGS_4     = "music/boss4.ogg";          //30F 远程王
+		public static final String SIXKINGS_5     = "music/boss5.ogg";          //31F 召唤王
+		public static final String SIXKINGS_FINAL = "music/boss_kalt.ogg";      //32F 全能王
 		public static final String HALLS_TENSE          = "music/halls_tense.ogg";
 		public static final String HALLS_BOSS           = "music/halls_boss.ogg";
 		public static final String HALLS_BOSS_FINALE    = "music/halls_boss_finale.ogg";

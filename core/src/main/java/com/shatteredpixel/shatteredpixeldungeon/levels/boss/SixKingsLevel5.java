@@ -15,4 +15,11 @@ public class SixKingsLevel5 extends SixKingsLevelBase {
     protected String levelName() {
         return "召唤王之厅";
     }
+
+	//END(六天王): 本层音乐
+	@Override
+	public void playLevelMusic() {
+		com.watabou.noosa.audio.Music.INSTANCE.play(
+				com.shatteredpixel.shatteredpixeldungeon.Assets.Music.SIXKINGS_5, true );
+	}
 }
