@@ -732,11 +732,16 @@ public class InterlevelScene extends PixelScene {
 		LevelTransition destTransition = level.getTransition(curTransition.destType);
 		curTransition = null;
 
-		//END(修复·挑战区): 挑战区关卡（含方舟 12 关）可能没有目标类型的过渡。
-		//例如上楼需要 REGULAR_EXIT，而某些关卡只有 REGULAR_ENTRANCE →
-		//原代码直接 destTransition.cell() 会 NPE 崩溃
-		//("Cannot invoke LevelTransition.cell() because destTransition is null")。
-		//兜底顺序：目标类型 → 任意过渡 → 关卡入口格。
+		//END(修复·挑战区): 上楼时应当落在【目标层用来"下到本层"的那个楼梯】上。
+		//例如从 31F 上到 30F，应该出现在 30F 的"下楼口"，而不是 30F 的入口。
+		//
+		//但挑战区关卡（方舟 12 关等）为了让"踩楼梯"能生效，把所有过渡都改成了
+		//REGULAR_ENTRANCE，于是按 REGULAR_EXIT 找不到 → 原代码 destTransition.cell() NPE。
+		//
+		//兜底顺序：REGULAR_EXIT → 目标类型 → 任意过渡 → 关卡入口格。
+		if (destTransition == null) {
+			destTransition = level.getTransition(LevelTransition.Type.REGULAR_EXIT);
+		}
 		if (destTransition == null && level.transitions != null && !level.transitions.isEmpty()) {
 			destTransition = level.transitions.get(0);
 		}

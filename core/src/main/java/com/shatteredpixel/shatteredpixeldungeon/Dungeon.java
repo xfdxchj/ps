@@ -680,7 +680,20 @@ public class Dungeon {
 		//Place hero at the entrance if they are out of the map (often used for pos = -1)
 		// or if they are in invalid terrain terrain (except in the mining level, where that happens normally)
 		if (pos < 0 || pos >= level.length() || level.invalidHeroPos(pos)){
-			pos = level.getTransition(null).cell();
+			//END(修复·挑战区): 挑战区关卡（方舟 12 关等）可能没有 ENTRANCE 类型的过渡
+			//（它们的出口被强制改成了 REGULAR_ENTRANCE 以避免跳层），
+			//此时 getTransition(null) 会返回 null → NPE。
+			//兜底顺序：任意 entrance → 任意过渡 → 关卡第一个可行走格。
+			LevelTransition fallback = level.getTransition(null);
+			if (fallback == null && level.transitions != null && !level.transitions.isEmpty()) {
+				fallback = level.transitions.get(0);
+			}
+			if (fallback != null) {
+				pos = fallback.cell();
+			} else {
+				pos = level.randomRespawnCell(null);      // 最后的兜底
+				if (pos < 0) pos = 0;
+			}
 		}
 		
 		PathFinder.setMapSize(level.width(), level.height());

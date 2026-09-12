@@ -165,23 +165,40 @@ public class HollowLevel extends RegularLevel {
     }
 
     /**
-     * END(修复·关键): Hero.java:1982 规定 —— 当 Dungeon.depth >= 26 时，
-     * 只有 type == REGULAR_ENTRANCE 的过渡**才能被点击触发**；
-     * REGULAR_EXIT / BRANCH_EXIT 只会让玩家"走过去"而不触发。
+     * END(修复·挑战区楼梯): 挑战区（26F+）的楼梯有两条互相冲突的限制：
      *
-     * <p>27-30F 的出口楼梯由父类 RegularLevel 的 ExitRoom 建立，类型是 REGULAR_EXIT
-     * → 在挑战区里踩了没反应。这里在 build 完成后把它就地改成 REGULAR_ENTRANCE。
-     * （不新建过渡，避免与 ExitRoom 的格子冲突；改类型即可保留原格号与 destDepth 计算。）
+     * <ol>
+     *   <li>{@code Hero.java:1977} —— depth>=26 时只有 {@code REGULAR_ENTRANCE}
+     *       能被**点击触发**（EXIT 只会让玩家"走过去"）。</li>
+     *   <li>{@code InterlevelScene.ascend()} —— 上楼时要落在目标层的
+     *       {@code REGULAR_EXIT} 上；如果目标层没有 EXIT，就会退化成第一个过渡，
+     *       结果**上楼落在"入口"上**（表现为"上楼接到了上楼"）。</li>
+     * </ol>
+     *
+     * <p>原先的做法是把 ExitRoom 的 {@code REGULAR_EXIT} 就地改成
+     * {@code REGULAR_ENTRANCE}，这会破坏第 2 条（出口类型丢失）。
+     *
+     * <p>现在的做法：**保留 EXIT 类型**，另建一个同格的
+     * {@code REGULAR_ENTRANCE} 过渡，专门用于"点击触发"。
+     * 同格两个过渡在 {@code getTransition(cell)} 时都能被找到，
+     * 而 {@code getTransition(Type)} 仍能正确区分入口/出口。
      */
     @Override
     protected boolean build() {
         boolean ok = super.build();
+
         if (transitions != null) {
+            java.util.ArrayList<LevelTransition> add = new java.util.ArrayList<>();
             for (LevelTransition t : transitions) {
+                // 给每个 REGULAR_EXIT 额外补一个同格的 REGULAR_ENTRANCE，
+                // 这样"能点击触发"（ENTRANCE）与"能被他层 ascend 定位"（EXIT）同时成立。
                 if (t != null && t.type == LevelTransition.Type.REGULAR_EXIT) {
-                    t.type = LevelTransition.Type.REGULAR_ENTRANCE;
+                    LevelTransition extra = new LevelTransition(
+                            this, t.cell(), LevelTransition.Type.REGULAR_ENTRANCE);
+                    add.add(extra);
                 }
             }
+            transitions.addAll(add);
         }
         return ok;
     }

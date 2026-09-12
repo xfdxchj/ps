@@ -118,12 +118,14 @@ public class MorpheusBossLevel extends Level {
         transitions.add(enter);
 
         //END(修复·关键): depth>=26 只有 REGULAR_ENTRANCE 能被触发
-        LevelTransition exits = new LevelTransition(this, exit, LevelTransition.Type.REGULAR_ENTRANCE);
+        LevelTransition exits = new LevelTransition(this, exit, LevelTransition.Type.REGULAR_EXIT);
         transitions.add(exits);
 
         CustomTilemap vis = new GalaxyBackGround();
         vis.pos(0, 0);
         customTiles.add(vis);
+
+        addClickableExits();
 
         return true;
     }
@@ -227,4 +229,38 @@ public class MorpheusBossLevel extends Level {
     public String waterTex() {
         return Assets.Interfaces.BLACK_RECT;
     }
+
+	/**
+	 * END(修复·挑战区楼梯): 挑战区（26F+）有两条互相冲突的限制：
+	 *  1) Hero.java:1977 —— depth>=26 时只有 REGULAR_ENTRANCE 能被**点击触发**；
+	 *  2) InterlevelScene.ascend() —— 上楼要落在目标层的 REGULAR_EXIT 上，
+	 *     若目标层没有 EXIT，就会退化成第一个过渡 → **上楼落在"入口"上**。
+	 *
+	 * 因此不能把 EXIT 直接改成 ENTRANCE（会破坏第 2 条）。
+	 * 正确做法：**保留 EXIT，并额外补一个同格的 ENTRANCE**。
+	 * 同格两个过渡在 getTransition(cell) 时都能命中，
+	 * 而 getTransition(Type) 仍能正确区分入口/出口。
+	 */
+	protected void addClickableExits() {
+		if (transitions == null) return;
+		java.util.ArrayList<LevelTransition> add = new java.util.ArrayList<>();
+		for (LevelTransition t : transitions) {
+			if (t != null && t.type == LevelTransition.Type.REGULAR_EXIT) {
+				boolean dup = false;
+				for (LevelTransition o : transitions) {
+					if (o != null && o.cell() == t.cell()
+							&& o.type == LevelTransition.Type.REGULAR_ENTRANCE) {
+						dup = true;
+						break;
+					}
+				}
+				if (!dup) {
+					add.add(new LevelTransition(this, t.cell(),
+							LevelTransition.Type.REGULAR_ENTRANCE));
+				}
+			}
+		}
+		transitions.addAll(add);
+	}
+
 }
