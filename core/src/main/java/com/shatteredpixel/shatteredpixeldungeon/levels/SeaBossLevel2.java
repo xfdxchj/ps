@@ -192,4 +192,11 @@ extends Level {
             return v;
         }
     }
+
+	//END(port from Arknights): 方舟区域音乐（原来没有覆盖此方法 → 进关卡没音乐）
+	@Override
+	public void playLevelMusic() {
+		com.watabou.noosa.audio.Music.INSTANCE.play(
+				com.shatteredpixel.shatteredpixeldungeon.Assets.Music.BOSS_IBERIA2, true );
+	}
 }

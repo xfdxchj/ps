@@ -172,6 +172,20 @@ public class Assets {
 		public static final String HALLS_1              = "music/halls_1.ogg";
 		public static final String HALLS_2              = "music/halls_2.ogg";
 		public static final String HALLS_3              = "music/halls_3.ogg";
+
+		//END(port from Arknights): 方舟音乐（用户反馈"方舟区域没有音乐"）
+		public static final String GAME_IBERIA1   = "music/game_iberia1.ogg";
+		public static final String GAME_IBERIA2   = "music/game_iberia2.ogg";
+		public static final String BOSS_IBERIA1   = "music/boss_iberia1.ogg";
+		public static final String BOSS_IBERIA2   = "music/boss_iberia2.ogg";
+		public static final String GAME_SARGON1   = "music/game_sargon1.ogg";
+		public static final String GAME_SARGON2   = "music/game_sargon2.ogg";
+		public static final String BOSS_SARGON1   = "music/boss_sargon1.ogg";
+		public static final String BOSS_SARGON2   = "music/boss_sargon2.ogg";
+		public static final String GAME_SIESTA1   = "music/game_siesta1.ogg";
+		public static final String GAME_SIESTA2   = "music/game_siesta2.ogg";
+		public static final String BOSS_SIESTA1   = "music/boss_siesta1.ogg";
+		public static final String BOSS_SIESTA2   = "music/boss_siesta2.ogg";
 		public static final String HALLS_TENSE          = "music/halls_tense.ogg";
 		public static final String HALLS_BOSS           = "music/halls_boss.ogg";
 		public static final String HALLS_BOSS_FINALE    = "music/halls_boss_finale.ogg";

@@ -133,4 +133,11 @@ extends RegularLevel {
 				.areaAtDepth(com.shatteredpixel.shatteredpixeldungeon.Dungeon.depth);
 		return (info != null) ? info[1] : 0;
 	}
+
+	//END(port from Arknights): 方舟区域音乐（原来没有覆盖此方法 → 进关卡没音乐）
+	@Override
+	public void playLevelMusic() {
+		com.watabou.noosa.audio.Music.INSTANCE.play(
+				com.shatteredpixel.shatteredpixeldungeon.Assets.Music.GAME_IBERIA1, true );
+	}
 }
