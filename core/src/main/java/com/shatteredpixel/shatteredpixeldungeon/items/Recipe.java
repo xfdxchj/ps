@@ -216,7 +216,13 @@ public abstract class Recipe {
 		new CurseInfusion.Recipe(),
 		new ReclaimTrap.Recipe(),
 		new WildEnergy.Recipe(),
-		new StewedMeat.twoMeat()
+		new StewedMeat.twoMeat(),
+		//END(port from Arknights): 枪械弹药 —— 玩家反馈"子弹没有获得方式"。
+		//方舟原版写好了配方类，却从未注册进炼金配方表，所以炼金釜里根本找不到它们。
+		//   普通弹匣 = 任意符文石 + 任意种子
+		//   高级弹匣 = 普通弹匣 + 金属碎片
+		new com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.NormalMagazine.Recipe(),
+		new com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.UpMagazine.UpMagazineRecipe()
 	};
 	
 	private static Recipe[] threeIngredientRecipes = new Recipe[]{
