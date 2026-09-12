@@ -474,11 +474,8 @@ public class Generator {
 					AssassinsBlade.class,
 					Crossbow.class,
 					Katana.class,
-					//END(移植自魔绫): 传说武器 —— 20-24层掉落，无需解锁
-					MoonDao.class,
-					GoldLongGun.class
 			};
-			WEP_T4.defaultProbs = new float[]{ 2, 2, 2, 2, 2, 2, 2, 3, 3 };
+			WEP_T4.defaultProbs = new float[]{ 2, 2, 2, 2, 2, 2, 2 };
 			WEP_T4.probs = WEP_T4.defaultProbs.clone();
 			
 			WEP_T5.classes = new Class<?>[]{
@@ -495,9 +492,8 @@ public class Generator {
 					KingAxe.class,
 					RiceSword.class,
 					ClearSword.class,
-					ForestBow.class
 			};
-			WEP_T5.defaultProbs = new float[]{ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
+			WEP_T5.defaultProbs = new float[]{ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
 			WEP_T5.probs = WEP_T5.defaultProbs.clone();
 
 			//END(port from Arknights): 枪械【单独档位】—— 用户反馈枪械不是传说武器，

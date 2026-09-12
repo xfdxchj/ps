@@ -4,28 +4,33 @@ import com.shatteredpixel.shatteredpixeldungeon.sprites.MobSprite;
 import com.watabou.noosa.MovieClip;
 import com.watabou.noosa.TextureFilm;
 
-/** 全能王（方舟·海嗣掠食者）
+/** 全能王（用战士贴图）
  *
- * 帧布局照抄方舟原版：TextureFilm(34, 34)
+ * END(用户要求): 改用【地牢原版战士贴图】sprites/warrior.png。
+ * 帧布局照抄 HeroSprite：TextureFilm(12, 15)
+ *   idle   = 0, 0, 0, 1, 0, 0, 1, 1
+ *   run    = 2, 3, 4, 5, 6, 7
+ *   die    = 8, 9, 10, 11, 12, 11
+ *   attack = 13, 14, 15, 0
  */
 public class OmniKingSprite extends MobSprite {
 
     public OmniKingSprite() {
         super();
-        texture( "sprites/sixkings/sea_predator.png" );
-        TextureFilm frames = new TextureFilm( texture, 34, 34 );
+        texture( "sprites/warrior.png" );
+        TextureFilm frames = new TextureFilm( texture, 12, 15 );
 
-        idle   = new MovieClip.Animation( 10, true );
-        idle.frames( frames, 0 );
+        idle = new MovieClip.Animation( 1, true );
+        idle.frames( frames, 0, 0, 0, 1, 0, 0, 1, 1 );
 
-        run    = new MovieClip.Animation( 12, true );
-        run.frames( frames, 1, 2, 3, 4, 5, 6 );
+        run = new MovieClip.Animation( 15, true );
+        run.frames( frames, 2, 3, 4, 5, 6, 7 );
 
-        attack = new MovieClip.Animation( 12, false );
-        attack.frames( frames, 7, 8, 9, 10, 11, 12, 13 );
+        die = new MovieClip.Animation( 20, false );
+        die.frames( frames, 8, 9, 10, 11, 12, 11 );
 
-        die    = new MovieClip.Animation( 12, false );
-        die.frames( frames, 14, 15, 16, 17, 18, 19, 20 );
+        attack = new MovieClip.Animation( 15, false );
+        attack.frames( frames, 13, 14, 15, 0 );
 
         play( idle );
     }
