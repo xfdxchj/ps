@@ -1869,4 +1869,10 @@ public class GameScene extends PixelScene {
 			return null;
 		}
 	};
+
+	//END(port from Arknights): 平台创建时的视觉刷新。
+	//本 fork 没有 terrainFeatures 视图层，改用 updateMap 触发重绘即可。
+	public static void createPlatform(int cell) {
+		updateMap(cell);
+	}
 }

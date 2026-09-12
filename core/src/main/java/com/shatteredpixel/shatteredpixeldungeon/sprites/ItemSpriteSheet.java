@@ -1078,4 +1078,8 @@ public class ItemSpriteSheet {
 
 	}
 
+
+	//END(port from Arknights): 圣手（SeaPlatform 用）；图集无此图，复用现有图标
+	public static final int SAINT_HAND = ARMOR+2;
+	static { assignItemRect(SAINT_HAND, 16, 16); }
 }

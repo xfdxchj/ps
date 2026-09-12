@@ -176,6 +176,13 @@ public abstract class Level implements Bundlable {
 
 	public ArrayList<LevelTransition> transitions;
 
+	//END(port from Arknights): 平台系统（潮汐/海面平台）
+	public com.watabou.utils.SparseArray<com.shatteredpixel.shatteredpixeldungeon.levels.features.Platform> platforms
+			= new com.watabou.utils.SparseArray<>();
+	//END(port from Arknights): 海怪（海嗣 Boss 场地的触手/暗礁）
+	public com.watabou.utils.SparseArray<com.shatteredpixel.shatteredpixeldungeon.levels.features.SeaTerror> seaTerrors
+			= new com.watabou.utils.SparseArray<>();
+
 	//when a boss level has become locked.
 	public boolean locked = false;
 	
@@ -1661,4 +1668,33 @@ public abstract class Level implements Bundlable {
 				return "";
 		}
 	}
+	//END(port from Arknights): 平台 / 海怪 API
+	public java.util.List<com.shatteredpixel.shatteredpixeldungeon.levels.features.Platform> createPlatform(
+			com.shatteredpixel.shatteredpixeldungeon.levels.features.Platform.Generator gen, int pos) {
+		java.util.List<com.shatteredpixel.shatteredpixeldungeon.levels.features.Platform> made = gen.generate(pos, this);
+		for (com.shatteredpixel.shatteredpixeldungeon.levels.features.Platform p : made) {
+			platforms.put(p.pos, p);
+			com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.createPlatform(p.pos);
+		}
+		return made;
+	}
+
+	public void destroyPlatform(int pos) {
+		platforms.remove(pos);
+		com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.updateMap(pos);
+	}
+
+	public com.shatteredpixel.shatteredpixeldungeon.levels.features.SeaTerror addSeaTerror(int pos) {
+		com.shatteredpixel.shatteredpixeldungeon.levels.features.SeaTerror t =
+				new com.shatteredpixel.shatteredpixeldungeon.levels.features.SeaTerror();
+		t.pos = pos;
+		seaTerrors.put(pos, t);
+		return t;
+	}
+
+	public void destroySeaTerror(int pos) {
+		seaTerrors.remove(pos);
+		com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.updateMap(pos);
+	}
+
 }

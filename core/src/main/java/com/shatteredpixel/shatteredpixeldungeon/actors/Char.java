@@ -1419,4 +1419,10 @@ public abstract class Char extends Actor {
 	public static boolean hasProp( Char ch, Property p){
 		return (ch != null && ch.properties().contains(p));
 	}
+
+	//END(port from Arknights): 踩到海怪时的触发（方舟方法，本 fork 原无）
+	//默认实现：无特殊反应，交回给 SeaTerror 处理伤害/效果。
+	public void activateSeaTerror() {
+		//no-op by default
+	}
 }
