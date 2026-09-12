@@ -38,24 +38,38 @@ public final class ChallengeArea {
 	/** 是否已实装。 */
 	public final boolean implemented;
 
+	//END(新增): 区域简介 —— 用于"挑战区域"窗口的说明文字。
+	//之前没有这个字段，玩家在界面里看到区域名却不知道里面是什么内容。
+	public final String desc;
+
 	private ChallengeArea(int id, String name, int floors, boolean implemented) {
 		this.id = id;
 		this.name = name;
 		this.floors = floors;
 		this.implemented = implemented;
+		this.desc = "";
+	}
+
+	/** 带简介的构造器。 */
+	public ChallengeArea(int id, String name, int floors, boolean implemented, String desc) {
+		this.id = id;
+		this.name = name;
+		this.floors = floors;
+		this.implemented = implemented;
+		this.desc = (desc == null) ? "" : desc;
 	}
 
 	//==== 注册表（id 顺序 = 进入顺序）====
 	//魔绫 2 区（已实装）
-	public static final ChallengeArea HOLLOW      = new ChallengeArea(1, "空洞遗迹", 8, true);
-	public static final ChallengeArea GALAXY      = new ChallengeArea(3, "银河深渊·火龙", 1, true);
+	public static final ChallengeArea HOLLOW      = new ChallengeArea(1, "空洞遗迹", 8, true, "魔绫的终末之地。共 8 层：26F 入口 → 27-30F 常规 → 31F 冥犬 → 32F 剧院 → 33F 四柱。\\n\\n提示：这里的楼梯与主线机制不同，建议先清空敌人再下楼。");
+	public static final ChallengeArea GALAXY      = new ChallengeArea(3, "银河深渊·火龙", 1, true, "只有 1 层：直接与火龙在它的巢穴中决战。\\n\\n没有常规层，进门即战。");
 	//方舟 3 区（阶段A：已接入，每区 10 层；关卡内容待 B1 搬运）
 	//方舟原版节奏：0-3=第1章 4=Boss1 5-8=第2章 9=Boss2
-	public static final ChallengeArea IBERIA      = new ChallengeArea(4, "伊比利亚·海嗣", 10, true);
-	public static final ChallengeArea GAVIAL      = new ChallengeArea(5, "嘉维尔·雨林", 10, true);
-	public static final ChallengeArea SIESTA      = new ChallengeArea(6, "汐斯塔·海滨", 10, true);
+	public static final ChallengeArea IBERIA      = new ChallengeArea(4, "伊比利亚·海嗣", 10, true, "方舟·伊比利亚。共 10 层：0-3 第1章 → 4 海嗣 Boss → 5-8 第2章 → 9 深海 Boss。\\n\\n海嗣会不断增殖，注意清场。");
+	public static final ChallengeArea GAVIAL      = new ChallengeArea(5, "嘉维尔·雨林", 10, true, "方舟·嘉维尔。共 10 层：0-3 第1章 → 4 Boss → 5-8 第2章 → 9 大酋长。\\n\\n雨林中遍布陷阱与召唤师。");
+	public static final ChallengeArea SIESTA      = new ChallengeArea(6, "汐斯塔·海滨", 10, true, "方舟·汐斯塔。共 10 层：0-3 第1章 → 4 Boss → 5-8 第2章 → 9 最终 Boss。\\n\\n海滨度假地的平静只是表象。");
 	//六王（3 层测试版：法术王 / 不灭追猎者 / Debuff 王；后续扩到 6 王 + NPC 共 7 层）
-	public static final ChallengeArea SIX_KINGS   = new ChallengeArea(7, "六大天王", 7, true);
+	public static final ChallengeArea SIX_KINGS   = new ChallengeArea(7, "六大天王", 7, true, "六人曾是挚友，如今却分崩离析。\\n\\n共 7 层：\\n  26F 引路人之厅（NPC 讲述往事）\\n  27F 法术王\\n  28F 不灭追猎者\\n  29F 疫病王\\n  30F 远程王\\n  31F 召唤王\\n  32F 全能王（关底）\\n\\n建议先收集 9 张笔记残页，了解他们的过去。");
 
 	public static final ChallengeArea[] ALL = {
 			HOLLOW, GALAXY, IBERIA, GAVIAL, SIESTA, SIX_KINGS

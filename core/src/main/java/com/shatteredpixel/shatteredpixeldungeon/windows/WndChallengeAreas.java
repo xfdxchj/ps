@@ -24,6 +24,8 @@ public class WndChallengeAreas extends Window {
 
 	private boolean editable;
 	private ArrayList<CheckBox> boxes;
+	/** 显示所选区域简介的文本框 */
+	private RenderedTextBlock descBlock;
 
 	public WndChallengeAreas( int checked, boolean editable ) {
 
@@ -41,6 +43,11 @@ public class WndChallengeAreas extends Window {
 		add( title );
 
 		boxes = new ArrayList<>();
+
+		//END(新增): 区域简介 —— 之前点选区域后没有任何说明，玩家不知道里面是什么。
+		descBlock = PixelScene.renderTextBlock( "", 6 );
+		descBlock.maxWidth( WIDTH - 8 );
+		descBlock.hardlight( 0xCCCCCC );
 
 		float pos = TTL_HEIGHT;
 		for (int i = 0; i < ChallengeArea.ALL.length; i++) {
@@ -63,6 +70,8 @@ public class WndChallengeAreas extends Window {
 							boxes.get(j).checked( false );
 						}
 					}
+					//刷新简介
+					updateDesc( turningOn ? area : null );
 				}
 			};
 			cb.checked( ChallengeArea.isSelected(checked, area) );
@@ -80,7 +89,27 @@ public class WndChallengeAreas extends Window {
 			pos = cb.bottom();
 		}
 
-		resize( WIDTH, (int)pos );
+		//简介放到按钮下方
+		pos += 4;
+		add( descBlock );
+		descBlock.setPos( 4, pos );
+
+		//初始显示已选区域的简介
+		ChallengeArea sel = ChallengeArea.selectedArea( checked );
+		updateDesc( sel );
+
+		resize( WIDTH, (int)(pos + descBlock.height() + 4) );
+	}
+
+	/** 刷新简介文本，并重新计算窗口高度。 */
+	private void updateDesc( ChallengeArea area ) {
+		if (area == null || area.desc == null || area.desc.isEmpty()) {
+			descBlock.text( "" );
+			descBlock.visible = false;
+		} else {
+			descBlock.text( area.desc );
+			descBlock.visible = true;
+		}
 	}
 
 	@Override
