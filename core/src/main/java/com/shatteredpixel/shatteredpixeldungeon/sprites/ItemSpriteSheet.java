@@ -1082,4 +1082,33 @@ public class ItemSpriteSheet {
 	//END(port from Arknights): 圣手（SeaPlatform 用）；图集无此图，复用现有图标
 	public static final int SAINT_HAND = ARMOR+2;
 	static { assignItemRect(SAINT_HAND, 16, 16); }
+
+	//END(port from Arknights): HIKARI（图集无此图，复用现有图标）
+	public static final int HIKARI = WEP_TIER5+0;
+	static { assignItemRect(HIKARI, 16, 16); }
+	//END(port from Arknights): MUSH（图集无此图，复用现有图标）
+	public static final int MUSH = FOOD+0;
+	static { assignItemRect(MUSH, 16, 16); }
+	//END(port from Arknights): BARRI（图集无此图，复用现有图标）
+	public static final int BARRI = ARMOR+0;
+	static { assignItemRect(BARRI, 16, 16); }
+	//END(port from Arknights): INFO_CERTI（图集无此图，复用现有图标）
+	public static final int INFO_CERTI = SCROLLS+0;
+	static { assignItemRect(INFO_CERTI, 16, 16); }
+	//END(port from Arknights): GAVIAL_PART1（图集无此图，复用现有图标）
+	public static final int GAVIAL_PART1 = WEP_TIER4+0;
+	static { assignItemRect(GAVIAL_PART1, 16, 16); }
+	//END(port from Arknights): GAVIAL_PART2（图集无此图，复用现有图标）
+	public static final int GAVIAL_PART2 = WEP_TIER4+1;
+	static { assignItemRect(GAVIAL_PART2, 16, 16); }
+	//END(port from Arknights): TALU_BOSS（图集无此图，复用现有图标）
+	public static final int TALU_BOSS = WEP_TIER5+1;
+	static { assignItemRect(TALU_BOSS, 16, 16); }
+	//END(port from Arknights): CERTIFICATE_1（图集无此图，复用现有图标）
+	public static final int CERTIFICATE_1 = SCROLLS+1;
+	static { assignItemRect(CERTIFICATE_1, 16, 16); }
+
+	//END(port from Arknights): WaterRay（图集无此图，复用现有图标）
+	public static final int WaterRay = WEP_TIER5+2;
+	static { assignItemRect(WaterRay, 16, 16); }
 }

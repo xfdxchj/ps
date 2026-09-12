@@ -482,4 +482,19 @@ public class SPDSettings extends GameSettings {
 	public static int fulLScreenMonitor(){
 		return getInt( KEY_FULLSCREEN_MONITOR, 0 );
 	}
+
+	//END(port from Arknights): 方舟的"特殊硬币"计数（用于解锁/商店）
+	private static int specialcoin = 0;
+
+	public static int getSpecialcoin() {
+		return specialcoin;
+	}
+
+	public static void addSpecialcoin(int value) {
+		specialcoin += value;
+	}
+
+	public static void setSpecialcoin(int value) {
+		specialcoin = value;
+	}
 }

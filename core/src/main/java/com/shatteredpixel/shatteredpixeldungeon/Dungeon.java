@@ -1318,4 +1318,18 @@ public class Dungeon {
 		int offset = d - CHALLENGE_START; //挑战区内的偏移
 		return BAND_START + (offset % BAND_SIZE);
 	}
+
+	//END(port from Arknights): mulaCount
+	public static int mulaCount;
+
+	//END(port from Arknights): siesta1_bosspower
+	public static int siesta1_bosspower;
+
+	//END(port from Arknights): eazymode
+	public static int eazymode;
+
+	//END(port from Arknights): isInRhodes
+	public static boolean isInRhodes() {
+        return depth == 0 && branch >= 1 && branch <= 4;
+    }
 }

@@ -96,4 +96,11 @@ public class Beam extends Image {
 		super.draw();
 		Blending.setNormalMode();
 	}
+
+	//END(port from Arknights): 水射线（海嗣 Boss 用）
+	public static class WaterRay extends Beam{
+		public WaterRay(PointF s, PointF e){
+			super(s, e, Effects.Type.LIGHT_RAY, 1f);
+		}
+	}
 }

@@ -220,7 +220,22 @@ public class Badges {
 		KILL_DOG                    ( 112 ), //END(修复): 原152超出 badges.png 容量(128个)
 		HALOFIRE_DIED               ( 113 ), //END(修复)
 		CITY_END                    ( 114 ), //END(修复)
-		NYZ_SHOP                    ( 115 ); //END(修复)
+		NYZ_SHOP                    ( 115 ),
+        HIKARI ( 160 ),
+        SIESTA_PART1 ( 161 ),
+        SIESTA_PART2 ( 162 ),
+        GAVIAL_PART1 ( 163 ),
+        GAVIAL_PART2 ( 164 ),
+        IBERIA_PART1 ( 165 ),
+        IBERIA_PART2 ( 166 ),
+        WILL ( 167 ),
+        TALU_BOSS ( 168 ),
+        CERTIFICATE_1 ( 169 ),
+        CERTIFICATE_2 ( 170 ),
+        CERTIFICATE_3 ( 171 ),
+        CERTIFICATE_4 ( 172 ),
+        CERTIFICATE_5 ( 173 ),
+        CERTIFICATE_6 ( 174 ); //END(修复)
 
 		public boolean meta;
 
@@ -1414,4 +1429,186 @@ public class Badges {
 
 		return null;
 	}
+
+	//END(port from Arknights): silentValidateHappyEnd
+	public static void silentValidateHappyEnd() {
+        if (!Dungeon.isChallenged(4096)) {
+            local.add(Badge.HAPPY_END);
+        }
+    }
+
+	//END(port from Arknights): validateChampion_char
+	public static void validateChampion_char(int challenges) {
+        if (challenges == 0) {
+            return;
+        }
+        Badge badge = null;
+        if (challenges >= 1) {
+            badge = firstChamionClassBadges.get((Object)Dungeon.hero.heroClass);
+        }
+        if (challenges >= 3) {
+            if (badge != null) {
+                Badges.unlock(badge);
+            }
+            badge = secondChamionClassBadges.get((Object)Dungeon.hero.heroClass);
+        }
+        if (challenges >= 6) {
+            if (badge != null) {
+                Badges.unlock(badge);
+            }
+            badge = thirdChamionClassBadges.get((Object)Dungeon.hero.heroClass);
+        }
+        if (badge == null) {
+            return;
+        }
+        local.add(badge);
+        Badges.displayBadge(badge);
+    }
+
+	//END(port from Arknights): validateCertificate
+	public static void validateCertificate() {
+        Badge badge = null;
+        if (SPDSettings.getSpecialcoin() >= 10) {
+            badge = Badge.CERTIFICATE_1;
+            local.add(badge);
+        }
+        if (SPDSettings.getSpecialcoin() >= 50) {
+            Badges.unlock(badge);
+            badge = Badge.CERTIFICATE_2;
+            local.add(badge);
+        }
+        if (SPDSettings.getSpecialcoin() >= 150) {
+            Badges.unlock(badge);
+            badge = Badge.CERTIFICATE_3;
+            local.add(badge);
+        }
+        if (SPDSettings.getSpecialcoin() >= 300) {
+            Badges.unlock(badge);
+            badge = Badge.CERTIFICATE_4;
+            local.add(badge);
+        }
+        Badges.displayBadge(badge);
+    }
+
+	//END(port from Arknights): validategavial1
+	public static void validategavial1() {
+        if (!local.contains((Object)Badge.GAVIAL_PART1)) {
+            Badge badge = Badge.GAVIAL_PART1;
+            local.add(badge);
+            Badges.displayBadge(badge);
+        }
+    }
+
+	//END(port from Arknights): validategavial2
+	public static void validategavial2() {
+        if (!local.contains((Object)Badge.GAVIAL_PART2)) {
+            Badge badge = Badge.GAVIAL_PART2;
+            local.add(badge);
+            Badges.displayBadge(badge);
+        }
+    }
+
+	//END(port from Arknights): validateiberia1
+	public static void validateiberia1() {
+        if (!local.contains((Object)Badge.IBERIA_PART1)) {
+            Badge badge = Badge.IBERIA_PART1;
+            local.add(badge);
+            Badges.displayBadge(badge);
+        }
+    }
+
+	//END(port from Arknights): validatesiesta1
+	public static void validatesiesta1() {
+        if (!local.contains((Object)Badge.SIESTA_PART1)) {
+            Badge badge = Badge.SIESTA_PART1;
+            local.add(badge);
+            Badges.displayBadge(badge);
+        }
+    }
+
+	//END(port from Arknights): validatewill
+	public static void validatewill() {
+        if (!local.contains((Object)Badge.WILL)) {
+            Badge badge = Badge.WILL;
+            local.add(badge);
+            Badges.displayBadge(badge);
+        }
+    }
+
+	//END(port from Arknights): HIKARI
+	public static void HIKARI() {
+		displayBadge( Badge.HIKARI );
+	}
+
+	//END(port from Arknights): SIESTA_PART1
+	public static void SIESTA_PART1() {
+		displayBadge( Badge.SIESTA_PART1 );
+	}
+
+	//END(port from Arknights): SIESTA_PART2
+	public static void SIESTA_PART2() {
+		displayBadge( Badge.SIESTA_PART2 );
+	}
+
+	//END(port from Arknights): GAVIAL_PART1
+	public static void GAVIAL_PART1() {
+		displayBadge( Badge.GAVIAL_PART1 );
+	}
+
+	//END(port from Arknights): GAVIAL_PART2
+	public static void GAVIAL_PART2() {
+		displayBadge( Badge.GAVIAL_PART2 );
+	}
+
+	//END(port from Arknights): IBERIA_PART1
+	public static void IBERIA_PART1() {
+		displayBadge( Badge.IBERIA_PART1 );
+	}
+
+	//END(port from Arknights): IBERIA_PART2
+	public static void IBERIA_PART2() {
+		displayBadge( Badge.IBERIA_PART2 );
+	}
+
+	//END(port from Arknights): WILL
+	public static void WILL() {
+		displayBadge( Badge.WILL );
+	}
+
+	//END(port from Arknights): TALU_BOSS
+	public static void TALU_BOSS() {
+		displayBadge( Badge.TALU_BOSS );
+	}
+
+	//END(port from Arknights): CERTIFICATE_1
+	public static void CERTIFICATE_1() {
+		displayBadge( Badge.CERTIFICATE_1 );
+	}
+
+	//END(port from Arknights): CERTIFICATE_2
+	public static void CERTIFICATE_2() {
+		displayBadge( Badge.CERTIFICATE_2 );
+	}
+
+	//END(port from Arknights): CERTIFICATE_3
+	public static void CERTIFICATE_3() {
+		displayBadge( Badge.CERTIFICATE_3 );
+	}
+
+	//END(port from Arknights): validatesiesta2
+	public static void validatesiesta2() {
+		//no-op: 方舟在此校验区域进度，本移植版暂不追踪
+	}
+
+	//END(port from Arknights): validateiberia2
+	public static void validateiberia2() {
+		//no-op: 方舟在此校验区域进度，本移植版暂不追踪
+	}
+
+	//END(port from Arknights): firstChamionClassBadges
+	public static java.util.HashMap<com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass, Badge> firstChamionClassBadges = new java.util.HashMap<>();
+	//END(port from Arknights): secondChamionClassBadges
+	public static java.util.HashMap<com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass, Badge> secondChamionClassBadges = new java.util.HashMap<>();
+	//END(port from Arknights): thirdChamionClassBadges
+	public static java.util.HashMap<com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass, Badge> thirdChamionClassBadges = new java.util.HashMap<>();
 }

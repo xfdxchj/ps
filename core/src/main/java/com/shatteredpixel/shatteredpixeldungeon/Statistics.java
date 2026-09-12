@@ -320,4 +320,7 @@ public class Statistics {
 		info.maxDepth       = bundle.getInt( DEEPEST );
 	}
 
+
+	//END(port from Arknights): coreAlive
+	public static int coreAlive;
 }

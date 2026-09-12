@@ -21,6 +21,8 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.items.scrolls;
 
+import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Talulah;
+
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
@@ -330,4 +332,27 @@ public class ScrollOfTeleportation extends Scroll {
 	public int value() {
 		return isKnown() ? 30 * quantity : super.value();
 	}
+
+	//END(port from Arknights): teleportChar_unobstructed
+	public static void teleportChar_unobstructed(Char ch) {
+        int pos;
+        if (ch instanceof Talulah) {
+            return;
+        }
+        int count = 20;
+        do {
+            pos = Dungeon.level.randomRespawnCell(ch);
+        } while (count-- > 0 && (pos == -1 || Dungeon.level.secret[pos]));
+        if (pos == -1) {
+            GLog.w(Messages.get(ScrollOfTeleportation.class, "no_tele", new Object[0]), new Object[0]);
+        } else {
+            ScrollOfTeleportation.appear(ch, pos);
+            Dungeon.level.occupyCell(ch);
+            if (ch == Dungeon.hero) {
+                GLog.i(Messages.get(ScrollOfTeleportation.class, "tele", new Object[0]), new Object[0]);
+                Dungeon.observe();
+                GameScene.updateFog();
+            }
+        }
+    }
 }
