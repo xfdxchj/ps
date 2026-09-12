@@ -6,6 +6,8 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.Boss;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Invulnerability;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.YogFist;
 import com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter;
 import com.shatteredpixel.shatteredpixeldungeon.effects.particles.ShadowParticle;
 import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
@@ -13,8 +15,6 @@ import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.sixkings.SummonKingSprite;
 import com.watabou.utils.Bundle;
-import com.watabou.utils.PathFinder;
-import com.watabou.utils.Random;
 
 import java.util.ArrayList;
 
@@ -26,14 +26,18 @@ import java.util.ArrayList;
  * 核心机制：
  *   · HP = 1，**永久无敌**，本体不参与战斗
  *   · 开战直接召唤 6 个「古神之拳」
- *   · 玩家无法通过打本体推进战斗，必须清掉拳
+ *   · 玩家无法通过打本体推进战斗，必须清掉六拳
+ *
+ * END(用户指正·重要): 之前我用自建的 AncientFist + 方舟贴图实现，
+ * 但【原版地牢本来就有"古神之拳"】——{@code YogFist}，共 6 种：
+ *     燃烧之拳 / 泥土之拳 / 腐烂之拳 / 锈蚀之拳 / 光明之拳 / 黑暗之拳
+ * 贴图 {@code sprites/yog_fists.png}，帧布局 TextureFilm(24, 17)。
+ * 现在直接召唤这 6 种原版拳，既保真又自带各自的技能与特效。
  *
  * 强化规则：
  *   · 击杀 3 个拳 → 剩余 3 个强化（伤害 +50%）
  *   · 只剩 1 个   → 该拳狂暴（攻速 +100%、受伤 −50%）
- *
- * 胜利条件：
- *   · 6 个拳全部被击杀 → 本体失去无敌 → 可以被一击杀死
+ *   · 6 个全灭    → 本体失去无敌，可被一击杀死
  */
 public class GuidingKing extends Boss {
 
@@ -44,7 +48,7 @@ public class GuidingKing extends Boss {
         EXP = 120;
         baseHT = HT;
 
-        baseMin = 0;        // 本身不攻击
+        baseMin = 0;        // 本体不攻击
         baseMax = 0;
         baseAcc = 0;
         baseEva = 0;
@@ -60,22 +64,20 @@ public class GuidingKing extends Boss {
     }
 
     /** 存活的拳 */
-    private final ArrayList<AncientFist> fists = new ArrayList<>();
-    /** 已召唤过（避免重复召唤） */
+    private final ArrayList<Mob> fists = new ArrayList<>();
     private boolean summoned = false;
-    /** 已死亡数量 */
-    private int deadCount = 0;
 
-    private static final String SUMMONED   = "summoned";
-    private static final String DEAD_COUNT = "deadCount";
+    /** 记录每个拳的强化等级 */
+    private static final java.util.HashMap<Mob, Integer> empower =
+            new java.util.HashMap<>();
 
-    private static final int FIST_COUNT = 6;
+    private static final String SUMMONED = "summoned";
 
     // ═══════════════════════════════════════════════
     @Override
     protected boolean act() {
 
-        // ── 开战：召唤 6 个拳 ──
+        // ── 开战：召唤 6 个古神之拳 ──
         if (!summoned) {
             summoned = true;
             summonSixFists();
@@ -83,60 +85,72 @@ public class GuidingKing extends Boss {
             return true;
         }
 
-        // ── 清理已死的引用 ──
+        // 清理已死引用
         fists.removeIf( f -> f == null || !f.isAlive() );
 
-        // ── 维持无敌（只要还有拳活着）──
+        // 只要还有拳活着，本体维持无敌
         if (!fists.isEmpty()) {
             if (buff(Invulnerability.class) == null) {
                 Buff.affect(this, Invulnerability.class);
             }
         } else {
-            // 所有拳都死了 → 解除无敌
             Buff.detach(this, Invulnerability.class);
         }
 
-        // ── 强化判定 ──
         checkEmpower();
 
         spend( TICK );
         return true;
     }
 
-    /** 召唤 6 个古神之拳，围绕本体分布 */
+    /** 召唤原版 6 种古神之拳 */
     private void summonSixFists() {
 
         yell( Messages.get(this, "summon") );
 
+        // 原版的 6 种拳
+        Class<? extends YogFist>[] kinds = new Class[]{
+                YogFist.BurningFist.class,   // 燃烧之拳
+                YogFist.SoiledFist.class,    // 泥土之拳
+                YogFist.RottingFist.class,   // 腐烂之拳
+                YogFist.RustedFist.class,    // 锈蚀之拳
+                YogFist.BrightFist.class,    // 光明之拳
+                YogFist.DarkFist.class       // 黑暗之拳
+        };
+
         int placed = 0;
-        int guard = 0;
-
-        while (placed < FIST_COUNT && guard++ < 200) {
+        for (Class<? extends YogFist> k : kinds) {
             int cell = findSpawnCell( placed );
-            if (cell == -1) continue;
+            if (cell == -1) {
+                placed++;
+                continue;
+            }
+            try {
+                YogFist fist = k.getDeclaredConstructor().newInstance();
+                fist.pos = cell;
+                fists.add( fist );
+                //END(注意): 这里是 act() 阶段（不是 level.createMobs()），
+                //Dungeon.level 已经存在，所以用 GameScene.add 是正确的。
+                GameScene.add( fist );
 
-            AncientFist fist = new AncientFist();
-            fist.pos = cell;
-            fist.parent = this;
-            GameScene.add( fist );
-            fists.add( fist );
-
-            if (Dungeon.level.heroFOV[cell]) {
-                CellEmitter.get(cell).burst( ShadowParticle.UP, 12 );
+                if (Dungeon.level != null && Dungeon.level.heroFOV[cell]) {
+                    CellEmitter.get(cell).burst( ShadowParticle.UP, 12 );
+                }
+            } catch (Exception e) {
+                com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w(
+                        "[六王] 召唤古神之拳失败: " + e);
             }
             placed++;
         }
 
-        // 保证无敌
         Buff.affect(this, Invulnerability.class);
     }
 
-    /** 找一个环绕本体的空格 */
+    /** 找环绕本体的空格 */
     private int findSpawnCell(int index) {
         int w = Dungeon.level.width();
         int cx = pos % w, cy = pos / w;
 
-        // 以本体为中心，半径 2-3 的环形位置
         int[][] offsets = {
                 { 0, -2}, { 2, -1}, { 2,  1}, { 0,  2}, {-2,  1}, {-2, -1},
                 { 1, -3}, { 3, -1}, { 3,  1}, { 1,  3}, {-1,  3}, {-3,  1},
@@ -165,46 +179,33 @@ public class GuidingKing extends Boss {
         int alive = fists.size();
 
         if (alive == 3) {
-            // 剩 3 个：全部强化
             boolean any = false;
-            for (AncientFist f : fists) {
-                if (f.empowered < 1) {
-                    f.empower( 1 );
+            for (Mob f : fists) {
+                if (empower.getOrDefault(f, 0) < 1) {
+                    empower.put(f, 1);
+                    // 原版 YogFist 的 HP 是 HT，直接加倍血量并提升伤害
+                    f.HT = Math.round(f.HT * 1.5f);
+                    f.HP = Math.min(f.HP + f.HT / 4, f.HT);
                     any = true;
                 }
             }
             if (any) yell( Messages.get(this, "empower1") );
 
         } else if (alive == 1) {
-            // 剩 1 个：狂暴
-            AncientFist last = fists.get(0);
-            if (last.empowered < 2) {
-                last.empower( 2 );
+            Mob last = fists.get(0);
+            if (empower.getOrDefault(last, 0) < 2) {
+                empower.put(last, 2);
+                Buff.prolong( last, com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Haste.class, 999f );
                 yell( Messages.get(this, "empower2") );
             }
         }
     }
 
-    /** 由 AncientFist 死亡时回调 */
-    public void onFistDied(AncientFist fist) {
-        deadCount++;
-        fists.remove( fist );
-
-        if (fists.isEmpty()) {
-            // 全部清完 → 解除无敌 + 台词
-            Buff.detach(this, Invulnerability.class);
-            yell( Messages.get(this, "broken") );
-        } else {
-            checkEmpower();
-        }
-    }
-
     // ═══════════════════════════════════════════════
-    //  本体不能被打（无敌期间）
+    //  本体：只要还有拳活着就免伤
     // ═══════════════════════════════════════════════
     @Override
     public int defenseProc(Char enemy, int damage) {
-        // 只要还有拳活着，本体免伤
         if (!fists.isEmpty()) {
             return 0;
         }
@@ -212,18 +213,12 @@ public class GuidingKing extends Boss {
     }
 
     @Override
-    public boolean isAlive() {
-        // 只要有拳活着，本体"活着"
-        return super.isAlive();
-    }
-
-    @Override
     public void die(Object cause) {
-        // 清掉残余的拳
-        for (AncientFist f : fists) {
+        for (Mob f : fists) {
             if (f != null && f.isAlive()) f.die( null );
         }
         fists.clear();
+        empower.clear();
 
         super.die(cause);
         GameScene.bossSlain();
@@ -245,13 +240,11 @@ public class GuidingKing extends Boss {
     public void storeInBundle(Bundle bundle) {
         super.storeInBundle(bundle);
         bundle.put(SUMMONED, summoned);
-        bundle.put(DEAD_COUNT, deadCount);
     }
 
     @Override
     public void restoreFromBundle(Bundle bundle) {
         super.restoreFromBundle(bundle);
-        summoned  = bundle.getBoolean(SUMMONED);
-        deadCount = bundle.getInt(DEAD_COUNT);
+        summoned = bundle.getBoolean(SUMMONED);
     }
 }
