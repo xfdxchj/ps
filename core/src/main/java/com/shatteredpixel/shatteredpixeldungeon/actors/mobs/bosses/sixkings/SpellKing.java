@@ -124,68 +124,133 @@ public class SpellKing extends Boss {
         }
     }
 
-    // ── 一阶段：火焰 / 解离 / 落石 ──
+    // ═══════════════════════════════════════════════
+    //  END(用户反馈): "法师的魔弹，闪电都没有特效"
+    //  下面每个法术都配了【光束/闪电/爆炸】的可视化。
+    // ═══════════════════════════════════════════════
+
+    /** 从 Boss 到目标画一条光束（魔弹） */
+    private void bolt( Char target, int color ) {
+        try {
+            if (sprite == null || sprite.parent == null) return;
+            if (target == null || target.sprite == null) return;
+
+            com.shatteredpixel.shatteredpixeldungeon.effects.Beam.LightRay ray =
+                    new com.shatteredpixel.shatteredpixeldungeon.effects.Beam.LightRay(
+                            sprite.center(), target.sprite.center() );
+            ray.hardlight( color );
+            sprite.parent.add( ray );
+
+            // 沿线火花
+            com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica b =
+                    new com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica(
+                            pos, target.pos,
+                            com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica.MAGIC_BOLT );
+            for (int c : b.path) {
+                if (Dungeon.level.heroFOV[c]) {
+                    CellEmitter.get(c).burst( SparkParticle.FACTORY, 2 );
+                }
+            }
+        } catch (Throwable ignored) { }
+    }
+
+    /** 从 Boss 到目标的闪电（真正的闪电弧） */
+    private void lightning( Char target ) {
+        try {
+            if (sprite == null || sprite.parent == null) return;
+            if (target == null || target.sprite == null) return;
+
+            com.shatteredpixel.shatteredpixeldungeon.effects.Lightning l =
+                    new com.shatteredpixel.shatteredpixeldungeon.effects.Lightning(
+                            sprite.center(), target.sprite.center(), null );
+            sprite.parent.add( l );
+
+            CellEmitter.get( target.pos ).burst( SparkParticle.FACTORY, 16 );
+        } catch (Throwable ignored) { }
+    }
+
+    /** 目标处的小爆炸 */
+    private void burst( Char target, int count ) {
+        if (target == null) return;
+        if (Dungeon.level.heroFOV[target.pos]) {
+            CellEmitter.get( target.pos ).burst( FlameParticle.FACTORY, count );
+            CellEmitter.get( target.pos ).burst( SparkParticle.FACTORY, count );
+        }
+    }
+
+    // ── 一阶段：火焰 / 魔弹 / 落石 ──
     private void castPhaseOne(Char target) {
         switch (Random.Int(3)) {
-            case 0:
+            case 0:   // 火焰
+                bolt( target, 0xFF6622 );
                 target.damage( Random.IntRange(10, 20), this );
                 Buff.affect(target, Burning.class).reignite(target);
-                CellEmitter.get(target.pos).burst( FlameParticle.FACTORY, 8 );
+                burst( target, 10 );
                 break;
-            case 1:
+            case 1:   // 奥术魔弹
+                bolt( target, 0x66CCFF );
                 target.damage( Random.IntRange(15, 25), this );
-                CellEmitter.get(target.pos).burst( SparkParticle.FACTORY, 8 );
+                burst( target, 12 );
                 break;
-            default:
+            default:  // 落石
+                bolt( target, 0xAAAAAA );
                 target.damage( Random.IntRange(12, 22), this );
+                burst( target, 8 );
                 break;
         }
     }
 
-    // ── 二阶段：全图火焰 / 冲击波 / 闪电 / 冰冻 ──
+    // ── 二阶段：火焰 / 冲击波 / 闪电 / 冰冻 ──
     private void castPhaseTwo(Char target) {
         switch (Random.Int(4)) {
-            case 0:
+            case 0:   // 火焰
+                bolt( target, 0xFF4400 );
                 target.damage( Random.IntRange(15, 25), this );
                 Buff.affect(target, Burning.class).reignite(target);
-                CellEmitter.get(target.pos).burst( FlameParticle.FACTORY, 12 );
+                burst( target, 14 );
                 break;
-            case 1:
+            case 1:   // 奥术冲击
+                bolt( target, 0xCC66FF );
                 target.damage( Random.IntRange(20, 30), this );
+                burst( target, 14 );
                 break;
-            case 2:
+            case 2:   // ★ 闪电
+                lightning( target );
                 target.damage( Random.IntRange(20, 35), this );
-                CellEmitter.get(target.pos).burst( SparkParticle.FACTORY, 14 );
                 break;
-            default:
+            default:  // 冰锥
+                bolt( target, 0x99DDFF );
                 target.damage( Random.IntRange(10, 20), this );
                 Buff.prolong(target, Frost.class, 2f);
+                burst( target, 10 );
                 break;
         }
     }
 
     // ── 三阶段：伤害 +25%，附带控制 ──
     private void castPhaseThree(Char target) {
-        int damage;
         switch (Random.Int(4)) {
-            case 0:
-                damage = Math.round( Random.IntRange(10, 20) * 1.25f );
-                target.damage( damage, this );
+            case 0:   // 烈焰
+                bolt( target, 0xFF3300 );
+                target.damage( Math.round( Random.IntRange(10, 20) * 1.25f ), this );
                 Buff.affect(target, Burning.class).reignite(target);
+                burst( target, 16 );
                 break;
-            case 1:
-                damage = Math.round( Random.IntRange(15, 25) * 1.25f );
-                target.damage( damage, this );
+            case 1:   // 奥术
+                bolt( target, 0xDD66FF );
+                target.damage( Math.round( Random.IntRange(15, 25) * 1.25f ), this );
+                burst( target, 16 );
                 break;
-            case 2:
-                damage = Math.round( Random.IntRange(20, 35) * 1.25f );
-                target.damage( damage, this );
+            case 2:   // ★ 闪电 + 麻痹
+                lightning( target );
+                target.damage( Math.round( Random.IntRange(20, 35) * 1.25f ), this );
                 Buff.prolong(target, Paralysis.class, 1f);
                 break;
-            default:
-                damage = Math.round( Random.IntRange(15, 25) * 1.25f );
-                target.damage( damage, this );
+            default:  // 冰霜
+                bolt( target, 0x66EEFF );
+                target.damage( Math.round( Random.IntRange(15, 25) * 1.25f ), this );
                 Buff.prolong(target, Chill.class, 3f);
+                burst( target, 14 );
                 break;
         }
     }
