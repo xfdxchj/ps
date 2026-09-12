@@ -65,8 +65,15 @@ public abstract class SixKingsLevelBase extends Level {
         int entranceCell = cy * W + 2;          // 左侧
         int exitCell     = cy * W + (W - 3);    // 右侧
 
-        set( entranceCell, Terrain.ENTRANCE );
-        set( exitCell,     Terrain.EXIT );
+        //END(修复·关键): build() 期间 Dungeon.level 还是 null，
+        //而 Level.set(cell, terrain) 是【静态方法】、内部用 Dungeon.level → 会 NPE。
+        //build() 里必须直接写 map[]（这也是本 fork 其它关卡的写法）。
+        map[entranceCell] = Terrain.ENTRANCE;
+        map[exitCell]     = Terrain.EXIT;
+
+        // 写出后刷新格子标记（此时 level 已有 map，但 updateCellFlags 是实例方法，安全）
+        updateCellFlags( entranceCell );
+        updateCellFlags( exitCell );
 
         // ⚠️ 必须 REGULAR_ENTRANCE
         transitions.add( new LevelTransition( this, entranceCell,

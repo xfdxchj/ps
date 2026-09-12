@@ -408,6 +408,35 @@ public class Dungeon {
 				com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w("[便利] 传送符异常: " + e);
 			}
 
+			//END(便利): 完整手记 —— 直接给，省去收集 9 张残页的过程。
+			//（正式流程是：9 张残页 --3合1--> 3 章节 --3合1--> 完整手记）
+			try {
+				com.shatteredpixel.shatteredpixeldungeon.items.notes.CompleteNote note =
+						new com.shatteredpixel.shatteredpixeldungeon.items.notes.CompleteNote();
+				note.identify();
+				hero.belongings.backpack.items.add(0, note);
+				com.shatteredpixel.shatteredpixeldungeon.utils.GLog.p(
+						"[便利] 已发放：完整手记（可直接阅读六人的往事）");
+			} catch (Exception e){
+				com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w("[便利] 完整手记异常: " + e);
+			}
+
+			//END(便利): 9 张笔记残页各一份（用于测试 3 合 1）
+			try {
+				for (int i = 1; i <= 9; i++) {
+					com.shatteredpixel.shatteredpixeldungeon.items.notes.NoteFragment frag =
+							new com.shatteredpixel.shatteredpixeldungeon.items.notes.NoteFragment(i);
+					frag.identify();
+					if (!frag.collect()) {
+						hero.belongings.backpack.items.add( frag );
+					}
+				}
+				com.shatteredpixel.shatteredpixeldungeon.utils.GLog.p(
+						"[便利] 已发放：笔记残页 ×9（可合成 3 章节）");
+			} catch (Exception e){
+				com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w("[便利] 残页异常: " + e);
+			}
+
 			//板甲(原版 PlateArmor)，已鉴定
 			try {
 				com.shatteredpixel.shatteredpixeldungeon.items.armor.PlateArmor plate =
