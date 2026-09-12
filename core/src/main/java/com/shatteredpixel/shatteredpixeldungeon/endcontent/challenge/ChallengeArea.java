@@ -54,9 +54,11 @@ public final class ChallengeArea {
 	public static final ChallengeArea IBERIA      = new ChallengeArea(4, "伊比利亚·海嗣", 10, true);
 	public static final ChallengeArea GAVIAL      = new ChallengeArea(5, "嘉维尔·雨林", 10, true);
 	public static final ChallengeArea SIESTA      = new ChallengeArea(6, "汐斯塔·海滨", 10, true);
+	//六王（3 层测试版：法术王 / 不灭追猎者 / Debuff 王；后续扩到 6 王 + NPC 共 7 层）
+	public static final ChallengeArea SIX_KINGS   = new ChallengeArea(7, "六大天王", 3, true);
 
 	public static final ChallengeArea[] ALL = {
-			HOLLOW, GALAXY, IBERIA, GAVIAL, SIESTA
+			HOLLOW, GALAXY, IBERIA, GAVIAL, SIESTA, SIX_KINGS
 	};
 
 	/** 挑战区起始层（主线 25F 之后）。 */
@@ -196,7 +198,15 @@ public final class ChallengeArea {
 			}
 		}
 
-				//未知区：占位
+				if (areaId == SIX_KINGS.id) {
+			//六王：0=法术王 1=不灭追猎者 2=Debuff王（后续再加 3 王 + NPC 层）
+			switch (floorIn) {
+				case 0:  return new com.shatteredpixel.shatteredpixeldungeon.levels.boss.SixKingsLevel1();
+				case 1:  return new com.shatteredpixel.shatteredpixeldungeon.levels.boss.SixKingsLevel2();
+				default: return new com.shatteredpixel.shatteredpixeldungeon.levels.boss.SixKingsLevel3();
+			}
+		}
+		//未知区：占位
 		return new DeadEndLevel();
 	}
 }

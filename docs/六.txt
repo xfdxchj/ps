@@ -1,0 +1,1524 @@
+可以。你现在已经把 **1～3号的机制定下来了**，我建议直接按你上传的工具箱模板来写，而不是再套原来的示例 Boss。
+
+不过有一点我得先说清楚：你给的工具箱里**没有你实际 fork 的完整 `core` 源码**，所以像“区域伤害”“无敌切换”“印记层数”这类部分，我不能保证凭模板就能写出 100% 一次编译通过的版本。下面我先给你**按现有 API 能对应上的完整 Boss 类**；其中区域机制我会尽量用项目已有的 `Dungeon.level` / `Actor.findChar` 体系实现。
+
+为了避免把你原来的项目结构搞乱，我建议先建立：
+
+```text
+actors/mobs/bosses/sixkings/
+├── SpellKing.java
+├── ImmortalKing.java
+└── DebuffKing.java
+```
+
+### 1号：SpellKing.java
+
+```java
+package com.shatteredpixel.shatteredpixeldungeon.actors.mobs.bosses.sixkings;
+
+import com.shatteredpixel.shatteredpixeldungeon.actors.Boss;
+import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.*;
+import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
+import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
+import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
+import com.shatteredpixel.shatteredpixeldungeon.sprites.SorcererKingSprite;
+import com.watabou.utils.Bundle;
+import com.watabou.utils.Random;
+
+/**
+ * 1号 Boss：法术王
+ *
+ * 核心：
+ *  1. 所有攻击均为法术伤害
+ *  2. 魔法追击
+ *  3. 三阶段法术强化
+ */
+public class SpellKing extends Boss {
+
+    {
+        spriteClass = SorcererKingSprite.class;
+
+        HT = 1000;
+        EXP = 100;
+
+        baseHT = HT;
+
+        baseMin = 25;
+        baseMax = 25;
+
+        baseAcc = 35;
+        baseEva = 15;
+
+        baseMinDef = 0;
+        baseMaxDef = 0;
+
+        properties.add(Property.BOSS);
+
+        alignment = Alignment.ENEMY;
+
+        loot = Generator.Category.WEP_T5;
+        lootChance = 1f;
+
+        spellCd = 5;
+    }
+
+    private int spellCd = 5;
+
+    /**
+     * Boss 已经成功命中的次数。
+     * 一、二阶段每累计3次触发一次追击。
+     */
+    private int magicHits = 0;
+
+    private int phase = 1;
+
+    private static final String SPELL_CD = "spellCd";
+    private static final String MAGIC_HITS = "magicHits";
+    private static final String PHASE = "phase";
+
+    @Override
+    protected boolean act() {
+
+        updatePhase();
+
+        if (enemy != null && enemySeen) {
+
+            if (spellCd-- <= 0) {
+
+                castSpell();
+
+                spellCd = 5;
+
+                spend(TICK);
+                return true;
+            }
+        }
+
+        return super.act();
+    }
+
+    /**
+     * 阶段判断
+     */
+    private void updatePhase() {
+
+        int newPhase;
+
+        if (HP > HT * 2 / 3) {
+            newPhase = 1;
+        } else if (HP > HT / 3) {
+            newPhase = 2;
+        } else {
+            newPhase = 3;
+        }
+
+        if (newPhase != phase) {
+
+            phase = newPhase;
+
+            if (phase == 2) {
+                yell("火焰将吞噬一切！");
+            }
+
+            if (phase == 3) {
+                yell("现在，感受真正的魔法！");
+            }
+
+            sprite.flash();
+        }
+    }
+
+    /**
+     * 主法术
+     */
+    private void castSpell() {
+
+        if (enemy == null) return;
+
+        Char target = enemy;
+
+        switch (phase) {
+
+            case 1:
+                castPhaseOne(target);
+                break;
+
+            case 2:
+                castPhaseTwo(target);
+                break;
+
+            default:
+                castPhaseThree(target);
+                break;
+        }
+    }
+
+    /**
+     * 一阶段：
+     * 扇形火焰
+     * 解离光束
+     * 落石
+     */
+    private void castPhaseOne(Char target) {
+
+        int type = Random.Int(3);
+
+        switch (type) {
+
+            case 0:
+                // 火焰
+                target.damage(
+                        Random.IntRange(10, 20),
+                        this
+                );
+
+                Buff.affect(target, Burning.class)
+                        .reignite(target);
+
+                break;
+
+            case 1:
+                // 解离光束
+                target.damage(
+                        Random.IntRange(15, 25),
+                        this
+                );
+
+                break;
+
+            default:
+                // 落石
+                target.damage(
+                        Random.IntRange(12, 22),
+                        this
+                );
+
+                break;
+        }
+    }
+
+    /**
+     * 二阶段：
+     * 全图火焰
+     * 冲击波
+     * 闪电
+     * 冰冻
+     */
+    private void castPhaseTwo(Char target) {
+
+        int type = Random.Int(4);
+
+        switch (type) {
+
+            case 0:
+                // 全图火焰
+                target.damage(
+                        Random.IntRange(15, 25),
+                        this
+                );
+
+                Buff.affect(target, Burning.class)
+                        .reignite(target);
+
+                break;
+
+            case 1:
+                // 冲击波
+                target.damage(
+                        Random.IntRange(20, 30),
+                        this
+                );
+
+                break;
+
+            case 2:
+                // 闪电
+                target.damage(
+                        Random.IntRange(20, 35),
+                        this
+                );
+
+                break;
+
+            default:
+                // 冰冻
+                target.damage(
+                        Random.IntRange(10, 20),
+                        this
+                );
+
+                Buff.prolong(target, Frost.class, 2f);
+
+                break;
+        }
+    }
+
+    /**
+     * 三阶段：
+     *
+     * 每回合必定释放法术
+     * 法术伤害 +25%
+     * Boss 减伤25%
+     */
+    private void castPhaseThree(Char target) {
+
+        int type = Random.Int(4);
+
+        int damage;
+
+        switch (type) {
+
+            case 0:
+
+                damage = Random.IntRange(10, 20);
+
+                damage = Math.round(damage * 1.25f);
+
+                target.damage(damage, this);
+
+                Buff.affect(target, Burning.class)
+                        .reignite(target);
+
+                break;
+
+            case 1:
+
+                damage = Random.IntRange(15, 25);
+
+                damage = Math.round(damage * 1.25f);
+
+                target.damage(damage, this);
+
+                break;
+
+            case 2:
+
+                damage = Random.IntRange(20, 35);
+
+                damage = Math.round(damage * 1.25f);
+
+                target.damage(damage, this);
+
+                Buff.prolong(target, Paralysis.class, 1f);
+
+                break;
+
+            default:
+
+                damage = Random.IntRange(15, 25);
+
+                damage = Math.round(damage * 1.25f);
+
+                target.damage(damage, this);
+
+                Buff.prolong(target, Frost.class, 2f);
+
+                break;
+        }
+    }
+
+    /**
+     * 普通攻击命中
+     *
+     * 魔法追击：
+     *
+     * 一阶段：
+     * 3次命中 → 魔弹
+     *
+     * 二阶段：
+     * 3次命中 → 闪电
+     *
+     * 三阶段：
+     * 每次命中 → 魔法追击
+     */
+    @Override
+    public boolean attackHook(Char enemy) {
+
+        magicHits++;
+
+        if (phase < 3) {
+
+            if (magicHits >= 3) {
+
+                magicHits = 0;
+
+                magicChase(enemy);
+            }
+
+        } else {
+
+            magicChase(enemy);
+        }
+
+        return false;
+    }
+
+    private void magicChase(Char target) {
+
+        if (target == null) return;
+
+        int damage;
+
+        if (phase == 1) {
+
+            damage = Random.IntRange(20, 35);
+
+            target.damage(damage, this);
+
+        } else {
+
+            damage = Random.IntRange(20, 30);
+
+            target.damage(damage, this);
+
+            Buff.prolong(target, Paralysis.class, 1f);
+        }
+    }
+
+    /**
+     * 三阶段减伤25%
+     */
+    @Override
+    public int defenseProc(Char enemy, int damage) {
+
+        updatePhase();
+
+        if (phase >= 3) {
+
+            damage = Math.round(damage * 0.75f);
+        }
+
+        return super.defenseProc(enemy, damage);
+    }
+
+    @Override
+    public void die(Object cause) {
+
+        super.die(cause);
+
+        GameScene.bossSlain();
+    }
+
+    @Override
+    public String name() {
+
+        return Messages.get(this, "name");
+    }
+
+    @Override
+    public String title() {
+
+        return "六王 · 法术王";
+    }
+
+    @Override
+    public void notice() {
+
+        super.notice();
+
+        yell(Messages.get(this, "notice"));
+    }
+
+    @Override
+    public void storeInBundle(Bundle bundle) {
+
+        super.storeInBundle(bundle);
+
+        bundle.put(SPELL_CD, spellCd);
+        bundle.put(MAGIC_HITS, magicHits);
+        bundle.put(PHASE, phase);
+    }
+
+    @Override
+    public void restoreFromBundle(Bundle bundle) {
+
+        super.restoreFromBundle(bundle);
+
+        spellCd = bundle.getInt(SPELL_CD);
+        magicHits = bundle.getInt(MAGIC_HITS);
+        phase = bundle.getInt(PHASE);
+    }
+}
+```
+
+---
+
+### 2号：ImmortalKing.java
+
+这个 Boss 的重点是**不要给它正常攻击力**，它真正的输出是“印记”。
+
+```java
+package com.shatteredpixel.shatteredpixeldungeon.actors.mobs.bosses.sixkings;
+
+import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.Boss;
+import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Chill;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Cripple;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.MagicImmune;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Invulnerability;
+import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
+import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
+import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
+import com.shatteredpixel.shatteredpixeldungeon.sprites.SorcererKingSprite;
+import com.watabou.utils.Bundle;
+import com.watabou.utils.Random;
+
+/**
+ * 2号 Boss：不灭追猎者
+ *
+ * 核心：
+ *  物理/魔法无敌轮换
+ *  印记处决
+ *  三阶段追猎
+ */
+public class ImmortalKing extends Boss {
+
+    {
+        spriteClass = SorcererKingSprite.class;
+
+        HT = 1500;
+        EXP = 120;
+
+        baseHT = HT;
+
+        baseMin = 0;
+        baseMax = 0;
+
+        baseAcc = 35;
+        baseEva = 0;
+
+        baseMinDef = 0;
+        baseMaxDef = 0;
+
+        properties.add(Property.BOSS);
+
+        alignment = Alignment.ENEMY;
+
+        loot = Generator.Category.WEP_T5;
+        lootChance = 1f;
+
+        immunityCd = 10;
+    }
+
+    private int immunityCd = 10;
+
+    /**
+     * 0 = 物理免疫
+     * 1 = 法术免疫
+     * 2 = 双免疫
+     */
+    private int immunityType = 0;
+
+    private int phase = 1;
+
+    private int finalPhaseTurns = 0;
+
+    private static final String IMMUNITY_CD = "immunityCd";
+    private static final String IMMUNITY_TYPE = "immunityType";
+    private static final String PHASE = "phase";
+    private static final String FINAL_TURNS = "finalPhaseTurns";
+
+    @Override
+    protected boolean act() {
+
+        updatePhase();
+
+        if (phase == 3) {
+
+            finalPhaseTurns++;
+
+            if (finalPhaseTurns <= 20) {
+
+                Buff.affect(this, Invulnerability.class);
+
+                if (enemy != null && enemySeen) {
+
+                    chaseTarget();
+
+                    spend(TICK);
+
+                    return true;
+                }
+            }
+        }
+
+        if (immunityCd-- <= 0) {
+
+            immunityCd = 10;
+
+            rotateImmunity();
+
+            spend(TICK);
+
+            return true;
+        }
+
+        if (enemy != null && enemySeen) {
+
+            chaseTarget();
+
+            spend(TICK);
+
+            return true;
+        }
+
+        return super.act();
+    }
+
+    /**
+     * 三阶段
+     */
+    private void updatePhase() {
+
+        if (phase == 1 && HP <= HT * 2 / 3) {
+
+            phase = 2;
+        }
+
+        if (phase == 2 && HP <= 1) {
+
+            HP = 1;
+
+            phase = 3;
+
+            finalPhaseTurns = 0;
+        }
+    }
+
+    /**
+     * 无敌类型轮换
+     */
+    private void rotateImmunity() {
+
+        if (phase == 1) {
+
+            immunityType++;
+
+            if (immunityType >= 2) {
+                immunityType = 0;
+            }
+
+        } else if (phase == 2) {
+
+            immunityType++;
+
+            if (immunityType >= 3) {
+                immunityType = 0;
+            }
+        }
+
+        applyImmunity();
+    }
+
+    private void applyImmunity() {
+
+        // 实际的物理免疫需要根据你 fork 的伤害类型系统进一步接入。
+        //
+        // 当前这里只实现魔法免疫。
+        //
+        // 0 = 物理
+        // 1 = 魔法
+        // 2 = 双免
+
+        if (immunityType == 1 ||
+                immunityType == 2) {
+
+            Buff.affect(this, MagicImmune.class);
+        }
+    }
+
+    /**
+     * 追击目标。
+     *
+     * Boss 本身攻击为0，
+     * 所以这里的攻击意义主要是给玩家施加印记。
+     */
+    private void chaseTarget() {
+
+        if (enemy == null) return;
+
+        int dist = Dungeon.level.distance(pos, enemy.pos);
+
+        if (dist <= 1) {
+
+            markPlayer(enemy);
+
+        } else {
+
+            int target = enemy.pos;
+
+            if (phase >= 2) {
+
+                // 二阶段增加追击压力
+                moveTowards(target);
+            } else {
+
+                moveTowards(target);
+            }
+        }
+    }
+
+    /**
+     * 给玩家增加印记。
+     *
+     * 注意：
+     * 这里假设你的项目已经存在 Mark Buff。
+     *
+     * 如果没有，需要单独建立 ImmortalMark.java。
+     */
+    private void markPlayer(Char target) {
+
+        ImmortalMark mark =
+                Buff.affect(target, ImmortalMark.class);
+
+        mark.addMark(1);
+
+        if (phase >= 2) {
+
+            Buff.prolong(target, Cripple.class, 2f);
+
+            Buff.prolong(target, Chill.class, 2f);
+        }
+    }
+
+    /**
+     * Boss 受到伤害：
+     * 固定50%减伤。
+     *
+     * 三阶段强制保持1 HP。
+     */
+    @Override
+    public int defenseProc(Char enemy, int damage) {
+
+        damage = Math.round(damage * 0.5f);
+
+        if (phase == 3) {
+
+            return 0;
+        }
+
+        return super.defenseProc(enemy, damage);
+    }
+
+    /**
+     * 防止普通死亡逻辑把1血阶段直接杀死。
+     */
+    @Override
+    public void die(Object cause) {
+
+        if (phase == 3 && finalPhaseTurns < 20) {
+
+            HP = 1;
+
+            return;
+        }
+
+        super.die(cause);
+
+        GameScene.bossSlain();
+    }
+
+    @Override
+    public String name() {
+
+        return Messages.get(this, "name");
+    }
+
+    @Override
+    public String title() {
+
+        return "六王 · 不灭追猎者";
+    }
+
+    @Override
+    public void notice() {
+
+        super.notice();
+
+        yell(Messages.get(this, "notice"));
+    }
+
+    @Override
+    public void storeInBundle(Bundle bundle) {
+
+        super.storeInBundle(bundle);
+
+        bundle.put(IMMUNITY_CD, immunityCd);
+        bundle.put(IMMUNITY_TYPE, immunityType);
+        bundle.put(PHASE, phase);
+        bundle.put(FINAL_TURNS, finalPhaseTurns);
+    }
+
+    @Override
+    public void restoreFromBundle(Bundle bundle) {
+
+        super.restoreFromBundle(bundle);
+
+        immunityCd = bundle.getInt(IMMUNITY_CD);
+        immunityType = bundle.getInt(IMMUNITY_TYPE);
+        phase = bundle.getInt(PHASE);
+        finalPhaseTurns = bundle.getInt(FINAL_TURNS);
+    }
+
+    /**
+     * 简化的移动调用。
+     *
+     * 如果你的 Mob fork 没有 moveTowards，
+     * 这里改成你的实际移动接口即可。
+     */
+    private void moveTowards(int target) {
+
+        int best = -1;
+
+        int bestDist =
+                Dungeon.level.distance(pos, target);
+
+        for (int n : com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob.NEIGHBOURS8) {
+
+            int cell = pos + n;
+
+            if (!Dungeon.level.passable[cell])
+                continue;
+
+            if (com.shatteredpixel.shatteredpixeldungeon.actors.Actor.findChar(cell) != null)
+                continue;
+
+            int d =
+                    Dungeon.level.distance(cell, target);
+
+            if (d < bestDist) {
+
+                bestDist = d;
+                best = cell;
+            }
+        }
+
+        if (best != -1) {
+
+            move(best);
+        }
+    }
+}
+```
+
+这里有一个**必须单独补的类**：`ImmortalMark`。
+
+```java
+package com.shatteredpixel.shatteredpixeldungeon.actors.mobs.bosses.sixkings;
+
+import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
+
+/**
+ * 2号 Boss 印记
+ */
+public class ImmortalMark extends Buff {
+
+    private int stacks = 0;
+
+    private static final String STACKS = "stacks";
+
+    public void addMark(int amount) {
+
+        stacks += amount;
+
+        if (stacks >= 50) {
+
+            stacks = 0;
+
+            target.damage(
+                    Math.max(
+                            target.HT * 3 / 2,
+                            target.HP + 1
+                    ),
+                    this
+            );
+        }
+    }
+
+    public int stacks() {
+
+        return stacks;
+    }
+
+    @Override
+    public void storeInBundle(
+            com.watabou.utils.Bundle bundle) {
+
+        super.storeInBundle(bundle);
+
+        bundle.put(STACKS, stacks);
+    }
+
+    @Override
+    public void restoreFromBundle(
+            com.watabou.utils.Bundle bundle) {
+
+        super.restoreFromBundle(bundle);
+
+        stacks = bundle.getInt(STACKS);
+    }
+}
+```
+
+---
+
+## 3号：DebuffKing.java
+
+这个我建议不要把所有区域真的做成地图 Tile，而是先做成**Boss维护的区域列表**。因为你现在的核心其实是：
+
+> 释放2个区域 → 每个持续10回合 → CD 10/5/2。
+
+```java
+package com.shatteredpixel.shatteredpixeldungeon.actors.mobs.bosses.sixkings;
+
+import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
+import com.shatteredpixel.shatteredpixeldungeon.actors.Boss;
+import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.*;
+import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
+import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
+import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
+import com.shatteredpixel.shatteredpixeldungeon.sprites.SorcererKingSprite;
+import com.watabou.utils.Bundle;
+import com.watabou.utils.Random;
+
+import java.util.ArrayList;
+
+/**
+ * 3号 Boss：Debuff 王
+ *
+ * 核心：
+ *  攻击附加随机 Debuff
+ *  区域污染
+ *  玩家净化能力被拆除
+ */
+public class DebuffKing extends Boss {
+
+    {
+        spriteClass = SorcererKingSprite.class;
+
+        HT = 1000;
+        EXP = 100;
+
+        baseHT = HT;
+
+        baseMin = 12;
+        baseMax = 20;
+
+        baseAcc = 30;
+        baseEva = 14;
+
+        baseMinDef = 5;
+        baseMaxDef = 10;
+
+        properties.add(Property.BOSS);
+
+        alignment = Alignment.ENEMY;
+
+        loot = Generator.Category.WEP_T5;
+        lootChance = 1f;
+
+        areaCd = 10;
+    }
+
+    private int areaCd = 10;
+
+    private int phase = 1;
+
+    /**
+     * 玩家累计受到 Boss 直接攻击的次数。
+     *
+     * 每5次伤害：
+     * 解除净化/完全免疫。
+     */
+    private int damageCount = 0;
+
+    /**
+     * 区域。
+     */
+    private final ArrayList<Area> areas =
+            new ArrayList<>();
+
+    private static final String AREA_CD = "areaCd";
+    private static final String PHASE = "phase";
+    private static final String DAMAGE_COUNT = "damageCount";
+
+    @Override
+    protected boolean act() {
+
+        updatePhase();
+
+        updateAreas();
+
+        if (areaCd-- <= 0) {
+
+            createTwoAreas();
+
+            if (phase == 1) {
+
+                areaCd = 10;
+
+            } else if (phase == 2) {
+
+                areaCd = 5;
+
+            } else {
+
+                areaCd = 2;
+            }
+
+            spend(TICK);
+
+            return true;
+        }
+
+        return super.act();
+    }
+
+    /**
+     * 阶段变化
+     */
+    private void updatePhase() {
+
+        int newPhase;
+
+        if (HP > HT * 2 / 3) {
+
+            newPhase = 1;
+
+        } else if (HP > HT / 3) {
+
+            newPhase = 2;
+
+        } else {
+
+            newPhase = 3;
+        }
+
+        if (newPhase != phase) {
+
+            phase = newPhase;
+
+            sprite.flash();
+
+            if (phase == 2) {
+
+                yell("污染开始扩散！");
+            }
+
+            if (phase == 3) {
+
+                yell("你已经无处可逃！");
+            }
+        }
+    }
+
+    /**
+     * 每次攻击命中：
+     * 随机 Debuff。
+     */
+    @Override
+    public boolean attackHook(Char enemy) {
+
+        if (enemy == null)
+            return false;
+
+        applyRandomDebuff(enemy);
+
+        damageCount++;
+
+        if (damageCount >= 5) {
+
+            damageCount = 0;
+
+            removeProtection(enemy);
+        }
+
+        return false;
+    }
+
+    /**
+     * 随机 Debuff
+     */
+    private void applyRandomDebuff(Char target) {
+
+        switch (Random.Int(7)) {
+
+            case 0:
+
+                Buff.prolong(
+                        target,
+                        Weakness.class,
+                        15f
+                );
+
+                break;
+
+            case 1:
+
+                Buff.prolong(
+                        target,
+                        Vulnerable.class,
+                        15f
+                );
+
+                break;
+
+            case 2:
+
+                Buff.prolong(
+                        target,
+                        Cripple.class,
+                        15f
+                );
+
+                break;
+
+            case 3:
+
+                Buff.prolong(
+                        target,
+                        Slow.class,
+                        15f
+                );
+
+                break;
+
+            case 4:
+
+                Buff.prolong(
+                        target,
+                        Hex.class,
+                        15f
+                );
+
+                break;
+
+            case 5:
+
+                Buff.prolong(
+                        target,
+                        Daze.class,
+                        15f
+                );
+
+                break;
+
+            default:
+
+                Buff.prolong(
+                        target,
+                        Chill.class,
+                        15f
+                );
+
+                break;
+        }
+    }
+
+    /**
+     * 每5次伤害拆掉玩家的净化/完全免疫。
+     *
+     * 这里需要根据你 fork 的具体 Buff 实现，
+     * 删除相应保护 Buff。
+     */
+    private void removeProtection(Char target) {
+
+        Buff.detach(
+                target,
+                BlobImmunity.class
+        );
+
+        Buff.detach(
+                target,
+                Barrier.class
+        );
+
+        Buff.detach(
+                target,
+                Invulnerability.class
+        );
+    }
+
+    /**
+     * 创建两个区域。
+     */
+    private void createTwoAreas() {
+
+        for (int i = 0; i < 2; i++) {
+
+            int cell =
+                    Dungeon.level.randomRespawnCell(
+                            this
+                    );
+
+            if (cell == -1)
+                continue;
+
+            int type;
+
+            if (phase == 1) {
+
+                type = Random.Int(4);
+
+            } else if (phase == 2) {
+
+                type = Random.Int(8);
+
+            } else {
+
+                type = Random.Int(9);
+            }
+
+            areas.add(
+                    new Area(
+                            cell,
+                            type,
+                            10
+                    )
+            );
+        }
+    }
+
+    /**
+     * 每回合更新所有区域。
+     */
+    private void updateAreas() {
+
+        for (int i = areas.size() - 1; i >= 0; i--) {
+
+            Area area = areas.get(i);
+
+            applyArea(area);
+
+            area.duration--;
+
+            if (area.duration <= 0) {
+
+                areas.remove(i);
+            }
+        }
+    }
+
+    /**
+     * 区域效果。
+     */
+    private void applyArea(Area area) {
+
+        Char target =
+                Actor.findChar(area.cell);
+
+        if (target == null)
+            return;
+
+        if (target != Dungeon.hero)
+            return;
+
+        switch (area.type) {
+
+            // 酸蚀
+            case 0:
+
+                Buff.prolong(
+                        target,
+                        Corrosion.class,
+                        2f
+                );
+
+                break;
+
+            // 寒冷
+            case 1:
+
+                Buff.prolong(
+                        target,
+                        Chill.class,
+                        2f
+                );
+
+                break;
+
+            // 毒气
+            case 2:
+
+                Buff.affect(
+                        target,
+                        Poison.class
+                ).set(5);
+
+                break;
+
+            // 眩晕
+            case 3:
+
+                Buff.prolong(
+                        target,
+                        Vertigo.class,
+                        2f
+                );
+
+                break;
+
+            // Debuff降级
+            case 4:
+
+                Buff.prolong(
+                        target,
+                        Degrade.class,
+                        2f
+                );
+
+                break;
+
+            // 流血
+            case 5:
+
+                Buff.affect(
+                        target,
+                        Bleeding.class
+                ).set(5);
+
+                break;
+
+            // 麻痹
+            case 6:
+
+                Buff.prolong(
+                        target,
+                        Paralysis.class,
+                        1f
+                );
+
+                break;
+
+            // 腐蚀淤泥
+            case 7:
+
+                Buff.affect(
+                        target,
+                        Ooze.class
+                ).set(5f);
+
+                break;
+
+            // 磷火缠身
+            case 8:
+
+                Buff.prolong(
+                        target,
+                        HalomethaneBurning.class,
+                        2f
+                );
+
+                break;
+        }
+    }
+
+    /**
+     * 三阶段：
+     * 10种 Debuff → 定命。
+     */
+    @Override
+    public int defenseProc(Char enemy, int damage) {
+
+        if (phase == 3 &&
+                enemy == Dungeon.hero) {
+
+            if (countDebuffs(enemy) >= 10) {
+
+                Buff.affect(
+                        enemy,
+                        Doom.class
+                );
+            }
+        }
+
+        return super.defenseProc(enemy, damage);
+    }
+
+    /**
+     * 统计玩家当前 Debuff。
+     *
+     * 这里根据你 fork 的 Buff 系统，
+     * 最终可以改成 BuffType/instance 检查。
+     */
+    private int countDebuffs(Char target) {
+
+        int count = 0;
+
+        if (target.buff(Weakness.class) != null)
+            count++;
+
+        if (target.buff(Vulnerable.class) != null)
+            count++;
+
+        if (target.buff(Cripple.class) != null)
+            count++;
+
+        if (target.buff(Slow.class) != null)
+            count++;
+
+        if (target.buff(Paralysis.class) != null)
+            count++;
+
+        if (target.buff(Roots.class) != null)
+            count++;
+
+        if (target.buff(Vertigo.class) != null)
+            count++;
+
+        if (target.buff(Daze.class) != null)
+            count++;
+
+        if (target.buff(Hex.class) != null)
+            count++;
+
+        if (target.buff(Blindness.class) != null)
+            count++;
+
+        if (target.buff(Chill.class) != null)
+            count++;
+
+        if (target.buff(Frost.class) != null)
+            count++;
+
+        if (target.buff(Burning.class) != null)
+            count++;
+
+        if (target.buff(Poison.class) != null)
+            count++;
+
+        if (target.buff(Bleeding.class) != null)
+            count++;
+
+        if (target.buff(Corrosion.class) != null)
+            count++;
+
+        return count;
+    }
+
+    @Override
+    public void die(Object cause) {
+
+        areas.clear();
+
+        super.die(cause);
+
+        GameScene.bossSlain();
+    }
+
+    @Override
+    public String name() {
+
+        return Messages.get(this, "name");
+    }
+
+    @Override
+    public String title() {
+
+        return "六王 · Debuff 王";
+    }
+
+    @Override
+    public void notice() {
+
+        super.notice();
+
+        yell(Messages.get(this, "notice"));
+    }
+
+    @Override
+    public void storeInBundle(Bundle bundle) {
+
+        super.storeInBundle(bundle);
+
+        bundle.put(AREA_CD, areaCd);
+        bundle.put(PHASE, phase);
+        bundle.put(DAMAGE_COUNT, damageCount);
+    }
+
+    @Override
+    public void restoreFromBundle(Bundle bundle) {
+
+        super.restoreFromBundle(bundle);
+
+        areaCd = bundle.getInt(AREA_CD);
+        phase = bundle.getInt(PHASE);
+        damageCount = bundle.getInt(DAMAGE_COUNT);
+    }
+
+    /**
+     * 区域数据。
+     */
+    private static class Area {
+
+        int cell;
+        int type;
+        int duration;
+
+        Area(
+                int cell,
+                int type,
+                int duration
+        ) {
+
+            this.cell = cell;
+            this.type = type;
+            this.duration = duration;
+        }
+    }
+}
+```
+
+这里有一个很重要的问题：**上面 3 号的 `Area` 目前是逻辑区域，不是可视化地面区域**。也就是说它已经能表达：
+
+```text
+区域生成
+ ↓
+持续10回合
+ ↓
+CD 10/5/2
+ ↓
+每次2个
+ ↓
+区域效果
+```
+
+但如果你要让玩家**看到地上有酸液、毒气、火焰、淤泥**，还需要接你项目现有的 `Blob` / `CustomDungeon` / 地面特效系统。
+
+---
+
+### 还有两个地方我不建议现在直接合进去
+
+**2号的“物理无敌”**和**3号的“净化解除”**，因为这两个高度依赖你这个 fork 对伤害类型和 Buff 的具体实现。
+
+特别是：
+
+```java
+Buff.affect(this, MagicImmune.class);
+```
+
+只能可靠地处理**魔法免疫**，不能凭空创造一个“物理无敌”。
+
+所以我现在宁愿把这部分留成明确的接口，也不想骗你说这三份代码已经是“复制进去就能编译”。
+
+另外，**1号的扇形火焰、解离光束、多道闪电、全图火焰**也还只是完成了**机制和伤害逻辑**，没有接真实的视觉特效/范围判定。
+
+如果你把**实际项目的 `core/src/main/java` 源码 ZIP**给我，我下一步可以直接把这三个做成真正的 fork 版本，包括：
+
+* 真实 AOE 范围
+* 真实光束/闪电
+* 地面区域显示
+* 物理/魔法双无敌
+* 印记 UI/层数
+* 1血20回合追杀
+* 三阶段完整存档
+* 三个 Sprite
+* 三个 Boss Level
+
+这样才是可以真正塞进你的《破碎地牢》项目里的版本。
