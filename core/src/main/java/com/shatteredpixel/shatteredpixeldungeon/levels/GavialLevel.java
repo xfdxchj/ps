@@ -112,4 +112,31 @@ extends RegularLevel {
 		com.watabou.noosa.audio.Music.INSTANCE.play(
 				com.shatteredpixel.shatteredpixeldungeon.Assets.Music.GAME_SARGON1, true );
 	}
+
+	/**
+	 * END(修复·地形错乱·关键): 方舟关卡原本用 RegularLevel 的默认房间表，
+	 * 其中包含 RegionDecoPatchEntranceRoom 等本 fork 独有的房间，
+	 * 它们会往地图上写 Terrain.REGION_DECO / MINE_CRYSTAL 等
+	 * 【方舟贴图里几乎空白】的地形 → 显示错乱（"墙壁什么样子的都有"）。
+	 *
+	 * 这里覆写 initRooms()，把那些房间剔除，只保留普通房间。
+	 */
+	@Override
+	protected java.util.ArrayList<com.shatteredpixel.shatteredpixeldungeon.levels.rooms.Room> initRooms() {
+		java.util.ArrayList<com.shatteredpixel.shatteredpixeldungeon.levels.rooms.Room> rooms = super.initRooms();
+
+		// 剔掉会写"方舟贴图里不存在的地形"的房间
+		for (int i = rooms.size() - 1; i >= 0; i--) {
+			com.shatteredpixel.shatteredpixeldungeon.levels.rooms.Room r = rooms.get(i);
+			String cn = r.getClass().getName();
+
+			if (cn.contains("RegionDecoPatch")
+					|| cn.contains("LibraryHall")
+					|| cn.contains("RegionDeco")) {
+				rooms.remove(i);
+			}
+		}
+
+		return rooms;
+	}
 }

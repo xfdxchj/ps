@@ -226,4 +226,5 @@ extends Level {
 		com.watabou.noosa.audio.Music.INSTANCE.play(
 				com.shatteredpixel.shatteredpixeldungeon.Assets.Music.BOSS_IBERIA1, true );
 	}
+
 }
