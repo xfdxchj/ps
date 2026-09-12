@@ -55,7 +55,7 @@ public final class ChallengeArea {
 	public static final ChallengeArea GAVIAL      = new ChallengeArea(5, "嘉维尔·雨林", 10, true);
 	public static final ChallengeArea SIESTA      = new ChallengeArea(6, "汐斯塔·海滨", 10, true);
 	//六王（3 层测试版：法术王 / 不灭追猎者 / Debuff 王；后续扩到 6 王 + NPC 共 7 层）
-	public static final ChallengeArea SIX_KINGS   = new ChallengeArea(7, "六大天王", 3, true);
+	public static final ChallengeArea SIX_KINGS   = new ChallengeArea(7, "六大天王", 5, true);
 
 	public static final ChallengeArea[] ALL = {
 			HOLLOW, GALAXY, IBERIA, GAVIAL, SIESTA, SIX_KINGS
@@ -203,7 +203,9 @@ public final class ChallengeArea {
 			switch (floorIn) {
 				case 0:  return new com.shatteredpixel.shatteredpixeldungeon.levels.boss.SixKingsLevel1();
 				case 1:  return new com.shatteredpixel.shatteredpixeldungeon.levels.boss.SixKingsLevel2();
-				default: return new com.shatteredpixel.shatteredpixeldungeon.levels.boss.SixKingsLevel3();
+				case 2:  return new com.shatteredpixel.shatteredpixeldungeon.levels.boss.SixKingsLevel3();
+				case 3:  return new com.shatteredpixel.shatteredpixeldungeon.levels.boss.SixKingsLevel4();
+				default: return new com.shatteredpixel.shatteredpixeldungeon.levels.boss.SixKingsLevel5();
 			}
 		}
 		//未知区：占位
