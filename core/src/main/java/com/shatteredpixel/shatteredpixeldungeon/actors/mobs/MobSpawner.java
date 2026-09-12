@@ -60,6 +60,14 @@ public class MobSpawner extends Actor {
 	}
 
 	public static ArrayList<Class<? extends Mob>> getMobRotation(int depth ){
+		//END(port from Arknights): 挑战区层段由 MobRotation 接管（按 extrastage_* 分区刷怪）。
+		//原版 MobSpawner 的表格是按 1-25F 设计的，26F 之后落到 default 会刷出下水道老鼠。
+		if (MobRotation.handles(depth)) {
+			ArrayList<Class<? extends Mob>> ak = MobRotation.getMobRotation( depth );
+			Random.shuffle(ak);
+			return ak;
+		}
+
 		ArrayList<Class<? extends Mob>> mobs = standardMobRotation( depth );
 		addRareMobs(depth, mobs);
 		swapMobAlts(mobs);
