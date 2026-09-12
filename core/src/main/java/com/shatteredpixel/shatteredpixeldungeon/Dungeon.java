@@ -214,6 +214,11 @@ public class Dungeon {
 	// 1 is for quest sub-floors
 	public static int branch;
 
+	//END(方舟兼容桩): 方舟原版用这两个布尔在 31-40F 三选一（海嗣/雨林/海滨，都不选=海滨）。
+	// 本 fork 由 ChallengeArea.applySelection() 依据挑战区勾选结果推导，方舟内容类直接读这两个标志。
+	public static boolean extrastage_Gavial = false;
+	public static boolean extrastage_Sea    = false;
+
 	//keeps track of what levels the game should try to load instead of creating fresh
 	public static ArrayList<Integer> generatedLevels = new ArrayList<>();
 

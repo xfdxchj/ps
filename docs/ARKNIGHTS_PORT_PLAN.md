@@ -230,25 +230,25 @@ levels.NewCityBossLevel / NewHallsBossLevel   levels.rooms.special.VaultRoom
 - [Dungeon.java:525-547](file:///e:/破碎的地牢/_EndShatteredBuild/core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/Dungeon.java#L525-L547) 26F 起走 `ChallengeArea.areaAtDepth()` / `createAreaLevel()`
 - [WndChallengeAreas.java](file:///e:/破碎的地牢/_EndShatteredBuild/core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/windows/WndChallengeAreas.java) 已渲染 5 个区域（2 实装 + 3 未实装）
 
-### 需要做的
+### 需要做的（✅ 阶段 A 已完成）
 
-1. **实现 `createAreaLevel()` 的方舟分支**：按 `areaId` 分派，`floorIn` → 关卡。
-2. **`implemented` 改 true**（3 行）。
-3. **设定 `floors`** —— 需要决策，见下。
-4. **加 `extrastage_*` 兼容桩**：fork `Dungeon` 新增两个静态布尔，开局由 `ChallengeArea` 选中结果推导：
+1. ✅ **实现 `createAreaLevel()` 的方舟分支**：按 `areaId` 分派、`floorIn` → 关卡；关卡类尚未搬运，当前返回 `DeadEndLevel` 占位并标注 `//TODO(方舟B1)`。
+2. ✅ **`implemented` 改 true**（3 行）。
+3. ✅ **`floors` 设为 10**（见下）。
+4. ✅ **加 `extrastage_*` 兼容桩**：`Dungeon` 新增两个静态布尔，由 `ChallengeArea.applySelection()` 推导：
    ```java
-   // 建议放在 Dungeon，与方舟内容解耦
    public static boolean extrastage_Gavial = false;
    public static boolean extrastage_Sea    = false;
    ```
-   现有 8 个**读取**这两个标志的位置：`Dungeon`、`actors.hero.Hero`、`actors.mobs.MobRotation`、`scenes.GameScene`、`scenes.ChangesScene`、`tiles.TerrainFeaturesTilemap`、`actors.buffs.NervousImpairment`、`windows.WndPilot`；写入方是 `actors.mobs.npcs.NPC_Irene`（对话切换）。
-   **建议先做桩**（读方舟内容时用），比逐个改写调用点安全得多。
+   现有 8 个**读取**这两个标志的位置：`Dungeon`、`actors.hero.Hero`、`actors.mobs.MobRotation`、`scenes.GameScene`、`scenes.ChangesScene`、`tiles.TerrainFeaturesTilemap`、`actors.buffs.NervousImpairment`、`windows.WndPilot`；写入方是 `actors.mobs.npcs.NPC_Irene`（对话切换）。搬方舟内容时直接读这两个桩即可，不要逐个改写调用点。
 
-### 需要你拍板的一个设计决策：每区占几层？
+> ⚠️ 已知局限（阶段 A 未处理）：`Dungeon.extrastage_*` 与 `Statistics.challengeMask` 一样**不写进存档**，
+> 因此「继续游戏」后标志会回到默认（= Siesta）。单局内不影响。B1 若要修，最小改动是在 `Statistics`
+> 的 save/restore 里补 `challengeMask`（`Hollow_Holiday` 已有同样写法可照抄）。
 
-> ✅ **已拍板：方案 A（保真 10 层）**
->
-> `floors = 10`，`floorIn` 与关卡的映射：
+### 每区层数：已拍板方案 A（保真 10 层）
+
+> ✅ **已拍板：方案 A（保真 10 层）**，三个区注册值已从占位的 `4` 改为 `10`。
 >
 > | floorIn | 关卡 | 说明 |
 > |---|---|---|
@@ -256,16 +256,8 @@ levels.NewCityBossLevel / NewHallsBossLevel   levels.rooms.special.VaultRoom
 > | **4** | **Boss1（`XxxBossLevel_part1`，Iberia/Gavial 为 `BossLevel1`）** | 关底 |
 > | 5-8 | 第 2 章（`XxxLevel_part2`） | 4 层常规 |
 > | **9** | **Boss2（`XxxBossLevel_part2`，Iberia/Gavial 为 `BossLevel2`）** | 最终关底 |
->
-> 三个区注册值需要从占位的 `4` 改为 `10`。
 
-| 方案 | 配置 | 优点 | 缺点 |
-|---|---|---|---|
-| **A. 保真（10 层）← 采用** | `floors=10`，floorIn 0-3→第1章，4→Boss1，5-8→第2章，9→Boss2 | 完全复刻方舟节奏 | 挑战区总长 = 8(Hollow)+1(Galaxy)+10×N，跑一局很久 |
-| **B. 压缩（4 层）** | `floors=4`，0→第1章，1→Boss1，2→第2章，3→Boss2 | 与现有注册值一致，节奏紧凑 | 常规层只剩 1 层，探索感弱 |
-| **C. 折中（6 层）** | `floors=6`，0-1→第1章，2→Boss1，3-4→第2章，5→Boss2 | 保留 2 层探索 | 需改注册值 |
-
-> 当前 `ChallengeArea` 里写的是 `4`，是占位猜测，不代表决定。
+> 层号实际占用：单选某区 → 26F 起连续 10 层；全选 5 区 → 挑战区共 8+1+10×3 = 39 层（26F..64F）。
 
 ---
 

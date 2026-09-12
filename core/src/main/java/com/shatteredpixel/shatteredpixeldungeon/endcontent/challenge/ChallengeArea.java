@@ -1,5 +1,6 @@
 package com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge;
 
+import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
 import com.shatteredpixel.shatteredpixeldungeon.levels.DeadEndLevel;
 import com.shatteredpixel.shatteredpixeldungeon.levels.HollowExitLevel;
@@ -48,10 +49,11 @@ public final class ChallengeArea {
 	//魔绫 2 区（已实装）
 	public static final ChallengeArea HOLLOW      = new ChallengeArea(1, "空洞遗迹", 8, true);
 	public static final ChallengeArea GALAXY      = new ChallengeArea(3, "银河深渊·火龙", 1, true);
-	//方舟 3 区（待实装；方舟内容与原版体系自包含，与魔绫无耦合）
-	public static final ChallengeArea IBERIA      = new ChallengeArea(4, "伊比利亚·海嗣", 4, false);
-	public static final ChallengeArea GAVIAL      = new ChallengeArea(5, "嘉维尔·雨林", 4, false);
-	public static final ChallengeArea SIESTA      = new ChallengeArea(6, "汐斯塔·海滨", 4, false);
+	//方舟 3 区（阶段A：已接入，每区 10 层；关卡内容待 B1 搬运）
+	//方舟原版节奏：0-3=第1章 4=Boss1 5-8=第2章 9=Boss2
+	public static final ChallengeArea IBERIA      = new ChallengeArea(4, "伊比利亚·海嗣", 10, true);
+	public static final ChallengeArea GAVIAL      = new ChallengeArea(5, "嘉维尔·雨林", 10, true);
+	public static final ChallengeArea SIESTA      = new ChallengeArea(6, "汐斯塔·海滨", 10, true);
 
 	public static final ChallengeArea[] ALL = {
 			HOLLOW, GALAXY, IBERIA, GAVIAL, SIESTA
@@ -75,6 +77,11 @@ public final class ChallengeArea {
 		Statistics.Hollow_Holiday = isSelected(mask, HOLLOW);
 		Statistics.Galaxy_Rules   = isSelected(mask, GALAXY);
 		Statistics.challengeMask  = mask;
+
+		//END(方舟兼容桩): 方舟原版用 extrastage_Sea / extrastage_Gavial 两个布尔选择 31-40F 的剧情线。
+		//这里由挑战区勾选结果推导；两区都不选 = Siesta（方舟原逻辑）。
+		Dungeon.extrastage_Sea    = isSelected(mask, IBERIA);
+		Dungeon.extrastage_Gavial = isSelected(mask, GAVIAL);
 	}
 
 	/**
@@ -123,7 +130,36 @@ public final class ChallengeArea {
 			return new com.shatteredpixel.shatteredpixeldungeon.levels.LaveCavesBossLevel();
 		}
 
-		//未实装区域（方舟 3 区）：占位（正常流程走不到，areaAtDepth 只返回 implemented 的区）
+		//==== 方舟 3 区（阶段A：仅接入；关卡类尚未搬运 → 占位 DeadEndLevel，保证流程可走通不崩溃）====
+
+		if (areaId == IBERIA.id) {
+			//伊比利亚·海嗣：0-3=第1章(SeaLevel_part1) 4=SeaBossLevel1 5-8=第2章(SeaLevel_part2) 9=SeaBossLevel2
+			switch (floorIn) {
+				case 4:  return new DeadEndLevel();   //TODO(方舟B1): return new SeaBossLevel1();
+				case 9:  return new DeadEndLevel();   //TODO(方舟B1): return new SeaBossLevel2();
+				default: return new DeadEndLevel();   //TODO(方舟B1): 0-3→SeaLevel_part1，5-8→SeaLevel_part2
+			}
+		}
+
+		if (areaId == GAVIAL.id) {
+			//嘉维尔·雨林：0-3=第1章(GavialLevel) 4=GavialBossLevel1 5-8=第2章(GavialLevel2) 9=GavialBossLevel2
+			switch (floorIn) {
+				case 4:  return new DeadEndLevel();   //TODO(方舟B1): return new GavialBossLevel1();
+				case 9:  return new DeadEndLevel();   //TODO(方舟B1): return new GavialBossLevel2();
+				default: return new DeadEndLevel();   //TODO(方舟B1): 0-3→GavialLevel，5-8→GavialLevel2
+			}
+		}
+
+		if (areaId == SIESTA.id) {
+			//汐斯塔·海滨：0-3=第1章(SiestaLevel_part1) 4=SiestaBossLevel_part1 5-8=第2章(SiestaLevel_part2) 9=SiestaBossLevel_part2
+			switch (floorIn) {
+				case 4:  return new DeadEndLevel();   //TODO(方舟B1): return new SiestaBossLevel_part1();
+				case 9:  return new DeadEndLevel();   //TODO(方舟B1): return new SiestaBossLevel_part2();
+				default: return new DeadEndLevel();   //TODO(方舟B1): 0-3→SiestaLevel_part1，5-8→SiestaLevel_part2
+			}
+		}
+
+		//未知区：占位
 		return new DeadEndLevel();
 	}
 }
