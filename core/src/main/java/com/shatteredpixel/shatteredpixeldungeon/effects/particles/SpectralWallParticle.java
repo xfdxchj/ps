@@ -33,7 +33,7 @@ public class SpectralWallParticle extends PixelParticle {
 		@Override
 		public void emit( Emitter emitter, int index, float x, float y ) {
 			//scale frequency roughly to the size of the bricks used
-			int type = 1 + Dungeon.depth/5;
+			int type = 1 + Dungeon.effectiveDepth()/5;
 			if (type > 5) type = 5;
 
 			switch (type){
@@ -73,7 +73,7 @@ public class SpectralWallParticle extends PixelParticle {
 	public void reset( float x, float y ) {
 		revive();
 
-		type = 1 + Dungeon.depth/5;
+		type = 1 + Dungeon.effectiveDepth()/5;
 		if (type > 5) type = 5;
 
 

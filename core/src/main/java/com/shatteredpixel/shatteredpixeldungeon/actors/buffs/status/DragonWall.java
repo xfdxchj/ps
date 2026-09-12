@@ -152,7 +152,7 @@ public class DragonWall extends Buff {
 
     @Override
     public String desc() {
-        return Messages.get(this, "desc",(Dungeon.depth/5+1) * 2);
+        return Messages.get(this, "desc",(Dungeon.effectiveDepth()/5+1) * 2);
     }
 
     @Override

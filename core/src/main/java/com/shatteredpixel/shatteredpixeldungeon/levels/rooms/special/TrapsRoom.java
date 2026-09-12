@@ -67,7 +67,7 @@ public class TrapsRoom extends SpecialRoom {
 				break;
 			default:
 				//END(修复·挑战区层号): levelTraps 只定义了 5 段(0-4)，挑战区 depth 可达 45 → 越界
-				trapClass = Random.oneOf(levelTraps[Math.min(Dungeon.depth/5, levelTraps.length-1)]);
+				trapClass = Random.oneOf(levelTraps[Math.min(Dungeon.effectiveDepth()/5, levelTraps.length-1)]);
 				break;
 		}
 
@@ -136,12 +136,12 @@ public class TrapsRoom extends SpecialRoom {
 		
 		//1 floor set higher in probability, never cursed
 		if (Random.Int(2) == 0) {
-			prize = Generator.randomWeapon((Dungeon.depth / 5) + 1);
+			prize = Generator.randomWeapon((Dungeon.effectiveDepth() / 5) + 1);
 			if (((Weapon)prize).hasCurseEnchant()){
 				((Weapon) prize).enchant(null);
 			}
 		} else {
-			prize = Generator.randomArmor((Dungeon.depth / 5) + 1);
+			prize = Generator.randomArmor((Dungeon.effectiveDepth() / 5) + 1);
 			if (((Armor)prize).hasCurseGlyph()){
 				((Armor) prize).inscribe(null);
 			}

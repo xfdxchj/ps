@@ -48,9 +48,9 @@ extends RegularLevel {
 
     @Override
     protected void createItems() {
-        if (Dungeon.depth == 32 || Dungeon.depth == 34 || Dungeon.depth == 37 || Dungeon.depth == 39) {
+        if ((akFloorIn() >= 5)) {
             this.addItemToSpawn(new PotionOfStrength());
-        } else if (Dungeon.depth == 31 || Dungeon.depth == 33 || Dungeon.depth == 36 || Dungeon.depth == 38) {
+        } else if ((akFloorIn() < 5)) {
             this.addItemToSpawn(new ScrollOfUpgrade());
         }
         super.createItems();
@@ -96,4 +96,13 @@ extends RegularLevel {
         super.addVisuals();
         return this.visuals;
     }
+
+	//END(修复·挑战区): 方舟原版用绝对层号(31-40F)决定该层给什么奖励，
+	//但本 MOD 的挑战区布局是 26F 起的连续 10 层 → 原条件永不成立，Boss 层拿不到奖励。
+	//这里改用【区内偏移 floorIn】（0-3 第1章 / 4 Boss1 / 5-8 第2章 / 9 Boss2）。
+	private int akFloorIn() {
+		int[] info = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeArea
+				.areaAtDepth(com.shatteredpixel.shatteredpixeldungeon.Dungeon.depth);
+		return (info != null) ? info[1] : 0;
+	}
 }

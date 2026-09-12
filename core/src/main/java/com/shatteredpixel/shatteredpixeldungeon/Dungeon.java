@@ -1291,4 +1291,31 @@ public class Dungeon {
 
 	}
 
+
+	//END(修复·挑战区): 挑战区落在主线 26F 之后的连续层（26..45+）。
+	//但物品档位、商店定价、稀有度等系统都按 `depth/5` 分段的"主线层段"设计，
+	//直接用 26+ 会落到 gate 边界（最深一段）或越界，刷出与玩家装备水平不匹配的东西。
+	//
+	//这里给出**等效主线层号**：
+	//   主线 1..25      -> 原样返回
+	//   挑战区 26..30   -> 21..25（第 5 段，最深主线区间的装备/难度）
+	//   挑战区 31..35   -> 21..25（循环，保持在同一档）
+	//   ...
+	//即：挑战区的物品分布默认按 **20~24F** 这一档来算。
+	public static int effectiveDepth() {
+		return effectiveDepth(depth);
+	}
+
+	public static int effectiveDepth(int d) {
+		final int MAIN_MAX = 25;          //主线终点
+		final int CHALLENGE_START = 26;   //挑战区起点
+		final int BAND_START = 21;        //挑战区等效起点（20~24F 这一档）
+		final int BAND_SIZE = 5;          //每档 5 层
+
+		if (d < CHALLENGE_START) {
+			return d;                     //主线：不变
+		}
+		int offset = d - CHALLENGE_START; //挑战区内的偏移
+		return BAND_START + (offset % BAND_SIZE);
+	}
 }
