@@ -638,24 +638,37 @@ public class CerDogBossLevel extends Level {
     //本 fork 无这些类 → 改用本 fork 的通关道具 Amulet，并去掉成就调用。
     Amulet unsignedInvitationLetter = Dungeon.hero.belongings.getItem(Amulet.class);
 
-    if(transition.type == LevelTransition.Type.REGULAR_ENTRANCE && unsignedInvitationLetter!=null){
-        {
-            GLog.w(Messages.get(Amulet.class, "hollow_city_1", hero.name()));
-            Badges.CITY_END();
-            hero.sprite.parent.add(new Delayer(3f) {
-                @Override
-                protected void onComplete() {
-                    Badges.validateVictory();
-                    Dungeon.win(Amulet.class);
-                    Game.switchScene(RankingsScene.class);
-                    Dungeon.deleteGame(GamesInProgress.curSlot, true);
-                }
-            });
-        }
+    //END(修复): 只有踩到【出口格 46】才可能触发通关/下楼。
+    //入口格(1434)留给默认逻辑，否则从 30F 下来会被再次送到 32F。
+    final int EXIT_CELL = 46;
+
+    if(transition.type == LevelTransition.Type.REGULAR_ENTRANCE
+            && transition.centerCell == EXIT_CELL
+            && unsignedInvitationLetter != null){
+        GLog.w(Messages.get(Amulet.class, "hollow_city_1", hero.name()));
+        Badges.CITY_END();
+        hero.sprite.parent.add(new Delayer(3f) {
+            @Override
+            protected void onComplete() {
+                Badges.validateVictory();
+                Dungeon.win(Amulet.class);
+                Game.switchScene(RankingsScene.class);
+                Dungeon.deleteGame(GamesInProgress.curSlot, true);
+            }
+        });
         return false;
     } else if(transition.type == LevelTransition.Type.REGULAR_ENTRANCE){
         //END(修复): 原版此处只有在 bossRushMode 下才跳转，导致正常流程下打完冥犬
-        //踩楼梯**卡在 31F**。现改为：无邀请函时正常下到 32F（剧院层）。
+        //踩楼梯**卡在 31F**。
+        //
+        //另修复：入口(1434=ENTRANCE) 与 出口(46=EMPTY) 原先都登记为 REGULAR_ENTRANCE，
+        //而本方法不区分格子 → 从 30F 下来时踩入口会被再次"送到 32F"（跳层）。
+        //现在按 transition.cell 区分：只有踩到【出口格 46】才下到 32F。
+        if (transition.centerCell != EXIT_CELL) {
+            //踩到的是入口格 → 不触发下移，交回默认逻辑
+            return super.activateTransition(hero, transition);
+        }
+
         TimekeepersHourglass.timeFreeze timeFreeze = Dungeon.hero.buff(TimekeepersHourglass.timeFreeze.class);
         if (timeFreeze != null) timeFreeze.disarmPresses();
         Swiftthistle.TimeBubble timeBubble = Dungeon.hero.buff(Swiftthistle.TimeBubble.class);
@@ -665,15 +678,13 @@ public class CerDogBossLevel extends Level {
         InterlevelScene.curTransition.destDepth = Dungeon.depth + 1;   // → 32F
         InterlevelScene.curTransition.destType = LevelTransition.Type.REGULAR_ENTRANCE;
         InterlevelScene.curTransition.destBranch = 0;
-            InterlevelScene.curTransition.type = LevelTransition.Type.REGULAR_ENTRANCE;
-            InterlevelScene.curTransition.centerCell = -1;
-            Game.switchScene(InterlevelScene.class);
-            return false;
-        } else if(Statistics.bossRushMode) {
-            return super.activateTransition(hero, transition);
-        } else {
-            return super.activateTransition(hero, transition);
-        }
+        InterlevelScene.curTransition.type = LevelTransition.Type.REGULAR_ENTRANCE;
+        InterlevelScene.curTransition.centerCell = -1;
+        Game.switchScene(InterlevelScene.class);
+        return false;
+    } else {
+        return super.activateTransition(hero, transition);
+    }
     }
 
 }
