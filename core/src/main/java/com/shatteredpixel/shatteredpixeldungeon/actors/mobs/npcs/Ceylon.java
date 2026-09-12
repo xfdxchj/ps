@@ -1,19 +1,191 @@
+//END(port from Arknights): Ceylon
 package com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs;
 
+import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Agent;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Ergate;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Infantry;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.NPC;
+import com.shatteredpixel.shatteredpixeldungeon.items.ArmorUpKit;
+import com.shatteredpixel.shatteredpixeldungeon.items.Item;
+import com.shatteredpixel.shatteredpixeldungeon.items.quest.Bottle;
+import com.shatteredpixel.shatteredpixeldungeon.items.quest.TeaRose;
+import com.shatteredpixel.shatteredpixeldungeon.journal.Notes;
+import com.shatteredpixel.shatteredpixeldungeon.levels.SiestaLevel_part1;
+import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
+import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
+import com.shatteredpixel.shatteredpixeldungeon.sprites.CeylonSprite;
+import com.shatteredpixel.shatteredpixeldungeon.windows.WndCeylon;
+import com.shatteredpixel.shatteredpixeldungeon.windows.WndQuest;
+import com.watabou.noosa.Game;
+import com.watabou.utils.Bundle;
+import com.watabou.utils.Callback;
+import com.watabou.utils.PathFinder;
+import com.watabou.utils.Random;
 
-//END(STUB): Arknights Ceylon placeholder (terrain stage).
-//Provides only the inner API the ported levels call.
-public class Ceylon extends NPC {
-    { spriteClass = null; }
+public class Ceylon
+extends NPC {
+    private boolean seenBefore;
 
-    //END(STUB): 关卡会调用 Ceylon.Quest.spawn(level) / isSpawnd()
-    public static class Quest {
-        private static boolean spawned = false;
-        public static void spawn(com.shatteredpixel.shatteredpixeldungeon.levels.Level level) {
-            spawned = true;
+    public Ceylon() {
+        this.spriteClass = CeylonSprite.class;
+        this.properties.add(Char.Property.IMMOVABLE);
+        this.seenBefore = false;
+    }
+
+    @Override
+    protected boolean act() {
+        if (!Quest.given && Dungeon.level.heroFOV[this.pos]) {
+            if (!this.seenBefore) {
+                this.yell(Messages.get(this, "hey"));
+            }
+            Notes.add(Notes.Landmark.CEYLON);
+            this.seenBefore = true;
+        } else {
+            this.seenBefore = false;
         }
-        public static void process(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob mob) { }
+        return super.act();
+    }
+
+    @Override
+    public int defenseSkill(Char enemy) {
+        return INFINITE_EVASION;
+    }
+
+    @Override
+    public void damage(int dmg, Object src) {
+    }
+
+    @Override
+    public void add(Buff buff) {
+    }
+
+    @Override
+    public boolean reset() {
+        return true;
+    }
+
+    @Override
+    public boolean interact(Char c) {
+        this.sprite.turnTo(this.pos, Dungeon.hero.pos);
+        if (c != Dungeon.hero) {
+            return true;
+        }
+        if (Quest.given) {
+            final TeaRose tokens = Dungeon.hero.belongings.getItem(TeaRose.class);
+            final Bottle bottle = Dungeon.hero.belongings.getItem(Bottle.class);
+            if (tokens != null && tokens.quantity() >= 8 && bottle != null) {
+                Game.runOnRenderThread(new Callback(){
+
+                    @Override
+                    public void call() {
+                        GameScene.show(new WndCeylon(Ceylon.this, tokens, bottle));
+                    }
+                });
+            } else {
+                this.tell(Messages.get(this, "water", Dungeon.hero.heroClass.title()));
+            }
+        } else {
+            this.tell(Messages.get(this, "quest"));
+            Quest.given = true;
+            Quest.completed = false;
+            Notes.add(Notes.Landmark.CEYLON);
+        }
+        return true;
+    }
+
+    private void tell(final String text) {
+        Game.runOnRenderThread(new Callback(){
+
+            @Override
+            public void call() {
+                GameScene.show(new WndQuest(Ceylon.this, text));
+            }
+        });
+    }
+
+    public void flee() {
+        this.yell(Messages.get(this, "cya", Dungeon.hero.heroClass.title()));
+        this.destroy();
+        this.sprite.die();
+    }
+
+    public static class Quest {
+        private static boolean alternative;
+        private static boolean spawned;
+        private static boolean given;
+        private static boolean completed;
+        public static ArmorUpKit reward;
+        private static final String NODE = "CEYLON";
+        private static final String ALTERNATIVE = "alternative";
+        private static final String SPAWNED = "spawned";
+        private static final String GIVEN = "given";
+        private static final String COMPLETED = "completed";
+        private static final String REWARD = "reward";
+
+        public static void reset() {
+            alternative = false;
+            spawned = false;
+            given = false;
+            completed = false;
+            reward = null;
+        }
+
+        public static void storeInBundle(Bundle bundle) {
+            Bundle node = new Bundle();
+            node.put(SPAWNED, spawned);
+            if (spawned) {
+                node.put(ALTERNATIVE, alternative);
+                node.put(GIVEN, given);
+                node.put(COMPLETED, completed);
+            }
+            bundle.put(NODE, node);
+        }
+
+        public static void restoreFromBundle(Bundle bundle) {
+            Bundle node = bundle.getBundle(NODE);
+            if (!node.isNull() && (spawned = node.getBoolean(SPAWNED))) {
+                alternative = node.getBoolean(ALTERNATIVE);
+                given = node.getBoolean(GIVEN);
+                completed = node.getBoolean(COMPLETED);
+                reward = new ArmorUpKit();
+            }
+        }
+
+        public static void spawn(SiestaLevel_part1 level) {
+            if (!spawned && Dungeon.depth > 31 && Random.Int(35 - Dungeon.depth) == 0) {
+                Ceylon npc = new Ceylon();
+                do {
+                    npc.pos = level.randomRespawnCell(npc);
+                } while (npc.pos == -1 || level.heaps.get(npc.pos) != null || level.traps.get(npc.pos) != null || level.findMob(npc.pos) != null || !level.passable[npc.pos + PathFinder.CIRCLE4[0]] || !level.passable[npc.pos + PathFinder.CIRCLE4[2]] || !level.passable[npc.pos + PathFinder.CIRCLE4[1]] || !level.passable[npc.pos + PathFinder.CIRCLE4[3]]);
+                level.mobs.add(npc);
+                spawned = true;
+                level.addItemToSpawn(new Bottle());
+                alternative = true;
+                given = false;
+                reward = new ArmorUpKit();
+            }
+        }
+
+        public static void process(Mob mob) {
+            if (spawned && given && !completed && (alternative && mob instanceof Infantry || alternative && mob instanceof Ergate || alternative && mob instanceof Agent)) {
+                Dungeon.level.drop((Item)new TeaRose(), (int)mob.pos).sprite.drop();
+            }
+        }
+
+        public static void complete() {
+            reward = null;
+            completed = true;
+            Notes.remove(Notes.Landmark.CEYLON);
+        }
+
+        public static boolean isCompleted() {
+            return completed;
+        }
+
         public static boolean isSpawnd() {
             return spawned;
         }

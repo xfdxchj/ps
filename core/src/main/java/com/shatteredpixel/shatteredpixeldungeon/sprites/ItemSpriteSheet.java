@@ -1092,6 +1092,18 @@ public class ItemSpriteSheet {
 
 
 	//END(port from Arknights): 圣手（SeaPlatform 用）；图集无此图，复用现有图标
+	//END(port from Arknights): 第二批方舟真实图标（y=35 行）
+	private static final int AK_ITEMS2 = xy(1, 35);
+	public static final int AK_KETTLE = AK_ITEMS2+0;
+	public static final int AK_TYLENOL = AK_ITEMS2+1;
+	public static final int AK_TEA = AK_ITEMS2+2;
+	public static final int AK_OBSIDIAN = AK_ITEMS2+3;
+	static {
+		assignItemRect(AK_KETTLE, 16, 16);
+		assignItemRect(AK_TYLENOL, 16, 16);
+		assignItemRect(AK_TEA, 16, 16);
+		assignItemRect(AK_OBSIDIAN, 16, 16);
+	}
 	public static final int SAINT_HAND = AK_SAINT_HAND;  //END: 方舟真实图标
 	
 
@@ -1123,4 +1135,24 @@ public class ItemSpriteSheet {
 	//END(port from Arknights): WaterRay（图集无此图，复用现有图标）
 	public static final int WaterRay = WEP_TIER5+2;
 	static { assignItemRect(WaterRay, 16, 16); }
+	//END(port from Arknights): KETTLE -> 方舟真实图标
+	public static final int KETTLE = AK_KETTLE;
+	//END(port from Arknights): TYLENOL -> 方舟真实图标
+	public static final int TYLENOL = AK_TYLENOL;
+	//END(port from Arknights): TEA -> 方舟真实图标
+	public static final int TEA = AK_TEA;
+	//END(port from Arknights): OBSIDIAN -> 方舟真实图标
+	public static final int OBSIDIAN = AK_OBSIDIAN;
+	//END(port from Arknights): CEYLON（方舟图集未找到，复用现有图标）
+	public static final int CEYLON = ARMOR+3;
+	static { assignItemRect(CEYLON, 16, 16); }
+	//END(port from Arknights): NEARL（方舟图集未找到，复用现有图标）
+	public static final int NEARL = WEP_TIER3+3;
+	static { assignItemRect(NEARL, 16, 16); }
+	//END(port from Arknights): ROSECAT（方舟图集未找到，复用现有图标）
+	public static final int ROSECAT = STONES+1;
+	static { assignItemRect(ROSECAT, 16, 16); }
+	//END(port from Arknights): CHEN（方舟图集未找到，复用现有图标）
+	public static final int CHEN = WEP_TIER4+2;
+	static { assignItemRect(CHEN, 16, 16); }
 }

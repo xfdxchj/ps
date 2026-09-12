@@ -1,9 +1,49 @@
+//END(port from Arknights): Obsidian
 package com.shatteredpixel.shatteredpixeldungeon.items.quest;
 
+import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
+import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
+import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
+import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
+import java.util.ArrayList;
 
-//END(STUB): Arknights Obsidian placeholder for the terrain stage.
-//Replace with the real implementation when porting mobs/bosses/items.
-public class Obsidian extends Item {
-    { stackable = false; }
+public class Obsidian
+extends Item {
+    public static String AC_ADD = "ADD";
+
+    public Obsidian() {
+        this.image = ItemSpriteSheet.OBSIDIAN;
+        this.stackable = true;
+        this.unique = true;
+        this.defaultAction = AC_ADD;
+    }
+
+    @Override
+    public ArrayList<String> actions(Hero hero) {
+        ArrayList<String> actions = super.actions(hero);
+        actions.add(AC_ADD);
+        return actions;
+    }
+
+    @Override
+    public void execute(Hero hero, String action) {
+        super.execute(hero, action);
+        if (action.equals(AC_ADD)) {
+            GLog.h(Messages.get(Obsidian.class, "suc"));
+            --Dungeon.siesta1_bosspower;
+            this.detach(Obsidian.curUser.belongings.backpack);
+        }
+    }
+
+    @Override
+    public boolean isUpgradable() {
+        return false;
+    }
+
+    @Override
+    public boolean isIdentified() {
+        return true;
+    }
 }
