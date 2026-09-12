@@ -1978,9 +1978,21 @@ public class Hero extends Char {
 				//moving to a transition doesn't automatically trigger it when enemies are near
 				&& (visibleEnemies.size() == 0 || cell == pos)
 				&& !Dungeon.level.locked
-				&& !Dungeon.level.plants.containsKey(cell)
-				&& (Dungeon.depth < 26 || Dungeon.level.getTransition(cell).type == LevelTransition.Type.REGULAR_ENTRANCE) ) {
-
+				&& !Dungeon.level.plants.containsKey(cell) ) {
+			//END(修复·下楼的会上楼): 原来这里是
+			//    && (Dungeon.depth < 26 || Dungeon.level.getTransition(cell).type == REGULAR_ENTRANCE)
+			//即 26F 之后只允许 ENTRANCE 类过渡被触发。
+			//
+			//但 Level.activateTransition() 是靠【过渡类型】决定上楼还是下楼的：
+			//   REGULAR_EXIT / BRANCH_EXIT → DESCEND（下楼）
+			//   其它（含 REGULAR_ENTRANCE）→ ASCEND（上楼）
+			//
+			//于是"出口必须写成 ENTRANCE 才能点"与"ENTRANCE 等于上楼"直接冲突，
+			//表现为【踩下楼口却上楼了】。
+			//
+			//修改：去掉这个类型限制，让出口保持 REGULAR_EXIT。
+			//楼梯本身仍然是"有敌人时不会自动触发"（上面的 visibleEnemies 判定），
+			//所以不会误触，安全性不受影响。
 			curAction = new HeroAction.LvlTransition( cell );
 			
 		}  else {

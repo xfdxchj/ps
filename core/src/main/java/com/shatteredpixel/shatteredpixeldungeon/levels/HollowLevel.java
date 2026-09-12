@@ -165,42 +165,23 @@ public class HollowLevel extends RegularLevel {
     }
 
     /**
-     * END(修复·挑战区楼梯): 挑战区（26F+）的楼梯有两条互相冲突的限制：
+     * END(修复·下楼的会上楼): 曾经这里给出口补了一个同格的 REGULAR_ENTRANCE，
+     * 目的是绕过 {@code Hero} 里"depth>=26 只允许 ENTRANCE 被触发"的限制。
      *
-     * <ol>
-     *   <li>{@code Hero.java:1977} —— depth>=26 时只有 {@code REGULAR_ENTRANCE}
-     *       能被**点击触发**（EXIT 只会让玩家"走过去"）。</li>
-     *   <li>{@code InterlevelScene.ascend()} —— 上楼时要落在目标层的
-     *       {@code REGULAR_EXIT} 上；如果目标层没有 EXIT，就会退化成第一个过渡，
-     *       结果**上楼落在"入口"上**（表现为"上楼接到了上楼"）。</li>
-     * </ol>
+     * <p>但 {@code Level.activateTransition()} 是用【过渡类型】决定上楼还是下楼的：
+     * <pre>
+     *   REGULAR_EXIT / BRANCH_EXIT → DESCEND（下楼）
+     *   其它（含 REGULAR_ENTRANCE）→ ASCEND（上楼）
+     * </pre>
+     * 同格存在 ENTRANCE 时，{@code getTransition(cell)} 取到的可能是它，
+     * 于是【踩下楼口却上楼了】。
      *
-     * <p>原先的做法是把 ExitRoom 的 {@code REGULAR_EXIT} 就地改成
-     * {@code REGULAR_ENTRANCE}，这会破坏第 2 条（出口类型丢失）。
-     *
-     * <p>现在的做法：**保留 EXIT 类型**，另建一个同格的
-     * {@code REGULAR_ENTRANCE} 过渡，专门用于"点击触发"。
-     * 同格两个过渡在 {@code getTransition(cell)} 时都能被找到，
-     * 而 {@code getTransition(Type)} 仍能正确区分入口/出口。
+     * <p>正确修法是去掉 {@code Hero} 里那个类型限制（已改），
+     * 出口保持 REGULAR_EXIT 即可，这里不再需要任何补丁。
      */
     @Override
     protected boolean build() {
-        boolean ok = super.build();
-
-        if (transitions != null) {
-            java.util.ArrayList<LevelTransition> add = new java.util.ArrayList<>();
-            for (LevelTransition t : transitions) {
-                // 给每个 REGULAR_EXIT 额外补一个同格的 REGULAR_ENTRANCE，
-                // 这样"能点击触发"（ENTRANCE）与"能被他层 ascend 定位"（EXIT）同时成立。
-                if (t != null && t.type == LevelTransition.Type.REGULAR_EXIT) {
-                    LevelTransition extra = new LevelTransition(
-                            this, t.cell(), LevelTransition.Type.REGULAR_ENTRANCE);
-                    add.add(extra);
-                }
-            }
-            transitions.addAll(add);
-        }
-        return ok;
+        return super.build();
     }
 
     @Override

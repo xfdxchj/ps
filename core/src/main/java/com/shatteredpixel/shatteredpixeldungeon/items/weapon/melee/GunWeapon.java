@@ -136,6 +136,12 @@ extends MeleeWeapon {
 
     @Override
     public int max(int lvl) {
+        //END(修复): 图鉴(WndJournal)会在 Dungeon.hero == null 时调用本方法，
+        //原代码直接访问 hero.buff()/hero.belongings 会 NPE 崩溃。
+        if (Dungeon.hero == null) {
+            return 0;
+        }
+
         return 3 * this.tier + lvl * (this.tier - 2);
     }
 

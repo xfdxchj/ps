@@ -54,9 +54,14 @@ public class RiceSword extends MeleeWeapon implements Item.LengedsItem {
 
     @Override
     public int max(int lvl) {
+        //END(修复·关键): 原来先调用 hero.buff(...) 再判 hero != null，
+        //顺序反了 → 图鉴(WndJournal)在 Dungeon.hero == null 时打开就 NPE 崩溃。
+        if (hero == null) {
+            return 5 * (tier + 1) + lvl * lvl;
+        }
         Hunger hungerBuff = hero.buff(Hunger.class);
 
-        if(hero != null && hungerBuff != null){
+        if(hungerBuff != null){
             if(hero.buff(WellFed.class) != null){
                 return 5*(tier+1) + lvl * (int)hungerBuff.hungerDamage() + lvl;
             } else {

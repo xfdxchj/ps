@@ -79,7 +79,7 @@ public abstract class SixKingsLevelBase extends Level {
         transitions.add( new LevelTransition( this, entranceCell,
                 LevelTransition.Type.REGULAR_ENTRANCE ) );
         transitions.add( new LevelTransition( this, exitCell,
-                LevelTransition.Type.REGULAR_ENTRANCE ) );
+                LevelTransition.Type.REGULAR_EXIT ) );
 
         return true;
     }
