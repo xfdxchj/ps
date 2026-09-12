@@ -240,12 +240,9 @@ public class LaveCavesBossLevel extends Level{
         }
         transitions.add(ent);
 
-        LevelTransition exit;
-        if(Statistics.bossRushMode){
-            exit = new LevelTransition(this, 334, LevelTransition.Type.REGULAR_EXIT);
-        } else {
-            exit = new LevelTransition(this, 0, LevelTransition.Type.BRANCH_EXIT);
-        }
+        //END(修复·关键): Hero.java:1982 规定 depth>=26 时只有 REGULAR_ENTRANCE 能被触发。
+        //原代码在非 bossRush 下用 BRANCH_EXIT → 火龙打完后踩出口没反应。统一改为 REGULAR_ENTRANCE。
+        LevelTransition exit = new LevelTransition(this, 334, LevelTransition.Type.REGULAR_ENTRANCE);
         transitions.add(exit);
 
 

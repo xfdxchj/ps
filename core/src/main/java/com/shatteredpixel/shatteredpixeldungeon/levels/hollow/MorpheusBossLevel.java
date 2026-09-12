@@ -117,7 +117,8 @@ public class MorpheusBossLevel extends Level {
         LevelTransition enter = new LevelTransition(this, entrance, LevelTransition.Type.REGULAR_ENTRANCE);
         transitions.add(enter);
 
-        LevelTransition exits = new LevelTransition(this, exit, LevelTransition.Type.REGULAR_EXIT);
+        //END(修复·关键): depth>=26 只有 REGULAR_ENTRANCE 能被触发
+        LevelTransition exits = new LevelTransition(this, exit, LevelTransition.Type.REGULAR_ENTRANCE);
         transitions.add(exits);
 
         CustomTilemap vis = new GalaxyBackGround();

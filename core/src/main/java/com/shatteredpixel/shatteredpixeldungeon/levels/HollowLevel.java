@@ -22,6 +22,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.exotic.ScrollOfCha
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.exotic.ScrollOfMetamorphosis;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.exotic.ScrollOfSirensSong;
 import com.shatteredpixel.shatteredpixeldungeon.levels.painters.HollowPainter;
+import com.shatteredpixel.shatteredpixeldungeon.levels.features.LevelTransition;
 import com.shatteredpixel.shatteredpixeldungeon.levels.painters.Painter;
 import com.shatteredpixel.shatteredpixeldungeon.levels.traps.AlarmTrap;
 import com.shatteredpixel.shatteredpixeldungeon.levels.traps.BurningTrap;
@@ -161,6 +162,28 @@ public class HollowLevel extends RegularLevel {
                 break;
         }
         return w;
+    }
+
+    /**
+     * END(修复·关键): Hero.java:1982 规定 —— 当 Dungeon.depth >= 26 时，
+     * 只有 type == REGULAR_ENTRANCE 的过渡**才能被点击触发**；
+     * REGULAR_EXIT / BRANCH_EXIT 只会让玩家"走过去"而不触发。
+     *
+     * <p>27-30F 的出口楼梯由父类 RegularLevel 的 ExitRoom 建立，类型是 REGULAR_EXIT
+     * → 在挑战区里踩了没反应。这里在 build 完成后把它就地改成 REGULAR_ENTRANCE。
+     * （不新建过渡，避免与 ExitRoom 的格子冲突；改类型即可保留原格号与 destDepth 计算。）
+     */
+    @Override
+    protected boolean build() {
+        boolean ok = super.build();
+        if (transitions != null) {
+            for (LevelTransition t : transitions) {
+                if (t != null && t.type == LevelTransition.Type.REGULAR_EXIT) {
+                    t.type = LevelTransition.Type.REGULAR_ENTRANCE;
+                }
+            }
+        }
+        return ok;
     }
 
     @Override

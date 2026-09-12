@@ -142,12 +142,13 @@ public class HollowExitLevel extends Level {
 
         //END(修复): 地图里唯一的 ENTRANCE(地形M) 在【格 279】。
         //（原先手工数成 240，用 _tools/locate_stairs.py 算出真实值是 279）
-        int enter = 279;
-        LevelTransition entrance = new LevelTransition(this, enter, LevelTransition.Type.REGULAR_EXIT);
+        //END(修复·关键): Hero.java:1982 规定 depth>=26 时，**只有 REGULAR_ENTRANCE**
+        //类型的过渡能被点击触发（其它类型只会让玩家"走过去"，不触发过渡）。
+        //26F 原用 REGULAR_EXIT/BRANCH_EXIT → 踩楼梯完全无反应。现统一改为 REGULAR_ENTRANCE，
+        //目标层由 activateTransition() 决定（→ 27F）。
+        int enter = 279;   //地图里唯一的 ENTRANCE(地形M) 格
+        LevelTransition entrance = new LevelTransition(this, enter, LevelTransition.Type.REGULAR_ENTRANCE);
         transitions.add(entrance);
-
-        LevelTransition exitCell = new LevelTransition(this, enter, LevelTransition.Type.BRANCH_EXIT);
-        transitions.add(exitCell);
 
         CustomTilemap vis = new townBehind();
         vis.pos(0, 0);
