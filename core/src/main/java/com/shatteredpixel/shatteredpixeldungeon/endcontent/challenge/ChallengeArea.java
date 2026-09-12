@@ -72,8 +72,38 @@ public final class ChallengeArea {
 		return mask ^ (1 << area.id);
 	}
 
+	/**
+	 * END(修复): 只保留第一个被选中的区域，其余全部清除。
+	 *
+	 * <p>本 MOD 的挑战区**只允许单选**：多选时各区按 id 顺序串接层号，
+	 * 且方舟三区在原作里本就是互斥分支（extrastage_Sea / extrastage_Gavial），
+	 * 同时勾选会互相干扰、产生难以定位的 bug。
+	 *
+	 * <p>UI 层（WndChallengeAreas）已改成单选行为；这里是**数据层兜底**，
+	 * 防止旧存档或其它入口写入多选掩码。
+	 */
+	public static int firstSelectedOnly(int mask) {
+		for (ChallengeArea a : ALL) {
+			if (isSelected(mask, a)) {
+				return 1 << a.id;
+			}
+		}
+		return 0;
+	}
+
+	/** 返回当前被选中的那个区域；没选则返回 {@code null}。 */
+	public static ChallengeArea selectedArea(int mask) {
+		for (ChallengeArea a : ALL) {
+			if (isSelected(mask, a)) return a;
+		}
+		return null;
+	}
+
 	/** 把选中的区域写入 Statistics。应在开局（英雄创建完成）时调用一次。 */
 	public static void applySelection(int mask) {
+		//END(修复): 数据层兜底 —— 强制单选
+		mask = firstSelectedOnly(mask);
+
 		Statistics.Hollow_Holiday = isSelected(mask, HOLLOW);
 		Statistics.Galaxy_Rules   = isSelected(mask, GALAXY);
 		Statistics.challengeMask  = mask;

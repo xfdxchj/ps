@@ -31,7 +31,7 @@ public class WndChallengeAreas extends Window {
 
 		this.editable = editable;
 
-		RenderedTextBlock title = PixelScene.renderTextBlock( "挑战区域", 12 );
+		RenderedTextBlock title = PixelScene.renderTextBlock( "挑战区域（只能选一个）", 12 );
 		title.hardlight( TITLE_COLOR );
 		title.setPos(
 				(WIDTH - title.width()) / 2,
@@ -46,9 +46,25 @@ public class WndChallengeAreas extends Window {
 		for (int i = 0; i < ChallengeArea.ALL.length; i++) {
 
 			final ChallengeArea area = ChallengeArea.ALL[i];
+			final int myIndex = i;
 
 			String label = area.name + (area.implemented ? "" : "（未实装）");
-			CheckBox cb = new CheckBox( Messages.titleCase(label) );
+
+			//END(修复): 改为【单选】—— 同时勾选多个区会互相干扰（层号串接、剧情分支冲突），
+			//容易触发难以定位的 bug。点任意一个时，取消其余所有勾选。
+			CheckBox cb = new CheckBox( Messages.titleCase(label) ) {
+				@Override
+				protected void onClick() {
+					boolean turningOn = !checked();
+					for (int j = 0; j < boxes.size(); j++) {
+						if (boxes.get(j) == this) {
+							boxes.get(j).checked( turningOn );
+						} else {
+							boxes.get(j).checked( false );
+						}
+					}
+				}
+			};
 			cb.checked( ChallengeArea.isSelected(checked, area) );
 			//未实装的区域暂不可勾选，避免选进去后无事发生
 			cb.active = editable && area.implemented;
@@ -77,6 +93,8 @@ public class WndChallengeAreas extends Window {
 					value = ChallengeArea.toggle(value, ChallengeArea.ALL[i]);
 				}
 			}
+			//END(修复): 数据层兜底 —— 只保留一个（单选）
+			value = ChallengeArea.firstSelectedOnly( value );
 			SPDSettings.challengeAreas( value );
 		}
 
