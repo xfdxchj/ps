@@ -31,7 +31,8 @@ import com.watabou.utils.PointF;
 public class TerrainDebugOverlay extends Component {
 
     /** 总开关。排查完地形问题后置回 false 即可。 */
-    public static boolean enabled = true;
+    //END(用户要求): 排查完毕，默认关闭（需要时改回 true）
+    public static boolean enabled = false;
 
     /** 当前已挂载的实例 */
     private static TerrainDebugOverlay instance;

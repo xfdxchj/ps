@@ -154,18 +154,11 @@ import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Gauntlet;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Glaive;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Gloves;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Greataxe;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.C1_9mm;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.CatGun;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.GunWeapon;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.CrabGun;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.ShotgunWeapon;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.SnowHunter;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Greatshield;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Greatsword;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.HandAxe;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Katana;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Longsword;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.legend.ClearSword;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.legend.DiedCrossBow;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.legend.ForestBow;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.legend.GoldLongGun;
@@ -243,7 +236,6 @@ public class Generator {
 		WEP_T5	( 0, 0, MeleeWeapon.class),
 		//END(port from Arknights): 枪械独立档位 —— 用户反馈枪械不是传说武器，
 		//不应混在 WEP_T4/T5 里。
-		GUN		( 0, 0, MeleeWeapon.class),
 		
 		ARMOR	( 2, 1, Armor.class ),
 		
@@ -491,26 +483,10 @@ public class Generator {
 					SaiPlus.class,
 					KingAxe.class,
 					RiceSword.class,
-					ClearSword.class,
 			};
-			WEP_T5.defaultProbs = new float[]{ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
+			WEP_T5.defaultProbs = new float[]{ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
 			WEP_T5.probs = WEP_T5.defaultProbs.clone();
 
-			//END(port from Arknights): 枪械档位。
-			//
-			//END(用户反馈·重要): 只有【真正的枪】才放这里。
-			//方舟的 CatGun / CrabGun / SnowHunter 虽然类名带 Gun，但实际不是枪：
-			//   CatGun      "我的希望"     —— 充能后召唤 Mon3tr（法杖类）
-			//   CrabGun     "磐蟹饲养员"   —— 攻击充能后召唤磐蟹（弩类）
-			//   SnowHunter  "雪境猎手"     —— 一条会变形的鞭子
-			//把它们当枪放进枪池是错的，已移除（类本身保留，只是不再掉落）。
-			Category.GUN.classes = new Class<?>[]{
-					GunWeapon.class,
-					C1_9mm.class,
-					ShotgunWeapon.class
-			};
-			Category.GUN.defaultProbs = new float[]{ 2, 2, 1 };
-			Category.GUN.probs = Category.GUN.defaultProbs.clone();
 			
 			//see Generator.randomArmor
 			ARMOR.classes = new Class<?>[]{

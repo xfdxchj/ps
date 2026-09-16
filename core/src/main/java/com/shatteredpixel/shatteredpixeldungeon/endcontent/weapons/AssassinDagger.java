@@ -38,7 +38,8 @@ public class AssassinDagger extends MissileWeapon {
 	@Override public String name(){ return "刺杀匕首"; }
 
 	//像初始投掷物 ThrowingKnife 一样开局 3 把(如需“真的单把”去数量=1 需改为回手模型,非普通投掷垛)
-	@Override public int defaultQuantity(){ return 3; }
+	//END(用户要求): 开局与合成进阶都只需要 1 个（原来是 3 个）
+    @Override public int defaultQuantity(){ return 1; }
 
 	//与 ThrowingKnife 一致的伤害区间/命中
 	@Override public int min(int lvl){ return 2 + lvl; }

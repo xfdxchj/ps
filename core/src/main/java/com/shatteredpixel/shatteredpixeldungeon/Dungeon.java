@@ -263,7 +263,11 @@ public class Dungeon {
 		challenges = SPDSettings.challenges();
 		//END(移植自魔绫·挑战区): 把开局勾选的挑战区域写入 Statistics（Hollow 等）
 		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeArea
-				.applySelection(SPDSettings.challengeAreas());
+				//END(修复·存档隔离): 只在存档尚无区域记录时才从全局设置初始化。
+				//否则「新开挑战改设置」会污染旧存档的区域。
+				.applySelection( Statistics.challengeMask != 0
+						? Statistics.challengeMask
+						: SPDSettings.challengeAreas() );
 		mobsToChampion = 1;
 
 		Actor.clear();
@@ -421,34 +425,7 @@ public class Dungeon {
 				com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w("[便利] 完整手记异常: " + e);
 			}
 
-			//END(便利): 真枪 + 弹药（用于测试枪械系统）
-			//END(用户反馈): CatGun/CrabGun/SnowHunter 名字里带 Gun，但其实不是枪
-			//（"我的希望"是召唤 Mon3tr 的武器、"磐蟹饲养员"是召唤弩、"雪境猎手"是鞭子），
-			//已从枪械池移除，这里也不再发放。
-			try {
-				Class<?>[] guns = new Class<?>[]{
-						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.GunWeapon.class,
-						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.C1_9mm.class,
-						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.ShotgunWeapon.class,
-						//弹药
-						com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.NormalMagazine.class,
-						com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.UpMagazine.class,
-						com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.Thunderbolt.class
-				};
-				for (Class<?> g : guns) {
-					com.shatteredpixel.shatteredpixeldungeon.items.Item it =
-							(com.shatteredpixel.shatteredpixeldungeon.items.Item)
-									g.getDeclaredConstructor().newInstance();
-					it.identify();
-					if (!it.collect()) {
-						hero.belongings.backpack.items.add( it );
-					}
-				}
-				com.shatteredpixel.shatteredpixeldungeon.utils.GLog.p(
-						"[便利] 已发放：枪械 ×3 + 弹药 ×3");
-			} catch (Exception e){
-				com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w("[便利] 枪械异常: " + e);
-			}
+			//END(用户要求): 枪械已全部删除，不再发放。
 			//END(便利): 9 张笔记残页各一份（用于测试 3 合 1）
 			try {
 				for (int i = 1; i <= 9; i++) {
@@ -475,7 +452,6 @@ public class Dungeon {
 			//传说武器一把(随机从 9 把里取，已鉴定)。若想固定某把，把下行的类替换即可。
 			try {
 				Class<?>[] legend = new Class<?>[]{
-						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.legend.ClearSword.class,
 						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.legend.DiedCrossBow.class,
 						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.legend.ForestBow.class,
 						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.legend.GoldLongGun.class,

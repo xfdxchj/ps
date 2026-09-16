@@ -65,11 +65,11 @@ public final class ChallengeArea {
 	public static final ChallengeArea GALAXY      = new ChallengeArea(3, "银河深渊·火龙", 1, true, "只有 1 层：直接与火龙在它的巢穴中决战。\\n\\n没有常规层，进门即战。");
 	//方舟 3 区（阶段A：已接入，每区 10 层；关卡内容待 B1 搬运）
 	//方舟原版节奏：0-3=第1章 4=Boss1 5-8=第2章 9=Boss2
-	public static final ChallengeArea IBERIA      = new ChallengeArea(4, "伊比利亚·海嗣", 10, true, "方舟·伊比利亚。共 10 层：0-3 第1章 → 4 海嗣 Boss → 5-8 第2章 → 9 深海 Boss。\\n\\n海嗣会不断增殖，注意清场。");
-	public static final ChallengeArea GAVIAL      = new ChallengeArea(5, "嘉维尔·雨林", 10, true, "方舟·嘉维尔。共 10 层：0-3 第1章 → 4 Boss → 5-8 第2章 → 9 大酋长。\\n\\n雨林中遍布陷阱与召唤师。");
-	public static final ChallengeArea SIESTA      = new ChallengeArea(6, "汐斯塔·海滨", 10, true, "方舟·汐斯塔。共 10 层：0-3 第1章 → 4 Boss → 5-8 第2章 → 9 最终 Boss。\\n\\n海滨度假地的平静只是表象。");
+	public static final ChallengeArea IBERIA      = new ChallengeArea(4, "伊比利亚·海嗣", 2, true, "方舟·伊比利亚。共 10 层：0-3 第1章 → 4 海嗣 Boss → 5-8 第2章 → 9 深海 Boss。\\n\\n海嗣会不断增殖，注意清场。");
+	public static final ChallengeArea GAVIAL      = new ChallengeArea(5, "嘉维尔·雨林", 2, true, "方舟·嘉维尔。共 10 层：0-3 第1章 → 4 Boss → 5-8 第2章 → 9 大酋长。\\n\\n雨林中遍布陷阱与召唤师。");
+	public static final ChallengeArea SIESTA      = new ChallengeArea(6, "汐斯塔·海滨", 2, true, "方舟·汐斯塔。共 10 层：0-3 第1章 → 4 Boss → 5-8 第2章 → 9 最终 Boss。\\n\\n海滨度假地的平静只是表象。");
 	//六王（3 层测试版：法术王 / 不灭追猎者 / Debuff 王；后续扩到 6 王 + NPC 共 7 层）
-	public static final ChallengeArea SIX_KINGS   = new ChallengeArea(7, "六大天王", 7, true, "六人曾是挚友，如今却分崩离析。\\n\\n共 7 层：\\n  26F 引路人之厅（NPC 讲述往事）\\n  27F 法术王\\n  28F 不灭追猎者\\n  29F 疫病王\\n  30F 远程王\\n  31F 召唤王\\n  32F 全能王（关底）\\n\\n建议先收集 9 张笔记残页，了解他们的过去。");
+	public static final ChallengeArea SIX_KINGS   = new ChallengeArea(7, "六大天王", 6, true, "六人曾是挚友，如今却分崩离析。\\n\\n共 7 层：\\n  26F 引路人之厅（NPC 讲述往事）\\n  27F 法术王\\n  28F 不灭追猎者\\n  29F 疫病王\\n  30F 远程王\\n  31F 召唤王\\n  32F 全能王（关底）\\n\\n建议先收集 9 张笔记残页，了解他们的过去。");
 
 	public static final ChallengeArea[] ALL = {
 			HOLLOW, GALAXY, IBERIA, GAVIAL, SIESTA, SIX_KINGS
@@ -119,6 +119,9 @@ public final class ChallengeArea {
 	public static void applySelection(int mask) {
 		//END(修复): 数据层兜底 —— 强制单选
 		mask = firstSelectedOnly(mask);
+
+		//END(修复·存档隔离): 记录本存档的区域选择（供下次读档判断）
+		Statistics.challengeMask  = mask;
 
 		Statistics.Hollow_Holiday = isSelected(mask, HOLLOW);
 		Statistics.Galaxy_Rules   = isSelected(mask, GALAXY);
@@ -180,49 +183,37 @@ public final class ChallengeArea {
 		//布局（每区 10 层）：0-3 第1章 / 4 Boss1 / 5-8 第2章 / 9 Boss2
 
 		if (areaId == IBERIA.id) {
-			//伊比利亚·海嗣
+			//END(用户要求): 删掉了常规层，直接打两个 Boss。
 			switch (floorIn) {
-				case 4:  return new com.shatteredpixel.shatteredpixeldungeon.levels.SeaBossLevel1();
-				case 9:  return new com.shatteredpixel.shatteredpixeldungeon.levels.SeaBossLevel2();
-				case 5: case 6: case 7: case 8:
-					return new com.shatteredpixel.shatteredpixeldungeon.levels.SeaLevel_part2();
-				default: return new com.shatteredpixel.shatteredpixeldungeon.levels.SeaLevel_part1();  //0-3
+				case 0:  return new com.shatteredpixel.shatteredpixeldungeon.levels.SeaBossLevel1();
+				default: return new com.shatteredpixel.shatteredpixeldungeon.levels.SeaBossLevel2();
 			}
 		}
 
 		if (areaId == GAVIAL.id) {
-			//嘉维尔·雨林
+			//END(用户要求): 删掉了常规层，直接打两个 Boss。
 			switch (floorIn) {
-				case 4:  return new com.shatteredpixel.shatteredpixeldungeon.levels.GavialBossLevel1();
-				case 9:  return new com.shatteredpixel.shatteredpixeldungeon.levels.GavialBossLevel2();
-				case 5: case 6: case 7: case 8:
-					return new com.shatteredpixel.shatteredpixeldungeon.levels.GavialLevel2();
-				default: return new com.shatteredpixel.shatteredpixeldungeon.levels.GavialLevel();     //0-3
+				case 0:  return new com.shatteredpixel.shatteredpixeldungeon.levels.GavialBossLevel1();
+				default: return new com.shatteredpixel.shatteredpixeldungeon.levels.GavialBossLevel2();
 			}
 		}
 
 		if (areaId == SIESTA.id) {
-			//汐斯塔·海滨
+			//END(用户要求): 删掉了常规层，直接打两个 Boss。
 			switch (floorIn) {
-				case 4:  return new com.shatteredpixel.shatteredpixeldungeon.levels.SiestaBossLevel_part1();
-				case 9:  return new com.shatteredpixel.shatteredpixeldungeon.levels.SiestaBossLevel_part2();
-				case 5: case 6: case 7: case 8:
-					return new com.shatteredpixel.shatteredpixeldungeon.levels.SiestaLevel_part2();
-				default: return new com.shatteredpixel.shatteredpixeldungeon.levels.SiestaLevel_part1(); //0-3
+				case 0:  return new com.shatteredpixel.shatteredpixeldungeon.levels.SiestaBossLevel_part1();
+				default: return new com.shatteredpixel.shatteredpixeldungeon.levels.SiestaBossLevel_part2();
 			}
 		}
 
 				if (areaId == SIX_KINGS.id) {
-			//六王：0=法术王 1=不灭追猎者 2=Debuff王（后续再加 3 王 + NPC 层）
+			//END(用户要求): 删掉了第 1 层 NPC（引路人之厅），直接从法术王开始。
 			switch (floorIn) {
-				//第1层：NPC（引路人，讲述往事）
-				case 0:  return new com.shatteredpixel.shatteredpixeldungeon.levels.boss.SixKingsLevel0();
-				//第2-7层：六王
-				case 1:  return new com.shatteredpixel.shatteredpixeldungeon.levels.boss.SixKingsLevel1();
-				case 2:  return new com.shatteredpixel.shatteredpixeldungeon.levels.boss.SixKingsLevel2();
-				case 3:  return new com.shatteredpixel.shatteredpixeldungeon.levels.boss.SixKingsLevel3();
-				case 4:  return new com.shatteredpixel.shatteredpixeldungeon.levels.boss.SixKingsLevel4();
-				case 5:  return new com.shatteredpixel.shatteredpixeldungeon.levels.boss.SixKingsLevel5();
+				case 0:  return new com.shatteredpixel.shatteredpixeldungeon.levels.boss.SixKingsLevel1();
+				case 1:  return new com.shatteredpixel.shatteredpixeldungeon.levels.boss.SixKingsLevel2();
+				case 2:  return new com.shatteredpixel.shatteredpixeldungeon.levels.boss.SixKingsLevel3();
+				case 3:  return new com.shatteredpixel.shatteredpixeldungeon.levels.boss.SixKingsLevel4();
+				case 4:  return new com.shatteredpixel.shatteredpixeldungeon.levels.boss.SixKingsLevel5();
 				default: return new com.shatteredpixel.shatteredpixeldungeon.levels.boss.SixKingsLevel6();
 			}
 		}

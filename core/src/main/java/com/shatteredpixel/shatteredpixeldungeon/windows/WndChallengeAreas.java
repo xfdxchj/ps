@@ -33,7 +33,7 @@ public class WndChallengeAreas extends Window {
 
 		this.editable = editable;
 
-		RenderedTextBlock title = PixelScene.renderTextBlock( "挑战区域（只能选一个）", 12 );
+		RenderedTextBlock title = PixelScene.renderTextBlock( "挑战区域", 12 );
 		title.hardlight( TITLE_COLOR );
 		title.setPos(
 				(WIDTH - title.width()) / 2,

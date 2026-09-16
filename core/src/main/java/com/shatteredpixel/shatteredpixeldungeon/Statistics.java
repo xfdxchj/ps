@@ -198,6 +198,9 @@ public class Statistics {
 	private static final String ASCENDED		= "ascended";
 	
 	public static void storeInBundle( Bundle bundle ) {
+		//END(修复·存档隔离): 保存本存档选定的挑战区
+		bundle.put("challengeMask", challengeMask);
+
 		bundle.put( GOLD,		goldCollected );
 		bundle.put( DEEPEST,	deepestFloor );
 		bundle.put( HIGHEST,	highestAscent );
@@ -250,6 +253,9 @@ public class Statistics {
 	}
 	
 	public static void restoreFromBundle( Bundle bundle ) {
+		//END(修复·存档隔离): 读取本存档选定的挑战区
+		challengeMask = bundle.getInt("challengeMask");
+
 		goldCollected	= bundle.getInt( GOLD );
 		deepestFloor	= bundle.getInt( DEEPEST );
 		highestAscent   = bundle.getInt( HIGHEST );
