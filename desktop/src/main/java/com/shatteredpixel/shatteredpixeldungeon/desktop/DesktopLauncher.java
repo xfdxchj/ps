@@ -69,6 +69,14 @@ public class DesktopLauncher {
 		} else {
 			title = DesktopLauncher.class.getPackage().getSpecificationTitle();
 		}
+
+		//END(修复·存档目录): jar 的 Manifest 在未打包运行（例如从 lib 目录直接跑）时是空的，
+		//getSpecificationTitle() 与系统属性都取不到值 → title == null
+		//→ 存档目录会变成 ".shatteredpixel/null/"。
+		//这里兜底一个固定名字，保证存档目录永远稳定。
+		final String saveTitle = (title == null || title.isEmpty())
+				? "Shattered Pixel Dungeon"
+				: title;
 		
 		Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
 			@Override
@@ -170,22 +178,37 @@ public class DesktopLauncher {
 		Files.FileType baseFileType = null;
 		if (SharedLibraryLoader.os == Os.Windows) {
 			if (System.getProperties().getProperty("os.name").equals("Windows XP")) {
-				basePath = "Application Data/." + vendor + "/" + title + "/";
+				basePath = "Application Data/." + vendor + "/" + saveTitle + "/";
 			} else {
-				basePath = "AppData/Roaming/." + vendor + "/" + title + "/";
+				basePath = "AppData/Roaming/." + vendor + "/" + saveTitle + "/";
 			}
 			baseFileType = Files.FileType.External;
 		} else if (SharedLibraryLoader.os == Os.MacOsX) {
-			basePath = "Library/Application Support/" + title + "/";
+			basePath = "Library/Application Support/" + saveTitle + "/";
 			baseFileType = Files.FileType.External;
 		} else if (SharedLibraryLoader.os == Os.Linux) {
 			String XDGHome = System.getenv("XDG_DATA_HOME");
 			if (XDGHome == null) XDGHome = System.getProperty("user.home") + "/.local/share";
 
-			String titleLinux = title.toLowerCase(Locale.ROOT).replace(" ", "-");
+			String titleLinux = saveTitle.toLowerCase(Locale.ROOT).replace(" ", "-");
 			basePath = XDGHome + "/." + vendor + "/" + titleLinux + "/";
 
 			baseFileType = Files.FileType.Absolute;
+		}
+
+		//END(新增·继承原版存档): 首次运行时，如果本目录还没有任何存档，
+		//就把【原版《破碎的像素地牢》】的存档/成就/排行榜复制过来，
+		//让玩家无缝继承原版的进度与成就。
+		//
+		//查找顺序（只读，不修改原版目录）：
+		//   1. 同级的 "Shattered Pixel Dungeon"
+		//   2. 旧名 "Tomorrow RogueNight"（本 MOD 的早期目录名）
+		//   3. "." + vendor + "/null"（Manifest 缺失时误建的目录）
+		//   4. 环境变量 DSH_IMPORT_SAVE 指定的目录
+		try {
+			importVanillaSavesIfFirstRun( baseFileType, basePath, vendor );
+		} catch (Throwable t) {
+			System.err.println("[存档继承] 跳过（" + t + "）");
 		}
 
 		config.setPreferencesConfig( basePath, baseFileType );
@@ -210,5 +233,144 @@ public class DesktopLauncher {
 				"icons/icon_64.png", "icons/icon_128.png", "icons/icon_256.png");
 
 		new Lwjgl3Application(new ShatteredPixelDungeon(new DesktopPlatformSupport()), config);
+	}
+
+	/**
+	 * END(新增·继承原版存档)
+	 *
+	 * <p>首次运行时，如果本 MOD 的存档目录还是空的，就把【原版《破碎的像素地牢》】
+	 * 的存档、成就、图鉴、排行榜复制过来，让玩家无缝继承原版进度。
+	 *
+	 * <p>只在【目标目录没有任何存档】时才复制，绝不会覆盖既有进度；
+	 * 源目录只读，不会被修改。
+	 *
+	 * <p>候选源目录（按顺序尝试）：
+	 * <ol>
+	 *   <li>{@code DSH_IMPORT_SAVE} 环境变量指定的目录（手动指定）</li>
+	 *   <li>同级的 {@code Shattered Pixel Dungeon}（原版）</li>
+	 *   <li>同级的 {@code Tomorrow RogueNight}（本 MOD 早期目录名）</li>
+	 *   <li>同级的 {@code null}（Manifest 缺失时误建的目录）</li>
+	 * </ol>
+	 *
+	 * <p>复制的文件：{@code game1..game6/}、{@code badges.dat}、
+	 * {@code rankings.dat}、{@code journal.dat}、{@code bones.dat}。
+	 * 设置（{@code settings.xml}）与按键绑定不复制，避免分辨率等被旧值覆盖。
+	 */
+	private static void importVanillaSavesIfFirstRun( Files.FileType type,
+	                                                  String basePath,
+	                                                  String vendor ) {
+		java.io.File dest = resolveFile( type, basePath );
+		if (dest == null) return;
+
+		// 目标目录已经有存档 → 什么都不做
+		if (dest.exists() && hasAnySave(dest)) {
+			return;
+		}
+
+		// 候选源目录
+		java.util.List<java.io.File> candidates = new java.util.ArrayList<>();
+
+		String env = System.getenv("DSH_IMPORT_SAVE");
+		if (env != null && !env.isEmpty()) {
+			candidates.add(new java.io.File(env));
+		}
+
+		java.io.File parent = dest.getParentFile();     // .../.shatteredpixel/
+		if (parent != null) {
+			candidates.add(new java.io.File(parent, "Shattered Pixel Dungeon"));
+			candidates.add(new java.io.File(parent, "Tomorrow RogueNight"));
+			candidates.add(new java.io.File(parent, "null"));
+		}
+
+		java.io.File src = null;
+		for (java.io.File c : candidates) {
+			if (c.exists() && !c.equals(dest) && hasAnySave(c)) {
+				src = c;
+				break;
+			}
+		}
+		if (src == null) return;
+
+		System.out.println("[存档继承] 从「" + src.getName() + "」导入原版进度…");
+
+		dest.mkdirs();
+
+		int copied = 0;
+		// 6 个存档槽
+		for (int i = 1; i <= 6; i++) {
+			copied += copyDir(new java.io.File(src, "game" + i),
+					          new java.io.File(dest, "game" + i));
+		}
+		// 成就 / 图鉴 / 排行榜 / 骸骨
+		for (String f : new String[]{ "badges.dat", "rankings.dat",
+				                      "journal.dat", "bones.dat" }) {
+			if (copyFile(new java.io.File(src, f), new java.io.File(dest, f))) {
+				copied++;
+			}
+		}
+
+		System.out.println("[存档继承] 完成，导入 " + copied + " 项。");
+	}
+
+	/** 该目录里有没有任何存档内容。 */
+	private static boolean hasAnySave( java.io.File dir ) {
+		if (dir == null || !dir.isDirectory()) return false;
+		for (int i = 1; i <= 6; i++) {
+			java.io.File g = new java.io.File(dir, "game" + i);
+			if (g.isDirectory() && g.list() != null && g.list().length > 0) {
+				return true;
+			}
+		}
+		// 就算没有进行中的存档，只要成就/排行榜存在也算"有内容"
+		return new java.io.File(dir, "badges.dat").exists()
+				|| new java.io.File(dir, "rankings.dat").exists();
+	}
+
+	/** FileType + 相对路径 → 绝对 File（libGDX 的 External 是相对用户目录）。 */
+	private static java.io.File resolveFile( Files.FileType type, String basePath ) {
+		try {
+			String p = basePath.replace('/', java.io.File.separatorChar);
+			if (type == Files.FileType.External) {
+				String home = System.getProperty("user.home");
+				return new java.io.File(home, p);
+			} else if (type == Files.FileType.Absolute) {
+				return new java.io.File(p);
+			} else if (type == Files.FileType.Local) {
+				return new java.io.File(System.getProperty("user.dir"), p);
+			}
+		} catch (Throwable ignored) { }
+		return null;
+	}
+
+	/** 递归复制目录（不覆盖已存在的文件）。返回复制的文件数。 */
+	private static int copyDir( java.io.File src, java.io.File dst ) {
+		if (src == null || !src.isDirectory()) return 0;
+		dst.mkdirs();
+		int n = 0;
+		java.io.File[] kids = src.listFiles();
+		if (kids == null) return 0;
+		for (java.io.File k : kids) {
+			java.io.File t = new java.io.File(dst, k.getName());
+			if (k.isDirectory()) {
+				n += copyDir(k, t);
+			} else if (!t.exists()) {
+				if (copyFile(k, t)) n++;
+			}
+		}
+		return n;
+	}
+
+	/** 复制单个文件（不覆盖）。 */
+	private static boolean copyFile( java.io.File src, java.io.File dst ) {
+		if (src == null || !src.isFile() || dst.exists()) return false;
+		try {
+			dst.getParentFile().mkdirs();
+			java.nio.file.Files.copy( src.toPath(), dst.toPath(),
+					java.nio.file.StandardCopyOption.COPY_ATTRIBUTES );
+			return true;
+		} catch (Throwable t) {
+			System.err.println("[存档继承] 复制失败 " + src.getName() + ": " + t);
+			return false;
+		}
 	}
 }
