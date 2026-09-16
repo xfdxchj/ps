@@ -1,8 +1,16 @@
 name: Build Desktop + Android
 
-# 《破碎的像素地牢：终焉扩展》 skeleton CI.
-# Builds a runnable desktop distribution AND an Android APK on GitHub runners,
-# then uploads both as workflow artifacts.
+# 《破碎的像素地牢：终焉扩展》 CI
+# 桌面端：可运行发行版；Android：debug APK。两者都作为 artifact 上传。
+#
+# END(修复·CI): 原来用 android-actions/setup-android@v3，
+# 它内部会执行 `sdkmanager tools` —— 但新版 Android SDK 已移除 `tools` 包，
+# 于是报 "Warning: Failed to find package tools" 并以 exit 1 失败。
+# 现在不再依赖该 action：
+#   1) 直接用 GitHub runner 上【预装好的】Android SDK（$ANDROID_SDK_ROOT）
+#   2) 只在确实缺组件时用 sdkmanager 装 platforms/build-tools（且不装 tools）
+#   3) 全程对 sdkmanager 的失败容错，避免它拖垮整个构建
+
 on:
   push:
     branches: [ "**" ]
@@ -22,13 +30,29 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+      # ── Android SDK：用 runner 预装的那套 ──
+      - name: Locate preinstalled Android SDK
+        id: sdk
+        shell: bash
+        run: |
+          set -e
+          SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
+          if [ -z "$SDK" ] || [ ! -d "$SDK" ]; then
+            for c in /usr/local/lib/android/sdk "$HOME/Android/Sdk" /opt/android-sdk; do
+              if [ -d "$c" ]; then SDK="$c"; break; fi
+            done
+          fi
+          if [ -z "$SDK" ] || [ ! -d "$SDK" ]; then
+            echo "::error::找不到 Android SDK"
+            exit 1
+          fi
+          echo "Found SDK at $SDK"
+          ls "$SDK" | head -20
+          echo "sdk=$SDK" >> "$GITHUB_OUTPUT"
 
-      - name: Make gradlew executable (fix Commit-everything lost the +x bit)
+      - name: Make gradlew executable
         run: chmod +x gradlew
 
-      # Cache gradle downloads so rebuilds are fast
       - name: Cache Gradle
         uses: actions/cache@v4
         with:
@@ -39,35 +63,54 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Write local.properties (Android SDK path)
+      - name: Write local.properties
+        shell: bash
         run: |
-          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          echo "sdk.dir=${{ steps.sdk.outputs.sdk }}" > local.properties
           cat local.properties
 
-      # Signatures/licences & SDK components; then compile everything
-      - name: Accept Android licenses & install platforms
+      # ── 只补缺失的组件；绝不装 "tools"（新版 SDK 已无此包）──
+      - name: Ensure required SDK components
+        shell: bash
+        continue-on-error: true          # 即使这步失败也继续，Gradle 往往能用预装的
         run: |
-          yes | sdkmanager --licenses > /dev/null || true
-          sdkmanager "platforms;android-36" "build-tools;36.0.0" > /dev/null || true
+          SDK="${{ steps.sdk.outputs.sdk }}"
+          SDKMGR="$(ls -d "$SDK"/cmdline-tools/*/bin/sdkmanager 2>/dev/null | head -1)"
+          if [ -z "$SDKMGR" ]; then
+            echo "未找到 sdkmanager，跳过（使用预装组件）"
+            exit 0
+          fi
+          echo "using $SDKMGR"
+          yes | "$SDKMGR" --licenses > /dev/null 2>&1 || true
+          # 逐个安装，任一失败都不影响其它
+          for pkg in "platforms;android-36" "build-tools;36.0.0" "platform-tools"; do
+            echo "--- trying $pkg ---"
+            "$SDKMGR" "$pkg" > /dev/null 2>&1 && echo "  ok" || echo "  跳过（可能已装或不适用）"
+          done
+          echo "已安装组件："
+          ls "$SDK/platforms" 2>/dev/null || true
+          ls "$SDK/build-tools" 2>/dev/null || true
 
-      # 1) Desktop: compile + create a runnable distribution in :desktop/build/install
-      #    (this is the headless-safe build gate; launching the window needs a display)
+      # ── 1) 桌面端 ──
       - name: Build desktop (compile + distribution)
         run: ./gradlew :desktop:compileJava :desktop:installDist --no-daemon --console=plain
         shell: bash
 
-      - name: Build Android APK (debug, installable)
+      # ── 2) Android APK ──
+      - name: Build Android APK (debug)
         run: ./gradlew :android:assembleDebug --no-daemon --console=plain
         shell: bash
 
-      - name: Upload desktop artifact (runnable distribution)
+      - name: Upload desktop artifact
         uses: actions/upload-artifact@v4
         with:
           name: desktop-dist
           path: desktop/build/install/desktop
 
       - name: Upload Android debug APK
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
           path: android/build/outputs/apk/debug/*.apk
+          if-no-files-found: warn
