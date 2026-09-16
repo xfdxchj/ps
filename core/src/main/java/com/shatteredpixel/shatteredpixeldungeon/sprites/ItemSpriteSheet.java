@@ -816,11 +816,14 @@ public class ItemSpriteSheet {
 	//END(port from Arknights): 方舟真实图标（从方舟 32x32 物品图集抠出，缩放为 16x16）
 	private static final int AK_ICONS = xy(1, 34);
 	public static final int AK_MUSH       = AK_ICONS+0;
+	//END(修复·用户要求): 灵能核心的图标（原来用 SOMETHING 占位）
+	public static final int SPIRIT_BOW_CORE = AK_ICONS+4;
 	public static final int AK_BARRI      = AK_ICONS+1;
 	public static final int AK_INFO_CERTI = AK_ICONS+2;
 	public static final int AK_SAINT_HAND = AK_ICONS+3;
 	static {
 		assignItemRect(AK_MUSH,       16, 16);
+		assignItemRect(SPIRIT_BOW_CORE, 16, 16);   //灵能核心
 		assignItemRect(AK_BARRI,      16, 16);
 		assignItemRect(AK_INFO_CERTI, 16, 16);
 		assignItemRect(AK_SAINT_HAND, 16, 16);
