@@ -214,12 +214,14 @@ public abstract class Scroll extends Item {
 	
 	public void setKnown() {
 		if (!anonymous) {
-			if (!isKnown()) {
+			//END(炼金指南预览): 无进行中游戏时 handler/hero 均为 null（见 JournalScene），
+			//此处的预览会调用 identify()，必须判空，否则 NPE。
+			if (handler != null && !isKnown()) {
 				handler.know(this);
 				updateQuickslot();
 			}
 			
-			if (Dungeon.hero.isAlive()) {
+			if (Dungeon.hero != null && Dungeon.hero.isAlive()) {
 				Catalog.setSeen(getClass());
 				Statistics.itemTypesDiscovered.add(getClass());
 			}

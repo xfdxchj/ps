@@ -2,6 +2,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.actors.mobs;
 
 import com.shatteredpixel.shatteredpixeldungeon.Badges;
+import com.shatteredpixel.shatteredpixeldungeon.Challenges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
@@ -35,7 +36,7 @@ extends Mob {
 
     @Override
     public int drRoll() {
-        if (Dungeon.isChallenged(1024)) {
+        if (Dungeon.isChallenged(Challenges.STRONGER_BOSSES)) {
             return Random.NormalIntRange(4, 24);
         }
         return Random.NormalIntRange(2, 20);
@@ -49,7 +50,7 @@ extends Mob {
     @Override
     protected boolean act() {
         if (Dungeon.level.map[this.pos] == 29 && this.state == this.HUNTING) {
-            if (Dungeon.isChallenged(1024)) {
+            if (Dungeon.isChallenged(Challenges.STRONGER_BOSSES)) {
                 this.damage(this.HT / 40, this);
             } else {
                 this.damage(this.HT / 20, this);

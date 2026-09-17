@@ -1,6 +1,7 @@
 //END(port from Arknights): Isharmla
 package com.shatteredpixel.shatteredpixeldungeon.actors.mobs;
 
+import com.shatteredpixel.shatteredpixeldungeon.Challenges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AllyBuff;
@@ -48,7 +49,7 @@ extends Mob {
         this.properties.add(Char.Property.STATIC);
         this.summonCooldown = 5;
         this.shieldCooldown = 8;
-        this.shieldAmount = Dungeon.isChallenged(512) ? 30 : 15;
+        this.shieldAmount = Dungeon.isChallenged(Challenges.STRONGER_BOSSES) ? 30 : 15;
     }
 
     @Override
@@ -146,7 +147,7 @@ extends Mob {
                 if (!mob.isAlive() || !(mob instanceof SummonRunner) && !(mob instanceof SummonLeef) && !(mob instanceof SummonOcto)) continue;
                 Buff.affect(mob, Barrier.class).setShield(this.shieldAmount);
             }
-            this.shieldCooldown = Dungeon.isChallenged(512) ? 8 : 12;
+            this.shieldCooldown = Dungeon.isChallenged(Challenges.STRONGER_BOSSES) ? 8 : 12;
         } else {
             --this.shieldCooldown;
         }

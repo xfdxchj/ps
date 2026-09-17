@@ -73,6 +73,19 @@ public class WndGame extends Window {
 			curBtn.icon(Icons.get(Icons.CHALLENGE_COLOR));
 		}
 
+		//END(新增): 存档槽位 —— 游戏内可保存到别的槽 / 读取别的槽 / 删档。
+		//原版只有标题界面的槽位列表能用，进行中想"另存为"或"读取别的存档"没有入口。
+		if (Dungeon.hero != null && Dungeon.hero.isAlive()) {
+			addButton( curBtn = new RedButton( Messages.get(this, "saveslots") ) {
+				@Override
+				protected void onClick() {
+					hide();
+					GameScene.show( new WndSaveSlots() );
+				}
+			} );
+			curBtn.icon(Icons.get(Icons.DISPLAY));
+		}
+
 		// Restart
 		if (Dungeon.hero == null || !Dungeon.hero.isAlive()) {
 

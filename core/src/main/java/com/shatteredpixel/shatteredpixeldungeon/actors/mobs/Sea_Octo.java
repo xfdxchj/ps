@@ -1,6 +1,7 @@
 //END(port from Arknights): Sea_Octo
 package com.shatteredpixel.shatteredpixeldungeon.actors.mobs;
 
+import com.shatteredpixel.shatteredpixeldungeon.Challenges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
@@ -75,7 +76,7 @@ extends Mob {
     @Override
     public int attackProc(Char enemy, int damage) {
         int ndamage = 8;
-        if (Dungeon.isChallenged(1024)) {
+        if (Dungeon.isChallenged(Challenges.STRONGER_BOSSES)) {
             ndamage = 16;
         }
         if (Dungeon.depth == 39) {

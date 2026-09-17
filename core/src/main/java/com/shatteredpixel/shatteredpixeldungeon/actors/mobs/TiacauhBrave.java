@@ -1,6 +1,7 @@
 //END(port from Arknights): TiacauhBrave
 package com.shatteredpixel.shatteredpixeldungeon.actors.mobs;
 
+import com.shatteredpixel.shatteredpixeldungeon.Challenges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
@@ -36,7 +37,7 @@ extends Mob {
 
     @Override
     public int damageRoll() {
-        if (Dungeon.isChallenged(1024)) {
+        if (Dungeon.isChallenged(Challenges.STRONGER_BOSSES)) {
             return Random.NormalIntRange(44, 57);
         }
         return Random.NormalIntRange(35, 57);
@@ -67,7 +68,7 @@ extends Mob {
     public int attackProc(Char enemy, int damage) {
         if (!this.isAttack) {
             this.isAttack = true;
-            if (Dungeon.isChallenged(1024)) {
+            if (Dungeon.isChallenged(Challenges.STRONGER_BOSSES)) {
                 Buff.affect(enemy, Hex.class, 5.0f);
             }
             Buff.affect(enemy, Vulnerable.class, 3.0f);

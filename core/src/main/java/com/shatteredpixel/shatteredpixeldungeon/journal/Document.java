@@ -62,6 +62,17 @@ public enum Document {
 	public static final int FOUND = 1;
 	public static final int READ = 2;
 	private LinkedHashMap<String, Integer> pagesStates = new LinkedHashMap<>();
+
+	/**
+	 * END(便利挑战): 把炼金指南所有页标记为已读，便利挑战激活时调用。
+	 * 让玩家无需逐步发现配方即可直接查阅全部炼金页面。
+	 */
+	public static void unlockAllAlchemyPages() {
+		for (String page : ALCHEMY_GUIDE.pagesStates.keySet()) {
+			ALCHEMY_GUIDE.pagesStates.put(page, READ);
+		}
+		Journal.saveNeeded = true;
+	}
 	
 	public boolean findPage( String page ) {
 		if (pagesStates.containsKey(page) && pagesStates.get(page) == NOT_FOUND){

@@ -150,6 +150,8 @@ public class GamesInProgress {
 		
 		info.depth = Dungeon.depth;
 		info.challenges = Dungeon.challenges;
+		//END(挑战框架): 一并缓存完整掩码，存档列表才能显示表 ID 较大的新规则
+		info.challengeMask = Dungeon.challengeMask;
 
 		info.seed = Dungeon.seed;
 		info.customSeed = Dungeon.customSeedText;
@@ -187,6 +189,15 @@ public class GamesInProgress {
 		public int depth;
 		public int version;
 		public int challenges;
+
+		/**
+		 * END(挑战框架): 完整挑战掩码（位号 = 表 ID）。
+		 * <p>{@link #challenges}（int）放不下表 ID 较大的新规则，
+		 * 存档列表要正确显示它们就得靠这个字段。
+		 */
+		public com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeMask
+				challengeMask =
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeMask.empty();
 
 		public long seed;
 		public String customSeed;

@@ -416,6 +416,24 @@ public abstract class Char extends Actor {
 			//flat damage bonus is affected by multipliers
 			dmg += dmgBonus;
 
+			//==== END(挑战·伤害管线 第2步): 攻击方增益，**加法叠加** ====
+			//玻璃大炮 +20% / 破釜沉舟 +30% / 极致攻哈 +20% / 狂暴 +20%（怪物侧）
+			//注意：必须加法，若各自连乘结果会偏大（×1.872 而非 ×1.70）。
+			//放在 dmgBonus 之后、既有乘算增益之前，作为"基础伤害上的加成"。
+			float challengeBonus = com.shatteredpixel.shatteredpixeldungeon.endcontent
+					.challenge.ChallengeEffects.additiveBonus(this);
+			if (challengeBonus != 0f) {
+				dmg *= (1f + challengeBonus);
+			}
+
+			//==== END(挑战·伤害管线 第3步): 低血倍率，**乘法叠加** ====
+			//亡者之怒 ×2（玩家 HP<10%）/ 越战越勇（怪物按已损生命）
+			float challengeMult = com.shatteredpixel.shatteredpixeldungeon.endcontent
+					.challenge.ChallengeEffects.lowHpMultiplier(this);
+			if (challengeMult != 1f) {
+				dmg *= challengeMult;
+			}
+
 			if (enemy.buff(GuidingLight.Illuminated.class) != null){
 				enemy.buff(GuidingLight.Illuminated.class).detach();
 				if (this == Dungeon.hero && Dungeon.hero.hasTalent(Talent.SEARING_LIGHT)){
@@ -447,7 +465,12 @@ public abstract class Char extends Actor {
 			}
 
 			for (ChampionEnemy buff : buffs(ChampionEnemy.class)){
-				dmg *= buff.meleeDamageFactor();
+				//END(挑战 14 精英强化): 精英怪攻击 ×1.2。
+				//必须乘在**调用侧** —— ChampionEnemy 的子类（Blazing/Projecting…）
+				//都是直接 return 常量、不调 super，改基类方法不会生效。
+				dmg *= buff.meleeDamageFactor()
+						* com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+								.ChallengeEffects.eliteStatMultiplier();
 			}
 
 			dmg *= AscensionChallenge.statModifier(this);
@@ -657,7 +680,10 @@ public abstract class Char extends Actor {
 		if (attacker.buff(  Hex.class) != null) acuRoll *= 0.8f;
 		if (attacker.buff( Daze.class) != null) acuRoll *= 0.5f;
 		for (ChampionEnemy buff : attacker.buffs(ChampionEnemy.class)){
-			acuRoll *= buff.evasionAndAccuracyFactor();
+			//END(挑战 14): 精英命中 ×1.2（调用侧相乘，子类不调 super）
+			acuRoll *= buff.evasionAndAccuracyFactor()
+					* com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+							.ChallengeEffects.eliteStatMultiplier();
 		}
 		acuRoll *= AscensionChallenge.statModifier(attacker);
 		if (Dungeon.hero.heroClass != HeroClass.CLERIC
@@ -673,7 +699,10 @@ public abstract class Char extends Actor {
 		if (defender.buff(  Hex.class) != null) defRoll *= 0.8f;
 		if (defender.buff( Daze.class) != null) defRoll *= 0.5f;
 		for (ChampionEnemy buff : defender.buffs(ChampionEnemy.class)){
-			defRoll *= buff.evasionAndAccuracyFactor();
+			//END(挑战 14): 精英闪避 ×1.2（调用侧相乘，子类不调 super）
+			defRoll *= buff.evasionAndAccuracyFactor()
+					* com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+							.ChallengeEffects.eliteStatMultiplier();
 		}
 		defRoll *= AscensionChallenge.statModifier(defender);
 		if (Dungeon.hero.heroClass != HeroClass.CLERIC
@@ -787,6 +816,12 @@ public abstract class Char extends Actor {
 		speed *= Swiftness.speedBoost(this, glyphLevel(Swiftness.class));
 		speed *= Flow.speedBoost(this, glyphLevel(Flow.class));
 		speed *= Bulk.speedBoost(this, glyphLevel(Bulk.class));
+
+		//==== END(挑战): 速度类规则 ====
+		//破釜沉舟（玩家 HP<30% 时攻速 ×1.2）。
+		//放在**基类**里，Hero/Mob 覆写 speed() 时都会经 super.speed() 走到这里。
+		speed *= com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.speedModifier(this);
 
 		return speed;
 	}
@@ -923,6 +958,22 @@ public abstract class Char extends Actor {
 		// most important vs. giant champions in the earlygame
 		for (ChampionEnemy buff : buffs(ChampionEnemy.class)){
 			dmg = (int) Math.ceil(dmg * buff.damageTakenFactor());
+		}
+
+		//==== END(挑战·伤害管线 第5步): 目标方减伤 —— 脆弱 +13% ====
+		//放在护甲减免（Char.attack 里已算）与冠军减伤之后，即"承伤系数"的最后一环。
+		//对玩家与怪物**都**生效（这才是"双刃剑"）。
+		dmg = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.damageTaken(this, dmg);
+
+		//==== END(挑战·伤害管线 第6步): 最终拦截（中档，当前为恒等）====
+		//物极必反 / 九九归一在此介入；未实装时原样返回。
+		dmg = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.finalIntercept(this, dmg);
+		if (dmg <= 0) {
+			//被完全拦截：不扣血
+			sprite.showStatus(CharSprite.POSITIVE, Messages.get(this, "invulnerable"));
+			return;
 		}
 		
 		//TODO improve this when I have proper damage source logic

@@ -69,6 +69,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.Scroll;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfRegrowth;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfWarding;
 import com.shatteredpixel.shatteredpixeldungeon.journal.Catalog;
+import com.shatteredpixel.shatteredpixeldungeon.journal.Document;
 import com.shatteredpixel.shatteredpixeldungeon.journal.Notes;
 import com.shatteredpixel.shatteredpixeldungeon.levels.CavesBossLevel;
 import com.shatteredpixel.shatteredpixeldungeon.levels.CavesLevel;
@@ -202,6 +203,19 @@ public class Dungeon {
 	}
 
 	public static int challenges;
+
+	/**
+	 * END(挑战框架): 完整挑战掩码（位号 = 表 ID，可容纳全部 118 条规则）。
+	 *
+	 * <p>{@link #challenges}（int）是它的**低 12 位投影**，供 143 处老的
+	 * {@code isChallenged(int)} 调用点继续工作。两者通过
+	 * {@link #setChallenges} / {@link #setChallengeMask} 保持同步，
+	 * 不要单独改其中一个。
+	 */
+	public static com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeMask
+			challengeMask =
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeMask.empty();
+
 	public static float mobsToChampion;
 
 	public static Hero hero;
@@ -260,7 +274,15 @@ public class Dungeon {
 	public static void init() {
 
 		initialVersion = version = Game.versionCode;
-		challenges = SPDSettings.challenges();
+		//END(挑战框架): 优先读完整掩码（高位规则也在里面）；
+		//完整掩码为空时 SPDSettings.challengeMask() 会自行退化到旧 int。
+		setChallengeMask( SPDSettings.challengeMask() );
+
+		//END(便利挑战): 激活便利挑战时解锁全部炼金配方页
+		if (isChallenged(Challenges.CONVENIENCE)) {
+			Document.unlockAllAlchemyPages();
+		}
+
 		//END(移植自魔绫·挑战区): 把开局勾选的挑战区域写入 Statistics（Hollow 等）
 		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeArea
 				//END(修复·存档隔离): 只在存档尚无区域记录时才从全局设置初始化。
@@ -502,6 +524,39 @@ public class Dungeon {
 
 	public static boolean isChallenged( int mask ) {
 		return (challenges & mask) != 0;
+	}
+
+	//==== END(挑战框架): 新旧掩码的同步入口 ====
+
+	/**
+	 * 用旧 int 掩码设置挑战（读旧存档 / 老 UI 用）。
+	 * <p>同时把它翻译成新掩码，保证新框架也能看到这些规则。
+	 */
+	public static void setChallenges( int legacy ) {
+		challenges = legacy;
+		challengeMask =
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeRegistry
+						.fromLegacyInt( legacy );
+	}
+
+	/**
+	 * 用完整掩码设置挑战（新 UI 用）。
+	 * <p>同步导出低 12 位投影到 {@link #challenges}，
+	 * 让所有老的 {@code isChallenged(int)} 判断继续正确。
+	 */
+	public static void setChallengeMask(
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeMask mask ) {
+		challengeMask = (mask == null)
+				? com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeMask.empty()
+				: mask;
+		challenges =
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeRegistry
+						.toLegacyInt( challengeMask );
+	}
+
+	/** END(挑战框架): 按**表 ID** 判断某条规则是否启用（新写法）。 */
+	public static boolean isChallengedId( int challengeId ) {
+		return challengeMask.has( challengeId );
 	}
 
 	public static boolean levelHasBeenGenerated(int depth, int branch){
@@ -867,6 +922,8 @@ public class Dungeon {
 	private static final String DAILY_REPLAY= "daily_replay";
 	private static final String LAST_PLAYED = "last_played";
 	private static final String CHALLENGES	= "challenges";
+	//END(挑战框架): 完整掩码（位号 = 表 ID），旧 int 装不下高位的规则。
+	private static final String CHALLENGE_MASK = "challenge_mask";
 	private static final String MOBS_TO_CHAMPION	= "mobs_to_champion";
 	private static final String HERO		= "hero";
 	private static final String DEPTH		= "depth";
@@ -896,6 +953,10 @@ public class Dungeon {
 			bundle.put( DAILY_REPLAY, dailyReplay );
 			bundle.put( LAST_PLAYED, lastPlayed = Game.realTime);
 			bundle.put( CHALLENGES, challenges );
+			//END(挑战框架): 完整掩码另存 long[]。
+			//ChallengeMask 用 3 个 long（位号 = 表 ID，最大 138 → ceil(139/64)=3），
+			//Bundle 原生支持 long[]，一次存完，不做手工分段（分段容易漏第三段）。
+			bundle.put( CHALLENGE_MASK, challengeMask.toLongArray() );
 			bundle.put( MOBS_TO_CHAMPION, mobsToChampion );
 			bundle.put( HERO, hero );
 			bundle.put( DEPTH, depth );
@@ -1003,7 +1064,22 @@ public class Dungeon {
 		Toolbar.swappedQuickslots = false;
 
 		Dungeon.challenges = bundle.getInt( CHALLENGES );
+		//END(挑战框架): 优先用完整掩码；没有（旧存档）则从 int 翻译。
+		if (bundle.contains( CHALLENGE_MASK )) {
+			Dungeon.challengeMask =
+					com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeMask
+							.of( bundle.getLongArray( CHALLENGE_MASK ) );
+		} else {
+			Dungeon.challengeMask =
+					com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeRegistry
+							.fromLegacyInt( Dungeon.challenges );
+		}
 		Dungeon.mobsToChampion = bundle.getFloat( MOBS_TO_CHAMPION );
+
+		//END(便利挑战): 激活便利挑战时解锁全部炼金配方页
+		if (isChallenged(Challenges.CONVENIENCE)) {
+			Document.unlockAllAlchemyPages();
+		}
 		
 		Dungeon.level = null;
 		Dungeon.depth = -1;
@@ -1122,6 +1198,16 @@ public class Dungeon {
 		info.depth = bundle.getInt( DEPTH );
 		info.version = bundle.getInt( VERSION );
 		info.challenges = bundle.getInt( CHALLENGES );
+		//END(挑战框架): 带上完整掩码，供存档列表正确显示新规则。
+		if (bundle.contains( CHALLENGE_MASK )) {
+			info.challengeMask =
+					com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeMask
+							.of( bundle.getLongArray( CHALLENGE_MASK ) );
+		} else {
+			info.challengeMask =
+					com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeRegistry
+							.fromLegacyInt( info.challenges );
+		}
 		info.seed = bundle.getLong( SEED );
 		info.customSeed = bundle.getString( CUSTOM_SEED );
 		info.daily = bundle.getBoolean( DAILY );

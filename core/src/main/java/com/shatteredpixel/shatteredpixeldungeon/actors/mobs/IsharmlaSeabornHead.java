@@ -161,7 +161,7 @@ extends Mob {
                 Dungeon.fail(this.getClass());
                 GLog.n(Messages.get(Char.class, "kill", this.name()));
             }
-            this.laserCooldown = Dungeon.isChallenged(512) ? 5 : 6;
+            this.laserCooldown = Dungeon.isChallenged(Challenges.STRONGER_BOSSES) ? 5 : 6;
         } else {
             --this.laserCooldown;
         }
@@ -185,7 +185,7 @@ extends Mob {
         if (heroTile == 1 || heroTile == 20) {
             return;
         }
-        float resistance = Dungeon.isChallenged(512) ? 0.5f : 0.33f;
+        float resistance = Dungeon.isChallenged(Challenges.STRONGER_BOSSES) ? 0.5f : 0.33f;
         dmg = (int)((double)dmg * (1.0 - (double)(resistance * (float)(2 - Dungeon.mulaCount))));
         int hpThreshold = this.HT / 2;
         super.damage(dmg, src);
@@ -222,7 +222,7 @@ extends Mob {
             isEnraged = true;
             enrageDuration = 999;
         } else {
-            int newDuration = (Dungeon.isChallenged(512) ? 20 : 15) * Dungeon.mulaCount;
+            int newDuration = (Dungeon.isChallenged(Challenges.STRONGER_BOSSES) ? 20 : 15) * Dungeon.mulaCount;
             if (!isAngry || newDuration > enrageDuration) {
                 enrageDuration = newDuration;
             }
@@ -241,7 +241,7 @@ extends Mob {
         if (this.waveCooldown > 0) {
             --this.waveCooldown;
         } else {
-            this.waveCooldown = Dungeon.isChallenged(512) || isEnraged ? 2 : 3;
+            this.waveCooldown = Dungeon.isChallenged(Challenges.STRONGER_BOSSES) || isEnraged ? 2 : 3;
             IsharmlaSeabornHead.sendWaves(this);
         }
     }

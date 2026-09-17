@@ -1,6 +1,7 @@
 //END(port from Arknights): TiacauhAddict
 package com.shatteredpixel.shatteredpixeldungeon.actors.mobs;
 
+import com.shatteredpixel.shatteredpixeldungeon.Challenges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.ToxicGas;
@@ -52,7 +53,7 @@ extends Mob {
             Buff.affect(enemy, Weakness.class, 4.0f);
             Buff.affect(enemy, Vulnerable.class, 4.0f);
         }
-        if (Dungeon.isChallenged(1024) && Random.Int(5) == 0) {
+        if (Dungeon.isChallenged(Challenges.STRONGER_BOSSES) && Random.Int(5) == 0) {
             Buff.affect(enemy, Hallucination.class).set(3.0f);
         }
         return super.attackProc(enemy, damage);

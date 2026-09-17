@@ -114,7 +114,28 @@ public abstract class ChampionEnemy extends Buff {
 			if (m instanceof Guard && Dungeon.scalingDepth() <= 7) return;
 			if (m instanceof Bat   && Dungeon.scalingDepth() <= 9) return;
 
+			//END(挑战 14): 加血前先确认"本次确实是新精英化"。
+			//Buff.affect 对已有该 buff 的目标会**直接返回旧的、不做任何事**，
+			//若不判断就会在重复调用时给同一只怪叠加多次血量。
+			boolean newlyChampion = (m.buff(buffCls) == null);
+
 			Buff.affect(m, buffCls);
+
+			//==== END(挑战 14 精英强化): 精英怪生命上限 ×1.2 ====
+			//在这里加血是因为这是"怪物刚变成精英"的**唯一时刻** ——
+			//rollForChampion 只在生成/召唤时调用，之后不会再走。
+			//当前血量同步提升，否则精英会以"残血"状态登场。
+			if (newlyChampion) {
+				float eliteHp = com.shatteredpixel.shatteredpixeldungeon.endcontent
+						.challenge.ChallengeEffects.eliteStatMultiplier();
+				if (eliteHp != 1f) {
+					int newHT = Math.max(1, Math.round(m.HT * eliteHp));
+					int gained = newHT - m.HT;
+					m.HT = newHT;
+					m.HP = Math.min(newHT, m.HP + Math.max(0, gained));
+				}
+			}
+
 			//numbers of mobs until a champion scales from 1/8 to 1/6 as depths increases
 			Dungeon.mobsToChampion += 8 - Math.min(20, Dungeon.scalingDepth()-1)/10f;
 			if (m.state != m.PASSIVE) {

@@ -143,10 +143,13 @@ public class SpiritBow extends Weapon {
 				Math.round(augment.damageFactor(max())),
 				STRReq());
 		
-		if (STRReq() > Dungeon.hero.STR()) {
-			info += " " + Messages.get(Weapon.class, "too_heavy");
-		} else if (Dungeon.hero.STR() > STRReq()){
-			info += " " + Messages.get(Weapon.class, "excess_str", Dungeon.hero.STR() - STRReq());
+		//END(炼金指南预览): 无进行中游戏时 Dungeon.hero 为 null（见 JournalScene），需判空。
+		if (Dungeon.hero != null) {
+			if (STRReq() > Dungeon.hero.STR()) {
+				info += " " + Messages.get(Weapon.class, "too_heavy");
+			} else if (Dungeon.hero.STR() > STRReq()){
+				info += " " + Messages.get(Weapon.class, "excess_str", Dungeon.hero.STR() - STRReq());
+			}
 		}
 		
 		switch (augment) {
@@ -167,7 +170,7 @@ public class SpiritBow extends Weapon {
 			info += "\n\n" + Messages.get(Weapon.class, "hardened_no_enchant");
 		}
 		
-		if (cursed && isEquipped( Dungeon.hero )) {
+		if (cursed && Dungeon.hero != null && isEquipped( Dungeon.hero )) {
 			info += "\n\n" + Messages.get(Weapon.class, "cursed_worn");
 		} else if (cursedKnown && cursed) {
 			info += "\n\n" + Messages.get(Weapon.class, "cursed");
@@ -187,14 +190,22 @@ public class SpiritBow extends Weapon {
 	
 	@Override
 	public int min(int lvl) {
+		//END(炼金指南预览): 无进行中游戏时 Dungeon.hero 为 null，退回基准值。
+		if (Dungeon.hero == null) {
+			return Math.max(0, 1 + (curseInfusionBonus ? 1 : 0));
+		}
 		int dmg = 1 + Dungeon.hero.lvl/5
 				+ RingOfSharpshooting.levelDamageBonus(Dungeon.hero)
 				+ (curseInfusionBonus ? 1 + Dungeon.hero.lvl/30 : 0);
 		return Math.max(0, dmg);
 	}
-	
+
 	@Override
 	public int max(int lvl) {
+		//END(炼金指南预览): 无进行中游戏时 Dungeon.hero 为 null，退回基准值。
+		if (Dungeon.hero == null) {
+			return Math.max(0, 6 + (curseInfusionBonus ? 2 : 0));
+		}
 		int dmg = 6 + (int)(Dungeon.hero.lvl/2.5f)
 				+ 2*RingOfSharpshooting.levelDamageBonus(Dungeon.hero)
 				+ (curseInfusionBonus ? 2 + Dungeon.hero.lvl/15 : 0);

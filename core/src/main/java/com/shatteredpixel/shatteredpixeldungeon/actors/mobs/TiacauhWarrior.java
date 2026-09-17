@@ -1,6 +1,7 @@
 //END(port from Arknights): TiacauhWarrior
 package com.shatteredpixel.shatteredpixeldungeon.actors.mobs;
 
+import com.shatteredpixel.shatteredpixeldungeon.Challenges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Burning;
@@ -50,7 +51,7 @@ extends Mob {
         if (grassCells > 0) {
             dmg = Math.round((float)dmg * (1.0f - (float)grassCells * 0.04f));
         }
-        if (Dungeon.isChallenged(1024)) {
+        if (Dungeon.isChallenged(Challenges.STRONGER_BOSSES)) {
             dmg = (int)((float)dmg * 0.8f);
         }
         if (src == Burning.class) {

@@ -35,7 +35,10 @@ extends Item {
         } else if (Challenges.activeChallenges() > 0) {
             this.quantity += 10;
         }
-        if (Dungeon.eazymode == 1 || Dungeon.isChallenged(4096) || !Dungeon.customSeedText.isEmpty()) {
+        //END(修复·位掩码): 原方舟源码这里是 isChallenged(4096)（方舟的 TEST 位）。
+        //本 fork 的 MAX_VALUE=4095，4096 永远为假 → 这段判断是死代码。
+        //方舟 TEST 位的语义是"测试/作弊局，不发放奖励"，本 fork 对应 CONVENIENCE（便利测试包）。
+        if (Dungeon.eazymode == 1 || Dungeon.isChallenged(Challenges.CONVENIENCE) || !Dungeon.customSeedText.isEmpty()) {
             this.quantity = 0;
         }
     }
@@ -52,7 +55,8 @@ extends Item {
     }
 
     public static void specialEndingBouns() {
-        if (Dungeon.eazymode != 1 && !Dungeon.isChallenged(4096) && Dungeon.customSeedText.isEmpty()) {
+        //END(修复·位掩码): 同上，4096 → CONVENIENCE。
+        if (Dungeon.eazymode != 1 && !Dungeon.isChallenged(Challenges.CONVENIENCE) && Dungeon.customSeedText.isEmpty()) {
             int bouns = 0;
             if (Challenges.activeChallenges() > 7) {
                 bouns += 50;

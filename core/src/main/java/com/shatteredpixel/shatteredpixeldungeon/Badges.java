@@ -221,7 +221,7 @@ public class Badges {
 		HALOFIRE_DIED               ( 113 ), //END(修复)
 		CITY_END                    ( 114 ), //END(修复)
 		NYZ_SHOP                    ( 115 ),
-        HIKARI ( 0 ),
+        HIKARI ( 89 ),
         SIESTA_PART1 ( 25 ),
         SIESTA_PART2 ( 26 ),
         GAVIAL_PART1 ( 27 ),
@@ -1432,7 +1432,10 @@ public class Badges {
 
 	//END(port from Arknights): silentValidateHappyEnd
 	public static void silentValidateHappyEnd() {
-        if (!Dungeon.isChallenged(4096)) {
+		//END(修复·位掩码): 原方舟源码用 isChallenged(4096)（方舟 TEST 位）。
+		//本 fork MAX_VALUE=4095，该位永远为假 → 徽章会被无条件发放。
+		//方舟 TEST 位 = "测试/作弊局不发成就"，对应本 fork 的 CONVENIENCE。
+        if (!Dungeon.isChallenged(Challenges.CONVENIENCE)) {
             local.add(Badge.HAPPY_END);
         }
     }

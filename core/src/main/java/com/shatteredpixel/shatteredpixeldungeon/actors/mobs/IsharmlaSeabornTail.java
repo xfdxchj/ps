@@ -1,6 +1,7 @@
 //END(port from Arknights): IsharmlaSeabornTail
 package com.shatteredpixel.shatteredpixeldungeon.actors.mobs;
 
+import com.shatteredpixel.shatteredpixeldungeon.Challenges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
@@ -77,13 +78,13 @@ extends Mob {
         if (this.cooldown > 0) {
             --this.cooldown;
         } else {
-            int damage = Dungeon.isChallenged(512) ? 12 : 10;
+            int damage = Dungeon.isChallenged(Challenges.STRONGER_BOSSES) ? 12 : 10;
             Dungeon.hero.damage(damage, this);
             for (Mob mob : Dungeon.level.mobs.toArray(new Mob[0])) {
                 if (mob.alignment != Char.Alignment.ALLY) continue;
                 mob.damage(damage, this);
             }
-            this.cooldown = Dungeon.isChallenged(512) ? 3 : 4;
+            this.cooldown = Dungeon.isChallenged(Challenges.STRONGER_BOSSES) ? 3 : 4;
         }
         return super.act();
     }

@@ -1,6 +1,7 @@
 //END(port from Arknights): IsharmlaSeabornBody
 package com.shatteredpixel.shatteredpixeldungeon.actors.mobs;
 
+import com.shatteredpixel.shatteredpixeldungeon.Challenges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
@@ -33,8 +34,8 @@ extends Mob {
         this.properties.add(Char.Property.IMMOVABLE);
         this.state = new Hunting();
         this.isDead = false;
-        this.cooldown = Dungeon.isChallenged(512) ? 6 : 9;
-        this.healAmount = Dungeon.isChallenged(512) ? 50 : 40;
+        this.cooldown = Dungeon.isChallenged(Challenges.STRONGER_BOSSES) ? 6 : 9;
+        this.healAmount = Dungeon.isChallenged(Challenges.STRONGER_BOSSES) ? 50 : 40;
     }
 
     @Override
@@ -74,7 +75,7 @@ extends Mob {
                 mob.sprite.emitter().burst(Speck.factory(0), 3);
                 mob.HP = Math.min(mob.HT, mob.HP + this.healAmount);
             }
-            this.cooldown = Dungeon.isChallenged(512) ? 6 : 9;
+            this.cooldown = Dungeon.isChallenged(Challenges.STRONGER_BOSSES) ? 6 : 9;
         }
         return super.act();
     }

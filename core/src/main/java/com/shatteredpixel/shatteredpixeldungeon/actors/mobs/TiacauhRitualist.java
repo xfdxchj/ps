@@ -1,6 +1,7 @@
 //END(port from Arknights): TiacauhRitualist
 package com.shatteredpixel.shatteredpixeldungeon.actors.mobs;
 
+import com.shatteredpixel.shatteredpixeldungeon.Challenges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Blindness;
@@ -69,7 +70,7 @@ extends Mob {
             if (TiacauhRitualist.hit(this, enemy, true)) {
                 int dmg = Random.NormalIntRange(12, 18);
                 enemy.damage(dmg, new TiacauhBolat());
-                if (Dungeon.isChallenged(1024) && Random.Int(2) == 0) {
+                if (Dungeon.isChallenged(Challenges.STRONGER_BOSSES) && Random.Int(2) == 0) {
                     Buff.affect(enemy, Blindness.class, 1.0f);
                 }
                 if (enemy.sprite.visible) {

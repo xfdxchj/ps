@@ -803,6 +803,9 @@ public abstract class Mob extends Char {
 	@Override
 	public void damage( int dmg, Object src ) {
 
+		//END(挑战 9 狂暴): 记录受击前血量，用于判断本次是否真的掉血
+		final int hpBefore = HP;
+
 		if (!isInvulnerable(src.getClass())) {
 			if (state == SLEEPING) {
 				state = WANDERING;
@@ -824,6 +827,15 @@ public abstract class Mob extends Char {
 		}
 		
 		super.damage( dmg, src );
+
+		//==== END(挑战 9 狂暴): 怪物受击后获得 20% 攻击提升 ====
+		//用"实际掉血"判断是否真的受了伤 —— super.damage() 内部可能
+		//因无敌/拦截（物极必反等）完全不扣血，那种情况不该触发狂暴。
+		//持续 2 回合、不叠加，由 ChallengeBerserkMark 自己维护倒计时。
+		if (hpBefore > HP) {
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.markBerserk(this);
+		}
 	}
 	
 	

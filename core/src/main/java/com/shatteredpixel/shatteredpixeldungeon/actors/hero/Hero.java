@@ -272,6 +272,16 @@ public class Hero extends Char {
 			HT += EndGemProfile.of(EndGem.MAX_HP).bonusAt( belongings.armor().buffedLvl() );
 		}
 
+		//==== END(挑战 12 玻璃大炮): 生命上限 ×0.87 ====
+		//放在所有 HT 加成之后，作用于**最终上限**。
+		//下方 HP = Math.min(HP, HT) 会自动把当前血量一并压下来，
+		//符合"玩家攻击提高 20%，生命降低 13%"的语义。HT 不低于 1。
+		float challengeHt = com.shatteredpixel.shatteredpixeldungeon.endcontent
+				.challenge.ChallengeEffects.heroHtMultiplier();
+		if (challengeHt != 1f) {
+			HT = Math.max(1, Math.round(HT * challengeHt));
+		}
+
 		if (boostHP){
 			HP += Math.max(HT - curHT, 0);
 		}

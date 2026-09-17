@@ -2,6 +2,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.actors.mobs;
 
 import com.shatteredpixel.shatteredpixeldungeon.Badges;
+import com.shatteredpixel.shatteredpixeldungeon.Challenges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
@@ -106,7 +107,7 @@ extends Mob {
         }
         if (this.phase == 2) {
             int healpoint = 4;
-            if (Dungeon.isChallenged(512)) {
+            if (Dungeon.isChallenged(Challenges.STRONGER_BOSSES)) {
                 healpoint = 8;
             }
             this.HP = Math.min(this.HT, this.HP + healpoint);

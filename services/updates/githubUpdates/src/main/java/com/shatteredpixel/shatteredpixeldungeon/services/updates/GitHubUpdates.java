@@ -31,7 +31,7 @@ import com.watabou.utils.DeviceCompat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.net.ssl.SSLProtocolException;
+import javax.net.ssl.SSLException;
 
 public class GitHubUpdates extends UpdateService {
 
@@ -127,10 +127,12 @@ public class GitHubUpdates extends UpdateService {
 
 			@Override
 			public void failed(Throwable t) {
-				//Failure in SSL handshake, possibly because GitHub requires TLS 1.2+.
-				// Often happens for old OS versions with outdated security protocols.
+				//Failure in SSL handshake, possibly because GitHub requires TLS 1.2+,
+				// or because the local trust store lacks the GitHub CA certificate
+				// (e.g. PKIX path building failed). Often happens for old OS versions
+				// or JREs with outdated security protocols/certificates.
 				// Future update attempts won't work anyway, so just pretend nothing was found.
-				if (t instanceof SSLProtocolException){
+				if (t instanceof SSLException){
 					callback.onNoUpdateFound();
 				} else {
 					Game.reportException(t);

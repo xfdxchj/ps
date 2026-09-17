@@ -234,8 +234,12 @@ public class HeroSelectScene extends PixelScene {
 		}
 
 		if (!Badges.isUnlocked(Badges.Badge.VICTORY) && !DeviceCompat.isDebug()){
-			Dungeon.challenges = 0;
-			SPDSettings.challenges(0);
+			//END(挑战框架): 走 setChallengeMask 让新旧掩码一起清空，
+			//否则这里只清旧 int，高位规则会残留。
+			Dungeon.setChallengeMask(
+					com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeMask.empty());
+			SPDSettings.challengeMask(
+					com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeMask.empty());
 			SPDSettings.customSeed("");
 		}
 

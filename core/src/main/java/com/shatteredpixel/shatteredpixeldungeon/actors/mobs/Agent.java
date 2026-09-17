@@ -1,6 +1,7 @@
 //END(port from Arknights): Agent
 package com.shatteredpixel.shatteredpixeldungeon.actors.mobs;
 
+import com.shatteredpixel.shatteredpixeldungeon.Challenges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
@@ -35,7 +36,7 @@ extends Mob {
     public int attackProc(Char enemy, int damage) {
         if (this.buff(Silence.class) == null && Random.Int(3) < 1) {
             float time = 5.0f;
-            if (Dungeon.isChallenged(1024)) {
+            if (Dungeon.isChallenged(Challenges.STRONGER_BOSSES)) {
                 time = 10.0f;
             }
             Buff.affect(enemy, Hex.class, time);

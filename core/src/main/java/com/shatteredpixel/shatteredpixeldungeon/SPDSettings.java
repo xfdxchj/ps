@@ -251,6 +251,52 @@ public class SPDSettings extends GameSettings {
 		return getInt( KEY_CHALLENGES, 0, 0, Challenges.MAX_VALUE );
 	}
 
+	//==== END(挑战框架): 完整挑战掩码的持久化 ====
+	//为什么不用 KEY_CHALLENGES：那个键被 getInt(..., 0, MAX_VALUE=4095) 硬夹到 12 位，
+	//装不下表 ID 较大的新规则（位号最大 138）。这里另用 3 个 long 键存完整掩码。
+
+	/** 完整掩码第 1 段（位号 0–63）。 */
+	public static final String KEY_CHALLENGE_MASK_0 = "challenge_mask_0";
+	/** 完整掩码第 2 段（位号 64–127）。 */
+	public static final String KEY_CHALLENGE_MASK_1 = "challenge_mask_1";
+	/** 完整掩码第 3 段（位号 128–191）。 */
+	public static final String KEY_CHALLENGE_MASK_2 = "challenge_mask_2";
+
+	public static void challengeMask(
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeMask mask ) {
+		long[] words = (mask == null)
+				? new long[3]
+				: mask.toLongArray();
+		put( KEY_CHALLENGE_MASK_0, words.length > 0 ? words[0] : 0L );
+		put( KEY_CHALLENGE_MASK_1, words.length > 1 ? words[1] : 0L );
+		put( KEY_CHALLENGE_MASK_2, words.length > 2 ? words[2] : 0L );
+
+		//同步写回旧 int 键，保证老代码路径（和老版本回退）仍能读到已实装的那 12 条
+		put( KEY_CHALLENGES, com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeRegistry.toLegacyInt( mask ) );
+	}
+
+	public static com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeMask
+			challengeMask() {
+		long[] words = new long[]{
+				getLong( KEY_CHALLENGE_MASK_0, 0L ),
+				getLong( KEY_CHALLENGE_MASK_1, 0L ),
+				getLong( KEY_CHALLENGE_MASK_2, 0L )
+		};
+
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeMask fromWords =
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeMask
+						.of( words );
+
+		//三个键都为空时（首次运行 / 旧版本升级），从旧 int 键翻译，
+		//避免老玩家已勾选的 12 条挑战凭空消失。
+		if (fromWords.isEmpty()) {
+			return com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeRegistry.fromLegacyInt( challenges() );
+		}
+		return fromWords;
+	}
+
 	//END(移植自魔绫·挑战区): 开局选择的“挑战区域”位掩码（bit i = 第 i 个区域被选中）
 	public static final String KEY_CHALLENGE_AREAS = "challenge_areas";
 
