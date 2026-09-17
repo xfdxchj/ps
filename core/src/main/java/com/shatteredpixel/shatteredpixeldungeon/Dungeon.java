@@ -278,6 +278,9 @@ public class Dungeon {
 		//完整掩码为空时 SPDSettings.challengeMask() 会自行退化到旧 int。
 		setChallengeMask( SPDSettings.challengeMask() );
 
+		//END(挑战·音频): 只加载已勾选挑战用到的音频（31 个文件不全量预载）。
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeSfx.init();
+
 		//END(便利挑战): 激活便利挑战时解锁全部炼金配方页
 		if (isChallenged(Challenges.CONVENIENCE)) {
 			Document.unlockAllAlchemyPages();
@@ -567,6 +570,27 @@ public class Dungeon {
 		
 		Dungeon.level = null;
 		Actor.clear();
+
+		//==== END(挑战 43 一贫如洗): 进入新区域时金币 -20% ====
+		//判据沿用原版的区域划分 depth % 5（每 5 层一组，"完整地牢"下也一样）。
+		//第 1 层是起点，不扣（那时也没有金币）。
+		//只在"跨区域的第一层"触发一次，不是每层都扣。
+		if (depth > 1 && depth % 5 == 1 && hero != null) {
+			float goldMult = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.goldOnNewRegionMultiplier();
+			if (goldMult != 1f) {
+				int before = gold;
+				gold = (int) Math.floor(gold * goldMult);
+				int lost = before - gold;
+				if (lost > 0) {
+					com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w(
+							com.shatteredpixel.shatteredpixeldungeon.messages.Messages.get(
+									com.shatteredpixel.shatteredpixeldungeon.endcontent
+											.challenge.ChallengeEffects.class,
+									"destitute_lost", lost));
+				}
+			}
+		}
 		
 		Level level;
 		if (branch == 0) {
@@ -683,7 +707,20 @@ public class Dungeon {
 		Statistics.qualifiedForBossRemainsBadge = false;
 		
 		level.create();
-		
+
+		//==== END(挑战 61 炸弹狂魔): 每层额外掉落 1 个炸弹 ====
+		//放在 level.create() 之后、level 正式启用之前 ——
+		//此时地图与既有掉落都已就位，再补一个炸弹不会打乱关卡的 RNG 序列。
+		//Boss 层也生效（原表未排除）。
+		int bonusBombs = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.bonusBombsPerLevel();
+		for (int i = 0; i < bonusBombs; i++) {
+			int cell = level.randomRespawnCell(null);
+			if (cell != -1) {
+				level.drop(new com.shatteredpixel.shatteredpixeldungeon.items.bombs.Bomb(), cell);
+			}
+		}
+
 		if (branch == 0) Statistics.qualifiedForNoKilling = !bossLevel();
 		Statistics.qualifiedForBossChallengeBadge = false;
 		

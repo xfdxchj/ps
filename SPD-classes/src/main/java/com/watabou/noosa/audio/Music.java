@@ -60,7 +60,35 @@ public enum Music {
 		}
 	}
 
+	//==== END(挑战 130 格林之音): BGM 替换钩子 ====
+	//为什么用回调而不是直接调用：本类在 SPD-classes（底层模块），
+	//不能反向依赖 core（会形成循环依赖、编译不过）。
+	//因此由 core 在启动时注册一个"曲目转换器"，这里只负责调用。
+	//未注册时（或转换器返回原值）行为与原来完全一致，零影响。
+
+	/** 曲目转换器：输入原曲目路径，返回实际要播放的路径。 */
+	public interface TrackMapper {
+		String map(String original);
+	}
+
+	private static TrackMapper trackMapper;
+
+	/** 由 core 层注册（见 ChallengeSfx 的初始化）。传 null 可取消。 */
+	public static void setTrackMapper(TrackMapper mapper) {
+		trackMapper = mapper;
+	}
+
 	public synchronized void play( String assetName, boolean looping ) {
+
+		//END(挑战 130): 在**所有**处理之前替换曲目名 ——
+		//这样 lastPlayed 比较、iOS 的 .mp3 替换、play(assetName,null) 全都拿到替换后的路径，
+		//不会出现"已经换成格林 BGM 了但 lastPlayed 记的是原曲"导致的重复播放。
+		if (trackMapper != null && assetName != null) {
+			String mapped = trackMapper.map(assetName);
+			if (mapped != null) {
+				assetName = mapped;
+			}
+		}
 
 		//iOS cannot play ogg, so we use an mp3 alternative instead
 		if (assetName != null && DeviceCompat.isiOS()){

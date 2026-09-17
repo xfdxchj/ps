@@ -206,7 +206,31 @@ public class Assets {
 		public static final String HOLLOW_CITY      = "music/hollow/Mischief_Managed-Easy.ogg";
 		public static final String MORP_BOSS       = "music/hollow/morpheus.ogg"; //END(port)
 		public static final String HOLLOW_CITY_HARD = "music/hollow/Mischief_Managed.ogg";
+
+		//==== END(挑战 130 格林之音): 格林（黑魂）主题 BGM 替换表 ====
+		//启用该挑战时，以下曲目**整体替换**原版 BGM（拦截点在 Music.play）。
+		//对应关系按区域：1区=下水道 2区=监狱 3区=洞穴 4区=矮人城 5区=恶魔厅
+		public static final String GRIMM_AREA1      = "music/grimm/area1.ogg";
+		public static final String GRIMM_AREA1_BOSS = "music/grimm/area1_boss.ogg";
+		public static final String GRIMM_AREA2      = "music/grimm/area2.ogg";
+		public static final String GRIMM_AREA2_BOSS = "music/grimm/area2_boss.ogg";
+		public static final String GRIMM_AREA3      = "music/grimm/area3.ogg";
+		public static final String GRIMM_AREA3_BOSS = "music/grimm/area3_boss.ogg";
+		public static final String GRIMM_AREA4      = "music/grimm/area4.ogg";
+		public static final String GRIMM_AREA4_BOSS = "music/grimm/area4_boss.ogg";
+		public static final String GRIMM_AREA5      = "music/grimm/area5.ogg";
+		public static final String GRIMM_YOG_1      = "music/grimm/yog_1.ogg";
+		public static final String GRIMM_YOG_2      = "music/grimm/yog_2.ogg";
 	}
+
+	/** END(挑战 130): 格林主题曲目清单（供预加载）。 */
+	public static final String[] GRIMM_TRACKS = {
+			Music.GRIMM_AREA1, Music.GRIMM_AREA1_BOSS,
+			Music.GRIMM_AREA2, Music.GRIMM_AREA2_BOSS,
+			Music.GRIMM_AREA3, Music.GRIMM_AREA3_BOSS,
+			Music.GRIMM_AREA4, Music.GRIMM_AREA4_BOSS,
+			Music.GRIMM_AREA5, Music.GRIMM_YOG_1, Music.GRIMM_YOG_2
+	};
 
 	public static class Sounds {
 		public static final String CLICK    = "sounds/click.mp3";
@@ -279,6 +303,39 @@ public class Assets {
 		public static final String SCAN     = "sounds/scan.mp3";
 		public static final String SHEEP    = "sounds/sheep.mp3";
 		public static final String MINE    = "sounds/mine.mp3";
+
+		//==== END(挑战·触发音效) ====
+		//这些**不进 all[] 预加载清单** —— 31 个文件全量预加载会拖慢启动，
+		//而且绝大多数对局并没有勾选对应挑战。改为勾选时按需 load（见 ChallengeSfx）。
+		public static final String CH_Nailong  = "sounds/challenge/nailong.ogg";   //137 奶龙大笑
+		public static final String CH_Oligei   = "sounds/challenge/oligei.ogg";    //96 奥利给
+		public static final String CH_Minister = "sounds/challenge/minister.ogg";  //70 生活部长
+		public static final String CH_Future   = "sounds/challenge/future.ogg";    //72 前程似锦
+		public static final String CH_Haozihao1 = "sounds/challenge/haozihao1.ogg"; //95 耗子尾汁
+		public static final String CH_Haozihao2 = "sounds/challenge/haozihao2.ogg";
+		public static final String CH_Haozihao3 = "sounds/challenge/haozihao3.ogg";
+		public static final String CH_Haozihao4 = "sounds/challenge/haozihao4.ogg";
+
+		/** 95 耗子尾汁的 4 个音效（随机抽一个）。 */
+		public static final String[] CH_HAOZIHAO = {
+				CH_Haozihao1, CH_Haozihao2, CH_Haozihao3, CH_Haozihao4
+		};
+
+		/** 118 天意侵蚀的 12 个音效（随机抽一个）。 */
+		public static final String[] CH_PROVIDENCE = {
+				"sounds/challenge/providence/x1.ogg",
+				"sounds/challenge/providence/x2.ogg",
+				"sounds/challenge/providence/x3.ogg",
+				"sounds/challenge/providence/x4.ogg",
+				"sounds/challenge/providence/x5.ogg",
+				"sounds/challenge/providence/x6.ogg",
+				"sounds/challenge/providence/x7.ogg",
+				"sounds/challenge/providence/x8.ogg",
+				"sounds/challenge/providence/x9.ogg",
+				"sounds/challenge/providence/x10.ogg",
+				"sounds/challenge/providence/x11.ogg",
+				"sounds/challenge/providence/x12.ogg"
+		};
 
 		public static final String[] all = new String[]{
 				CLICK, BADGE, GOLD,

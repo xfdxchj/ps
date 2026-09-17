@@ -304,10 +304,16 @@ public class WndTradeItem extends WndInfoItem {
 	}
 
 	//END 挑战·通货膨胀: 把物品卖回商店所得 -50%
+	//END 挑战·高价回收(37): 回收价 ×1.5（与 32 互斥，不会同时生效）
 	private static int shopPaysFor(Item item){
 		int v = item.value();
 		if (Dungeon.isChallenged( com.shatteredpixel.shatteredpixeldungeon.Challenges.INFLATION )){
 			v = v / 2;
+		}
+		float mult = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.buybackMultiplier();
+		if (mult != 1f) {
+			v = Math.max(1, Math.round(v * mult));
 		}
 		return v;
 	}

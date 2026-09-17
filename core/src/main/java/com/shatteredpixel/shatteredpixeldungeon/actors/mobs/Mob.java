@@ -806,6 +806,20 @@ public abstract class Mob extends Char {
 		//END(挑战 9 狂暴): 记录受击前血量，用于判断本次是否真的掉血
 		final int hpBefore = HP;
 
+		//==== END(挑战 28 不动如山): 13% 概率完全免疫 ====
+		//放在入口处：被免疫的这次伤害不进入任何后续流程
+		//（不触发 9 狂暴的标记、不触发流血等）。
+		if (dmg > 0 && com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.immovableBlocks(this)) {
+			if (sprite != null) {
+				sprite.showStatus(com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite.POSITIVE,
+						com.shatteredpixel.shatteredpixeldungeon.messages.Messages.get(
+								com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+										.ChallengeEffects.class, "immovable_block"));
+			}
+			return;
+		}
+
 		if (!isInvulnerable(src.getClass())) {
 			if (state == SLEEPING) {
 				state = WANDERING;
@@ -901,6 +915,18 @@ public abstract class Mob extends Char {
 
 			rollToDropLoot();
 
+			//==== END(挑战 34 赏金制度): 击杀精英 / Boss 额外掉落金币 ====
+			//只对有"精英 buff"或 Boss/小 Boss 属性的怪物生效，普通怪返回 0。
+			//走 level.drop 而不是直接改 Dungeon.gold —— 这样金币会正常堆叠、
+			//正常触发拾取流程，也让"宝物猎人/贫瘠"等掉落规则能照常作用于它。
+			int bounty = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.bountyGoldFor(this);
+			if (bounty > 0 && Dungeon.level != null) {
+				Dungeon.level.drop(
+						new com.shatteredpixel.shatteredpixeldungeon.items.Gold(bounty),
+						pos).sprite.drop();
+			}
+
 			if (cause == Dungeon.hero || cause instanceof Weapon || cause instanceof Weapon.Enchantment){
 				if (Dungeon.hero.hasTalent(Talent.LETHAL_MOMENTUM)
 						&& Random.Float() < 0.34f + 0.33f* Dungeon.hero.pointsInTalent(Talent.LETHAL_MOMENTUM)){
@@ -956,7 +982,22 @@ public abstract class Mob extends Char {
 
 		dropBonus += ShardOfOblivion.lootChanceMultiplier()-1f;
 
-		return lootChance * dropBonus;
+		float chance = lootChance * dropBonus;
+
+		//==== END(挑战 64 宝物猎人): 普通怪物掉落 -30% ====
+		//只影响**普通怪**：精英（ChampionEnemy）与 Boss/小 Boss 保持原有掉落，
+		//否则"宝物猎人"会连带削掉 Boss 的必掉物，与"宝箱内容增加"的补偿不成比例。
+		//注意用 buffs()（复数）：Char.buff(Class) 是精确类匹配，
+		//而精英实际挂的是 Blazing/Projecting 等**子类**，用 buff() 查不到。
+		boolean isSpecial = !buffs(ChampionEnemy.class).isEmpty()
+				|| Char.hasProp(this, Char.Property.BOSS)
+				|| Char.hasProp(this, Char.Property.MINIBOSS);
+		if (!isSpecial) {
+			chance *= com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.monsterDropMultiplier();
+		}
+
+		return chance;
 	}
 	
 	public void rollToDropLoot(){

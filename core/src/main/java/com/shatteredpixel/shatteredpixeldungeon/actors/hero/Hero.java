@@ -889,7 +889,24 @@ public class Hero extends Char {
 		checkVisibleMobs();
 		BuffIndicator.refreshHero();
 		BuffIndicator.refreshBoss();
-		
+
+		//==== END(挑战·音频 70/72/96/118/137): 玩家每回合结算 ====
+		//放在 paralysed 判定**之前**：这些规则可能"停止行动"，
+		//返回 true 时直接消耗本回合并退出 —— 与下方麻痹分支同样处理，
+		//语义是"这一回合被占用了"，而非"接下来的 N 回合不能动"。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeSfx.onHeroTurn(this)) {
+			curAction = null;
+			spendAndNext( TICK );
+			return false;
+		}
+
+		//==== END(挑战·环境类 80/90/123): 每回合环境判定 ====
+		//80 冰天雪地（寒冷/冰冻）、90 雷暴（随机雷击）、123 大学生（小额自伤）。
+		//三条互相独立，都不影响本回合是否行动（除非被冻住导致 paralysed）。
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
+				.onHeroTurnEnvironment(this);
+
 		if (paralysed > 0) {
 			
 			curAction = null;

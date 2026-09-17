@@ -67,7 +67,15 @@ public class ShatteredPixelDungeon extends Game {
 		Sample.INSTANCE.volume( SPDSettings.SFXVol()*SPDSettings.SFXVol()/100f );
 
 		Sample.INSTANCE.load( Assets.Sounds.all );
-		
+
+		//END(挑战 130 格林之音): 注册 BGM 替换钩子。
+		//为什么在这里而不是 Dungeon.init()：Music.setTrackMapper 是**全局静态**，
+		//只需注册一次；而 Dungeon.init() 每开一局都会调用。
+		//转换器内部自行判断当前掩码是否勾选了 130，未勾选时原样返回，零影响。
+		Music.setTrackMapper(
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+						.ChallengeSfx::grimmTrackFor);
+
 	}
 
 	@Override

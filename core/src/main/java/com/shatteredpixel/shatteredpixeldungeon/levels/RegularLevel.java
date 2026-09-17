@@ -213,6 +213,16 @@ public abstract class RegularLevel extends Level {
 		if (feeling == Feeling.LARGE){
 			mobs = (int)Math.ceil(mobs * 1.33f);
 		}
+
+		//==== END(挑战 30 人口密集 / 119 怪物浪潮): 刷怪数量倍率 ====
+		//放在最后，作用于"最终数量"。两条可叠加（1.2 × 4 = 4.8）。
+		//注意：本方法在 depth<=1 时已提前返回 0，所以第 1 层不受影响。
+		mobs = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.scaleCount(mobs,
+						com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+								.ChallengeEffects.mobCountMultiplier(),
+						true);
+
 		return mobs;
 	}
 	

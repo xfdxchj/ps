@@ -361,6 +361,24 @@ public class ShopRoom extends SpecialRoom {
 			Random.shuffle(itemsToSpawn);
 		Random.popGenerator();
 
+		//==== END(挑战 44 慷慨商人): 商品数量 +30% ====
+		//必须放在 popGenerator() **之后** —— 上方注释明确说明"商店库存不能影响
+		//关卡生成的 RNG"。在 push/pop 区间内追加物品会消耗关卡种子序列，
+		//导致同一种子下的地牢内容发生变化。
+		float merchantCount = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.merchantItemCountMultiplier();
+		if (merchantCount > 1f) {
+			int extra = (int) Math.ceil(itemsToSpawn.size() * (merchantCount - 1f));
+			for (int i = 0; i < extra; i++) {
+				Item bonus = Generator.random();
+				if (bonus != null) {
+					bonus.cursed = false;
+					bonus.cursedKnown = true;
+					itemsToSpawn.add(bonus);
+				}
+			}
+		}
+
 		return itemsToSpawn;
 	}
 

@@ -1,0 +1,294 @@
+/*
+ * 破碎的地牢 (End fork) — 音频类挑战规则
+ *
+ * 本文件为框架新增，不属于原版 Shattered Pixel Dungeon。
+ */
+
+package com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge;
+
+import com.shatteredpixel.shatteredpixeldungeon.Assets;
+import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
+import com.watabou.noosa.audio.Sample;
+import com.watabou.utils.Random;
+
+import java.util.HashSet;
+
+/**
+ * END(挑战·音频类): 7 条音效/BGM 挑战规则的统一实现。
+ *
+ * <h3>覆盖规则</h3>
+ * <ul>
+ *   <li><b>118 天意侵蚀</b> — 玩家每回合 13% 概率随机播一段新三国音效</li>
+ *   <li><b>137 奶龙大笑</b> — 每回合 3% 播奶龙音效 + 冒一句台词</li>
+ *   <li><b>70 生活部长</b> — 每回合 3% 停止行动 + 台词「首先，我是生活部部长」</li>
+ *   <li><b>72 前程似锦</b> — 每回合 3% 停止行动 + 台词「王同学，我祝你前～程～似锦」</li>
+ *   <li><b>96 奥利给</b> — 每回合 1% 停止行动 + 喊「奥利给」+ 1 回合狂暴</li>
+ *   <li><b>95 耗子尾汁</b> — 闪避成功时 3% 概率反击 + 显示「耗子尾汁」</li>
+ *   <li><b>130 格林之音</b> — 把所有 BGM 替换为格林（黑魂）主题</li>
+ * </ul>
+ *
+ * <h3>为什么音效按需加载</h3>
+ * 这些规则加起来有 31 个音频文件。全量预加载（塞进 {@code Assets.Sounds.all}）
+ * 会拖慢每次启动，而绝大多数对局根本没勾选对应挑战。所以：
+ * <ul>
+ *   <li>开局（{@link #init}）只加载**已勾选**规则用到的文件</li>
+ *   <li>{@code loaded} 集合防止重复 load（{@code Sample.load} 内部虽有去重，
+ *       但每次调用都会进加载队列，重复调用会白白占队列）</li>
+ * </ul>
+ *
+ * <h3>130 的拦截点</h3>
+ * {@code Music.play(assetName, looping)} 是所有 BGM 的唯一入口，
+ * 在那里把曲目名换成格林主题即可，不需要改任何关卡的播放代码。
+ * 见 {@link #grimmTrackFor(String)}。
+ */
+public final class ChallengeSfx {
+
+	private ChallengeSfx() {}
+
+	//==== 规则 ID ====
+
+	/** 70 生活部长。 */
+	public static final int LIFE_MINISTER   = 70;
+	/** 72 前程似锦。 */
+	public static final int BRIGHT_FUTURE   = 72;
+	/** 95 耗子尾汁。 */
+	public static final int RAT_TAIL_SOUP   = 95;
+	/** 96 奥利给。 */
+	public static final int OLIGEI          = 96;
+	/** 118 天意侵蚀。 */
+	public static final int PROVIDENCE      = 118;
+	/** 130 格林之音。 */
+	public static final int GRIMM_MUSIC     = 130;
+	/** 137 奶龙大笑。 */
+	public static final int MILK_DRAGON     = 137;
+
+	//==== 概率（百分比）====
+
+	/** 118 天意侵蚀：每回合触发概率。 */
+	private static final int CHANCE_PROVIDENCE  = 13;
+	/** 137 奶龙大笑：每回合触发概率。 */
+	private static final int CHANCE_MILK_DRAGON = 3;
+	/** 70 生活部长：每回合触发概率。 */
+	private static final int CHANCE_MINISTER    = 3;
+	/** 72 前程似锦：每回合触发概率。 */
+	private static final int CHANCE_FUTURE      = 3;
+	/** 96 奥利给：每回合触发概率。 */
+	private static final int CHANCE_OLIGEI      = 3;
+	/** 95 耗子尾汁：每回合触发概率（原表原为"闪避成功时3%"，已按文档所有者要求改为每回合判定）。 */
+	private static final int CHANCE_RAT_TAIL    = 3;
+
+	/** 70/72 触发时的停止行动回合数。 */
+	private static final float STOP_TURNS = 1f;
+	/** 96 奥利给给的狂暴持续回合数。 */
+	private static final float OLIGEI_RAGE_TURNS = 1f;
+
+	//==== 已加载记录 ====
+
+	private static final HashSet<String> loaded = new HashSet<>();
+
+	//==== 便捷判断 ====
+
+	private static boolean on(int id) {
+		return Dungeon.challengeMask != null && Dungeon.challengeMask.has(id);
+	}
+
+	/**
+	 * END(挑战·音频): 开局初始化 —— 只加载**已勾选**规则用到的音频。
+	 *
+	 * <p>调用点：{@code Dungeon.init()} —— 那时掩码已经从设置/存档读好了。
+	 */
+	public static void init() {
+
+		loaded.clear();
+
+		if (on(PROVIDENCE)) {
+			loadAll(Assets.Sounds.CH_PROVIDENCE);
+		}
+		if (on(RAT_TAIL_SOUP)) {
+			loadAll(Assets.Sounds.CH_HAOZIHAO);
+		}
+		if (on(MILK_DRAGON)) {
+			loadOne(Assets.Sounds.CH_Nailong);
+		}
+		if (on(OLIGEI)) {
+			loadOne(Assets.Sounds.CH_Oligei);
+		}
+		if (on(LIFE_MINISTER)) {
+			loadOne(Assets.Sounds.CH_Minister);
+		}
+		if (on(BRIGHT_FUTURE)) {
+			loadOne(Assets.Sounds.CH_Future);
+		}
+		//130 格林之音的 BGM 由 Music 播放时按需加载，这里不做预加载
+		//（11 个文件、总计约 32MB，开局全读会明显卡顿）。
+	}
+
+	private static void loadOne(String asset) {
+		if (asset == null || loaded.contains(asset)) return;
+		loaded.add(asset);
+		Sample.INSTANCE.load(asset);
+	}
+
+	private static void loadAll(String[] assets) {
+		for (String a : assets) loadOne(a);
+	}
+
+	//==== 每回合结算 ====
+
+	/**
+	 * END(挑战·音频): 玩家每回合结算时调用。
+	 *
+	 * <p>调用点：{@code Hero.act()} —— 返回 true 表示本回合**停止行动**
+	 * （对应 70/72/96 的"停止行动"效果）。
+	 *
+	 * <p>触发顺序：按 ID 从小到大，先触发的先返回。
+	 * 同一回合多条同时命中时只生效一条（避免一回合叠好几个音效）。
+	 *
+	 * @return 是否应停止本回合行动
+	 */
+	public static boolean onHeroTurn(Hero hero) {
+		if (hero == null) return false;
+
+		//---- 70 生活部长：3% 停止行动 + 台词 ----
+		if (on(LIFE_MINISTER) && Random.Int(100) < CHANCE_MINISTER) {
+			play(Assets.Sounds.CH_Minister);
+			say(hero, "minister_line");
+			stopHero(hero, STOP_TURNS);
+			return true;
+		}
+
+		//---- 72 前程似锦：3% 停止行动 + 台词 ----
+		if (on(BRIGHT_FUTURE) && Random.Int(100) < CHANCE_FUTURE) {
+			play(Assets.Sounds.CH_Future);
+			say(hero, "future_line");
+			stopHero(hero, STOP_TURNS);
+			return true;
+		}
+
+		//---- 96 奥利给：3% 停止行动 + 喊话 + 1 回合狂暴 ----
+		if (on(OLIGEI) && Random.Int(100) < CHANCE_OLIGEI) {
+			play(Assets.Sounds.CH_Oligei);
+			say(hero, "oligei_line");
+			//用 EndRageAttack（FlavourBuff，命中伤害 ×2）而不是 Fury：
+			//Fury 是**条件** buff —— HP 高于 50% 就自动消失，不是计时 buff，
+			//拿它做"1 回合狂暴"会得到"一直持续到回血"的错误语义。
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(
+					hero,
+					com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+							.EndRageAttack.class,
+					OLIGEI_RAGE_TURNS);
+			stopHero(hero, STOP_TURNS);
+			return true;
+		}
+
+		//---- 95 耗子尾汁：3% 播音效 + 显示"耗子尾汁"（**不**停止行动）----
+		//END(修订): 原表写的是"闪避成功时3%概率反击"，按文档所有者要求
+		//改为**每回合无条件判定**，与 70/72/96/137 一致的回合制触发。
+		if (on(RAT_TAIL_SOUP) && Random.Int(100) < CHANCE_RAT_TAIL) {
+			play(Assets.Sounds.CH_HAOZIHAO[Random.Int(Assets.Sounds.CH_HAOZIHAO.length)]);
+			say(hero, "haozihao_line");
+		}
+
+		//---- 137 奶龙大笑：3% 播音效 + 台词（**不**停止行动）----
+		if (on(MILK_DRAGON) && Random.Int(100) < CHANCE_MILK_DRAGON) {
+			play(Assets.Sounds.CH_Nailong);
+			say(hero, "nailong_line");
+			//不停止行动，继续往下判断 118
+		}
+
+		//---- 118 天意侵蚀：13% 随机播一段音效（**不**停止行动）----
+		if (on(PROVIDENCE) && Random.Int(100) < CHANCE_PROVIDENCE) {
+			play(Assets.Sounds.CH_PROVIDENCE[Random.Int(Assets.Sounds.CH_PROVIDENCE.length)]);
+		}
+
+		return false;
+	}
+
+	//==== 95 耗子尾汁：已改为回合制，见 onHeroTurn ====
+	//（原设计是"闪避成功时触发"，由 Char.attack 未命中分支调用；
+	//  按文档所有者要求改为每回合无条件判定后，此处不再需要独立入口。）
+
+	//==== 130 格林之音：BGM 替换 ====
+
+	/**
+	 * END(130 格林之音): 把原版曲目映射到格林主题。
+	 *
+	 * <p>调用点：{@code Music.play()} 开头。未勾选 130 时**原样返回**，
+	 * 因此对正常游戏零影响。
+	 *
+	 * <p>映射思路：按"曲目属于哪个区域"替换，而不是逐个曲目写死 ——
+	 * 这样新增的区域音乐也会走同一套规则。
+	 *
+	 * @param original 原本要播放的资源路径
+	 * @return 实际应播放的路径
+	 */
+	public static String grimmTrackFor(String original) {
+		if (original == null) return null;
+		if (!on(GRIMM_MUSIC)) return original;
+
+		//已经是格林曲目就不要再映射（幂等，防止二次替换）
+		if (original.startsWith("music/grimm/")) return original;
+
+		String name = original;
+
+		//---- 最终 Boss（古神 Yog-Dzewa）----
+		if (name.equals(Assets.Music.HALLS_BOSS)
+				|| name.equals(Assets.Music.HALLS_BOSS_FINALE)
+				|| name.equals(Assets.Music.CITY_BOSS_FINALE)) {
+			return Assets.Music.GRIMM_YOG_1;
+		}
+
+		//---- 各区域 Boss ----
+		if (name.equals(Assets.Music.SEWERS_BOSS)) return Assets.Music.GRIMM_AREA1_BOSS;
+		if (name.equals(Assets.Music.PRISON_BOSS)) return Assets.Music.GRIMM_AREA2_BOSS;
+		if (name.equals(Assets.Music.CAVES_BOSS)
+				|| name.equals(Assets.Music.CAVES_BOSS_FINALE)) return Assets.Music.GRIMM_AREA3_BOSS;
+		if (name.equals(Assets.Music.CITY_BOSS)) return Assets.Music.GRIMM_AREA4_BOSS;
+
+		//---- 各区域常规层 ----
+		if (name.startsWith("music/sewers")) return Assets.Music.GRIMM_AREA1;
+		if (name.startsWith("music/prison")) return Assets.Music.GRIMM_AREA2;
+		if (name.startsWith("music/caves"))  return Assets.Music.GRIMM_AREA3;
+		if (name.startsWith("music/city"))   return Assets.Music.GRIMM_AREA4;
+		if (name.startsWith("music/halls"))  return Assets.Music.GRIMM_AREA5;
+
+		//---- 标题 / 结局等非区域音乐：统一用 1 区主题兜底 ----
+		if (name.equals(Assets.Music.THEME_1)
+				|| name.equals(Assets.Music.THEME_2)
+				|| name.equals(Assets.Music.THEME_FINALE)) {
+			return Assets.Music.GRIMM_AREA1;
+		}
+
+		//其它（含各类 MOD 区域音乐）：不替换，避免把挑战区 BGM 也冲掉
+		return original;
+	}
+
+	//==== 内部辅助 ====
+
+	private static void play(String asset) {
+		if (asset == null) return;
+		loadOne(asset);   //兜底：init 之后再勾选也能正常播放
+		Sample.INSTANCE.play(asset);
+	}
+
+	/** 在角色头顶显示一句台词（走 GLog，与仓内其它提示一致）。 */
+	private static void say(com.shatteredpixel.shatteredpixeldungeon.actors.Char ch, String key) {
+		String text = com.shatteredpixel.shatteredpixeldungeon.messages.Messages.get(
+				ChallengeSfx.class, key);
+		com.shatteredpixel.shatteredpixeldungeon.utils.GLog.i(text);
+	}
+
+	/**
+	 * 让玩家"停止行动"指定回合数。
+	 *
+	 * <p>用 {@code Paralysis} 实现 —— 它是本 fork 既有的"不能行动"状态，
+	 * 存读档、图标、回合递减都已处理好，不必新造一套。
+	 */
+	private static void stopHero(Hero hero, float turns) {
+		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
+				hero,
+				com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Paralysis.class,
+				turns);
+	}
+}

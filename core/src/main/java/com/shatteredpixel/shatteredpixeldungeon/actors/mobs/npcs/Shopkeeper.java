@@ -202,6 +202,12 @@ public class Shopkeeper extends NPC {
 		int p = item.value() * 5 * (Dungeon.effectiveDepth() / 5 + 1);
 		//挑战·通货膨胀:商店售价 +50%
 		if (Dungeon.isChallenged(com.shatteredpixel.shatteredpixeldungeon.Challenges.INFLATION)) p = (int)Math.ceil(p * 1.5f);
+		//END(挑战 44 慷慨商人): 商店售价 ×1.25。
+		//与 32 通货膨胀**可共存**（原表注明"效果重叠，可共存"），
+		//叠加时价格为 1.5 × 1.25 = 1.875 倍，这是预期行为。
+		float merchantMult = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.merchantPriceMultiplier();
+		if (merchantMult != 1f) p = (int)Math.ceil(p * merchantMult);
 		return p;
 	}
 	

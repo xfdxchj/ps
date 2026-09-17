@@ -106,7 +106,15 @@ public abstract class ChampionEnemy extends Buff {
 			case 5:             buffCls = Growing.class;      break;
 		}
 
-		if (Dungeon.mobsToChampion <= 0 && Dungeon.isChallenged(Challenges.CHAMPION_ENEMIES)) {
+		//==== END(精英体系): 精英由「精英类规则」开启 ====
+		//原版条件是 `mobsToChampion <= 0 && isChallenged(CHAMPION_ENEMIES)`。
+	//本 fork 让精英类规则（14/34/64/75/4 任意一条）自行开启精英，
+		//这样"勾了 14 却没勾 116 就完全无效"的死组合不再出现。
+		//注意 116 精英强敌**保持原版行为**（由它自身触发精英）。
+		if (Dungeon.mobsToChampion <= 0
+				&& (Dungeon.isChallenged(Challenges.CHAMPION_ENEMIES)
+					|| com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+							.ChallengeEffects.shouldRollChampion())) {
 
 			//we block certain standout enemies on floor <10 from becoming champions
 			if (m instanceof Crab  && Dungeon.scalingDepth() <= 3) return;
@@ -137,7 +145,18 @@ public abstract class ChampionEnemy extends Buff {
 			}
 
 			//numbers of mobs until a champion scales from 1/8 to 1/6 as depths increases
-			Dungeon.mobsToChampion += 8 - Math.min(20, Dungeon.scalingDepth()-1)/10f;
+			float interval = 8 - Math.min(20, Dungeon.scalingDepth()-1)/10f;
+
+			//==== END(精英体系): 未勾「精英强敌」时，精英概率减半 ====
+			//减半出现率 = 把"距下一只精英的间隔"翻倍。
+			//为什么这样设计：116 精英强敌是"精英很多"的那一档；
+			//只勾 14/34/64 这类规则时精英仍会出现，但要稀疏得多，
+			//让 116 保持"专门刷精英"的定位。
+			if (!Dungeon.isChallenged(Challenges.CHAMPION_ENEMIES)) {
+				interval *= 2f;
+			}
+
+			Dungeon.mobsToChampion += interval;
 			if (m.state != m.PASSIVE) {
 				m.state = m.WANDERING;
 			}

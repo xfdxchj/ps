@@ -308,6 +308,18 @@ public class MobSpawner extends Actor {
 	//switches out regular mobs for their alt versions when appropriate
 	private static void swapMobAlts(ArrayList<Class<?extends Mob>> rotation) {
 		float altChance = 1 / 50f * RatSkull.exoticChanceMultiplier();
+
+		//==== END(挑战 75 精英地牢): 13% 替换为稀有怪 ====
+		//原表 75 的原文是「13% 替换为精英怪」。本 fork 把它的效果改为
+		//「13% 替换为稀有怪」—— 精英已由精英类规则（14/34/64 等）负责，
+		//这里改挂稀有怪，让 75 与 14 各司其职、不再重叠。
+		//未勾选 75 时保持原版 2%。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.rareAltChanceEnabled()) {
+			altChance = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.RARE_ALT_CHANCE;
+		}
+
 		for (int i = 0; i < rotation.size(); i++) {
 			if (Random.Float() < altChance) {
 				Class<? extends Mob> cl = rotation.get(i);

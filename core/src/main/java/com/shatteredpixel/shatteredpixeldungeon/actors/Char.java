@@ -434,6 +434,19 @@ public abstract class Char extends Actor {
 				dmg *= challengeMult;
 			}
 
+			//==== END(挑战 119 怪物浪潮): 怪物输出 ×0.2 ====
+			//HP 已在 Level.createMob 里削过了；命中/闪避/伤害是算出来的，
+			//只能在这里（伤害计算侧）统一削弱。Boss 不削弱。
+			if (!(this instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero)
+					&& this instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob) {
+				float waveStat = com.shatteredpixel.shatteredpixeldungeon.endcontent
+						.challenge.ChallengeEffects.mobStatMultiplier(
+								(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob) this);
+				if (waveStat != 1f) {
+					dmg *= waveStat;
+				}
+			}
+
 			if (enemy.buff(GuidingLight.Illuminated.class) != null){
 				enemy.buff(GuidingLight.Illuminated.class).detach();
 				if (this == Dungeon.hero && Dungeon.hero.hasTalent(Talent.SEARING_LIGHT)){
@@ -611,7 +624,19 @@ public abstract class Char extends Actor {
 					GLog.i( Messages.capitalize(Messages.get(Char.class, "defeat", enemy.name())) );
 				}
 			}
-			
+
+			//==== END(挑战·战斗触发类): 命中结算 ====
+			//顺序很重要：
+			//  1) 23 血流成河 —— 给目标挂流血
+			//  2) 13 狂热    —— 攻击方（怪物）累加攻速层数
+			//  3) 24 以牙还牙 —— 最后做，因为它会发起一次新攻击
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
+					.onAttackHitBleed(enemy);
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
+					.onMobAttackHit(this);
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
+					.onHeroAttack(this, enemy);
+
 			return true;
 			
 		} else {
@@ -634,7 +659,7 @@ public abstract class Char extends Actor {
 				//TODO enemy.defenseSound? currently miss plays for monks/crab even when they parry
 				Sample.INSTANCE.play(Assets.Sounds.MISS);
 			}
-			
+
 			return false;
 			
 		}
@@ -1004,6 +1029,13 @@ public abstract class Char extends Actor {
 		dmg = ShieldBuff.processDamage(this, dmg, src);
 		shielded -= dmg;
 		HP -= dmg;
+
+		//==== END(挑战 78 烈火焚身): 玩家受击 13% 概率燃烧 ====
+		//只在实际掉血时触发；护盾完全吸收(dmg==0)不算"受击"。
+		if (dmg > 0) {
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
+					.onHeroDamagedBurn(this);
+		}
 
 		if (HP > 0 && buff(Grim.GrimTracker.class) != null){
 

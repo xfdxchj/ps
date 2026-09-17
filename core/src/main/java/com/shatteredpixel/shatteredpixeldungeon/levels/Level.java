@@ -324,6 +324,72 @@ public abstract class Level implements Bundlable {
 		createItems();
 
 		Random.popGenerator();
+
+		//==== END(挑战 62 芙莉莲 / 64 宝物猎人): 宝箱后处理 ====
+		//必须放在 Random.popGenerator() **之后** ——
+		//本方法内所有随机数都取自关卡种子序列，若在 pop 之前追加随机调用，
+		//会改变后续关卡的 RNG 序列，导致种子与关卡内容错位。
+		applyChestChallenges();
+	}
+
+	/**
+	 * END(挑战 62/64): 对已生成的宝箱做数量与内容的调整。
+	 *
+	 * <ul>
+	 *   <li><b>62 芙莉莲</b> — 每个宝箱按概率追加一个（等效"+20% 数量"）</li>
+	 *   <li><b>64 宝物猎人</b> — 每个宝箱额外塞入 1 件物品</li>
+	 * </ul>
+	 *
+	 * <p>为什么不改各房间类的生成代码：宝箱分散在 20+ 个房间类里
+	 * （TreasuryRoom / PoolRoom / SentryRoom / Vault* …），逐个改既易漏、
+	 * 又会在这些类里引入挑战耦合。统一在关卡生成后处理更可靠。
+	 */
+	private void applyChestChallenges() {
+
+		boolean wantExtra = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.chestCountMultiplier() != 1f;
+		int contentBonus = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.chestContentBonus();
+
+		if (!wantExtra && contentBonus <= 0) return;
+
+		//先收集，避免边遍历边改 heaps（SparseArray 结构会被 drop 修改）
+		ArrayList<Heap> chests = new ArrayList<>();
+		for (Heap h : heaps.valueList()) {
+			if (h != null && (h.type == Heap.Type.CHEST
+					|| h.type == Heap.Type.LOCKED_CHEST
+					|| h.type == Heap.Type.CRYSTAL_CHEST)) {
+				chests.add(h);
+			}
+		}
+		if (chests.isEmpty()) return;
+
+		for (Heap chest : chests) {
+
+			//---- 64 宝物猎人：宝箱内容 +1 件 ----
+			if (contentBonus > 0) {
+				for (int i = 0; i < contentBonus; i++) {
+					Item extra = Generator.random();
+					if (extra != null) {
+						chest.drop(extra);
+					}
+				}
+			}
+
+			//---- 62 芙莉莲：按概率再生成一个宝箱 ----
+			//用"概率追加"表达 +20%：长期期望数量正好是 1.2 倍。
+			if (wantExtra) {
+				float mult = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+						.ChallengeEffects.chestCountMultiplier();
+				if (Random.Float() < (mult - 1f) / mult) {
+					int pos = randomRespawnCell(null);
+					if (pos != -1) {
+						Heap newChest = drop(Generator.random(), pos);
+						if (newChest != null) newChest.type = Heap.Type.CHEST;
+					}
+				}
+			}
+		}
 	}
 	
 	public void setSize(int w, int h){
@@ -526,6 +592,19 @@ public abstract class Level implements Bundlable {
 
 		Mob m = Reflection.newInstance(mobsToSpawn.remove(0));
 		ChampionEnemy.rollForChampion(m);
+
+		//==== END(挑战 119 怪物浪潮): 怪物数值 ×0.2 ====
+		//这里是全游戏**怪物实例化的唯一出口**，一处生效即覆盖全部。
+		//只改 HP/HT —— 伤害/命中/闪避是方法计算出来的，改字段无效，
+		//它们的削弱由 ChallengeEffects 在计算侧处理（见 mobDamageMultiplier）。
+		//Boss/小 Boss 不削弱（已定稿）。
+		float statMult = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.mobStatMultiplier(m);
+		if (statMult != 1f) {
+			m.HT = Math.max(1, Math.round(m.HT * statMult));
+			m.HP = m.HT;
+		}
+
 		return m;
 	}
 
@@ -1002,7 +1081,35 @@ public abstract class Level implements Bundlable {
 			return heap;
 
 		}
-		
+
+		//==== END(挑战 47/48/35/36): 掉落增减 ====
+		//放在最前：被"减少"规则丢弃的物品直接走 dummy heap 分支，
+		//不进入任何后续逻辑（不生成 Heap、不进 FOV 记录）。
+		//用概率表达倍率 —— Level.drop() 每次只处理一个物品，没有"数量"可乘。
+		float keepChance = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.dropKeepChance(item);
+		if (keepChance < 1f && Random.Float() >= keepChance) {
+			Heap heap = new Heap();
+			ItemSprite sprite = heap.sprite = new ItemSprite();
+			sprite.link(heap);
+			return heap;
+		}
+		//倍率 > 1 时追加一份（不会递归调用本方法，避免死循环）
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.extraDropCopy(item)) {
+			Item extra = item.duplicate();
+			if (extra != null && extra != item) {
+				//把追加的那份放到同一格（稍后 heap.drop 会合并数量）
+				dropNoChallenge(extra, cell);
+			}
+		}
+
+		return dropNoChallenge(item, cell);
+	}
+
+	/** END(挑战): 实际的掉落逻辑 —— 与原本的 drop() 完全一致，只是不再经过挑战过滤。 */
+	private Heap dropNoChallenge( Item item, int cell ) {
+
 		Heap heap = heaps.get( cell );
 		if (heap == null) {
 			
