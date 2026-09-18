@@ -181,13 +181,16 @@ public final class ChallengeRegistry {
 				"精英怪的生命上限、伤害、命中、闪避各提高 20%。本项会让精英怪出现，无需其它挑战配合。");		add(all, 15, "首领护卫",   "boss_guard",       "战斗", T_MON, 3, T_MED,    "");
 		done(all, 16, "大力水手",   "popeye",           "战斗", T_TWO, 1, T_EASY,   "",
 				"玩家近战物理攻击 +25%，攻击速度 -20%。");
-		add(all, 17, "情人节",     "valentine",        "战斗", T_BEN, 1, T_MED,    "");
-		add(all, 18, "老龄化",     "aging",            "战斗", T_BEN, 3, T_MED,    "");
+		done(all, 17, "情人节",     "valentine",        "战斗", T_BEN, 1, T_EASY,   "",
+				"玩家攻击命中后，13% 概率魅惑目标。");
+		done(all, 18, "老龄化",     "aging",            "战斗", T_BEN, 3, T_EASY,   "",
+				"普通怪物每回合 13% 概率睡眠 1 回合（Boss 与精英怪免疫）。");
 		done(all, 19, "风驰电掣",   "swift",            "战斗", T_TWO, 1, T_EASY,   "s:103",
 				"玩家攻速 +20%，怪物移速 +20%。");
 		add(all, 20, "等我启动",   "wind_up",          "战斗", T_TWO, 2, T_MED,    "");
 		add(all, 21, "法术连击",   "spell_combo",      "战斗", T_BEN, 2, T_MED,    "");
-		add(all, 22, "物极必反",   "overkill_reverse", "战斗", T_TWO, 3, T_MED,    "");
+		done(all, 22, "物极必反",   "overkill_reverse", "战斗", T_TWO, 3, T_EASY,   "",
+				"单次伤害超过目标最大生命 150% 时，该次伤害被完全免疫（只对怪物生效）。");
 		done(all, 23, "血流成河",   "bloodbath",        "战斗", T_TWO, 1, T_EASY,   "",
 				"任何攻击命中后 13% 概率使目标流血。");
 		done(all, 24, "以牙还牙",   "retaliation",      "战斗", T_MON, 1, T_EASY,   "",
@@ -201,11 +204,13 @@ public final class ChallengeRegistry {
 		done(all, 28, "不动如山",   "immovable",        "战斗", T_MON, 2, T_EASY,   "",
 				"怪物受击时 13% 概率完全免疫该次伤害。");
 		add(all, 68, "极端状态",   "extreme_state",    "战斗", T_TWO, 3, T_MED,    "s:104");
-		add(all, 69, "九九归一",   "nine_to_one",      "战斗", T_TWO, 2, T_MED,    "");
+		done(all, 69, "九九归一",   "nine_to_one",      "战斗", T_TWO, 2, T_EASY,   "",
+				"最终伤害为 9 的倍数时，改为 1 点。");
 		done(all, 78, "烈火焚身",   "immolation",       "战斗", T_MON, 3, T_EASY,   "",
 				"玩家受击时 13% 概率燃烧。");
 		add(all, 103,"弹幕地狱",   "bullet_hell",      "战斗", T_TWO, 2, T_MED,    "s:76");
-		add(all, 121,"中世纪骑士", "medieval_knight",  "战斗", T_TWO, 2, T_MED,    "x:110");
+		done(all, 121,"中世纪骑士", "medieval_knight",  "战斗", T_TWO, 2, T_EASY,   "x:110",
+				"玩家护甲值 +60%，移动速度 -50%。");
 		done(all, 135,"亡者之怒",   "wrath_of_dead",    "战斗", T_RISK,2, T_EASY,   "s:68,124,128",
 				"玩家生命低于 10% 时，造成的伤害翻倍。");
 
@@ -277,8 +282,10 @@ public final class ChallengeRegistry {
 		add(all, 57, "残缺装备",   "broken_equipment", "装备", T_RES, 2, T_MED,    "r:108");
 		add(all, 58, "随机附魔",   "random_enchant",   "装备", T_BEN, 1, T_MED,    "s:108");
 		add(all, 59, "诅咒装备",   "cursed_equipment", "装备", T_RES, 2, T_MED,    "r:108");
-		add(all, 60, "家传法杖",   "heirloom_wand",    "装备", T_BEN, 1, T_MED,    "");
-		add(all, 79, "高级附魔台", "advanced_enchant", "装备", T_BEN, 1, T_MED,    "");
+		done(all, 60, "家传法杖",   "heirloom_wand",    "装备", T_BEN, 1, T_EASY,   "",
+				"开局额外获得 13 种进阶法杖中随机的一支（已鉴定）。");
+		done(all, 79, "高级附魔台", "advanced_enchant", "装备", T_BEN, 1, T_EASY,   "",
+				"每进入一个新区域（每 5 层）获得 1 个附魔秘卷。");
 		add(all, 81, "搏杀赌徒",   "gambler",          "装备", T_TWO, 2, T_MED,    "x:126");
 		add(all, 108,"装备觉醒",   "awakening",        "装备", T_BEN, 1, T_MED,    "r:57,59");
 
@@ -307,7 +314,9 @@ public final class ChallengeRegistry {
 		add(all, 120,"404",        "error_404",        "特殊", T_RISK,2, T_MED,    "");
 		done(all, 123,"大学生",     "college_student",  "特殊", T_TWO, 1, T_EASY,   "",
 				"玩家每回合 3% 概率受到 1 点伤害（不会致死，生命值至少保留 1）。");
-		add(all, 134,"黄金蜂蜜酒", "golden_mead",      "特殊", T_TWO, 3, T_MED,    "s:128");
+		//END(分类调整): 134 黄金蜂蜜酒归入**格林系列**（原在「特殊」组）。
+		//它是格林内容的一部分：与 128 镇魂歌同源（都是"以生命换力量"的格林玩法），
+		//且被 135 亡者之怒 联动引用。归入格林组后，UI 上与其它格林规则一起展示。
 		done(all, 137,"奶龙大笑",   "milk_dragon",      "特殊", T_NEU, 1, T_MED,    "",
 				"每回合 3% 概率触发奶龙大笑音效。");
 		done(all, 138,"荒诞世界",   "absurd_world",     "特殊", T_NEU, 1, T_EASY,   "",
@@ -328,11 +337,16 @@ public final class ChallengeRegistry {
 		add(all, 132,"黑暗之魂",   "dark_soul",        "格林", T_TWO, 2, T_SER,    "p:125,126,127,128,129,130,131");
 		add(all, 133,"格林之器2",  "grimm_weapon_2",   "格林", T_BEN, 3, T_SER,    "s:125,126,127,128,129,130,131,132");
 		add(all, 136,"格林之器3",  "grimm_weapon_3",   "格林", T_BEN, 3, T_SER,    "s:125,126,127,128,129,130,131,132");
+		//END(分类调整): 134 从「特殊」移入「格林」——它是格林内容
+		//（与 128 镇魂歌同源的"以生命换力量"玩法）。联动保留 128，并接入格林系列。
+		add(all, 134,"黄金蜂蜜酒", "golden_mead",      "格林", T_TWO, 3, T_MED,
+				"s:128,125,126,127,129,130,131,132,133,136");
 
 		//==== 扩展包：139–147（表内有 ID 的新规则）====
 		//等级 / 倾向 / 关系均按清单给定；ID 139–147 经核实为原表空号，可直接使用。
 		add(all, 139,"紊乱法杖",   "chaos_wand",       "装备", T_TWO, 2, T_MED,    "s:60,21");
-		add(all, 140,"枪枪爆头",   "headshot",         "战斗", T_BEN, 2, T_MED,    "s:103,76");
+		done(all, 140,"枪枪爆头",   "headshot",         "战斗", T_BEN, 2, T_EASY,   "s:103,76",
+				"玩家与目标距离 5 格以上时，远程攻击伤害必定为最大值。");
 		add(all, 141,"禁魔空间",   "anti_magic_zone",  "环境", T_MON, 2, T_MED,    "x:139,21,60");
 		add(all, 142,"无下限术士", "no_lower_limit",   "怪物", T_MON, 2, T_MED,    "s:140");
 		add(all, 143,"吾为王者",   "i_am_king",        "怪物", T_MON, 3, T_MED,    "s:117,15");

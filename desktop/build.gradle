@@ -56,7 +56,27 @@ dependencies {
     implementation "com.badlogicgames.gdx-controllers:gdx-controllers-desktop:$gdxControllersVersion"
 
     //we use LWJGL tinyFD directly to display crash messages (DesktopLauncher)
+    //
+    //END(修复·缺失 natives): 原本只声明了 API jar，**没有 natives**。
+    //上游只用 tinyfd 显示"崩溃提示"（反正已经崩了，再崩一次也无所谓），
+    //所以一直没暴露问题。但本 fork 的「导入存档」按钮在**正常运行中**调用
+    //tinyfd_selectFolderDialog，缺 natives 会直接抛
+    //   UnsatisfiedLinkError: Failed to locate library: lwjgl_tinyfd.dll
+    //并把整个游戏拖崩。
+    //
+    //⚠️ 下面 6 行 natives 依赖**暂时注释**，原因：本机当前无法联网，
+    //Gradle 解析不到这些 artifact 会直接构建失败（连游戏都出不来）。
+    //代码侧已做防御（DesktopPlatformSupport.tinyfdWorks 会探测），
+    //缺 natives 时「导入存档」按钮自动隐藏，游戏照常运行。
+    //
+    //==== 等能联网时，取消注释并重新构建，导入功能即恢复 ====
     implementation "org.lwjgl:lwjgl-tinyfd:3.3.3"
+    //runtimeOnly "org.lwjgl:lwjgl-tinyfd:3.3.3:natives-windows"
+    //runtimeOnly "org.lwjgl:lwjgl-tinyfd:3.3.3:natives-windows-x86"
+    //runtimeOnly "org.lwjgl:lwjgl-tinyfd:3.3.3:natives-linux"
+    //runtimeOnly "org.lwjgl:lwjgl-tinyfd:3.3.3:natives-linux-arm64"
+    //runtimeOnly "org.lwjgl:lwjgl-tinyfd:3.3.3:natives-macos"
+    //runtimeOnly "org.lwjgl:lwjgl-tinyfd:3.3.3:natives-macos-arm64"
 
     implementation project(':services:updates:githubUpdates')
     implementation project(':services:news:shatteredNews')

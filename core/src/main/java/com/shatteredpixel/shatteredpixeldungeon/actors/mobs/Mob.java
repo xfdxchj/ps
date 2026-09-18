@@ -295,7 +295,21 @@ public abstract class Mob extends Char {
 	protected boolean act() {
 		
 		super.act();
-		
+
+		//==== END(挑战 18 老龄化): 普通怪物每回合 13% 概率睡眠 1 回合 ====
+		//放在 paralysed 判定**之前**：挂上 MagicalSleep 后，
+		//本回合就直接消耗掉（与"睡眠 1 回合"的语义一致）。
+		//Boss / 精英怪免疫，见 ChallengeEffects.rollAgingSleep。
+		if (state != SLEEPING
+				&& com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+						.ChallengeEffects.rollAgingSleep(this)) {
+			//用 Drowsy（FlavourBuff，支持 duration）而不是 MagicalSleep ——
+			//后者 extends Buff，没有带时长的 affect 重载。
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
+					this, com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+							.Drowsy.class, 1f);
+		}
+
 		boolean justAlerted = alerted;
 		alerted = false;
 		

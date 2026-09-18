@@ -87,4 +87,16 @@ public final class EndWandEvolution {
     public static Class<?> evolutionFor( Wand wand ){
         return REGISTRY.get( wand.getClass() );
     }
+
+    /**
+     * END(挑战 60 家传法杖): 全部 13 种进阶法杖的类。
+     *
+     * <p>顺序与 {@link #REGISTRY} 的注册顺序一致（即原版 13 种法杖的顺序），
+     * 供"开局随机获得一支进阶法杖"随机抽取。
+     *
+     * <p>每次调用返回**新数组**，避免外部改动污染注册表。
+     */
+    public static java.util.List<Class<? extends Wand>> allEvolvedWandClasses() {
+        return new java.util.ArrayList<>(REGISTRY.values());
+    }
 }

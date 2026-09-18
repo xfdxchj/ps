@@ -583,11 +583,12 @@ public class Dungeon {
 		Dungeon.level = null;
 		Actor.clear();
 
-		//==== END(挑战 43 一贫如洗): 进入新区域时金币 -20% ====
+		//==== END(挑战 43 一贫如洗 + 79 高级附魔台): 进入新区域时结算 ====
 		//判据沿用原版的区域划分 depth % 5（每 5 层一组，"完整地牢"下也一样）。
-		//第 1 层是起点，不扣（那时也没有金币）。
-		//只在"跨区域的第一层"触发一次，不是每层都扣。
+		//第 1 层是起点，不触发。
 		if (depth > 1 && depth % 5 == 1 && hero != null) {
+
+			//---- 43 一贫如洗：金币 -20% ----
 			float goldMult = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 					.ChallengeEffects.goldOnNewRegionMultiplier();
 			if (goldMult != 1f) {
@@ -601,6 +602,23 @@ public class Dungeon {
 											.challenge.ChallengeEffects.class,
 									"destitute_lost", lost));
 				}
+			}
+
+			//---- 79 高级附魔台：每区域 1 个附魔秘卷 ----
+			//"附魔秘卷"即 StoneOfEnchantment（原版强化装备的道具）。
+			int scrolls = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.enchantScrollsOnNewRegion();
+			if (scrolls > 0 && !bossLevel()) {
+				for (int i = 0; i < scrolls; i++) {
+					//直接进背包而不是丢地上：这是"区域奖励"，掉在出生点容易被漏掉
+					new com.shatteredpixel.shatteredpixeldungeon.items.stones
+							.StoneOfEnchantment().collect();
+				}
+				com.shatteredpixel.shatteredpixeldungeon.utils.GLog.i(
+						com.shatteredpixel.shatteredpixeldungeon.messages.Messages.get(
+								com.shatteredpixel.shatteredpixeldungeon.endcontent
+										.challenge.ChallengeEffects.class,
+								"enchant_region_gain", scrolls));
 			}
 		}
 		

@@ -167,6 +167,37 @@ public class WndChallenges extends Window {
 
 		passLevelText.setPos( 4, top + listH + 2 );
 		updatePassLevel();
+
+		//==== END(临时诊断·UI 偏移): 打印真实尺寸，用于定位偏移 300~700 像素的原因 ====
+		//定稿后应删除。运行一次打开挑战窗口即可在控制台看到这些数字。
+		try {
+			com.watabou.noosa.Camera uiCam = PixelScene.uiCamera;
+			com.watabou.noosa.Camera mainCam = com.watabou.noosa.Camera.main;
+			System.out.println("=== WndChallenges 布局诊断 ===");
+			System.out.println("  Game.width/height (物理) = "
+					+ com.watabou.noosa.Game.width + " x " + com.watabou.noosa.Game.height);
+			System.out.println("  本窗口 width/height (虚拟) = " + WIDTH + " x " + (int)(top + listH + bottomH));
+			System.out.println("  本窗口 camera: x=" + camera.x + " y=" + camera.y
+					+ " w=" + camera.width + " h=" + camera.height
+					+ " zoom=" + camera.zoom
+					+ " screenW=" + camera.screenWidth() + " screenH=" + camera.screenHeight());
+			if (uiCam != null) {
+				System.out.println("  uiCamera: x=" + uiCam.x + " y=" + uiCam.y
+						+ " w=" + uiCam.width + " h=" + uiCam.height
+						+ " zoom=" + uiCam.zoom
+						+ " screenW=" + uiCam.screenWidth() + " screenH=" + uiCam.screenHeight()
+						+ " visible=" + uiCam.visible);
+			}
+			if (mainCam != null) {
+				System.out.println("  mainCamera: w=" + mainCam.width + " h=" + mainCam.height
+						+ " zoom=" + mainCam.zoom
+						+ " screenW=" + mainCam.screenWidth() + " screenH=" + mainCam.screenHeight());
+			}
+			System.out.println("  计算用 maxByScreen = " + maxByScreen);
+			System.out.println("  最终 listH = " + listH);
+		} catch (Throwable t) {
+			System.out.println("  诊断失败: " + t);
+		}
 	}
 
 	//==== 分类按钮行 ====

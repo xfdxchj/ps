@@ -122,6 +122,25 @@ public final class ChallengeSfx {
 		}
 		//130 格林之音的 BGM 由 Music 播放时按需加载，这里不做预加载
 		//（11 个文件、总计约 32MB，开局全读会明显卡顿）。
+
+		//==== END(诊断·加载清单): 开局打印到底加载了哪些音效 ====
+		if (DEBUG) {
+			System.out.println("=== [挑战音效] init() 加载清单 ===");
+			System.out.println("  掩码位：70=" + on(LIFE_MINISTER)
+					+ " 72=" + on(BRIGHT_FUTURE)
+					+ " 95=" + on(RAT_TAIL_SOUP)
+					+ " 96=" + on(OLIGEI)
+					+ " 118=" + on(PROVIDENCE)
+					+ " 137=" + on(MILK_DRAGON));
+			System.out.println("  已加载 " + loaded.size() + " 个音效文件：");
+			for (String a : loaded) {
+				System.out.println("    " + a);
+			}
+			if (loaded.isEmpty()) {
+				System.out.println("    (空) —— 说明没有勾选任何音频类挑战，");
+				System.out.println("          或 Dungeon.init() 时掩码还没准备好");
+			}
+		}
 	}
 
 	private static void loadOne(String asset) {
@@ -150,9 +169,31 @@ public final class ChallengeSfx {
 	public static boolean onHeroTurn(Hero hero) {
 		if (hero == null) return false;
 
+		//==== END(诊断·每回合状态): 每 N 回合打印一次，避免刷屏 ====
+		//关键：这里能直接看出**掩码里到底有没有勾这些规则**。
+		//若全是 false，说明勾选没保存（UI→存档 的链路问题），
+		//而不是音效或概率的问题。
+		turnCounter++;
+		if (DEBUG && turnCounter % DEBUG_TURN_INTERVAL == 0) {
+			System.out.println("=== [挑战音效] 第 " + turnCounter + " 回合判定 ==="
+					+ " 掩码位：70=" + on(LIFE_MINISTER)
+					+ " 72=" + on(BRIGHT_FUTURE)
+					+ " 95=" + on(RAT_TAIL_SOUP)
+					+ " 96=" + on(OLIGEI)
+					+ " 118=" + on(PROVIDENCE)
+					+ " 137=" + on(MILK_DRAGON));
+			System.out.println("    SPDSettings.soundFx() = "
+					+ com.shatteredpixel.shatteredpixeldungeon.SPDSettings.soundFx()
+					+ "   (false 则所有音效都不会响)");
+			System.out.println("    challengeMask.isEmpty() = "
+					+ (com.shatteredpixel.shatteredpixeldungeon.Dungeon.challengeMask == null
+						? "null"
+						: com.shatteredpixel.shatteredpixeldungeon.Dungeon.challengeMask.isEmpty()));
+		}
+
 		//---- 70 生活部长：3% 停止行动 + 台词 ----
 		if (on(LIFE_MINISTER) && Random.Int(100) < CHANCE_MINISTER) {
-			play(Assets.Sounds.CH_Minister);
+			play(Assets.Sounds.CH_Minister, "70 生活部长");
 			say(hero, "minister_line");
 			stopHero(hero, STOP_TURNS);
 			return true;
@@ -160,7 +201,7 @@ public final class ChallengeSfx {
 
 		//---- 72 前程似锦：3% 停止行动 + 台词 ----
 		if (on(BRIGHT_FUTURE) && Random.Int(100) < CHANCE_FUTURE) {
-			play(Assets.Sounds.CH_Future);
+			play(Assets.Sounds.CH_Future, "72 前程似锦");
 			say(hero, "future_line");
 			stopHero(hero, STOP_TURNS);
 			return true;
@@ -168,7 +209,7 @@ public final class ChallengeSfx {
 
 		//---- 96 奥利给：3% 停止行动 + 喊话 + 1 回合狂暴 ----
 		if (on(OLIGEI) && Random.Int(100) < CHANCE_OLIGEI) {
-			play(Assets.Sounds.CH_Oligei);
+			play(Assets.Sounds.CH_Oligei, "96 奥利给");
 			say(hero, "oligei_line");
 			//用 EndRageAttack（FlavourBuff，命中伤害 ×2）而不是 Fury：
 			//Fury 是**条件** buff —— HP 高于 50% 就自动消失，不是计时 buff，
@@ -186,20 +227,20 @@ public final class ChallengeSfx {
 		//END(修订): 原表写的是"闪避成功时3%概率反击"，按文档所有者要求
 		//改为**每回合无条件判定**，与 70/72/96/137 一致的回合制触发。
 		if (on(RAT_TAIL_SOUP) && Random.Int(100) < CHANCE_RAT_TAIL) {
-			play(Assets.Sounds.CH_HAOZIHAO[Random.Int(Assets.Sounds.CH_HAOZIHAO.length)]);
+			play(Assets.Sounds.CH_HAOZIHAO[Random.Int(Assets.Sounds.CH_HAOZIHAO.length)], "95 耗子尾汁");
 			say(hero, "haozihao_line");
 		}
 
 		//---- 137 奶龙大笑：3% 播音效 + 台词（**不**停止行动）----
 		if (on(MILK_DRAGON) && Random.Int(100) < CHANCE_MILK_DRAGON) {
-			play(Assets.Sounds.CH_Nailong);
+			play(Assets.Sounds.CH_Nailong, "137 奶龙大笑");
 			say(hero, "nailong_line");
 			//不停止行动，继续往下判断 118
 		}
 
 		//---- 118 天意侵蚀：13% 随机播一段音效（**不**停止行动）----
 		if (on(PROVIDENCE) && Random.Int(100) < CHANCE_PROVIDENCE) {
-			play(Assets.Sounds.CH_PROVIDENCE[Random.Int(Assets.Sounds.CH_PROVIDENCE.length)]);
+			play(Assets.Sounds.CH_PROVIDENCE[Random.Int(Assets.Sounds.CH_PROVIDENCE.length)], "118 天意侵蚀");
 		}
 
 		return false;
@@ -266,10 +307,59 @@ public final class ChallengeSfx {
 
 	//==== 内部辅助 ====
 
+	/**
+	 * END(诊断·音效): 临时日志开关。
+	 *
+	 * <p>用来区分三种「没声音」：
+	 * <ol>
+	 *   <li>规则没触发（掩码里没勾 / 概率没中）</li>
+	 *   <li>触发了但资源没加载成功（Sample.play 返回 -1）</li>
+	 *   <li>加载播放都成功，但设备静音 / 音量 0 / 资源本身无声</li>
+	 * </ol>
+	 *
+	 * <p>定稿后应把 {@link #DEBUG} 改为 false（或删掉相关打印）。
+	 */
+	public static final boolean DEBUG = true;
+
+	/** 统计：本局各规则触发次数（诊断用）。 */
+	public static final java.util.HashMap<String, Integer> triggerCount = new java.util.HashMap<>();
+
+	/** 玩家回合计数（诊断用）。 */
+	private static int turnCounter = 0;
+
+	/** 每多少回合打印一次状态（诊断用，避免刷屏）。 */
+	private static final int DEBUG_TURN_INTERVAL = 5;
+
 	private static void play(String asset) {
-		if (asset == null) return;
-		loadOne(asset);   //兜底：init 之后再勾选也能正常播放
-		Sample.INSTANCE.play(asset);
+		play(asset, "unknown");
+	}
+
+	private static void play(String asset, String ruleTag) {
+		if (asset == null) {
+			if (DEBUG) System.out.println("[挑战音效] " + ruleTag + " 资源路径为 null，跳过");
+			return;
+		}
+
+		//兜底：init 之后再勾选也能正常播放
+		loadOne(asset);
+
+		long handle = Sample.INSTANCE.play(asset);
+
+		if (DEBUG) {
+			boolean ok = handle > 0;
+			int n = triggerCount.containsKey(ruleTag) ? triggerCount.get(ruleTag) : 0;
+			triggerCount.put(ruleTag, n + 1);
+			System.out.println("[挑战音效] " + ruleTag
+					+ " 触发#" + (n + 1)
+					+ " 资源=" + asset
+					+ " 加载标记=" + loaded.contains(asset)
+					+ " play返回值=" + handle
+					+ (ok ? "  => 已播放" : "  => **未播放**（未加载/Sample已禁用）"));
+			if (!ok) {
+				System.out.println("          ↑ 若是 -1：要么资源没加载成功，"
+						+ "要么 SPDSettings.soundFx() 为 false（设置里关掉了音效）");
+			}
+		}
 	}
 
 	/** 在角色头顶显示一句台词（走 GLog，与仓内其它提示一致）。 */

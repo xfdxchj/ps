@@ -411,6 +411,24 @@ public abstract class Char extends Actor {
 				dmg = damageRoll();
 			}
 
+			//==== END(挑战 140 枪枪爆头): 距离 >=5 时远程伤害必为最大值 ====
+			//放在拿到基础伤害之后、所有倍率之前 ——
+			//"必定最大值"改的是基础掷骰结果，后续增益照常作用。
+			//判据在 ChallengeEffects.isHeadshot 里（只对玩家、距离 >=5 格）。
+			if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.isHeadshot(this, enemy)) {
+				com.shatteredpixel.shatteredpixeldungeon.items.Item w =
+						(this instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero)
+								? ((com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) this)
+										.belongings.attackingWeapon()
+								: null;
+				if (w instanceof com.shatteredpixel.shatteredpixeldungeon.items.weapon
+						.missiles.MissileWeapon) {
+					dmg = ((com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles
+							.MissileWeapon) w).max();
+				}
+			}
+
 			dmg = dmg*dmgMulti;
 
 			//flat damage bonus is affected by multipliers
@@ -628,10 +646,13 @@ public abstract class Char extends Actor {
 			//==== END(挑战·战斗触发类): 命中结算 ====
 			//顺序很重要：
 			//  1) 23 血流成河 —— 给目标挂流血
-			//  2) 13 狂热    —— 攻击方（怪物）累加攻速层数
-			//  3) 24 以牙还牙 —— 最后做，因为它会发起一次新攻击
+			//  2) 17 情人节   —— 玩家攻击时概率魅惑目标
+			//  3) 13 狂热    —— 攻击方（怪物）累加攻速层数
+			//  4) 24 以牙还牙 —— 最后做，因为它会发起一次新攻击
 			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
 					.onAttackHitBleed(enemy);
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
+					.onHeroAttackCharm(this, enemy);
 			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
 					.onMobAttackHit(this);
 			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
@@ -991,12 +1012,18 @@ public abstract class Char extends Actor {
 		dmg = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 				.ChallengeEffects.damageTaken(this, dmg);
 
-		//==== END(挑战·伤害管线 第6步): 最终拦截（中档，当前为恒等）====
-		//物极必反 / 九九归一在此介入；未实装时原样返回。
+		//==== END(挑战·伤害管线 第6步): 最终拦截 ====
+		//物极必反（完全免疫）/ 九九归一（9 的倍数变 1）。
+		//
+		//END(修复·误报无敌): 必须用 IMMUNE 哨兵值判断，**不能**用 dmg <= 0 ——
+		//护甲完全吸收时伤害本来就是 0，用 <=0 判断会把"没打穿护甲"
+		//误报成"无敌"（玩家实测到的"没勾挑战也有概率触发无敌"）。
+		//而且这两条都没勾时，finalIntercept 原样返回，下面这段等价于不存在。
 		dmg = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 				.ChallengeEffects.finalIntercept(this, dmg);
-		if (dmg <= 0) {
-			//被完全拦截：不扣血
+		if (dmg == com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.IMMUNE) {
+			//确实被 22 物极必反完全免疫
 			sprite.showStatus(CharSprite.POSITIVE, Messages.get(this, "invulnerable"));
 			return;
 		}

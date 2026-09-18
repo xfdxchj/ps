@@ -293,13 +293,25 @@ public class DesktopLauncher {
 
 		// END(存档选择 UI): 找到原版存档后，先问玩家要不要继承，而不是静默复制。
 		// tinyfd 的 yes/no：点 yes=true 继承原版存档，点 no=false 用全新存档。
-		boolean importSave = TinyFileDialogs.tinyfd_messageBox(
-				"检测到原版《破碎的像素地牢》存档",
-				"在「" + src.getName() + "」目录下检测到原版存档与成就。\n\n" +
-						"是否继承原版进度（存档 / 成就 / 图鉴 / 排行榜）？\n\n" +
-						"· 是 = 导入原版存档，无缝继续冒险\n" +
-						"· 否 = 使用全新存档，从零开始",
-				"yesno", "question", false);
+		//
+		//END(修复·缺 natives 会崩): 上游只声明了 lwjgl-tinyfd 的 API jar、
+		//没带 natives，调用时可能抛 UnsatisfiedLinkError（Error 不是 Exception）。
+		//这条在**启动路径**上，一旦抛出游戏根本起不来 —— 所以必须兜住。
+		//兜底策略：对话框不可用就**跳过导入**（保持全新存档），
+		//而不是替玩家做"静默复制"的决定，更不能让游戏崩掉。
+		boolean importSave;
+		try {
+			importSave = TinyFileDialogs.tinyfd_messageBox(
+					"检测到原版《破碎的像素地牢》存档",
+					"在「" + src.getName() + "」目录下检测到原版存档与成就。\n\n" +
+							"是否继承原版进度（存档 / 成就 / 图鉴 / 排行榜）？\n\n" +
+							"· 是 = 导入原版存档，无缝继续冒险\n" +
+							"· 否 = 使用全新存档，从零开始",
+					"yesno", "question", false);
+		} catch (Throwable t) {
+			System.err.println("[存档继承] 系统对话框不可用，跳过导入：" + t);
+			return;
+		}
 
 		if (!importSave) {
 			System.out.println("[存档继承] 玩家选择使用全新存档，跳过导入。");

@@ -184,14 +184,51 @@ public class DesktopPlatformSupport extends PlatformSupport {
 	 *
 	 * @return 导入条目数；0 = 用户取消；-1 = 无可用源
 	 */
+	/**
+	 * END(存档继承): 桌面端是否可用**系统对话框**。
+	 *
+	 * <p>为什么需要探测：LWJGL 的 tinyfd 需要原生库（`lwjgl_tinyfd.dll` 等）。
+	 * 上游只声明了 API jar、没带 natives —— 因为它只在"崩溃提示"里用，
+	 * 崩了也不在乎再崩一次。但本功能在**正常运行中**调用它，
+	 * 缺库会抛 `UnsatisfiedLinkError`（是 **Error 不是 Exception**），
+	 * 直接把游戏拖崩。
+	 *
+	 * <p>所以这里先做一次惰性探测：能加载才认为可用。
+	 * 不可用时 {@link #importSupported()} 返回 false，UI 直接不显示按钮 ——
+	 * 比"显示按钮但一点就崩"好得多。
+	 */
+	private static Boolean tinyfdAvailable;
+
+	private static synchronized boolean tinyfdWorks() {
+		if (tinyfdAvailable != null) return tinyfdAvailable;
+		try {
+			//调用一个**无副作用**的 native 方法：
+			//读取全局开关不会弹窗、不改状态，但会强制链接 lwjgl_tinyfd 原生库。
+			//缺 natives 时在这里抛 UnsatisfiedLinkError。
+			org.lwjgl.util.tinyfd.TinyFileDialogs.tinyfd_getGlobalInt("tinyfd_verbose");
+			tinyfdAvailable = Boolean.TRUE;
+		} catch (Throwable t) {
+			//UnsatisfiedLinkError / NoClassDefFoundError 都会落到这里
+			//（它们是 Error 不是 Exception，所以必须 catch Throwable）
+			System.err.println("[存档继承] 系统对话框不可用（缺少 lwjgl_tinyfd 原生库）：" + t);
+			tinyfdAvailable = Boolean.FALSE;
+		}
+		return tinyfdAvailable;
+	}
+
 	/** END(存档继承): 桌面端支持手动导入。 */
 	@Override
 	public boolean importSupported() {
-		return true;
+		return tinyfdWorks();
 	}
 
 	@Override
 	public int importExternalSaves() {
+
+		//没有原生库就别往下走 —— 直接告诉 UI"不支持"
+		if (!tinyfdWorks()) {
+			return -1;
+		}
 		//目标 = 当前 MOD 的存档目录（External + 包名）
 		java.io.File dest = resolveSaveDir();
 		if (dest == null) {
@@ -222,13 +259,20 @@ public class DesktopPlatformSupport extends PlatformSupport {
 		}
 
 		//没找到就弹目录选择框，让玩家自己指
+		//再加一层 try：即使探测通过，运行中的原生调用仍可能失败，
+		//绝不能让一个"导入存档"功能把整个游戏拖崩。
 		if (src == null) {
-			String picked = org.lwjgl.util.tinyfd.TinyFileDialogs.tinyfd_selectFolderDialog(
-					"选择要导入的原版存档目录（含 game1 / badges.dat 等）",
-					System.getProperty("user.home"));
-			if (picked != null && !picked.isEmpty()) {
-				java.io.File f = new java.io.File(picked);
-				if (hasSaveContent(f)) src = f;
+			try {
+				String picked = org.lwjgl.util.tinyfd.TinyFileDialogs.tinyfd_selectFolderDialog(
+						"选择要导入的原版存档目录（含 game1 / badges.dat 等）",
+						System.getProperty("user.home"));
+				if (picked != null && !picked.isEmpty()) {
+					java.io.File f = new java.io.File(picked);
+					if (hasSaveContent(f)) src = f;
+				}
+			} catch (Throwable t) {
+				System.err.println("[存档继承·手动] 目录选择框不可用：" + t);
+				return -1;
 			}
 		}
 
@@ -237,12 +281,18 @@ public class DesktopPlatformSupport extends PlatformSupport {
 		}
 
 		//覆盖前确认
-		boolean ok = org.lwjgl.util.tinyfd.TinyFileDialogs.tinyfd_messageBox(
-				"导入存档",
-				"将从「" + src.getName() + "」导入：\n" +
-						"存档槽、成就、图鉴、排行榜、骸骨。\n\n" +
-						"已存在的同名文件会被**覆盖**。确定继续吗？",
-				"yesno", "warning", false);
+		boolean ok;
+		try {
+			ok = org.lwjgl.util.tinyfd.TinyFileDialogs.tinyfd_messageBox(
+					"导入存档",
+					"将从「" + src.getName() + "」导入：\n" +
+							"存档槽、成就、图鉴、排行榜、骸骨。\n\n" +
+							"已存在的同名文件会被覆盖。确定继续吗？",
+					"yesno", "warning", false);
+		} catch (Throwable t) {
+			System.err.println("[存档继承·手动] 确认框不可用，取消导入：" + t);
+			return 0;
+		}
 		if (!ok) {
 			return 0;
 		}

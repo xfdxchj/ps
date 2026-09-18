@@ -281,18 +281,55 @@ public final class ChallengeEffects {
 		return Math.max(1, Math.round(dmg * TAKEN_FRAGILE));
 	}
 
-	//==== 第 6 步：最终拦截（中档，预留钩子）====
+	//==== 第 6 步：最终拦截 ====
 
 	/**
 	 * END(第6步·最终拦截): 伤害生效前的最后判定。
 	 *
-	 * <p>「22 物极必反」（伤害 &gt; 目标最大生命 150% → 完全免疫）与
-	 * 「69 九九归一」（伤害 % 9 == 0 → 变为 1）都属**中档**，尚未实装。
+	 * <p>顺序：**先 22 物极必反（免疫）→ 再 69 九九归一（变为 1）**。
+	 * 被完全免疫的伤害不该再走 69 的改写。
 	 *
-	 * @return 拦截后的伤害；返回值 &lt;= 0 表示完全免疫
+	 * <ul>
+	 *   <li><b>22 物极必反</b>：怪物单次受伤害超过其最大生命 **150%** 时，
+	 *       该次伤害**完全免疫**。只对怪物生效（原表写的是"怪物单次受伤害"）。</li>
+	 *   <li><b>69 九九归一</b>：最终伤害是 **9 的倍数**时变为 **1** 点。
+	 *       不分敌我（倾向为"双刃剑"）。</li>
+	 * </ul>
+	 *
+	 * <p><b>返回值语义</b>：
+	 * <ul>
+	 *   <li>{@link #IMMUNE}（-1）= 被 22 完全免疫 —— 调用方应显示"免疫"并跳过扣血</li>
+	 *   <li>其它值 = 正常伤害（可能本来就是 0，那是"没打穿护甲"，不是免疫）</li>
+	 * </ul>
+	 *
+	 * <p>⚠️ 调用方**不能**用 {@code dmg <= 0} 判断"被免疫"：
+	 * 护甲完全吸收时伤害本来就是 0，那样会误报"无敌"。
+	 * 这正是本类早期版本出现过的问题。
+	 *
+	 * @return 拦截后的伤害；{@link #IMMUNE} 表示完全免疫
 	 */
+	public static final int IMMUNE = -1;
+
 	public static int finalIntercept(Char target, int dmg) {
-		//TODO(中档): 22 物极必反 / 69 九九归一
+		if (target == null) return dmg;
+
+		//---- 22 物极必反：超 150% 最大生命 → 完全免疫 ----
+		if (on(OVERKILL_REVERSE) && target.HT > 0 && dmg > 0) {
+			//只对怪物生效（Hero 不受此条保护）
+			if (!(target instanceof Hero)) {
+				if (dmg * 100 > target.HT * 150) {
+					return IMMUNE;
+				}
+			}
+		}
+
+		//---- 69 九九归一：9 的倍数 → 1 ----
+		//注意只对正伤害生效：0 不是"9 的倍数"意义上的伤害，
+		//否则会把"没打穿护甲"变成 1 点伤害。
+		if (on(NINE_TO_ONE) && dmg > 0 && dmg % 9 == 0) {
+			return 1;
+		}
+
 		return dmg;
 	}
 
@@ -322,6 +359,8 @@ public final class ChallengeEffects {
 		mult *= swiftSpeedMultiplier(ch);
 		//13 狂热：怪物攻击命中后叠加攻速（封顶 3 层）
 		mult *= frenzySpeedMultiplier(ch);
+		//121 中世纪骑士：玩家移速 −50%
+		mult *= knightSpeedMultiplier(ch);
 
 		return mult;
 	}
@@ -891,6 +930,42 @@ public final class ChallengeEffects {
 	public static final int HEIRLOOM_ARMOR   = 156;
 	/** 165 神圣之光：13% 概率回复 2% 生命。 */
 	public static final int HOLY_LIGHT       = 165;
+	/** 60 家传法杖：开局随机获得一支进阶法杖。 */
+	public static final int HEIRLOOM_WAND    = 60;
+	/** 79 高级附魔台：每个区域获得 1 个附魔秘卷。 */
+	public static final int ADVANCED_ENCHANT = 79;
+	/** 17 情人节：攻击 13% 概率魅惑目标。 */
+	public static final int VALENTINE        = 17;
+
+	/** 17 情人节：魅惑概率 13%。 */
+	private static final int VALENTINE_PCT = 13;
+	/** 79 高级附魔台：每区域发放数量。 */
+	private static final int ENCHANT_PER_REGION = 1;
+
+	//==== 第五批（准易档）：管线钩子已预留，填空即可 ====
+
+	/** 18 老龄化：普通怪物每回合 13% 概率睡眠 1 回合。 */
+	public static final int AGING            = 18;
+	/** 22 物极必反：单次伤害超目标最大生命 150% 时完全免疫。 */
+	public static final int OVERKILL_REVERSE = 22;
+	/** 69 九九归一：最终伤害为 9 的倍数时变为 1。 */
+	public static final int NINE_TO_ONE      = 69;
+	/** 103 弹幕地狱：远程投射物变 3 发散射。 */
+	public static final int BULLET_HELL      = 103;
+	/** 121 中世纪骑士：护甲值 +60%，移动速度 -50%。 */
+	public static final int MEDIEVAL_KNIGHT  = 121;
+	/** 140 枪枪爆头：距离 >=5 格时远程伤害必为最大值。 */
+	public static final int HEADSHOT         = 140;
+
+	/** 18 老龄化：每回合触发概率。 */
+	private static final int   AGING_PCT        = 13;
+	/** 103 弹幕地狱：投射物数量。 */
+	public static final int    BULLET_HELL_COUNT = 3;
+	/** 121 中世纪骑士：护甲与移速倍率。 */
+	private static final float KNIGHT_ARMOR_MULT = 1.60f;
+	private static final float KNIGHT_SPEED_MULT = 0.50f;
+	/** 140 枪枪爆头：触发距离（格）。 */
+	private static final int   HEADSHOT_RANGE    = 5;
 
 	/** 145 神圣附体：经验倍率 1.2。 */
 	private static final float HOLY_EXP_MULT    = 1.20f;
@@ -961,6 +1036,7 @@ public final class ChallengeEffects {
 		int n = 0;
 		if (on(HEIRLOOM_RING))  n++;
 		if (on(HEIRLOOM_ARMOR)) n++;
+		if (on(HEIRLOOM_WAND))  n++;
 		return n;
 	}
 
@@ -974,7 +1050,6 @@ public final class ChallengeEffects {
 	 */
 	public static java.util.ArrayList<com.shatteredpixel.shatteredpixeldungeon.items.Item>
 			startingGear() {
-
 		java.util.ArrayList<com.shatteredpixel.shatteredpixeldungeon.items.Item> out =
 				new java.util.ArrayList<>();
 
@@ -986,6 +1061,26 @@ public final class ChallengeEffects {
 		//156 家传铠甲：板甲
 		if (on(HEIRLOOM_ARMOR)) {
 			out.add(new com.shatteredpixel.shatteredpixeldungeon.items.armor.PlateArmor());
+		}
+
+		//60 家传法杖：从 13 种进阶法杖里随机一支
+		if (on(HEIRLOOM_WAND)) {
+			try {
+				java.util.List<Class<? extends com.shatteredpixel.shatteredpixeldungeon.items
+						.wands.Wand>> classes =
+						com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved
+								.EndWandEvolution.allEvolvedWandClasses();
+				if (!classes.isEmpty()) {
+					Class<? extends com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand> c =
+							classes.get(Random.Int(classes.size()));
+					com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand w =
+							c.getDeclaredConstructor().newInstance();
+					out.add(w);
+				}
+			} catch (Throwable t) {
+				//拿不到就不发，绝不让"开局送装备"把游戏拖崩
+				System.err.println("[挑战 60 家传法杖] 生成法杖失败：" + t);
+			}
 		}
 
 		return out;
@@ -1318,5 +1413,134 @@ public final class ChallengeEffects {
 	public static float swiftSpeedMultiplier(Char ch) {
 		if (!on(SWIFT) || ch == null) return 1f;
 		return SWIFT_SPEED_MULT;
+	}
+
+	//==================================================================
+	//第六批（准易档：管线钩子已预留，填空即可）
+	//==================================================================
+
+	/**
+	 * END(17 情人节): 玩家攻击命中后，13% 概率魅惑目标。
+	 *
+	 * <p>只对**玩家**的攻击生效（原表写的是"玩家攻击"）。
+	 * 用 {@code Charm} buff 实现 —— 它会记录魅惑来源，让被魅惑者停止敌对行为。
+	 *
+	 * <p>与 23 血流成河分开判定：两者可同时生效，互不干扰。
+	 *
+	 * @param attacker 攻击方
+	 * @param enemy    目标
+	 */
+	public static void onHeroAttackCharm(Char attacker, Char enemy) {
+		if (!on(VALENTINE)) return;
+		if (attacker == null || enemy == null) return;
+		if (!(attacker instanceof Hero)) return;
+		if (!(enemy instanceof Mob)) return;
+		if (!enemy.isAlive()) return;
+
+		//已经魅惑着的就别重复挂（避免刷 buff 计时）
+		if (enemy.buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Charm.class)
+				!= null) {
+			return;
+		}
+		if (Random.Int(100) >= VALENTINE_PCT) return;
+
+		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Charm charm =
+				com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(
+						enemy,
+						com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Charm.class,
+						com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Charm.DURATION);
+		//记录魅惑来源 —— Charm 靠这个字段判断"被谁魅惑"，
+		//不设的话被魅惑者不会正确地把玩家当盟友。
+		charm.object = attacker.id();
+	}
+
+	/**
+	 * END(79 高级附魔台): 进入新区域时发放的附魔秘卷数量。
+	 *
+	 * <p>原表："每个区域获得 1 个附魔秘卷" —— 是**每区域**（每 5 层）而不是每层。
+	 * 调用点：{@code Dungeon.newLevel()} 里判 {@code depth % 5 == 1} 的地方。
+	 */
+	public static int enchantScrollsOnNewRegion() {
+		return on(ADVANCED_ENCHANT) ? ENCHANT_PER_REGION : 0;
+	}
+
+	/**
+	 * END(18 老龄化): 该怪物本回合是否应睡眠。
+	 *
+	 * <p>普通怪物每回合 13% 概率睡眠，持续 1 回合。
+	 * <p>只对**普通怪**生效：Boss / 精英怪免疫（否则 Boss 被睡 1 回合太离谱）。
+	 *
+	 * @return true 表示应给该怪挂睡眠
+	 */
+	public static boolean rollAgingSleep(Char ch) {
+		if (!on(AGING) || ch == null) return false;
+		if (ch instanceof Hero) return false;
+		if (!(ch instanceof Mob)) return false;
+
+		//Boss / 小 Boss 不睡
+		if (Char.hasProp(ch, Char.Property.BOSS) || Char.hasProp(ch, Char.Property.MINIBOSS)) {
+			return false;
+		}
+		//精英怪不睡（它们已经有额外能力，再被睡会显得很突兀）
+		if (!ch.buffs(com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+				.ChampionEnemy.class).isEmpty()) {
+			return false;
+		}
+
+		return Random.Int(100) < AGING_PCT;
+	}
+
+	/**
+	 * END(121 中世纪骑士): 玩家护甲值倍率（+60%）。
+	 * <p>调用点：{@code Armor.drRoll()} 或等效的护甲值计算处。
+	 */
+	public static float knightArmorMultiplier(Char ch) {
+		if (!on(MEDIEVAL_KNIGHT) || ch == null) return 1f;
+		if (!(ch instanceof Hero)) return 1f;
+		return KNIGHT_ARMOR_MULT;
+	}
+
+	/**
+	 * END(121 中世纪骑士): 玩家移动速度倍率（−50%）。
+	 * <p>与 16/19/26 等速度规则一并作用。
+	 */
+	public static float knightSpeedMultiplier(Char ch) {
+		if (!on(MEDIEVAL_KNIGHT) || ch == null) return 1f;
+		if (!(ch instanceof Hero)) return 1f;
+		return KNIGHT_SPEED_MULT;
+	}
+
+	/**
+	 * END(103 弹幕地狱): 远程投射物数量。
+	 *
+	 * <p>原本 1 发，改为 3 发散射（有间隙可走位）。
+	 * 与 19 风驰电掣联动时，**投射物速度单独计算**（不受 19 影响）。
+	 *
+	 * @return 投射物数量（无该挑战时为 1）
+	 */
+	public static int projectileCount() {
+		return on(BULLET_HELL) ? BULLET_HELL_COUNT : 1;
+	}
+
+	/**
+	 * END(140 枪枪爆头): 远程攻击是否应"必中最大值"。
+	 *
+	 * <p>玩家与目标距离 **>= 5 格** 时，远程攻击伤害必定为最大值；
+	 * 距离小于 5 格时正常结算。
+	 *
+	 * @param attacker 攻击方
+	 * @param target   目标
+	 * @return true 表示本次伤害应取最大值
+	 */
+	public static boolean isHeadshot(Char attacker, Char target) {
+		if (!on(HEADSHOT)) return false;
+		if (attacker == null || target == null) return false;
+		//只对玩家生效（倾向为"玩家收益"）
+		if (!(attacker instanceof Hero)) return false;
+		if (com.shatteredpixel.shatteredpixeldungeon.Dungeon.level == null) return false;
+
+		int dist = com.shatteredpixel.shatteredpixeldungeon.Dungeon.level
+				.distance(attacker.pos, target.pos);
+		return dist >= HEADSHOT_RANGE;
 	}
 }
