@@ -976,6 +976,44 @@ public final class ChallengeEffects {
 	public static final int FLOOR_SHUFFLE     = 2;
 
 	//==================================================================
+	//本批（扩展包）新增规则
+	//==================================================================
+
+	/** 87 盗贼鼠群：怪物攻击 5% 偷金币，击杀后双倍返还。 */
+	public static final int THIEF_RATS        = 87;
+	/** 142 无下限术士：怪物受远程攻击 13% 完全免疫。 */
+	public static final int NO_LOWER_LIMIT    = 142;
+	/** 143 吾为王者：所有 Boss 命中/闪避 +20%。 */
+	public static final int I_AM_KING         = 143;
+	/** 148 飞天神偷：怪物 13% 获得隐身。 */
+	public static final int FLYING_THIEF      = 148;
+	/** 153 恶魔地牢：所有怪物变为恶魔类。 */
+	public static final int DEMON_DUNGEON     = 153;
+	/** 158 神圣之力：对恶魔类造成额外伤害。 */
+	public static final int HOLY_POWER        = 158;
+	/** 163 古代升级：每 3 级 +10% 固定伤害。 */
+	public static final int ANCIENT_UPGRADE   = 163;
+	/** 168 怪物地牢：所有怪物相关概率提升至 25%。 */
+	public static final int MONSTER_DUNGEON   = 168;
+
+	/** 87 盗贼鼠群：偷钱概率 5%，返还倍数 2。 */
+	private static final int THIEF_RATS_PCT     = 5;
+	private static final int THIEF_RATS_REFUND  = 2;
+	/** 142 无下限术士：免疫概率 13%。 */
+	private static final int NO_LOWER_LIMIT_PCT = 13;
+	/** 143 吾为王者：Boss 命中/闪避倍率 1.2。 */
+	private static final float KING_STAT_MULT   = 1.20f;
+	/** 148 飞天神偷：隐身概率 13%。 */
+	private static final int FLYING_THIEF_PCT   = 13;
+	/** 158 神圣之力：对恶魔额外伤害倍率 1.3（+30%）。 */
+	private static final float HOLY_POWER_MULT  = 1.30f;
+	/** 163 古代升级：每 3 级 +10%。 */
+	private static final int ANCIENT_STEP_LEVEL = 3;
+	private static final float ANCIENT_PER_STEP = 0.10f;
+	/** 168 怪物地牢：怪物相关概率统一提升到 25%。 */
+	private static final int MONSTER_DUNGEON_PCT = 25;
+
+	//==================================================================
 	//2 楼层混乱
 	//==================================================================
 
@@ -1008,9 +1046,22 @@ public final class ChallengeEffects {
 	/** 排列用的固定种子。 */
 	private static final long SHUFFLE_SEED = 0x5EEDF100L;
 
-	/** 构建本局的楼层排列。种子固定 → 结果固定。 */
+	/**
+	 * 构建本局的楼层排列。种子固定 → 结果固定。
+	 *
+	 * <p>END(适配 6 完整地牢): 排列长度与 Boss 间隔**不再是写死的 25/5**，
+	 * 而是取自 {@link #maxMainDepth()} 与 {@link #bossInterval()}：
+	 * <ul>
+	 *   <li>未勾选 6：25 层，每 5 层一个 Boss（原版节奏）</li>
+	 *   <li>勾选 6：50 层，每 10 层一个 Boss</li>
+	 * </ul>
+	 * 这样 2 与 6 可以同时勾选而不会互相失效。
+	 */
 	private static void buildShuffleOrder() {
 		com.watabou.utils.Random.pushGenerator(SHUFFLE_SEED);
+
+		int total = maxMainDepth();          //25 或 50
+		int interval = bossInterval();       //5 或 10
 
 		//==== END(修订): 普通层**全局**打乱，不再限制在区域内 ====
 		//文档所有者给出的例子是
@@ -1032,17 +1083,17 @@ public final class ChallengeEffects {
 		//又不破坏"每层只去一次"与"Boss 步数固定"。
 
 		java.util.ArrayList<Integer> normals = new java.util.ArrayList<>();
-		for (int d = 2; d <= 25; d++) {          //从 2 开始：1F 被固定
-			if (d % 5 != 0) normals.add(d);      //排除 5/10/15/20/25
+		for (int d = 2; d <= total; d++) {           //从 2 开始：1F 被固定
+			if (d % interval != 0) normals.add(d);   //排除 Boss 层
 		}
 		com.watabou.utils.Random.shuffle(normals);
 
-		shuffleOrder = new int[25];
-		shuffleOrder[0] = 1;                     //第 1 步固定 1F
+		shuffleOrder = new int[total];
+		shuffleOrder[0] = 1;                         //第 1 步固定 1F
 		int n = 0;
-		for (int step = 1; step < 25; step++) {
-			if ((step + 1) % 5 == 0) {
-				//第 5/10/15/20/25 步：Boss 层
+		for (int step = 1; step < total; step++) {
+			if ((step + 1) % interval == 0) {
+				//Boss 步：层号与步号相同
 				shuffleOrder[step] = step + 1;
 			} else {
 				shuffleOrder[step] = normals.get(n++);
@@ -1060,7 +1111,9 @@ public final class ChallengeEffects {
 	 */
 	public static int nextShuffledDepth(int depth) {
 		if (!on(FLOOR_SHUFFLE)) return depth + 1;
-		if (depth < 1 || depth > 25) return depth + 1;
+		//END(适配 6 完整地牢): 上限用 maxMainDepth()（25 或 50），
+		//否则勾选 6 之后 26-50 层会被当成"不适用"而完全失效。
+		if (depth < 1 || depth > maxMainDepth()) return depth + 1;
 
 		if (shuffleOrder == null) buildShuffleOrder();
 
@@ -1075,7 +1128,7 @@ public final class ChallengeEffects {
 
 	/** END(2 楼层混乱): 当前楼层在游玩顺序中是第几步（1-based）；不适用时返回 0。 */
 	public static int shuffleStepOf(int depth) {
-		if (!on(FLOOR_SHUFFLE) || depth < 1 || depth > 25) return 0;
+		if (!on(FLOOR_SHUFFLE) || depth < 1 || depth > maxMainDepth()) return 0;
 		if (shuffleOrder == null) buildShuffleOrder();
 		for (int step = 0; step < shuffleOrder.length; step++) {
 			if (shuffleOrder[step] == depth) return step + 1;
@@ -1091,7 +1144,8 @@ public final class ChallengeEffects {
 	 */
 	public static int prevShuffledDepth(int depth) {
 		if (!on(FLOOR_SHUFFLE)) return depth - 1;
-		if (depth < 1 || depth > 25) return depth - 1;
+		//END(适配 6 完整地牢): 同上
+		if (depth < 1 || depth > maxMainDepth()) return depth - 1;
 
 		if (shuffleOrder == null) buildShuffleOrder();
 
@@ -1201,10 +1255,53 @@ public final class ChallengeEffects {
 		return msg("hp_brink");                                           // <10%
 	}
 
-	/** 取一条描述文案。 */
+	/**
+	 * 静默模式（**仅供自动化测试**）。
+	 *
+	 * <p>测试环境没有 libGDX 的 {@code Gdx.app}，而 {@code Messages.get()}
+	 * 在静态初始化时会读 {@code SPDSettings.language()}，从而 NPE。
+	 * 打开本开关后，所有 {@code GLog} / {@code Messages} 调用都会被跳过，
+	 * 于是纯逻辑（概率、数值）可以在无图形环境下验证。
+	 *
+	 * <p>**绝不要在游戏运行时打开它** —— 那会让所有挑战提示消失。
+	 */
+	public static boolean silentForTests = false;
+
+	/** 安全地取一条描述文案（测试环境下返回空串而不是崩）。 */
 	private static String msg(String key) {
-		return com.shatteredpixel.shatteredpixeldungeon.messages.Messages.get(
-				ChallengeEffects.class, key);
+		if (silentForTests) return "";
+		try {
+			return com.shatteredpixel.shatteredpixeldungeon.messages.Messages.get(
+					ChallengeEffects.class, key);
+		} catch (Throwable t) {
+			return "";
+		}
+	}
+	/** 安全地取一条带参数的文案。 */
+	private static String msgArgs(String key, Object... args) {
+		if (silentForTests) return "";
+		try {
+			return com.shatteredpixel.shatteredpixeldungeon.messages.Messages.get(
+					ChallengeEffects.class, key, args);
+		} catch (Throwable t) {
+			return "";
+		}
+	}
+
+	/** 静默安全地写一条警告日志。 */
+	private static void safeLogW(String text) {
+		if (silentForTests || text == null || text.isEmpty()) return;
+		try {
+			com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w(text);
+		} catch (Throwable ignored) { }
+	}
+
+	/** 静默安全地写一条信息日志。 */
+	private static void safeLogI(String text) {
+		if (silentForTests || text == null || text.isEmpty()) return;
+		try {
+			com.shatteredpixel.shatteredpixeldungeon.utils.GLog.i(text);
+		} catch (Throwable ignored) { }
 	}
 
 	/**
@@ -1840,7 +1937,8 @@ public final class ChallengeEffects {
 	/** 146 醍醐灌顶：每个天赋层级额外点数。 */
 	private static final int   ENLIGHTEN_BONUS  = 1;
 	/** 165 神圣之光：触发概率与回复比例。 */
-	private static final int   HOLY_LIGHT_PCT   = 13;
+	/** END(修订): 165 神圣之光每回合触发概率，13% → **3%**。 */
+	private static final int   HOLY_LIGHT_PCT   = 3;
 	private static final float HOLY_LIGHT_HEAL  = 0.02f;
 
 	/**
@@ -1908,6 +2006,13 @@ public final class ChallengeEffects {
 		if (on(SKIP_STUDENT))   n++;   // 7 跳级券
 		if (on(CHERNOBYL))      n++;   // 49 净化药水
 		if (on(GAMBLER))        n++;   // 81 财富戒指
+		if (on(GRIMM_WEAPON))   n += 2; // 125 银色短铳 + 兔子怀表
+		if (on(GRIMM_WEAPON_2)) n++;    // 133 神天使双剑
+		if (on(GRIMM_WEAPON_3)) n += 2; // 136 怨恨之剑 + 勇剑
+		if (on(GRIMM_RING))     n++;    // 127 黑兔戒指
+		if (on(GRIMM_ART))      n++;    // 128 镇魂歌
+		if (on(GOLDEN_MEAD))    n += 3; // 134 黄金蜂蜜酒 x3
+		if (on(GRIMM_HEART))    n++;    // 126 魂之容器
 		return n;
 	}
 
@@ -1963,6 +2068,61 @@ public final class ChallengeEffects {
 		if (on(CHERNOBYL)) {
 			out.add(new com.shatteredpixel.shatteredpixeldungeon.items.potions
 					.PotionOfPurity());
+		}
+
+		//==== END(格林系列): 开局发放专属装备 ====
+		//125 格林之器：银色短铳 + 兔子怀表
+		//（原表把怨恨之剑/勇剑也写在 125 里，但文档所有者明确
+		//  "125 没有后面两个武器，那是 3 里的"，所以 125 只发这两件）
+		if (on(GRIMM_WEAPON)) {
+			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+					.SilverGun());
+			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+					.RabbitWatch());
+		}
+
+		//133 格林之器2：神天使双剑
+		if (on(GRIMM_WEAPON_2)) {
+			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+					.AngelSword());
+		}
+
+		//136 格林之器3：怨恨之剑 + 勇剑
+		if (on(GRIMM_WEAPON_3)) {
+			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+					.HateSword());
+			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+					.BraveSword());
+		}
+
+		//127 格林之戒：黑兔戒指
+		if (on(GRIMM_RING)) {
+			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+					.RabbitRing());
+		}
+
+		//128 格林之术：镇魂歌（给 2 张，玩家可以分两次用）
+		if (on(GRIMM_ART)) {
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm.SoulRequiem sr =
+					new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+							.SoulRequiem();
+			sr.quantity(2);
+			out.add(sr);
+		}
+
+		//126 格林之心：魂之容器（攒魂/献祭的入口）
+		if (on(GRIMM_HEART)) {
+			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+					.SoulVessel());
+		}
+
+		//134 黄金蜂蜜酒：给 3 瓶
+		if (on(GOLDEN_MEAD)) {
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm.GoldenMead gm =
+					new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+							.GoldenMead();
+			gm.quantity(3);
+			out.add(gm);
 		}
 
 		//81 搏杀赌徒：开局给 +3 财富戒指
@@ -2081,8 +2241,17 @@ public final class ChallengeEffects {
 	private static final float POPEYE_SPEED_MULT = 0.80f;
 	/** 19 风驰电掣：玩家攻速 +20%、怪物移速 +20%。 */
 	private static final float SWIFT_SPEED_MULT  = 1.20f;
-	/** 80 冰天雪地：13% 寒冷、2% 冰冻。 */
-	private static final int   FROZEN_CHILL_PCT  = 13;
+	/**
+	 * 80 冰天雪地：寒冷概率、冰冻概率。
+	 *
+	 * <p>END(修订): 寒冷由 13% 下调为 **3%**（文档所有者要求）。
+	 * 冰冻保持 2% 不变。
+	 *
+	 * <p>注意两者是 {@code if / else if} 关系（先判冰冻），所以**总触发率**
+	 * 不是简单相加，而是 {@code 冰冻 + (1-冰冻)×寒冷}：
+	 * 改前 = 2% + 98%×13% ≈ 14.7%，改后 = 2% + 98%×3% ≈ 4.9%。
+	 */
+	private static final int   FROZEN_CHILL_PCT  = 3;
 	private static final int   FROZEN_FREEZE_PCT = 2;
 	/** 90 雷暴：每回合 5% 概率触发。 */
 	private static final int   THUNDER_PCT       = 5;
@@ -2446,5 +2615,621 @@ public final class ChallengeEffects {
 		int dist = com.shatteredpixel.shatteredpixeldungeon.Dungeon.level
 				.distance(attacker.pos, target.pos);
 		return dist >= HEADSHOT_RANGE;
+	}
+
+	//==================================================================
+	//本批新增规则的实现
+	//==================================================================
+
+	/**
+	 * END(87 盗贼鼠群): 怪物攻击命中后，5% 概率偷走玩家的金币。
+	 *
+	 * <p>原表："怪物攻击 5% 概率偷金币，击杀后返还双倍"。
+	 *
+	 * <p>偷走的钱**记在怪物身上**（见 {@code ThiefMark}），
+	 * 击杀它时按双倍返还 —— 所以玩家有动力去追那只怪，
+	 * 而不是单纯地挨罚。
+	 *
+	 * <p>调用点：{@code Char.attack()} 的命中结算处（攻击方是怪物时）。
+	 *
+	 * @param attacker 攻击方（怪物）
+	 * @param enemy    目标（玩家）
+	 */
+	public static void onMobStealGold(Char attacker, Char enemy) {
+		if (!on(THIEF_RATS) || attacker == null || enemy == null) return;
+		if (!(attacker instanceof Mob)) return;
+		if (!(enemy instanceof Hero)) return;
+		if (Dungeon.gold <= 0) return;                     //没钱可偷
+		//168 怪物地牢：把这条概率抬到至少 25%（未勾选 168 时原样使用 5%）
+		if (Random.Int(100) >= bumpMobChance(THIEF_RATS_PCT)) return;
+
+		//偷走 5% 的金币，至少 1 枚
+		int stolen = Math.max(1, Dungeon.gold / 20);
+		stolen = Math.min(stolen, Dungeon.gold);
+		Dungeon.gold -= stolen;
+
+		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ThiefMark mark =
+				com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(
+						attacker,
+						com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+								.ThiefMark.class);
+		mark.stolenGold += stolen;
+
+		safeLogW(msgArgs("thief_rats_stolen", stolen));
+	}
+
+	/**
+	 * END(87 盗贼鼠群): 击杀带赃款的怪物时，双倍返还。
+	 *
+	 * <p>调用点：{@code Mob.die()} 或掉落结算处。
+	 */
+	public static void onThiefKilled(Char mob) {
+		if (!on(THIEF_RATS) || mob == null) return;
+
+		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ThiefMark mark =
+				mob.buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+						.ThiefMark.class);
+		if (mark == null || mark.stolenGold <= 0) return;
+
+		int refund = mark.stolenGold * THIEF_RATS_REFUND;
+		Dungeon.gold += refund;
+		mark.stolenGold = 0;
+
+		safeLogI(msgArgs("thief_rats_refund", refund));
+	}
+
+	/**
+	 * END(142 无下限术士): 怪物受到远程攻击时是否完全免疫。
+	 *
+	 * <p>原表："怪物受到远程攻击时，13% 概率完全免疫该次伤害"。
+	 *
+	 * <p>调用点：{@code Char.damage()} 的最终拦截处（第 6 步之后）。
+	 *
+	 * @param target 受击方
+	 * @param src    伤害来源
+	 * @return true 表示本次伤害应被完全免除
+	 */
+	public static boolean rollRangedImmunity(Char target, Object src) {
+		if (!on(NO_LOWER_LIMIT) || target == null) return false;
+		if (!(target instanceof Mob)) return false;         //只对怪物生效
+		if (!isRangedSource(src)) return false;
+		//168 怪物地牢：把这条概率抬到至少 25%
+		return Random.Int(100) < bumpMobChance(NO_LOWER_LIMIT_PCT);
+	}
+
+	/** 判断伤害来源是否属于"远程攻击"。 */
+	private static boolean isRangedSource(Object src) {
+		if (src == null) return false;
+		return src instanceof com.shatteredpixel.shatteredpixeldungeon.items.weapon
+				.missiles.MissileWeapon
+			|| src instanceof com.shatteredpixel.shatteredpixeldungeon.items.weapon
+				.SpiritBow;
+	}
+
+	/**
+	 * END(143 吾为王者): Boss 的命中/闪避倍率。
+	 *
+	 * <p>原表："所有 Boss 的命中和闪避提升 20%"。
+	 * 调用点：{@code Char.hit()} 里对攻防双方各查一次。
+	 */
+	public static float kingStatMultiplier(Char ch) {
+		if (!on(I_AM_KING) || ch == null) return 1f;
+		if (!Char.hasProp(ch, Char.Property.BOSS)) return 1f;
+		return KING_STAT_MULT;
+	}
+
+	/**
+	 * END(148 飞天神偷): 怪物是否应获得隐身。
+	 *
+	 * <p>原表："怪物有 13% 获得隐身"。
+	 * 调用点：{@code Level.createMob()} 或怪物入场时（一次性判定）。
+	 */
+	public static boolean rollFlyingThiefInvisible(Char mob) {
+		if (!on(FLYING_THIEF) || mob == null) return false;
+		if (!(mob instanceof Mob)) return false;
+		//Boss 不给隐身 —— 那会让 Boss 战无法进行
+		if (Char.hasProp(mob, Char.Property.BOSS)) return false;
+		//168 怪物地牢：把这条概率抬到至少 25%
+		return Random.Int(100) < bumpMobChance(FLYING_THIEF_PCT);
+	}
+
+	/**
+	 * END(153 恶魔地牢): 所有怪物是否应被视为恶魔类。
+	 *
+	 * <p>原表："所有怪物变为恶魔类（只是代码）" —— 即只改属性标记，
+	 * 不改外观/数值。这样 158 神圣之力的"对恶魔额外伤害"才能生效。
+	 */
+	public static boolean demonsEnabled() {
+		return on(DEMON_DUNGEON);
+	}
+
+	/**
+	 * END(158 神圣之力): 对恶魔类目标的额外伤害倍率。
+	 *
+	 * <p>原表："对恶魔类造成额外伤害"。这里取 +30%。
+	 * 与 153 恶魔地牢联动：勾了 153 之后所有怪都是恶魔，本条的收益最大化。
+	 */
+	public static float holyPowerDamageMultiplier(Char target) {
+		if (!on(HOLY_POWER) || target == null) return 1f;
+		if (!Char.hasProp(target, Char.Property.DEMONIC)) return 1f;
+		return HOLY_POWER_MULT;
+	}
+
+	/**
+	 * END(163 古代升级): 每 3 级提升 10% 的固定伤害。
+	 *
+	 * <p>原表："每达到 3 级，提升当前伤害 10% 的固定伤害，例如 15-20 → 16-22"。
+	 *
+	 * <p>理解：等级每满 3 级为一档，每档把伤害的**下限与上限各 +10%**。
+	 * 例：15-20 且等级 3 时 → 16.5-22 → 取整 16-22（与原表例子一致，
+	 * 说明是**先乘再取整**，而不是先取整再乘）。
+	 *
+	 * @param attacker 攻击方
+	 * @param min      伤害下限
+	 * @param max      伤害上限
+	 * @return 调整后的 {min, max}
+	 */
+	public static int[] ancientUpgradeRange(Char attacker, int min, int max) {
+		if (!on(ANCIENT_UPGRADE) || attacker == null) return new int[]{min, max};
+		//等级是 Hero 的字段（Char 本身没有 lvl），必须先判类型再取
+		if (!(attacker instanceof Hero)) return new int[]{min, max};
+
+		int lvl = ((Hero) attacker).lvl;
+		if (lvl < ANCIENT_STEP_LEVEL) return new int[]{min, max};
+
+		int steps = lvl / ANCIENT_STEP_LEVEL;               //每 3 级一档
+		float mult = 1f + ANCIENT_PER_STEP * steps;
+
+		return new int[]{
+				Math.max(min, Math.round(min * mult)),
+				Math.max(max, Math.round(max * mult))
+		};
+	}
+
+	/**
+	 * END(168 怪物地牢): 怪物相关概率统一提升到 25%。
+	 *
+	 * <p>原表："所有怪物相关概率提升至 25%"。
+	 *
+	 * <p>实现：提供一个统一的"概率提升"入口，各条怪物概率规则
+	 * 通过 {@link #bumpMobChance(int)} 把自己的概率抬到至少 25%。
+	 * 未勾选 168 时原样返回。
+	 *
+	 * @param basePct 该规则原本的概率（百分比）
+	 * @return 提升后的概率
+	 */
+	public static int bumpMobChance(int basePct) {
+		if (!on(MONSTER_DUNGEON)) return basePct;
+		return Math.max(basePct, MONSTER_DUNGEON_PCT);
+	}
+	/** 56 装备绑定：装备获得后自动绑定。 */
+	public static final int EQUIPMENT_BINDING = 56;
+	/** 108 装备觉醒：武器击杀 50 / 护甲格挡 100 后觉醒。 */
+	public static final int AWAKENING         = 108;
+
+	/** END(56 装备绑定): 是否启用装备绑定。 */
+	public static boolean equipmentBindingEnabled() {
+		return on(EQUIPMENT_BINDING);
+	}
+
+	/** 108 装备觉醒：武器所需击杀数。 */
+	public static final int AWAKEN_KILLS   = 50;
+	/** 108 装备觉醒：护甲所需格挡数。 */
+	public static final int AWAKEN_BLOCKS  = 100;
+
+	/** END(108 装备觉醒): 是否启用。 */
+	public static boolean awakeningEnabled() {
+		return on(AWAKENING);
+	}
+
+	/**
+	 * END(108 装备觉醒): 某件装备是否**不能**觉醒。
+	 *
+	 * <p>原表限制："每件一次；残缺/诅咒不能觉醒"。
+	 * 这里判断 57 残缺 / 59 诅咒 两种词缀。
+	 */
+	public static boolean cannotAwaken(com.shatteredpixel.shatteredpixeldungeon.items
+			.weapon.Weapon w) {
+		if (w == null || w.enchantment == null) return false;
+		return w.enchantment instanceof com.shatteredpixel.shatteredpixeldungeon.items
+				.weapon.enchantments.Flawed
+			|| w.enchantment.curse();
+	}
+
+	/** END(108 装备觉醒): 护甲版本的同类判断。 */
+	public static boolean cannotAwaken(com.shatteredpixel.shatteredpixeldungeon.items
+			.armor.Armor a) {
+		if (a == null || a.glyph == null) return false;
+		return a.glyph.curse();
+	}
+	/**
+	 * END(108 装备觉醒): 玩家用武器击杀怪物时，给当前武器累计一次。
+	 *
+	 * <p>调用点：{@code Mob.die()}。
+	 *
+	 * <p>只认"玩家手持武器造成的击杀"：法术、陷阱、环境致死都不算，
+	 * 否则玩家挂机让陷阱杀怪也能刷满 50 只。
+	 *
+	 * @param killed 被杀的怪物
+	 * @param cause  致死原因（通常是伤害来源对象）
+	 */
+	public static void onMobKilledForAwakening(Char killed, Object cause) {
+		if (!on(AWAKENING) || Dungeon.hero == null) return;
+
+		//致死来源必须是玩家（法术也算玩家的，但法术不累加武器计数）
+		Char killer = (cause instanceof Char) ? (Char) cause : null;
+
+		com.shatteredpixel.shatteredpixeldungeon.items.Item w =
+				Dungeon.hero.belongings.attackingWeapon();
+		if (!(w instanceof com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon)) {
+			return;
+		}
+		com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon weapon =
+				(com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon) w;
+
+		//只有玩家直接造成的击杀才计数
+		if (killer != Dungeon.hero) return;
+
+		weapon.awakenKillCount++;
+		if (weapon.awakenKillCount >= AWAKEN_KILLS && !weapon.awakenedOnce) {
+			awakenWeapon(weapon);
+		}
+	}
+
+	/** END(108 装备觉醒): 给武器觉醒 —— 补一条随机附魔。 */
+	private static void awakenWeapon(
+			com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon weapon) {
+		if (cannotAwaken(weapon)) return;          //残缺/诅咒不能觉醒
+		weapon.awakenedOnce = true;
+
+		if (weapon.enchantment == null) {
+			//没有附魔 → 直接给一条随机正面附魔
+			weapon.enchant();
+		} else {
+			//已有附魔 → 换一条（"每件一次"的意思是只能觉醒一次，不是不能换）
+			weapon.enchant();
+		}
+		weapon.identify();
+
+		safeLogI(msg("awakening_done"));
+	}
+
+	/** END(108 装备觉醒): 护甲格挡计数。 */
+	public static void onArmorBlockForAwakening(
+			com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor armor) {
+		if (!on(AWAKENING) || armor == null) return;
+		armor.awakenBlockCount++;
+		if (armor.awakenBlockCount >= AWAKEN_BLOCKS && !armor.awakenedOnce) {
+			if (!cannotAwaken(armor)) {
+				armor.awakenedOnce = true;
+				if (armor.glyph == null) {
+					armor.inscribe();
+				} else {
+					armor.inscribe();
+				}
+				armor.identify();
+				safeLogI(msg("awakening_done"));
+			}
+		}
+	}
+	/** 157 附魔扩充：向随机附魔池加入「锋利」「力量」。 */
+	public static final int ENCHANT_EXPANSION = 157;
+
+	//==== 格林系列（125/133/136 的专属装备）====
+
+	/** 125 格林之器：银色短铳 + 兔子怀表。 */
+	public static final int GRIMM_WEAPON   = 125;
+	/** 133 格林之器2：神天使双剑。 */
+	public static final int GRIMM_WEAPON_2 = 133;
+	/** 136 格林之器3：怨恨之剑 + 勇剑。 */
+	public static final int GRIMM_WEAPON_3 = 136;
+
+	/** 129 心爱的少女：童话残片 + 999 层的爱丽丝。 */
+	public static final int BELOVED_GIRL   = 129;
+
+	/** 127 格林之戒：黑兔戒指。 */
+	public static final int GRIMM_RING     = 127;
+	/** 128 格林之术：镇魂歌。 */
+	public static final int GRIMM_ART      = 128;
+	/** 134 黄金蜂蜜酒。 */
+	public static final int GOLDEN_MEAD    = 134;
+
+	/** 126 格林之心：黑之魂系统。 */
+	public static final int GRIMM_HEART    = 126;
+
+	/** END(157 附魔扩充): 是否向随机附魔池加入新附魔。 */
+	public static boolean enchantExpansionEnabled() {
+		return on(ENCHANT_EXPANSION);
+	}
+	//==================================================================
+	//地图类：3 区域错位 / 4 精英迁徙 / 5 怪物入侵
+	//==================================================================
+
+	/** 3 区域错位。 */
+	public static final int REGION_SHIFT     = 3;
+	/** 4 精英迁徙。 */
+	public static final int ELITE_MIGRATION  = 4;
+	/** 5 怪物入侵。 */
+	public static final int MONSTER_INVASION = 5;
+
+	/** 5 怪物入侵：每层混入的外区域怪物数量。 */
+	private static final int INVASION_COUNT = 2;
+
+	/** END(5 怪物入侵): 本层应混入几只外区域怪物。 */
+	public static int invasionCount(int depth) {
+		return on(MONSTER_INVASION) ? INVASION_COUNT : 0;
+	}
+
+	/**
+	 * END(5 怪物入侵): 从**其它区域**的普通怪里随机抽一只。
+	 *
+	 * <p>做法：随机挑一个不属于当前区域、且在主线 1-25 范围内的层号，
+	 * 取那一层的普通怪轮换表，再随机抽一只。
+	 *
+	 * @param currentDepth 当前层（用于判断"哪些区域是别的区域"）
+	 * @return 怪物类；取不到时返回 null（调用方跳过）
+	 */
+	public static Class<? extends com.shatteredpixel.shatteredpixeldungeon.actors.mobs
+			.Mob> pickInvader(int currentDepth) {
+		if (!on(MONSTER_INVASION)) return null;
+		if (currentDepth < 1 || currentDepth > 25) return null;
+
+		int curRegion = (currentDepth - 1) / 5;        //0..4
+
+		//最多试 10 次，避免某些层取不到表时死循环
+		for (int tries = 0; tries < 10; tries++) {
+			int r = Random.Int(5);
+			if (r == curRegion) continue;              //必须来自**别的**区域
+
+			int probeDepth = r * 5 + 1 + Random.Int(4); //该区域的某个普通层
+			try {
+				java.util.ArrayList<Class<? extends com.shatteredpixel.shatteredpixeldungeon
+						.actors.mobs.Mob>> pool =
+						com.shatteredpixel.shatteredpixeldungeon.actors.mobs.MobSpawner
+								.standardMobRotation(probeDepth);
+				if (pool != null && !pool.isEmpty()) {
+					return pool.get(Random.Int(pool.size()));
+				}
+			} catch (Throwable ignored) {
+				//取不到就换一个区域再试
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * END(4 精英迁徙): 精英怪出现时，是否放宽"只在本区域"的限制。
+	 *
+	 * <p>原表："精英怪可出现在原本不属于自己的区域"。
+	 *
+	 * <p>实现说明：本 fork 的精英（ChampionEnemy）判定是**逐怪掷骰**的，
+	 * 本身不区分区域 —— 任何怪都可能成为精英。所以这条规则的
+	 * 实际含义是"**提高**精英出现的广度"：勾选后，连那些
+	 * 通常被排除在精英体系之外的怪（例如召唤物、部分特殊怪）
+	 * 也能成为精英。
+	 *
+	 * <p>因此这里提供一个"是否放宽限制"的开关，由 {@code ChampionEnemy} 查询。
+	 */
+	public static boolean eliteMigrationEnabled() {
+		return on(ELITE_MIGRATION);
+	}
+
+	/**
+	 * END(3 区域错位): 地图生成的"生态"是否应向邻区偏移。
+	 *
+	 * <p>原表："不同区域部分地图生态、怪物或生成内容错位"。
+	 *
+	 * <p>实现：提供一个**相邻区域**的层号，供地图生成时参考。
+	 * 返回 0 表示不启用。
+	 *
+	 * <p>与 1 牢地碎破的区别：碎破是"整个区域对调"（1↔5、2↔4），
+	 * 本条是"局部错位"（与相邻区域混合），程度轻得多。
+	 */
+	public static int regionShiftReference(int depth) {
+		if (!on(REGION_SHIFT)) return 0;
+		if (depth < 1 || depth > 25) return 0;
+		int curRegion = (depth - 1) / 5;
+
+		//向相邻区域偏移：随机选左邻或右邻（边界时只能选一侧）
+		int target;
+		if (curRegion == 0)      target = 1;
+		else if (curRegion == 4) target = 3;
+		else                     target = Random.Int(2) == 0 ? curRegion - 1 : curRegion + 1;
+
+		return target * 5 + 1;      //该区域的第一层，作为"生态参考层"
+	}
+	//==================================================================
+	//6 完整地牢：每区 9 普通层 + 1 Boss 层（共 50 层）
+	//==================================================================
+
+	/** 6 完整地牢。 */
+	public static final int FULL_DUNGEON = 6;
+
+	/** 完整地牢下每区的层数（9 普通 + 1 Boss）。 */
+	public static final int FULL_REGION_SIZE = 10;
+
+	/** END(6 完整地牢): 是否启用加长地牢。 */
+	public static boolean fullDungeonEnabled() {
+		return on(FULL_DUNGEON);
+	}
+
+	/**
+	 * END(6 完整地牢): 把"实际深度"映射成"用于取资源的原版深度"。
+	 *
+	 * <h3>为什么要映射</h3>
+	 * 加长后主线有 50 层，但游戏里所有资源表（怪物轮换、掉落、
+	 * 商店、任务、Boss 房）都是按 **1-25 层** 设计的。
+	 * 与其把几十张表都改一遍，不如把"实际深度"折算成等价的原版深度，
+	 * 让它们照常工作。
+	 *
+	 * <h3>映射规则</h3>
+	 * <pre>
+	 *   实际 1-10F  (1区) -> 原版 1-5F
+	 *   实际 11-20F (2区) -> 原版 6-10F
+	 *   实际 21-30F (3区) -> 原版 11-15F
+	 *   实际 31-40F (4区) -> 原版 16-20F
+	 *   实际 41-50F (5区) -> 原版 21-25F
+	 * </pre>
+	 * 区内按比例折算：实际区内偏移 0..9 → 原版区内偏移 0..4。
+	 * **第 10 层（偏移 9）永远映射到该区的 Boss 层**（原版偏移 4）。
+	 *
+	 * <p>未勾选 6 时原样返回 {@code depth}。
+	 */
+	public static int fullDungeonMappedDepth(int depth) {
+		if (!on(FULL_DUNGEON)) return depth;
+		if (depth < 1 || depth > 50) return depth;
+
+		int region = (depth - 1) / FULL_REGION_SIZE;   //0..4
+		int within = (depth - 1) % FULL_REGION_SIZE;   //0..9
+
+		//==== END(修复·映射越界): 9 个普通层要映射到 4 个普通层 ====
+		//原版每区 5 层：偏移 0-3 是普通层，偏移 4 是 Boss。
+		//加长后每区 10 层：偏移 0-8 是普通层（9 个），偏移 9 是 Boss。
+		//
+		//所以普通层是"9 -> 4"的压缩映射，即 within * 3 / 8：
+		//    0,1,2 -> 0   3,4,5 -> 1   6,7 -> 2   8 -> 3
+		//**不能**用 within * 4 / 8 —— 那会让 within=8 也得 4，
+		//与 Boss 层的 4 撞车，region=4 时算出 24+4+1 = 25，
+		//resourceSegment 就成了 5（越界），资源发放随之失衡。
+		int mappedWithin;
+		if (within >= FULL_REGION_SIZE - 1) {
+			mappedWithin = 4;                              //Boss 层
+		} else {
+			mappedWithin = within * 3 / (FULL_REGION_SIZE - 2);   //0..8 -> 0..3
+		}
+
+		return region * 5 + mappedWithin + 1;
+	}
+
+	/** END(6 完整地牢): 给定实际深度，返回它所在的区域（1..5）。 */
+	public static int fullDungeonRegion(int depth) {
+		if (depth < 1) return 1;
+		return Math.min(5, (depth - 1) / FULL_REGION_SIZE + 1);
+	}
+
+	/** END(6 完整地牢): 该实际深度是否是 Boss 层。 */
+	public static boolean fullDungeonIsBossLevel(int depth) {
+		if (!on(FULL_DUNGEON)) return false;
+		if (depth < 1 || depth > 50) return false;
+		return (depth - 1) % FULL_REGION_SIZE == FULL_REGION_SIZE - 1;
+	}
+
+	/**
+	 * END(6 完整地牢): 主线最深一层。
+	 *
+	 * <p>原版是 25，勾选 6 后是 50。Boss 层判定、结局触发等都要用它，
+	 * 所以单独抽一个方法。
+	 */
+	public static int maxMainDepth() {
+		return on(FULL_DUNGEON) ? 50 : 25;
+	}
+	//==================================================================
+	//150 淹没地牢 / 154 废弃地牢（照搬原版 MossyClump 的 feeling 机制）
+	//==================================================================
+
+	/** 150 淹没地牢：每一层都是水域生态。 */
+	public static final int FLOODED_DUNGEON  = 150;
+	/** 154 废弃地牢：每一层都是草木生态。 */
+	public static final int ABANDONED_DUNGEON = 154;
+
+	/** END(150 淹没地牢): 是否强制整层为水域生态。 */
+	public static boolean floodedEnabled() {
+		return on(FLOODED_DUNGEON);
+	}
+
+	/** END(154 废弃地牢): 是否强制整层为草木生态。 */
+	public static boolean abandonedEnabled() {
+		return on(ABANDONED_DUNGEON);
+	}
+
+	/** 150 淹没地牢：水中生成幻影食人鱼的概率。 */
+	private static final int FLOODED_PIRANHA_PCT = 20;
+
+	public static int floodedPiranhaChance() {
+		return on(FLOODED_DUNGEON) ? FLOODED_PIRANHA_PCT : 0;
+	}
+
+	/**
+	 * 154 废弃地牢：踩到植物时被缠绕的概率与回合数。
+	 *
+	 * <p>END(修订): 概率由 20% 下调为 **3%**（文档所有者要求）。
+	 * 整层都是植被，踩到的机会极多，20% 会让玩家几乎寸步难行。
+	 */
+	private static final int ABANDONED_TANGLE_PCT = 3;
+	private static final float ABANDONED_TANGLE_TURNS = 3f;
+
+	public static int abandonedTangleChance() {
+		return on(ABANDONED_DUNGEON) ? ABANDONED_TANGLE_PCT : 0;
+	}
+
+	public static float abandonedTangleTurns() {
+		return ABANDONED_TANGLE_TURNS;
+	}
+	/**
+	 * END(适配 6 完整地牢): Boss 层之间的间隔。
+	 *
+	 * <p>原版是每 5 层一个 Boss（5/10/15/20/25）；
+	 * 勾选 6 后每 10 层一个（10/20/30/40/50）。
+	 * 2 楼层混乱的排列、7 跳级生的区域划分都按它走。
+	 */
+	public static int bossInterval() {
+		return on(FULL_DUNGEON) ? FULL_REGION_SIZE : 5;
+	}
+	//==================================================================
+	//6 完整地牢：资源分段适配
+	//==================================================================
+
+	/**
+	 * END(适配 6 完整地牢): "资源层段号"（0-based）。
+	 *
+	 * <p>原版大量代码用 {@code depth / 5} 来算"这是第几个区域的第几段"，
+	 * 用来决定每段发多少力量药水、升级卷轴、附魔石（见
+	 * {@code Dungeon.posNeeded()} / {@code souNeeded()} / {@code asNeeded()}）。
+	 *
+	 * <p>勾选 6 后主线是 50 层，若继续用 {@code depth/5}：
+	 * <ul>
+	 *   <li>实际 41-50F 会算出段号 8-10，而资源表只有 5 段 → **发放失衡**</li>
+	 *   <li>每段只有 5 层，但玩家要走 10 层 → **资源密度减半**</li>
+	 * </ul>
+	 *
+	 * <p>所以统一改成：先折算成原版深度，再除以 5。
+	 * 未勾选 6 时 {@code fullDungeonMappedDepth} 原样返回，结果与 {@code depth/5} 完全相同。
+	 */
+	public static int resourceSegment(int depth) {
+		return fullDungeonMappedDepth(depth) / 5;
+	}
+
+	/**
+	 * END(适配 6 完整地牢): "在资源段内的第几层"（0-based）。
+	 *
+	 * <p>与 {@link #resourceSegment} 配套：原版是 {@code depth % 5}，
+	 * 用来算"这一段还剩几层可以发资源"。
+	 */
+	public static int resourceFloorInSegment(int depth) {
+		return fullDungeonMappedDepth(depth) % 5;
+	}
+
+	/**
+	 * END(适配 6 完整地牢): "这是第几个区域"（1-based），用于 43/79 等按区域触发的规则。
+	 *
+	 * <p>原版写的是 {@code depth % 5 == 1}（每 5 层一次）。
+	 * 勾选 6 后应当变成**每 10 层一次**，所以用 {@link #bossInterval()} 推导。
+	 */
+	public static boolean isRegionStart(int depth) {
+		int interval = bossInterval();
+		return depth > 1 && (depth - 1) % interval == 0;
+	}
+	/** END(129 心爱的少女): 是否启用童话残片系统。 */
+	public static boolean belovedGirlEnabled() {
+		return on(BELOVED_GIRL);
+	}
+	/**
+	 * END(129): 999 层的"爱丽丝领域"是否已就绪。
+	 *
+	 * <p>已实装：{@code AliceRealm}（虚空层）+ {@code Alice}（NPC）+ 专属 BGM。
+	 * 见 {@code AliceRealm}、{@code Alice}、{@code Assets.Music.GRIMM_ALICE}。
+	 */
+	public static boolean aliceRealmReady() {
+		return true;
 	}
 }

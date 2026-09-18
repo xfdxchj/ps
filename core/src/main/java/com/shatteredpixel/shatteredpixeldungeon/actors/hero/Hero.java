@@ -395,6 +395,29 @@ public class Hero extends Char {
 		return 0;
 	}
 
+	/**
+	 * END(挑战 126 格林之心): 直接提升命中与闪避各 1 点。
+	 *
+	 * <p>为什么需要这个方法：{@code attackSkill} / {@code defenseSkill}
+	 * 是 **private** 的，只有 {@code levelUp()} 内部能改（那段代码里
+	 * 每次升级各 +1）。
+	 *
+	 * <p>而 126 关闭了升级系统 —— 玩家永远不会通过正常途径获得这两项，
+	 * 所以黑之魂的"献祭"必须能直接加，否则闪避/命中这两项属性
+	 * 在这条规则下永远无法成长。
+	 */
+	public void grimmBoostAccuracyAndEvasion() {
+		attackSkill++;
+		defenseSkill++;
+	}
+
+	/** END(挑战 126): 直接提升最大生命（魂的献祭用）。 */
+	public void grimmBoostMaxHP(int amount) {
+		if (amount <= 0) return;
+		HT += amount;
+		HP = Math.min(HT, HP + amount);
+	}
+
 	public void upgradeTalent( Talent talent ){
 		for (LinkedHashMap<Talent, Integer> tier : talents){
 			for (Talent f : tier.keySet()){
@@ -754,6 +777,18 @@ public class Hero extends Char {
 
 	//damage rolls that come from the hero can have their RNG influenced by clover
 	public static int heroDamageIntRange(int min, int max ){
+		//==== END(挑战 163 古代升级): 每 3 级提升 10% 固定伤害 ====
+		//原表："每达到 3 级，提升当前伤害 10% 的固定伤害，例如 15-20 → 16-22"。
+		//
+		//为什么放在这里：这是**玩家所有伤害掷骰的唯一收口点**，
+		//近战/远程/法术都经此一过，一处改动即覆盖全部，不必逐个武器去改。
+		//
+		//未勾选 163 时 ancientUpgradeRange 原样返回 {min,max}，等价于原版。
+		int[] adj = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.ancientUpgradeRange(Dungeon.hero, min, max);
+		min = adj[0];
+		max = adj[1];
+
 		if (Random.Float() < ThirteenLeafClover.alterHeroDamageChance()){
 			return ThirteenLeafClover.alterDamageRoll(min, max);
 		} else {
@@ -2095,6 +2130,16 @@ public class Hero extends Char {
 	
 	public void earnExp( int exp, Class source ) {
 
+		//==== END(挑战 126 格林之心): 关闭常规升级系统 ====
+		//原表："无法升级，改为死亡后获得黑之魂，通过杀怪获得魂来增加属性"。
+		//
+		//所以这里直接拒收经验 —— 玩家的成长**完全**走黑之魂那条线。
+		//放在最前：连 expMultiplier（145）都不必算。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+				.BlackSoul.enabled()) {
+			return;
+		}
+
 		//==== END(挑战 145 神圣附体): 经验获取 +20% ====
 		//放在最前：让加成后的经验同时作用于 this.exp 与下面的 percent
 		//（percent 驱动以太链、丰饶之角等充能，两边必须一致）。
@@ -2169,7 +2214,6 @@ public class Hero extends Char {
 				updateHT( true );
 				attackSkill++;
 				defenseSkill++;
-
 			} else {
 				Buff.prolong(this, Bless.class, Bless.DURATION);
 				this.exp = 0;
@@ -2266,6 +2310,17 @@ public class Hero extends Char {
 	public void die( Object cause ) {
 		
 		curAction = null;
+
+		//==== END(挑战 126 格林之心): 死亡 → 得黑之魂 + 退回上层 ====
+		//放在**安卡判定之前**：这条规则下死亡不是"游戏结束"，
+		//而是"损失一层进度换一笔魂"。所以不给玩家消耗安卡的机会 ——
+		//那会把两个复活机制叠在一起，反而更难理解。
+		//
+		//handleDeath 返回 true 表示已接管，直接返回即可。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+				.BlackSoul.handleDeath(this)) {
+			return;
+		}
 
 		Ankh ankh = null;
 

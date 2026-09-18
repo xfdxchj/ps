@@ -357,7 +357,7 @@ public class YogDzewa extends Mob {
 		//normally Yog has no logic when a fist dies specifically
 		//but the very last fist to die does trigger the final phase
 		if (phase == 4 && findFist() == null){
-			yell(Messages.get(this, "hope"));
+			yell(TEXT("hope", Messages.get(this, "hope")));
 			summonCooldown = -15; //summon a burst of minions!
 			phase = 5;
 			BossHealthBar.bleed(true);
@@ -436,7 +436,7 @@ public class YogDzewa extends Mob {
 			phase++;
 
 			updateVisibility(Dungeon.level);
-			GLog.n(Messages.get(this, "darkness"));
+			GLog.n(TEXT("darkness", Messages.get(this, "darkness")));
 			sprite.showStatus(CharSprite.POSITIVE, Messages.get(this, "invulnerable"));
 
 			addFist((YogFist)Reflection.newInstance(fistSummons.remove(0)));
@@ -569,14 +569,14 @@ public class YogDzewa extends Mob {
 		Dungeon.level.unseal();
 		super.die( cause );
 
-		yell( Messages.get(this, "defeated") );
+		yell( TEXT("defeated", Messages.get(this, "defeated")) );
 	}
 
 	@Override
 	public void notice() {
 		if (!BossHealthBar.isAssigned()) {
 			BossHealthBar.assignBoss(this);
-			yell(Messages.get(this, "notice"));
+			yell(TEXT("notice", Messages.get(this, "notice")));
 			for (Char ch : Actor.chars()){
 				if (ch instanceof DriedRose.GhostHero){
 					((DriedRose.GhostHero) ch).sayBoss();
@@ -601,7 +601,7 @@ public class YogDzewa extends Mob {
 		String desc = super.description();
 
 		if (Statistics.spawnersAlive > 0){
-			desc += "\n\n" + Messages.get(this, "desc_spawners");
+			desc += "\n\n" + TEXT("desc_spawners", Messages.get(this, "desc_spawners"));
 		}
 
 		return desc;
@@ -712,5 +712,30 @@ public class YogDzewa extends Mob {
 			maxLvl = -2;
 			properties.add(Property.BOSS_MINION);
 		}
+	}
+	/**
+	 * END(挑战 131 格林之敌): 取一条会随挑战变化的文本。
+	 *
+	 * <p>勾选 131 时返回莉耶芙的版本，否则返回原文。
+	 * 这样"纯文本替换"不会在未勾选时泄露一个字。
+	 */
+	private static String TEXT(String key, String fallback) {
+		return com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+				.GrimmText.yog(key, fallback);
+	}
+
+	/**
+	 * END(挑战 131): 名字也随挑战变化。
+	 *
+	 * <p>覆写 {@code name()} 而不是改 properties ——
+	 * 图鉴、日志、排行都走这个方法，一处改动全覆盖。
+	 */
+	@Override
+	public String name() {
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+				.GrimmText.grimmEnemyEnabled()) {
+			return "莉耶芙";
+		}
+		return super.name();
 	}
 }

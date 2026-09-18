@@ -226,8 +226,12 @@ public abstract class Recipe {
 	};
 	
 	//END 法杖蜕变：+8 法杖 ＋ 强化符石 → 对应进化法杖（由一条动态配方覆盖全部 13 把）
+	//END 129 心爱的少女：3 枚不同残片 → 1 张残页；3 张残页 → 「心爱的少女」
 	private static Recipe[] endVariantRecipes = new Recipe[]{
-		new com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolveWandRecipe()
+		new com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolveWandRecipe(),
+		new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm.FairyFragmentRecipe(),
+		new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+				.FairyFragmentRecipe.GirlRecipe()
 	};
 	
 	public static ArrayList<Recipe> endVariantRecipeList(){

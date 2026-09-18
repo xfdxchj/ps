@@ -124,6 +124,12 @@ abstract public class Weapon extends KindOfWeapon {
 	protected float availableUsesToID = usesToID()/2f;
 	
 	public Enchantment enchantment;
+
+	//==== END(挑战 108 装备觉醒): 击杀计数与"已觉醒"标记 ====
+	/** 用这把武器击杀的怪物数（达到 50 时觉醒）。 */
+	public int awakenKillCount = 0;
+	/** 是否已经觉醒过（每件一次）。 */
+	public boolean awakenedOnce = false;
 	public boolean enchantHardened = false;
 	public boolean curseInfusionBonus = false;
 	public boolean masteryPotionBonus = false;
@@ -658,6 +664,21 @@ abstract public class Weapon extends KindOfWeapon {
 					.ChallengeEffects.rollFlawedEnchant(toIgnore)) {
 				return new com.shatteredpixel.shatteredpixeldungeon.items.weapon
 						.enchantments.Flawed();
+			}
+
+			//==== END(挑战 157 附魔扩充): 勾选后多出「锋利」「力量」两条 ====
+			//只在勾选 157 时进入随机池 —— 否则是"挑战泄露"。
+			//两条各 20% 的额外占比，其余走原版随机。
+			if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.enchantExpansionEnabled()) {
+				int roll = Random.Int(100);
+				if (roll < 20) {
+					return new com.shatteredpixel.shatteredpixeldungeon.items.weapon
+							.enchantments.Keen();       //锋利：近战 +20%
+				} else if (roll < 40) {
+					return new com.shatteredpixel.shatteredpixeldungeon.items.weapon
+							.enchantments.Mighty();     //力量：远程 +20%
+				}
 			}
 
 			switch(Random.chances(typeChances)){

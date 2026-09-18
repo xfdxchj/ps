@@ -166,6 +166,28 @@ public abstract class Mob extends Char {
 				HT = tableHP;
 				HP = tableHP;      //召唤物/新刷出的怪都是满血入场
 			}
+
+			//==== END(挑战 153 恶魔地牢): 所有怪物变为恶魔类 ====
+			//原表："所有怪物变为恶魔类（**只是代码**）" ——
+			//只加 DEMONIC 属性标记，不改外观/数值/AI。
+			//这样 158 神圣之力的"对恶魔额外伤害"才能生效。
+			//
+			//放在 onAdd 而不是构造函数：属性集可能在子类构造块里被反复设置，
+			//而且 onAdd 有 firstAdded 保证只跑一次。
+			if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.demonsEnabled()) {
+				properties.add(Property.DEMONIC);
+			}
+
+			//==== END(挑战 148 飞天神偷): 怪物 13% 获得隐身 ====
+			//一次性判定（onAdd 只跑一次），不是每回合重掷 ——
+			//否则怪物会一会儿可见一会儿不可见，非常闪烁。
+			//只加 invisibility 字段而不是挂 Invisibility buff：
+			//buff 有时长，会到期消失；这里要的是"这只怪就是隐身的"。
+			if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.rollFlyingThiefInvisible(this)) {
+				invisible = 1;
+			}
 		}
 	}
 
@@ -293,24 +315,87 @@ public abstract class Mob extends Char {
 	}
 
 	/**
-	 * END(挑战 138): 从本层怪物轮换表里随机挑一个 sprite 类名。
+	 * END(挑战 138): 随机挑一个 sprite 类名 —— **完全随机**。
 	 *
-	 * <p>为什么用本层轮换表：那些贴图与当前层级的怪物尺寸/帧数一致，
-	 * 不会出现越界或错帧。若轮换表为空则返回 null（调用方保持原贴图）。
+	 * <h3>修订记录</h3>
+	 * 早先版本只从"本层怪物轮换表"里挑，理由是"那些贴图与当前层级的怪物
+	 * 尺寸/帧数一致，不会越界或错帧"。
+	 *
+	 * <p>但文档所有者要求的是**完全随机**："不是小鼠变蛇这种" ——
+	 * 即不该局限于同层怪物，任何怪物的外观都可能出现。
+	 *
+	 * <h3>关于帧数</h3>
+	 * {@code CharSprite} 按**自己的** frames 渲染，贴图类之间的帧数差异
+	 * 不会导致越界（精灵图集是整块载入的）。真正需要避免的只是
+	 * 拿到 null 或加载失败的贴图 —— 这里用 try/catch 兜住，拿不到就保持原贴图。
 	 */
+	private static java.util.ArrayList<Class<? extends Mob>> allMobClasses = null;
+
+	private static void buildAllMobClasses() {
+		java.util.ArrayList<Class<? extends Mob>> list = new java.util.ArrayList<>();
+
+		//收集所有关卡用过的怪物：把 1-25 层的轮换表全部并起来。
+		//这样既覆盖了全部常规怪物，又不必手工维护一份清单
+		//（手工清单容易漏，也会在新增怪物时忘记更新）。
+		for (int d = 1; d <= 25; d++) {
+			try {
+				java.util.ArrayList<Class<? extends Mob>> rot =
+						MobSpawner.getMobRotation(d);
+				if (rot == null) continue;
+				for (Class<? extends Mob> c : rot) {
+					if (!list.contains(c)) list.add(c);
+				}
+			} catch (Throwable ignored) {
+				//某一层取不到就跳过，不影响其它层
+			}
+		}
+
+		//再补上 Boss 与常见召唤物 —— 它们不在普通轮换表里，
+		//但外观很有辨识度，纳入随机池更符合"完全随机"的本意。
+		addIfMissing(list, Goo.class);
+		addIfMissing(list, Tengu.class);
+		addIfMissing(list, DM300.class);
+		addIfMissing(list, DwarfKing.class);
+		addIfMissing(list, YogDzewa.class);
+		addIfMissing(list, YogDzewa.Larva.class);
+		addIfMissing(list, YogFist.BurningFist.class);
+		addIfMissing(list, YogFist.SoiledFist.class);
+		addIfMissing(list, YogFist.RottingFist.class);
+		addIfMissing(list, YogFist.RustedFist.class);
+		addIfMissing(list, YogFist.BrightFist.class);
+		addIfMissing(list, YogFist.DarkFist.class);
+		addIfMissing(list, Mimic.class);
+		addIfMissing(list, GoldenMimic.class);
+		addIfMissing(list, CrystalMimic.class);
+		addIfMissing(list, Albino.class);
+		addIfMissing(list, ArmoredStatue.class);
+		addIfMissing(list, Bee.class);
+
+		allMobClasses = list;
+	}
+
+	/** 把类加入列表（去重）。 */
+	private static void addIfMissing(java.util.ArrayList<Class<? extends Mob>> list,
+									 Class<? extends Mob> c) {
+		if (c != null && !list.contains(c)) list.add(c);
+	}
+
 	private String pickRandomSpriteClassName() {
 		try {
-			java.util.ArrayList<Class<? extends Mob>> rotation =
-					MobSpawner.getMobRotation(Dungeon.depth);
-			if (rotation == null || rotation.isEmpty()) return null;
+			if (allMobClasses == null) buildAllMobClasses();
+			if (allMobClasses.isEmpty()) return null;
 
-			Class<? extends Mob> alt = rotation.get(
-					com.watabou.utils.Random.Int(rotation.size()));
-			Mob probe = Reflection.newInstance(alt);
-			if (probe != null && probe.spriteClass != null) {
-				return probe.spriteClass.getName();
+			//最多试 8 次：有些怪物类没有 spriteClass（抽象类/占位），
+			//跳过它们再抽，而不是直接放弃。
+			for (int tries = 0; tries < 8; tries++) {
+				Class<? extends Mob> alt = allMobClasses.get(
+						com.watabou.utils.Random.Int(allMobClasses.size()));
+				Mob probe = Reflection.newInstance(alt);
+				if (probe != null && probe.spriteClass != null) {
+					return probe.spriteClass.getName();
+				}
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			//忽略：拿不到就保持原贴图
 		}
 		return null;
@@ -1021,6 +1106,24 @@ public abstract class Mob extends Char {
 				Statistics.hazardAssistedKills++;
 				Badges.validateHazardAssists();
 			}
+
+			//==== END(挑战 87 盗贼鼠群): 击杀带赃款的怪 → 双倍返还 ====
+			//放在 rollToDropLoot 之前：返还是"把偷走的钱还回来"，
+			//不是掉落物，所以不走掉落管线（否则会被 35/36/47/48 等
+			//掉落倍率规则影响，那就偏离"返还"的语义了）。
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.onThiefKilled(this);
+
+			//==== END(挑战 108 装备觉醒): 武器击杀计数 ====
+			//原表："武器击杀 50 后觉醒，获得一条随机附魔词缀"。
+			//只统计玩家用武器造成的击杀；法术/陷阱/环境致死不计。
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.onMobKilledForAwakening(this, cause);
+
+			//==== END(挑战 126 格林之心): 杀怪得黑之魂 ====
+			//这条与 108 无关，是独立的成长系统（126 关闭了经验，改为攒魂）。
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+					.BlackSoul.onMobKilled(this);
 
 			rollToDropLoot();
 

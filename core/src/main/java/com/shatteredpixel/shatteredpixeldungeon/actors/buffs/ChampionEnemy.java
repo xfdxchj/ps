@@ -117,10 +117,25 @@ public abstract class ChampionEnemy extends Buff {
 							.ChallengeEffects.shouldRollChampion())) {
 
 			//we block certain standout enemies on floor <10 from becoming champions
-			if (m instanceof Crab  && Dungeon.scalingDepth() <= 3) return;
-			if (m instanceof Thief && Dungeon.scalingDepth() <= 4) return;
-			if (m instanceof Guard && Dungeon.scalingDepth() <= 7) return;
-			if (m instanceof Bat   && Dungeon.scalingDepth() <= 9) return;
+			//
+			//==== END(挑战 4 精英迁徙): 取消"楼层限制" ====
+			//原表："精英怪可出现在原本不属于自己的区域"。
+			//
+			//本 fork 里"精英怪只属于自己区域"正是靠下面这四行实现的：
+			//螃蟹/盗贼/守卫/蝙蝠这些**区域代表怪**在过早的楼层被禁止精英化。
+			//（例如蝙蝠是 3 区怪，在 1-9 层出现时不给精英，
+			//  以免玩家在前期就撞上"精英蝙蝠"这种不属于该区域的组合。）
+			//
+			//勾选 4 后取消这层限制 —— 任何怪在任何楼层都可能成为精英，
+			//即"精英迁徙"。
+			boolean migration = com.shatteredpixel.shatteredpixeldungeon.endcontent
+					.challenge.ChallengeEffects.eliteMigrationEnabled();
+			if (!migration) {
+				if (m instanceof Crab  && Dungeon.scalingDepth() <= 3) return;
+				if (m instanceof Thief && Dungeon.scalingDepth() <= 4) return;
+				if (m instanceof Guard && Dungeon.scalingDepth() <= 7) return;
+				if (m instanceof Bat   && Dungeon.scalingDepth() <= 9) return;
+			}
 
 			//END(挑战 14): 加血前先确认"本次确实是新精英化"。
 			//Buff.affect 对已有该 buff 的目标会**直接返回旧的、不做任何事**，

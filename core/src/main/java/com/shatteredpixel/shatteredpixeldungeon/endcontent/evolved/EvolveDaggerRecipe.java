@@ -1,13 +1,11 @@
 /*
  * Shattered Pixel Dungeon: End —《破碎的像素地牢：终焉扩展》
- * 炼金配方（盗贼侧）：把 基础刺杀匕首(AssassinDagger) + 邪能碎片(MetalShard) + 其三方向料之一
- * → 锻成对应的“进阶匕首成品”（三叉/传送/处决），一次只产一支；三支成品不可并存。
+ * 炼金配方（盗贼侧）：把 基础刺杀匕首(AssassinDagger) + 邪能碎片(MetalShard) + 方向料
+ * → 锻成「刺杀·三叉戟」，一次只产一支。
  *
- * 方向料沿用与破印族同一套“两族共用三料”（同构 EvolveSpiritBowRecipe），仅换基底与目标映射：
- *    ① 三叉 DaggerTrident    → 速度药水  PotionOfHaste        （手感快速并自动回旋）
- *    ② 传送 DaggerTeleport   → 浮空药水  PotionOfLevitation   （传送/位移）
- *    ③ 处决 DaggerExecution  → 复仇卷轴  ScrollOfRetribution  （处决裁决）
- * （映射易改：只动本类 pickClass。）
+ * END(修订): 原设计有**三个方向**（三叉/传送/处决），由三种不同材料决定产出。
+ * 按文档所有者要求改为**只有一种成品**：任意一种方向料都产出三叉戟。
+ * DaggerTeleport / DaggerExecution 两个类保留（图鉴与旧存档兼容），但不再能锻出。
  */
 package com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved;
 
@@ -26,11 +24,27 @@ import java.util.ArrayList;
 
 public class EvolveDaggerRecipe extends Recipe {
 
-	/** 方向料 → 对应进阶匕首成品。易改之处就在这。 */
+	/**
+	 * 方向料 → 对应进阶匕首成品。
+	 *
+	 * <p>END(修订): 按文档所有者要求，**只保留一种成品**（刺杀·三叉戟），
+	 * 去掉原来的"传送"与"处决"两个方向。
+	 *
+	 * <p>原因：三方向料的设计让一件基础匕首能锻成三种不同成品，
+	 * 实际玩起来是"三选一"，而需求是**只有一种**。
+	 *
+	 * <p>注意：{@code DaggerTeleport} / {@code DaggerExecution} 两个**类仍然保留**
+	 * （图鉴、存档里的旧物品还要能反序列化），只是不再能通过配方产出。
+	 *
+	 * <p>现在任意一种"方向料"都可以触发锻造，统一产出三叉戟。
+	 */
 	private Class<? extends MissileWeapon> pickClass( Item special ){
-		if (special instanceof com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHaste)   return DaggerTrident.class;   //速度→三叉(高数值,不回旋)
-		if (special instanceof com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfLevitation) return DaggerTeleport.class; //浮空→传送
-		if (special instanceof com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfRetribution) return DaggerExecution.class; //复仇→处决
+		//只要是可用的方向料，一律产出三叉戟
+		if (special instanceof com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHaste
+				|| special instanceof com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfLevitation
+				|| special instanceof com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfRetribution) {
+			return DaggerTrident.class;
+		}
 		return null;
 	}
 

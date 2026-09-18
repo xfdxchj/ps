@@ -615,7 +615,8 @@ public class GameScene extends PixelScene {
 				}
 
 				int spawnersAbove = Statistics.spawnersAlive;
-				if (spawnersAbove > 0 && Dungeon.depth <= 25) {
+				//END(适配 6 完整地牢): 主线最深从 25 变成 50
+		if (spawnersAbove > 0 && Dungeon.depth <= com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects.maxMainDepth()) {
 					for (Mob m : Dungeon.level.mobs) {
 						if (m instanceof DemonSpawner && ((DemonSpawner) m).spawnRecorded) {
 							spawnersAbove--;

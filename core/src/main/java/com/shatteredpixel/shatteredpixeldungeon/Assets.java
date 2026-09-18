@@ -221,6 +221,15 @@ public class Assets {
 		public static final String GRIMM_AREA5      = "music/grimm/area5.ogg";
 		public static final String GRIMM_YOG_1      = "music/grimm/yog_1.ogg";
 		public static final String GRIMM_YOG_2      = "music/grimm/yog_2.ogg";
+
+		/**
+		 * END(挑战 129 心爱的少女): 999 层「爱丽丝领域」的专属 BGM。
+		 *
+		 * <p>由文档所有者提供（`音乐/爱丽丝.ogg`，1.75 MB）。
+		 * 它是**无条件播放**的 —— 一进入 999 层就切过去，
+		 * 不需要勾选 129（能到那里就说明已经在走这条线了）。
+		 */
+		public static final String GRIMM_ALICE     = "music/grimm/alice.ogg";
 	}
 
 	/** END(挑战 130): 格林主题曲目清单（供预加载）。 */
@@ -229,7 +238,8 @@ public class Assets {
 			Music.GRIMM_AREA2, Music.GRIMM_AREA2_BOSS,
 			Music.GRIMM_AREA3, Music.GRIMM_AREA3_BOSS,
 			Music.GRIMM_AREA4, Music.GRIMM_AREA4_BOSS,
-			Music.GRIMM_AREA5, Music.GRIMM_YOG_1, Music.GRIMM_YOG_2
+			Music.GRIMM_AREA5, Music.GRIMM_YOG_1, Music.GRIMM_YOG_2,
+			Music.GRIMM_ALICE
 	};
 
 	public static class Sounds {
@@ -512,5 +522,15 @@ public class Assets {
 		public static final String NYARLATHOTEP  = "sprites/hollow/nyarlathotep.png";
 		public static final String YOG_SOUL      = "sprites/hollow/yogsoul.png";
 		public static final String SHUBNIGGURATH = "sprites/hollow/shubniggurath.png";
+
+		/**
+		 * END(挑战 129 心爱的少女): 999 层「爱丽丝领域」的 NPC 贴图。
+		 *
+		 * <p>由文档所有者提供（`音乐/爱丽丝.png`），96×136。
+		 * 实际布局是 **3 列 × 4 行，每帧 32×34**（内容 32×32 + 2px 间隔）。
+		 *
+		 * <p>`AliceSprite` 只用**第一行的 3 帧**做循环（文档所有者指定）。
+		 */
+		public static final String ALICE         = "sprites/alice.png";
 	}
 }

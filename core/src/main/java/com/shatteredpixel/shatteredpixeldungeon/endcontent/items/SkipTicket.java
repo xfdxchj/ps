@@ -127,19 +127,30 @@ public class SkipTicket extends Item {
 	/**
 	 * END(7 跳级生): 下一区域的第一层。
 	 *
-	 * <p>区域划分沿用原版 {@code depth % 5}：1-5 / 6-10 / 11-15 / 16-20 / 21-25。
-	 * 当前在第 k 层时，返回下一个 5 层区间的起点；已在最后一区间则返回当前层（表示无处可跳）。
+	 * <p>区域划分按 {@code bossInterval()} 走：
+	 * <ul>
+	 *   <li>未勾选 6：每 5 层一区（1-5 / 6-10 / … / 21-25）</li>
+	 *   <li>勾选 6：每 10 层一区（1-10 / 11-20 / … / 41-50）</li>
+	 * </ul>
+	 * 当前在第 k 层时，返回下一个区间的起点；已在最后一区间则返回当前层（表示无处可跳）。
+	 *
+	 * <p>END(适配 6 完整地牢): 原先写死 5 层一区，勾选 6 后会跳到错误的区域
+	 * （例如在 8F 用券会跳到 11F，而 8F 本来就还在第 1 区）。
 	 */
 	public static int nextRegionFirstFloor(int currentDepth) {
 		if (currentDepth <= 0) return currentDepth;
 
-		//当前位于哪个区间（1-based 的每 5 层一组）
-		int regionIndex = (currentDepth - 1) / 5;      // 0,1,2,...
-		int nextRegionStart = (regionIndex + 1) * 5 + 1;
+		int interval = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.bossInterval();
+		int maxDepth = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.maxMainDepth();
 
-		//主线只到 25 层；挑战区（26F 起）由 ChallengeArea 单独调度，
-		//跳级券**不**把玩家送进挑战区（那是通关后才该做的事）。
-		if (nextRegionStart > 25) return currentDepth;
+		int regionIndex = (currentDepth - 1) / interval;      // 0,1,2,...
+		int nextRegionStart = (regionIndex + 1) * interval + 1;
+
+		//跳级券**不**把玩家送进挑战区（那是通关后才该做的事），
+		//所以上限取 maxMainDepth()（25 或 50）。
+		if (nextRegionStart > maxDepth) return currentDepth;
 
 		return nextRegionStart;
 	}

@@ -209,7 +209,14 @@ public abstract class RegularLevel extends Level {
 			else                            return 10;
 		}
 
-		int mobs = 3 + Dungeon.depth % 5 + Random.Int(3);
+		//==== END(适配 6 完整地牢): 刷怪数用"映射后的段内层号" ====
+		//原版是 3 + depth%5：每个区域内越深怪越多。
+		//但勾选 6 后主线是 50 层，depth%5 会每 5 层归零一次 ——
+		//于是"每段末尾怪最多"变成"每 5 层就来一次低谷"，难度曲线被拉平。
+		//改用 resourceFloorInSegment()（把实际深度折算回 25 层制再取模），
+		//50 层下依然是段内递增，且与资源发放的节奏一致。
+		int mobs = 3 + com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.resourceFloorInSegment(Dungeon.depth) + Random.Int(3);
 		if (feeling == Feeling.LARGE){
 			mobs = (int)Math.ceil(mobs * 1.33f);
 		}
@@ -343,20 +350,35 @@ public abstract class RegularLevel extends Level {
 			if (placed) mobs.add(bee);
 		}
 
-		//==== END(挑战 74 热带雨林): 水中 13% 生成食人鱼 ====
+		//==== END(挑战 74 热带雨林 / 150 淹没地牢): 水中生成食人鱼 ====
 		//遍历所有水域格，按概率放食人鱼。
 		//食人鱼只在水里活动，所以必须落在 Terrain.WATER 上，
 		//否则它们会卡在岸上不动。
-		int piranhaChance = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
-				.ChallengeEffects.rainforestPiranhaChance();
+		//
+		//150 淹没地牢会整层都是水，所以它给的概率（20%）会让食人鱼数量很多 ——
+		//这是设计意图：淹没的地牢里到处是鱼。
+		//两条规则取**较大**的概率，而不是相加（相加会超过 100%）。
+		int piranhaChance = Math.max(
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+						.ChallengeEffects.rainforestPiranhaChance(),
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+						.ChallengeEffects.floodedPiranhaChance());
 		if (piranhaChance > 0) {
 			for (int cell = 0; cell < length(); cell++) {
 				if (map[cell] != Terrain.WATER) continue;
 				if (findMob(cell) != null) continue;
 				if (Random.Int(100) >= piranhaChance) continue;
 
-				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Piranha p =
-						new com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Piranha();
+				//150 用"幻影食人鱼"（PhantomPiranha），74 用普通食人鱼
+				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob p;
+				if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+						.ChallengeEffects.floodedEnabled()) {
+					p = new com.shatteredpixel.shatteredpixeldungeon.actors.mobs
+							.PhantomPiranha();
+				} else {
+					p = new com.shatteredpixel.shatteredpixeldungeon.actors.mobs
+							.Piranha();
+				}
 				p.pos = cell;
 				mobs.add(p);
 			}

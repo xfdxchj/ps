@@ -115,6 +115,12 @@ public class Armor extends EquipableItem {
 	public Augment augment = Augment.NONE;
 	
 	public Glyph glyph;
+
+	//==== END(挑战 108 装备觉醒): 格挡计数与"已觉醒"标记 ====
+	/** 这件护甲格挡成功的次数（达到 100 时觉醒）。 */
+	public int awakenBlockCount = 0;
+	/** 是否已经觉醒过（每件一次）。 */
+	public boolean awakenedOnce = false;
 	public boolean glyphHardened = false;
 	public boolean curseInfusionBonus = false;
 	public boolean masteryPotionBonus = false;

@@ -124,6 +124,15 @@ public class ScrollOfRemoveCurse extends InventoryScroll {
 					procced = true;
 					item.cursed = false;
 				}
+
+				//==== END(挑战 56 装备绑定): 驱邪可以解绑 ====
+				//原表："装备获得后自动绑定…通过使用驱邪可以取下"。
+				//无论物品是否被诅咒，只要处在绑定状态就一并解除 ——
+				//否则玩家用驱邪之后发现还是丢不掉，会以为是 bug。
+				if (item.isBound()) {
+					item.unbind();
+					procced = true;
+				}
 			}
 			if (item instanceof Weapon){
 				Weapon w = (Weapon) item;

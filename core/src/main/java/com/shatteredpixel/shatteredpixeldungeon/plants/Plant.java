@@ -71,6 +71,27 @@ public abstract class Plant implements Bundlable {
 		}
 
 		wither();
+
+		//==== END(挑战 154 废弃地牢): 踩踏植物 20% 获得 3 回合缠绕 ====
+		//放在 activate(ch) **之前**：
+		//先挂缠绕，再让植物本身的效果生效 —— 这样两种效果都会出现，
+		//而不是被植物自己的效果覆盖。
+		//只对玩家生效（原表说的是"踩踏"的体验惩罚）。
+		if (ch instanceof Hero) {
+			int tangleChance = com.shatteredpixel.shatteredpixeldungeon.endcontent
+					.challenge.ChallengeEffects.abandonedTangleChance();
+			if (tangleChance > 0 && Random.Int(100) < tangleChance) {
+				//用全限定名而不是加 import —— 本文件的 import 段已被多处改动，
+				//减少冲突面更稳妥。
+				com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
+						ch,
+						com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+								.Paralysis.class,
+						com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+								.ChallengeEffects.abandonedTangleTurns());
+			}
+		}
+
 		activate( ch );
 		Bestiary.setSeen(getClass());
 		Bestiary.countEncounter(getClass());

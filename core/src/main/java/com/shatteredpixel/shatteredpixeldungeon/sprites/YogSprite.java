@@ -35,10 +35,22 @@ public class YogSprite extends MobSprite {
 
 		texture( Assets.Sprites.YOG );
 		
-		TextureFilm frames = new TextureFilm( texture, 20, 19 );
+		//==== END(古神贴图替换): 帧尺寸 20x19 -> 50x42 ====
+		//文档所有者提供了新的古神贴图（音乐/莉耶夫.png），
+		//源图 150x168，3 列 x 4 行，每帧 50x42。
+		//
+		//**不缩放**，直接把游戏帧尺寸改成 50x42 —— 缩放会让瞳孔等细节全丢。
+		//代价：古神在屏幕上会变大 2.5 倍（原来 20x19）。
+		//
+		//贴图只取**第一行的 3 帧**（列 0/1/2），排成 150x42 的单行图。
+		//行 1-3 未使用。
+		//
+		//帧映射由文档所有者指定：0,0,0,1,1,1,2,2,2
+		//（每帧重复 3 次，形成缓慢的呼吸/凝视节奏）
+		TextureFilm frames = new TextureFilm( texture, 50, 42 );
 		
 		idle = new Animation( 10, true );
-		idle.frames( frames, 0, 1, 2, 2, 1, 0, 3, 4, 4, 3, 0, 5, 6, 6, 5 );
+		idle.frames( frames, 0, 0, 0, 1, 1, 1, 2, 2, 2 );
 		
 		run = new Animation( 12, true );
 		run.frames( frames, 0 );
@@ -46,8 +58,11 @@ public class YogSprite extends MobSprite {
 		attack = new Animation( 12, false );
 		attack.frames( frames, 0 );
 		
+		//==== END: 死亡没有专属贴图 ====
+		//文档所有者说明"死亡没有贴图"，所以复用已有的 3 帧做收尾，
+		//而不是指向不存在的帧号（那会显示 nofound 或越界取到别的花纹）。
 		die = new Animation( 10, false );
-		die.frames( frames, 0, 7, 8, 9 );
+		die.frames( frames, 2, 1, 0 );
 		
 		play( idle );
 	}

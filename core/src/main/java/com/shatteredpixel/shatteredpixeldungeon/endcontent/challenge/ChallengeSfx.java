@@ -65,8 +65,12 @@ public final class ChallengeSfx {
 
 	//==== 概率（百分比）====
 
-	/** 118 天意侵蚀：每回合触发概率。 */
-	private static final int CHANCE_PROVIDENCE  = 13;
+	/**
+	 * 118 天意侵蚀：每回合触发概率。
+	 *
+	 * <p>END(修订): 由 13% 下调为 **3%**（文档所有者要求）。
+	 */
+	private static final int CHANCE_PROVIDENCE  = 3;
 	/** 137 奶龙大笑：每回合触发概率。 */
 	private static final int CHANCE_MILK_DRAGON = 3;
 	/** 70 生活部长：每回合触发概率。 */
@@ -230,12 +234,14 @@ public final class ChallengeSfx {
 						: com.shatteredpixel.shatteredpixeldungeon.Dungeon.challengeMask.isEmpty()));
 		}
 
-		//---- 70 生活部长：3% 停止行动 + 台词 ----
+		//---- 70 生活部长：3% 播音效 + 台词（**不**停止行动）----
+		//END(修订): 按文档所有者要求，去掉"麻痹/停止回合"。
+		//原来用 Paralysis 实现"停止行动"，但那条规则的本意只是**搞笑音效 + 台词**，
+		//不该真的让玩家损失一个回合。
 		if (on(LIFE_MINISTER) && Random.Int(100) < CHANCE_MINISTER) {
 			play(Assets.Sounds.CH_Minister, "70 生活部长");
 			say(hero, "minister_line");
-			stopHero(hero, STOP_TURNS);
-			return true;
+			//不 return true —— 继续往下判断其它规则，本回合照常行动
 		}
 
 		//---- 72 前程似锦：3% 停止行动 + 台词 ----

@@ -1190,4 +1190,83 @@ public class ItemSpriteSheet {
 	//END(port from Arknights): SPSHOOTER（枪械/天赋用，复用现有图标）
 	public static final int SPSHOOTER = AK_ICONS+14;
 	static { assignItemRect(SPSHOOTER, 16, 16); }
+
+	//==================================================================
+	//END(格林系列): 专属装备的贴图
+	//==================================================================
+	//
+	//来源：文档所有者提供的 IconSet.png（384x1300）。
+	//已切出 8 个图标、缩放到 16x16、贴进 items.png 的**第 41 行**
+	//（y=640，1-based 行号 41）。
+	//
+	//为什么选第 41 行：items.png 有 64 行，第 41-64 行是**完全空白**的
+	//（其余行被原版与 AK 移植内容占用）。从 41 行起连续排布，
+	//不会与任何已有编号冲突 —— 用 AK_ICONS 那种"复用现有图标"的做法
+	//会导致格林装备和枪械长得一样。
+	//
+	//**END(重排)**: IconSet.png 被文档所有者清理过两次，
+	//所以这一行的对应关系**不是按名称固定的**，而是按**导入顺序**：
+	//   640 黄金蜂蜜酒 -> 134
+	//   641 黑兔戒指   -> 127
+	//   642 镇魂歌     -> 128
+	//   643 银色       -> 125 银色短铳
+	//   644 兔子       -> 125 兔子怀表
+	//   645 怨恨之剑   -> 136
+	//   646 勇剑       -> 136
+	//   647 神天使     -> 133
+
+	/** 134 黄金蜂蜜酒。 */
+	public static final int GRIMM_MEAD       = xy(1, 41);
+	static { assignItemRect(GRIMM_MEAD, 16, 16); }
+
+	/** 127 格林之戒：黑兔戒指。 */
+	public static final int GRIMM_RABBIT_RING = xy(2, 41);
+	static { assignItemRect(GRIMM_RABBIT_RING, 16, 16); }
+
+	/** 128 格林之术：镇魂歌。 */
+	public static final int GRIMM_REQUIEM    = xy(3, 41);
+	static { assignItemRect(GRIMM_REQUIEM, 16, 16); }
+
+	/** 125 格林之器：银色短铳。 */
+	public static final int GRIMM_SILVERGUN  = xy(4, 41);
+	static { assignItemRect(GRIMM_SILVERGUN, 16, 16); }
+
+	/** 125 格林之器：兔子怀表。 */
+	public static final int GRIMM_WATCH      = xy(5, 41);
+	static { assignItemRect(GRIMM_WATCH, 16, 16); }
+
+	/** 136 格林之器3：怨恨之剑。 */
+	public static final int GRIMM_HATESWORD  = xy(6, 41);
+	static { assignItemRect(GRIMM_HATESWORD, 16, 16); }
+
+	/** 136 格林之器3：勇剑。 */
+	public static final int GRIMM_BRAVESWORD = xy(7, 41);
+	static { assignItemRect(GRIMM_BRAVESWORD, 16, 16); }
+
+	/** 133 格林之器2：神天使双剑。 */
+	public static final int GRIMM_ANGELSWORD = xy(8, 41);
+	static { assignItemRect(GRIMM_ANGELSWORD, 16, 16); }
+
+	/**
+	 * 129 心爱的少女：童话残片。
+	 *
+	 * <p>暂时复用 {@link #PARCHMENT_SCRAP}（羊皮纸残页）——
+	 * 9 种残片先用同一个图标。
+	 *
+	 * <p>用一个独立的常量名而不是直接写 PARCHMENT_SCRAP：
+	 * 将来换贴图时只改这一行，不必去找所有引用点。
+	 */
+	public static final int GRIMM_FAIRY_FRAGMENT = PARCHMENT_SCRAP;
+
+	/**
+	 * 129 心爱的少女：最终产物「心爱的少女」。
+	 *
+	 * <p>用**爱丽丝**的贴图（`音乐/爱丽丝.png` 的第 1 格，32×34 → 16×16），
+	 * 已贴在 items.png 的第 41 行第 7 格（索引 646）。
+	 *
+	 * <p>文档所有者指定：心爱的少女用爱丽丝的图 ——
+	 * 因为使用它就会被带到 999 层见爱丽丝，两者是同一个存在。
+	 */
+	public static final int GRIMM_BELOVED_GIRL = xy(9, 41);
+	static { assignItemRect(GRIMM_BELOVED_GIRL, 16, 16); }
 }

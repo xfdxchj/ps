@@ -446,6 +446,18 @@ public abstract class Char extends Actor {
 			//flat damage bonus is affected by multipliers
 			dmg += dmgBonus;
 
+			//==== END(挑战 158 神圣之力): 对恶魔类目标额外伤害 ====
+			//与 153 恶魔地牢联动：勾了 153 之后所有怪都带 DEMONIC 标记，
+			//本条的收益因此最大化。
+			//未勾选 158 或目标不是恶魔时返回 1.0，等价于原版。
+			dmg *= com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.holyPowerDamageMultiplier(enemy);
+
+			//==== END(挑战 134 黄金蜂蜜酒): 发狂时攻击 +50% ====
+			//未处于发狂状态时返回 1.0，等价于原版。
+			dmg *= com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+					.GoldenMead.madnessAttackMultiplier(this);
+
 			//==== END(挑战·伤害管线 第2步): 攻击方增益，**加法叠加** ====
 			//玻璃大炮 +20% / 破釜沉舟 +30% / 极致攻哈 +20% / 狂暴 +20%（怪物侧）
 			//注意：必须加法，若各自连乘结果会偏大（×1.872 而非 ×1.70）。
@@ -659,16 +671,30 @@ public abstract class Char extends Actor {
 			//顺序很重要：
 			//  1) 23 血流成河 —— 给目标挂流血
 			//  2) 17 情人节   —— 玩家攻击时概率魅惑目标
-			//  3) 13 狂热    —— 攻击方（怪物）累加攻速层数
-			//  4) 24 以牙还牙 —— 最后做，因为它会发起一次新攻击
+			//  3) 87 盗贼鼠群 —— 怪物攻击时偷玩家金币
+			//  4) 13 狂热    —— 攻击方（怪物）累加攻速层数
+			//  5) 24 以牙还牙 —— 最后做，因为它会发起一次新攻击
 			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
 					.onAttackHitBleed(enemy);
 			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
 					.onHeroAttackCharm(this, enemy);
 			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
+					.onMobStealGold(this, enemy);
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
 					.onMobAttackHit(this);
 			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
 					.onHeroAttack(this, enemy);
+
+			//==== END(挑战 127 黑兔戒指): 每回合第一次命中返还一个回合 ====
+			//放在最后：其余触发类效果都结算完了再决定"要不要把回合还给玩家"。
+			//只对玩家生效；每回合最多一次（计数在 RabbitRing 内部管理）。
+			if (this instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero
+					&& com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+							.RabbitRing.shouldRefundTurn(
+									(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) this)) {
+				//不消耗本回合：直接推进时间轴，但不走 spendAndNext
+				next();
+			}
 
 			return true;
 			
@@ -718,6 +744,15 @@ public abstract class Char extends Actor {
 				.ChallengeEffects.crumblingAccuracy(attacker, acuStat);
 		defStat = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 				.ChallengeEffects.crumblingEvasion(defender, defStat);
+
+		//==== END(挑战 143 吾为王者): Boss 命中/闪避 +20% ====
+		//放在碎破覆写**之后**：碎破给的是"配置表里的绝对值"，
+		//而 143 是在那个值之上再乘 1.2。顺序反过来结果不同。
+		//未勾选 143 或目标不是 Boss 时返回 1.0，等价于原版。
+		acuStat *= com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.kingStatMultiplier(attacker);
+		defStat *= com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.kingStatMultiplier(defender);
 
 		if (defender instanceof Hero && ((Hero) defender).damageInterrupt){
 			((Hero) defender).interrupt();
@@ -1048,6 +1083,23 @@ public abstract class Char extends Actor {
 			sprite.showStatus(CharSprite.POSITIVE, Messages.get(this, "invulnerable"));
 			return;
 		}
+
+		//==== END(挑战 142 无下限术士): 怪物受远程攻击 13% 完全免疫 ====
+		//放在 22 的拦截**之后**：两者都是"完全免疫"，
+		//放在同一位置语义一致（都是第 6 步的最终拦截）。
+		//只对怪物生效，且只在伤害来自远程武器时判定。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.rollRangedImmunity(this, src)) {
+			if (sprite != null) {
+				sprite.showStatus(CharSprite.POSITIVE, Messages.get(this, "invulnerable"));
+			}
+			com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w(
+					com.shatteredpixel.shatteredpixeldungeon.messages.Messages.get(
+							com.shatteredpixel.shatteredpixeldungeon.endcontent
+									.challenge.ChallengeEffects.class,
+							"no_lower_limit_immune"));
+			return;
+		}
 		
 		//TODO improve this when I have proper damage source logic
 		if (AntiMagic.RESISTS.contains(src.getClass())){
@@ -1103,6 +1155,17 @@ public abstract class Char extends Actor {
 							com.shatteredpixel.shatteredpixeldungeon.endcontent
 									.challenge.ChallengeEffects.class,
 							"close_call_survive"));
+		}
+
+		//==== END(挑战 128 镇魂歌): 不死状态 ====
+		//放在 65/104 之后：那两条是"挑战自带的保命"，
+		//镇魂歌是**玩家主动使用的道具**，优先级排在它们之后。
+		//
+		//与它们的区别：镇魂歌只是**推迟**死亡 —— buff 结束时若欠了命，仍然要还。
+		if (dmg >= HP
+				&& com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+						.SoulRequiem.surviveFatal(this, dmg)) {
+			return;                             //HP 已在方法内压到 1，不再扣血
 		}
 
 		HP -= dmg;

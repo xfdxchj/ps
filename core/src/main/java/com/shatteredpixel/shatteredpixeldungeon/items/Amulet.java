@@ -42,8 +42,13 @@ public class Amulet extends Item {
 	private static final String AC_END = "END";
 	
 	{
-		image = ItemSpriteSheet.AMULET;
-		
+		//==== END(挑战 132 黑暗之魂): 护符贴图 → 爱丽丝 ====
+		//**在字段初始化时判**而不是运行时改 image：
+		//这条规则是"全局外观替换"，玩家一旦勾选就不会中途取消，
+		//所以开局定下来即可，没必要每帧判一次。
+		image = com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+				.GrimmText.amuletImage(ItemSpriteSheet.AMULET);
+
 		unique = true;
 	}
 	
@@ -132,6 +137,24 @@ public class Amulet extends Item {
 
 	@Override
 	public String desc() {
+		//==== END(挑战 132 黑暗之魂): 护符的说明文本替换 ====
+		//勾选 132（且 125~131 全开）时，护符被描述成"那本书"。
+		//未勾选时原样走原版逻辑。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+				.GrimmText.darkSoulEnabled()) {
+			String d = com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+					.GrimmText.amulet("desc", Messages.get(this, "desc"));
+			if (Dungeon.hero == null
+					|| Dungeon.hero.buff(AscensionChallenge.class) == null){
+				d += "\n\n" + com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+						.GrimmText.amulet("desc_origins", Messages.get(this, "desc_origins"));
+			} else {
+				d += "\n\n" + com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+						.GrimmText.amulet("desc_ascent", Messages.get(this, "desc_ascent"));
+			}
+			return d;
+		}
+
 		String desc = super.desc();
 
 		if (Dungeon.hero == null || Dungeon.hero.buff(AscensionChallenge.class) == null){
@@ -141,5 +164,21 @@ public class Amulet extends Item {
 		}
 
 		return desc;
+	}
+
+	//==== END(挑战 132): 名字与贴图也一并替换 ====
+
+	/**
+	 * 覆写 {@code name()}：勾选 132 时护符叫「爱丽丝」。
+	 *
+	 * <p>与 131 的莉耶芙一样 —— 改这一处，日志/图鉴/物品栏全覆盖。
+	 */
+	@Override
+	public String name() {
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+				.GrimmText.darkSoulEnabled()) {
+			return "爱丽丝";
+		}
+		return super.name();
 	}
 }

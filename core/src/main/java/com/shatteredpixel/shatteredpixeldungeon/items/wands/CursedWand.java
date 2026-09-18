@@ -1224,7 +1224,8 @@ public class CursedWand {
 		@Override
 		public boolean valid(Item origin, Char user, Ballistica bolt, boolean positiveOnly) {
 			//can't happen on floors where chasms aren't allowed
-			if( Dungeon.bossLevel() || Dungeon.depth > 25 || Dungeon.branch != 0){
+			//END(适配 6 完整地牢): 主线最深从 25 变成 50，用 maxMainDepth() 取
+		if( Dungeon.bossLevel() || Dungeon.depth > com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects.maxMainDepth() || Dungeon.branch != 0){
 				return false;
 			}
 			return true;

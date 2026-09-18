@@ -77,18 +77,47 @@ public class MobSpawner extends Actor {
 		//  5区(21-25F) -> 用 1区(1-5F)   的表
 		//只改"用哪张表"，不动表本身 —— 原版的怪物配比（每种几只）因此一并沿用。
 		//未勾选该挑战时 crumbledCrossDepth 原样返回 depth，本段等价于不存在。
+		//
+		//==== END(适配 6 完整地牢): 两级映射串联 ====
+		//先 6（50 层 -> 25 层制），再 1（区域倒置）。
+		//详见 Dungeon.newLevel 里同一处映射的说明。
+		int resourceDepth = com.shatteredpixel.shatteredpixeldungeon.endcontent
+				.challenge.ChallengeEffects.fullDungeonMappedDepth(depth);
+
 		int tableDepth = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
-				.ChallengeEffects.crumblingCrossDepth( depth );
+				.ChallengeEffects.crumblingCrossDepth( resourceDepth );
 
 		ArrayList<Class<? extends Mob>> mobs = standardMobRotation( tableDepth );
 		addRareMobs(tableDepth, mobs);
+
+		//==== END(挑战 5 怪物入侵): 混入其它区域的普通怪 ====
+		//原表："当前区域有概率生成其他区域普通怪物"。
+		//
+		//做法：从**其它区域**的刷怪池里抽若干只塞进本层的池子。
+		//放在 addRareMobs 之后、swapMobAlts 之前 ——
+		//这样混进来的怪也能参与"稀有变种替换"（75 精英地牢），
+		//与"它们就是本层怪物"的语义一致。
+		//
+		//未勾选 5 时 invasionCount 返回 0，本段等价于不存在。
+		int invaders = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.invasionCount(tableDepth);
+		for (int i = 0; i < invaders; i++) {
+			Class<? extends Mob> alien =
+					com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+							.ChallengeEffects.pickInvader(tableDepth);
+			if (alien != null) mobs.add(alien);
+		}
+
 		swapMobAlts(mobs);
 		Random.shuffle(mobs);
 		return mobs;
 	}
 
 	//returns a rotation of standard mobs, unshuffled.
-	private static ArrayList<Class<? extends Mob>> standardMobRotation( int depth ){
+	//END(挑战 5 怪物入侵): 由 private 改为 public ——
+	//ChallengeEffects 在别的包里，需要它来取"其它区域有哪些普通怪"。
+	/** 某层的普通怪轮换表（未打乱）。供挑战规则查询。 */
+	public static ArrayList<Class<? extends Mob>> standardMobRotation( int depth ){
 		switch(depth){
 
 			// Sewers

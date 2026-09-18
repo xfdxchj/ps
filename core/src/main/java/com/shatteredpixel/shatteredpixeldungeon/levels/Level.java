@@ -301,6 +301,27 @@ public abstract class Level implements Bundlable {
 				}
 			}
 		}
+
+		//==== END(挑战 150 淹没地牢 / 154 废弃地牢): 强制整层生态 ====
+		//做法照搬原版 MossyClump（苔藓丛簇）——那个饰品就是靠返回
+		//Level.Feeling.GRASS / WATER 让**整层**变成草地或水域。
+		//各个关卡类的 painter() 里都有形如
+		//    .setWater(feeling == Feeling.WATER ? 0.98f : 0.38f, 4)
+		//    .setGrass(feeling == Feeling.GRASS ? 0.80f : 0.20f, 3)
+		//的写法，所以只要把 feeling 设对，地形生成自然就是"淹没"/"草木"。
+		//
+		//这样做的好处：**完全不碰地形，也不换关卡类** ——
+		//因此与 1 牢地碎破（换关卡类）、6 完整地牢（改层数）都不冲突。
+		//
+		//放在 feeling 抽签**之后**：强制覆盖，不受随机结果影响。
+		//150 与 154 互斥（框架已声明），所以这里只需按顺序判断。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.floodedEnabled()) {
+			feeling = Feeling.WATER;
+		} else if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.abandonedEnabled()) {
+			feeling = Feeling.GRASS;
+		}
 		
 		do {
 			width = height = length = 0;
@@ -338,6 +359,42 @@ public abstract class Level implements Bundlable {
 		//==== END(挑战 49 切尔诺贝利): 全图毒气 ====
 		//也是确定性铺设（不掷骰），放在 popGenerator 之后不影响关卡生成。
 		applyChernobyl();
+
+		//==== END(挑战 129 心爱的少女): 童话残片 ====
+		//每 2 层刷一枚，每层最多一枚（文档所有者定稿）。
+		//放在最后：它需要用到已经铺好的地形找落点。
+		spawnFairyFragmentIfDue();
+	}
+
+	/**
+	 * END(挑战 129): 按楼层节奏刷新一枚童话残片。
+	 *
+	 * <p>只在**每 2 层**刷，且每层最多一枚。
+	 * 抽的种类会**优先选玩家还没有的**，否则玩家会攒一堆重复的，
+	 * 而合成要求"9 枚不同的残片"。
+	 */
+	private void spawnFairyFragmentIfDue() {
+		if (!com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.belovedGirlEnabled()) {
+			return;
+		}
+		if (Dungeon.branch != 0) return;             //挑战支线不刷
+		if (!com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+				.FairyFragment.shouldSpawnOnFloor(Dungeon.depth)) {
+			return;
+		}
+
+		//找一块可以放东西的空地
+		int cell = com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+				.FairyFragment.pickDropCell(this);
+		if (cell < 0) return;
+
+		com.shatteredpixel.shatteredpixeldungeon.items.Item f =
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+						.FairyFragment.rollMissingKind();
+		if (f == null) return;                        //已集齐
+
+		drop(f, cell).sprite.drop(cell);
 	}
 
 	/**

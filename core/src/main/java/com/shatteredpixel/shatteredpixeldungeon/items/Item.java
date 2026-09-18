@@ -109,9 +109,56 @@ public class Item implements Bundlable {
 	
 	public ArrayList<String> actions( Hero hero ) {
 		ArrayList<String> actions = new ArrayList<>();
+
+		//==== END(挑战 56 装备绑定): 绑定的装备不能丢弃/投掷 ====
+		//原表："装备获得后自动绑定，无法丢弃、出售或交换，通过使用驱邪可以取下"。
+		//
+		//"驱邪"= ScrollOfRemoveCurse，它会调 unbind()（见该类），
+		//所以这里只要把 DROP / THROW 从可选操作里去掉即可，
+		//不需要额外阻止出售（不能丢出的物品在商店里也不会被列出来）。
+		if (isBound()) {
+			return actions;      //空列表：玩家在背包里对它没有任何操作
+		}
+
 		actions.add( AC_DROP );
 		actions.add( AC_THROW );
 		return actions;
+	}
+
+	//==== END(挑战 56 装备绑定) ====
+
+	/** 该物品是否已被绑定（不可丢弃/投掷）。 */
+	public boolean boundForChallenge = false;
+
+	public boolean isBound() {
+		return boundForChallenge;
+	}
+
+	/** 解绑（驱邪卷轴调用）。 */
+	public void unbind() {
+		boundForChallenge = false;
+	}
+
+	/**
+	 * END(挑战 56 装备绑定): 该物品获得时是否应自动绑定。
+	 *
+	 * <p>只对**装备**生效（武器/护甲/戒指/法杖/神器），
+	 * 消耗品与金币不绑定 —— 否则连药水都丢不掉了。
+	 */
+	public boolean shouldAutoBind() {
+		return com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.equipmentBindingEnabled()
+				&& isBindableEquipment();
+	}
+
+	/** 是否属于"会被绑定的装备类别"。 */
+	private boolean isBindableEquipment() {
+		return this instanceof com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon
+			|| this instanceof com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor
+			|| this instanceof com.shatteredpixel.shatteredpixeldungeon.items.rings.Ring
+			|| this instanceof com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand
+			|| this instanceof com.shatteredpixel.shatteredpixeldungeon.items.artifacts
+					.Artifact;
 	}
 
 	public String actionName(String action, Hero hero){
@@ -123,6 +170,13 @@ public class Item implements Bundlable {
 	}
 
 	public boolean doPickUp(Hero hero, int pos) {
+		//==== END(挑战 56 装备绑定): 获得时自动绑定 ====
+		//放在 collect 之前：一旦进了背包就已经是"获得后"的状态，
+		//这里先打标记，避免中间出现"能丢一下"的短暂窗口。
+		if (shouldAutoBind()) {
+			boundForChallenge = true;
+		}
+
 		if (collect( hero.belongings.backpack )) {
 			
 			GameScene.pickUp( this, pos );
@@ -583,6 +637,8 @@ public class Item implements Bundlable {
 	private static final String QUICKSLOT		= "quickslotpos";
 	private static final String KEPT_LOST       = "kept_lost";
 	private static final String CUSTOM_NOTE_ID = "custom_note_id";
+	/** END(挑战 56 装备绑定): 绑定标记的存档键。 */
+	private static final String BOUND_CHALLENGE  = "bound_challenge";
 	
 	@Override
 	public void storeInBundle( Bundle bundle ) {
@@ -596,6 +652,8 @@ public class Item implements Bundlable {
 		}
 		bundle.put( KEPT_LOST, keptThoughLostInvent );
 		if (customNoteID != -1)     bundle.put(CUSTOM_NOTE_ID, customNoteID);
+		//END(挑战 56): 只在已绑定时写，保持旧存档的字段集合不变
+		if (boundForChallenge)      bundle.put( BOUND_CHALLENGE, true );
 	}
 	
 	@Override
@@ -621,6 +679,8 @@ public class Item implements Bundlable {
 		}
 
 		keptThoughLostInvent = bundle.getBoolean( KEPT_LOST );
+		//END(挑战 56): 旧存档没有这个键 → 默认 false（未绑定）
+		boundForChallenge = bundle.getBoolean( BOUND_CHALLENGE );
 		if (bundle.contains(CUSTOM_NOTE_ID))    customNoteID = bundle.getInt(CUSTOM_NOTE_ID);
 	}
 
@@ -671,6 +731,19 @@ public class Item implements Bundlable {
 							}
 							if (user.buff(Talent.LethalMomentumTracker.class) != null){
 								user.buff(Talent.LethalMomentumTracker.class).detach();
+								user.next();
+							} else if (Item.this instanceof com.shatteredpixel.shatteredpixeldungeon
+									.endcontent.grimm.SilverGun
+									&& com.shatteredpixel.shatteredpixeldungeon.endcontent
+											.grimm.SilverGun.shouldBeFree(user)) {
+								//==== END(挑战 125 银色短铳): 投掷不消耗回合 ====
+								//原表："可以不消耗回合发出远程攻击"。
+								//这里复用原版 LethalMomentumTracker 的"免费出手"路径：
+								//直接 user.next() 推进时间轴但**不 spend**，于是玩家
+								//的回合没有被消耗掉，可以继续行动。
+								//
+								//次数由 SilverGun.shouldBeFree 限制（每回合 2 次），
+								//否则一回合能清空整层。
 								user.next();
 							} else {
 								user.spendAndNext(delay);

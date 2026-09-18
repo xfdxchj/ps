@@ -591,7 +591,7 @@ public class Dungeon {
 		//==== END(挑战 43 一贫如洗 + 79 高级附魔台): 进入新区域时结算 ====
 		//判据沿用原版的区域划分 depth % 5（每 5 层一组，"完整地牢"下也一样）。
 		//第 1 层是起点，不触发。
-		if (depth > 1 && depth % 5 == 1 && hero != null) {
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects.isRegionStart(depth) && hero != null) {
 
 			//---- 43 一贫如洗：金币 -20% ----
 			float goldMult = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
@@ -641,6 +641,20 @@ public class Dungeon {
 		}
 		
 		Level level;
+
+		//==== END(挑战 129 心爱的少女): 999 层「爱丽丝领域」====
+		//放在所有其它分支**之前**：999 是一个特殊层号，
+		//不属于任何一个 branch，也不该走"区域映射 / 关卡类选择"那一套。
+		//
+		//它只由《心爱的少女》这一个物品进入，进入方式见 BelovedGirl.execute()。
+		if (depth == com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+				.AliceRealm.DEPTH) {
+			level = new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+					.AliceRealm();
+			//直接返回，跳过下方的所有常规生成逻辑（Boss 判定、挑战区调度等）
+			return level;
+		}
+
 		if (branch == 0) {
 
 			//==== END(挑战 1 牢地碎破): 贴图/环境也倒置 ====
@@ -656,8 +670,21 @@ public class Dungeon {
 			//两者用不同的基准，因为配置表是按"玩家实际所处的区域"配的。
 			//
 			//未勾选 1 时原样返回 depth，本段等价于不存在。
+			//
+			//==== END(适配 6 完整地牢): 两级映射串联 ====
+			//顺序必须是"先 6 再 1"：
+			//  第 1 步：6 把"实际 1-50 层"折算成"等价的原版 1-25 层"
+			//          （资源表都是按 1-25 设计的）
+			//  第 2 步：1 在那个 25 层制上做区域倒置
+			//反过来（先倒置再折算）会让 1 拿到 26-50 这样的越界深度，
+			//落进 switch 的 default 分支。
+			//
+			//未勾选 6 时 fullDungeonMappedDepth 原样返回 depth。
+			int resourceDepth = com.shatteredpixel.shatteredpixeldungeon.endcontent
+					.challenge.ChallengeEffects.fullDungeonMappedDepth(depth);
+
 			int levelDepth = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
-					.ChallengeEffects.crumblingCrossDepth(depth);
+					.ChallengeEffects.crumblingCrossDepth(resourceDepth);
 
 			switch (levelDepth) {
 				case 1:
@@ -837,7 +864,19 @@ public class Dungeon {
 					.ChallengeArea.areaAtDepth(depth);
 			if (info != null && (info[1] == 4 || info[1] == 9)) return true;
 		}
-		return depth == 5 || depth == 10 || depth == 15 || depth == 20 || depth == 25;
+		//==== END(适配 6 完整地牢): Boss 层判定不再是写死的 25 层制 ====
+		//原版是每 5 层一个 Boss（5/10/15/20/25）。
+		//勾选 6 完整地牢后主线变成 50 层，Boss 层相应变成 10/20/30/40/50。
+		//
+		//不修的话后果很严重：勾了 6 之后 10/20/30/40/50 都不被认作 Boss 层，
+		//于是 Boss 不生成、楼梯不上锁、玩家直接走下去 —— 整局失去节奏。
+		//
+		//用 bossInterval() 统一取间隔，它未勾选 6 时返回 5（等价原版）。
+		int bossInterval = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.bossInterval();
+		return depth > 0 && depth <= com.shatteredpixel.shatteredpixeldungeon.endcontent
+				.challenge.ChallengeEffects.maxMainDepth()
+				&& depth % bossInterval == 0;
 	}
 
 	//value used for scaling of damage values and other effects.
@@ -939,10 +978,10 @@ public class Dungeon {
 
 	public static boolean posNeeded() {
 		//2 POS each floor set
-		int posLeftThisSet = 2 - (LimitedDrops.STRENGTH_POTIONS.count - (depth / 5) * 2);
+		int posLeftThisSet = 2 - (LimitedDrops.STRENGTH_POTIONS.count - com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects.resourceSegment(depth) * 2);
 		if (posLeftThisSet <= 0) return false;
 
-		int floorThisSet = (depth % 5);
+		int floorThisSet = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects.resourceFloorInSegment(depth);
 
 		//pos drops every two floors, (numbers 1-2, and 3-4) with a 50% chance for the earlier one each time.
 		int targetPOSLeft = 2 - floorThisSet/2;
@@ -953,6 +992,12 @@ public class Dungeon {
 
 	}
 	
+	/** 便捷引用，避免在 depth/5 相关处反复写全限定名。 */
+	private static com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+			.ChallengeEffects CE() {
+		return null;   //占位：见下方替换说明
+	}
+
 	public static boolean souNeeded() {
 
 		//==== END(挑战 81 搏杀赌徒): 不再主动刷新升级卷轴 ====
@@ -969,20 +1014,20 @@ public class Dungeon {
 
 		int souLeftThisSet;
 		//3 SOU each floor set
-		souLeftThisSet = 3 - (LimitedDrops.UPGRADE_SCROLLS.count - (depth / 5) * 3);
+		souLeftThisSet = 3 - (LimitedDrops.UPGRADE_SCROLLS.count - com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects.resourceSegment(depth) * 3);
 		if (souLeftThisSet <= 0) return false;
 
-		int floorThisSet = (depth % 5);
+		int floorThisSet = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects.resourceFloorInSegment(depth);
 		//chance is floors left / scrolls left
 		return Random.Int(5 - floorThisSet) < souLeftThisSet;
 	}
 	
 	public static boolean asNeeded() {
 		//1 AS each floor set
-		int asLeftThisSet = 1 - (LimitedDrops.ARCANE_STYLI.count - (depth / 5));
+		int asLeftThisSet = 1 - (LimitedDrops.ARCANE_STYLI.count - com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects.resourceSegment(depth));
 		if (asLeftThisSet <= 0) return false;
 
-		int floorThisSet = (depth % 5);
+		int floorThisSet = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects.resourceFloorInSegment(depth);
 		//chance is floors left / scrolls left
 		return Random.Int(5 - floorThisSet) < asLeftThisSet;
 	}
@@ -990,7 +1035,7 @@ public class Dungeon {
 	public static boolean enchStoneNeeded(){
 		//1 enchantment stone, spawns on chapter 2 or 3
 		if (!LimitedDrops.ENCH_STONE.dropped()){
-			int region = 1+depth/5;
+			int region = 1 + com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects.resourceSegment(depth);
 			if (region > 1){
 				int floorsVisited = depth - 5;
 				if (floorsVisited > 4) floorsVisited--; //skip floor 10
@@ -1019,9 +1064,9 @@ public class Dungeon {
 		if (depth >= 26) return false;
 
 		//one laboratory each floor set, in floor 3 or 4, 1/2 chance each floor
-		int region = 1+depth/5;
+		int region = 1 + com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects.resourceSegment(depth);
 		if (region > LimitedDrops.LAB_ROOM.count){
-			int floorThisRegion = depth%5;
+			int floorThisRegion = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects.resourceFloorInSegment(depth);
 			if (floorThisRegion >= 4 || (floorThisRegion == 3 && Random.Int(2) == 0)){
 				return true;
 			}

@@ -50,7 +50,8 @@ public class PitfallTrap extends Trap {
 	@Override
 	public void activate() {
 		
-		if( Dungeon.bossLevel() || Dungeon.depth > 25 || Dungeon.branch != 0){
+		//END(适配 6 完整地牢): 同上
+		if( Dungeon.bossLevel() || Dungeon.depth > com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects.maxMainDepth() || Dungeon.branch != 0){
 			GLog.w(Messages.get(this, "no_pit"));
 			return;
 		}
