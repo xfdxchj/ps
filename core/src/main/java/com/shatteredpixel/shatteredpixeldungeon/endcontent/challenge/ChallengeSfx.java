@@ -143,10 +143,49 @@ public final class ChallengeSfx {
 		}
 	}
 
+	/**
+	 * END(挑战·音频): 加载单个音效，**失败不抛异常**。
+	 *
+	 * <h3>为什么必须兜住</h3>
+	 * {@code Sample.INSTANCE.load()} 在解码失败时会抛 {@code GdxRuntimeException}。
+	 * 实测：若素材是 **Ogg FLAC**（而不是 libGDX 只支持的 Ogg Vorbis），
+	 * 每个文件都会抛一次 —— 20 个文件刷屏 20 条堆栈，而且异常会从
+	 * {@code Dungeon.init()} 一路冒到 {@code InterlevelScene.descend()}。
+	 *
+	 * <p>游戏本身还能继续（libGDX 在别处也 reportException），但：
+	 * <ol>
+	 *   <li>日志被刷爆，掩盖其它真正的问题</li>
+	 *   <li>玩家看到"崩溃"式输出，以为是致命错误</li>
+	 * </ol>
+	 *
+	 * <h3>loaded 的语义</h3>
+	 * 只有**确实加载成功**才记入 {@code loaded}。
+	 * 早期版本先 add 再 load，导致诊断日志把"我调用过 load"误报成"加载成功" ——
+	 * 那次排查因此多绕了一圈。失败的另记入 {@code failed}，避免每次触发都重试并刷屏。
+	 */
+	private static final HashSet<String> failed = new HashSet<>();
+
 	private static void loadOne(String asset) {
-		if (asset == null || loaded.contains(asset)) return;
-		loaded.add(asset);
-		Sample.INSTANCE.load(asset);
+		if (asset == null) return;
+		if (loaded.contains(asset) || failed.contains(asset)) return;
+
+		try {
+			Sample.INSTANCE.load(asset);
+			loaded.add(asset);
+		} catch (Throwable t) {
+			failed.add(asset);
+			//只报一行摘要，不打印完整堆栈 —— 格式错是素材问题，
+			//堆栈对定位没有额外帮助，只会刷屏。
+			System.err.println("[挑战音效] 加载失败（跳过）：" + asset
+					+ " —— " + t.getClass().getSimpleName() + ": " + t.getMessage()
+					+ "  [提示] libGDX 只支持 Ogg Vorbis，"
+					+ "若素材是 Ogg FLAC / Opus / mp3 改后缀则无法解码");
+		}
+	}
+
+	/** 本局加载失败的音效数（诊断用）。 */
+	public static int failedCount() {
+		return failed.size();
 	}
 
 	private static void loadAll(String[] assets) {
@@ -349,15 +388,20 @@ public final class ChallengeSfx {
 			boolean ok = handle > 0;
 			int n = triggerCount.containsKey(ruleTag) ? triggerCount.get(ruleTag) : 0;
 			triggerCount.put(ruleTag, n + 1);
+
+			//注意：loaded 现在只在"确实加载成功"时才包含该资源，
+			//所以这里的"加载标记"是可信的。
 			System.out.println("[挑战音效] " + ruleTag
 					+ " 触发#" + (n + 1)
 					+ " 资源=" + asset
-					+ " 加载标记=" + loaded.contains(asset)
+					+ " 加载成功=" + loaded.contains(asset)
 					+ " play返回值=" + handle
-					+ (ok ? "  => 已播放" : "  => **未播放**（未加载/Sample已禁用）"));
-			if (!ok) {
-				System.out.println("          ↑ 若是 -1：要么资源没加载成功，"
-						+ "要么 SPDSettings.soundFx() 为 false（设置里关掉了音效）");
+					+ (ok ? "  => 已播放"
+						  : "  => **未播放**"));
+			if (!ok && failed.contains(asset)) {
+				System.out.println("          ↑ 原因：该文件**解码失败**（多半是编码格式不被支持）");
+			} else if (!ok) {
+				System.out.println("          ↑ 原因：Sample 未启用（设置里关掉了音效）");
 			}
 		}
 	}

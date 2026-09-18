@@ -452,7 +452,16 @@ abstract public class Weapon extends KindOfWeapon {
 			//30% chance to be cursed
 			//10% chance to be enchanted
 			float effectRoll = Random.Float();
-			if (effectRoll < 0.3f * ParchmentScrap.curseChanceMultiplier()) {
+
+			//END(挑战 59 诅咒装备): 诅咒概率 +13%
+			//注意：这里是**提高阈值**，而不是额外多掷一次骰子 ——
+			//上方 Random.pushGenerator 用独立 RNG 就是为了不干扰关卡生成，
+			//多掷一次会改变 RNG 消耗序列，导致同种子生成的关卡不一致。
+			float curseChance = 0.3f * ParchmentScrap.curseChanceMultiplier()
+					+ com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+							.ChallengeEffects.extraCurseChance();
+
+			if (effectRoll < curseChance) {
 				enchant(Enchantment.randomCurse());
 				cursed = true;
 			} else if (effectRoll >= 1f - (0.1f * ParchmentScrap.enchantChanceMultiplier())){
@@ -632,6 +641,16 @@ abstract public class Weapon extends KindOfWeapon {
 		
 		@SuppressWarnings("unchecked")
 		public static Enchantment random( Class<? extends Enchantment> ... toIgnore ) {
+			//==== END(挑战 57 残缺装备): 勾选后，「残缺」进入随机附魔池 ====
+			//13% 概率直接给「残缺」词缀；其余 87% 走原版随机。
+			//为什么不直接塞进 common[] 数组：那会让未勾选挑战的普通对局
+			//也能抽到残缺 —— 那就成了"挑战泄露"。
+			if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.rollFlawedEnchant(toIgnore)) {
+				return new com.shatteredpixel.shatteredpixeldungeon.items.weapon
+						.enchantments.Flawed();
+			}
+
 			switch(Random.chances(typeChances)){
 				case 0: default:
 					return randomCommon( toIgnore );

@@ -195,9 +195,46 @@ public class WndChallenges extends Window {
 			}
 			System.out.println("  计算用 maxByScreen = " + maxByScreen);
 			System.out.println("  最终 listH = " + listH);
+
+			//---- 对比：内容坐标 vs 内容实际落到的屏幕位置 ----
+			//若窗口 camera 居中而内容偏，差值会在这里暴露出来。
+			System.out.println("  --- 内容定位对比 ---");
+			dumpChild("分类栏 catPane", catPane);
+			dumpChild("列表 pane", pane);
+			dumpChild("底部 passLevelText", passLevelText);
+			System.out.println("  camera.scroll = (" + camera.scroll.x + ", " + camera.scroll.y + ")");
+			System.out.println("  camera 尺寸 = " + camera.width + " x " + camera.height
+					+ "  屏幕尺寸 = " + camera.screenWidth() + " x " + camera.screenHeight()
+					+ "  x=" + camera.x + " y=" + camera.y + " zoom=" + camera.zoom);
+			//按 Window 的公式推算：内容点 (cx,cy) 应落在屏幕
+			//  (cx - scroll.x)*zoom + camera.x
+			System.out.println("  推算 catPane 左上角屏幕坐标 = ("
+					+ ((catPane.left() - camera.scroll.x) * camera.zoom + camera.x) + ", "
+					+ ((catPane.top() - camera.scroll.y) * camera.zoom + camera.y) + ")");
+			System.out.println("  uiCamera 尺寸 = " + com.shatteredpixel.shatteredpixeldungeon
+					.scenes.PixelScene.uiCamera.width + " x "
+					+ com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene.uiCamera.height
+					+ "  物理 = " + com.shatteredpixel.shatteredpixeldungeon.scenes
+							.PixelScene.uiCamera.screenWidth() + " x "
+					+ com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene.uiCamera
+							.screenHeight());
 		} catch (Throwable t) {
 			System.out.println("  诊断失败: " + t);
 		}
+	}
+
+	/** 打印一个子组件的坐标（诊断用）。 */
+	private void dumpChild(String label, com.watabou.noosa.ui.Component c) {
+		if (c == null) {
+			System.out.println("    " + label + " = null");
+			return;
+		}
+		System.out.println("    " + label
+				+ " 内容坐标 left=" + c.left() + " top=" + c.top()
+				+ " w=" + c.width() + " h=" + c.height()
+				+ "  camera=" + (c.camera == null ? "null"
+						: ("x=" + c.camera.x + " y=" + c.camera.y
+						   + " scroll=(" + c.camera.scroll.x + "," + c.camera.scroll.y + ")")));
 	}
 
 	//==== 分类按钮行 ====

@@ -162,7 +162,8 @@ public final class ChallengeRegistry {
 		add(all, 4,  "精英迁徙",   "elite_migration",  "地图", T_MON, 2, T_HARD,   "s:14,75");
 		add(all, 5,  "怪物入侵",   "monster_invasion", "地图", T_MON, 1, T_HARD,   "s:2,3,4");
 		add(all, 6,  "完整地牢",   "full_dungeon",     "地图", T_TWO, 2, T_HARD,   "s:1");
-		add(all, 7,  "跳级生",     "skip_student",     "地图", T_BEN, 1, T_MED,    "");
+		done(all, 7,  "跳级生",     "skip_student",     "地图", T_BEN, 1, T_EASY,   "",
+				"开局获得一张跳级券，使用后直接前往下一区域的第一层，并获得 +2 力量、+3 升级卷轴、+4 力量药水。");
 
 		//---- 战斗 ----
 		add(all, 8,  "混乱",       "chaos",            "战斗", T_TWO, 1, T_MED,    "");
@@ -219,17 +220,18 @@ public final class ChallengeRegistry {
 		done(all, 30, "人口密集",   "crowded",          "怪物", T_MON, 2, T_EASY,   "s:75",
 				"普通怪物生成数量提高 20%（与 119 怪物浪潮可叠加）。");
 		add(all, 73, "神秘复苏",   "mystic_revival",   "怪物", T_MON, 2, T_MED,    "s:77,86");
-		done(all, 75, "精英地牢",   "elite_dungeon",    "怪物", T_MON, 3, T_MED,    "s:14,30,97",
+		//END: 原联动串为 "s:14,30,97"，其中 97 已删除，故移除该引用（保留 14/30）。
+		done(all, 75, "精英地牢",   "elite_dungeon",    "怪物", T_MON, 3, T_MED,    "s:14,30",
 				"13% 的怪物被替换为其稀有变种（白化老鼠、寄居蟹、强盗等）。");
 		add(all, 76, "原始状态",   "primal_state",     "怪物", T_MON, 2, T_MED,    "s:103");
 		add(all, 77, "亡灵法师",   "necromancer",      "怪物", T_MON, 3, T_MED,    "s:73,86");
 		add(all, 86, "复仇之魂",   "vengeful_spirit",  "怪物", T_MON, 2, T_MED,    "s:73,77");
 		add(all, 87, "盗贼鼠群",   "thief_rats",       "怪物", T_TWO, 1, T_EASY,   "");
-		add(all, 97, "我的世界",   "minecraft",        "怪物", T_MON, 3, T_HARD,   "s:75,77");
+		//END(已取消): 97 我的世界 / 122 我的世界II —— 按文档所有者要求删除，不做。
+		//（原效果与"经验药水"相关。）122 对 97 的联动引用一并移除。
 		add(all, 100,"镜像对决",   "mirror_match",     "怪物", T_MON, 3, T_HARD,   "r:77");
 		done(all, 119,"怪物浪潮",   "monster_wave",     "怪物", T_TWO, 2, T_EASY,   "s:30",
 				"怪物生成数量 ×4；普通怪物的生命与伤害变为原来的 20%（Boss 不削弱）。");
-		add(all, 122,"我的世界II", "minecraft_ii",     "怪物", T_MON, 3, T_MED,    "s:97");
 
 		//---- 经济 ----
 		add(all, 33, "黑市",       "black_market",     "经济", T_TWO, 1, T_MED,    "");
@@ -250,12 +252,10 @@ public final class ChallengeRegistry {
 				"每次进入新区域（每 5 层）时，金币减少 20%。");
 		done(all, 44, "慷慨商人",   "generous_merchant","经济", T_TWO, 1, T_EASY,   "s:32",
 				"商店商品数量 +30%，商店售价 ×1.25（与通货膨胀可共存）。");
-		add(all, 88, "拍卖行",     "auction_house",    "经济", T_TWO, 2, T_MED,    "x:101");
-		//END(限制): 101 摧毁商店 → 以下所有商店相关规则全部失效（可共存，只警告）。
-		//32 通货膨胀 / 33 黑市 / 34 赏金制度 / 37 高价回收 / 38 盲盒 /
-		//39 All or Nothing / 40 贷款 / 41 钱是万能 / 42 等价交换 / 44 慷慨商人 / 88 拍卖行
-		//（88 拍卖行同时还是严格互斥：商店没了它根本无法运作）
-		add(all, 101,"全员恶人",   "all_villains",     "经济", T_RISK,3, T_HARD,   "x:88;r:32,33,34,37,38,39,40,41,42,44");
+		//END(已取消): 101 全员恶人 —— 按文档所有者要求**彻底删除**，不做。
+		//原效果是"摧毁所有商店"，会连带让十余条商店规则失效，实现与维护成本都不划算。
+		//同时已解除 88 拍卖行对它的互斥引用（此处原为 "x:101"）。
+		add(all, 88, "拍卖行",     "auction_house",    "经济", T_TWO, 2, T_MED,    "");
 
 		//---- 药剂 ----
 		add(all, 46, "药剂不稳定", "unstable_potions", "药剂", T_TWO, 2, T_MED,    "");
@@ -279,9 +279,11 @@ public final class ChallengeRegistry {
 		//---- 装备 ----
 		add(all, 55, "不稳定强化", "unstable_upgrade", "装备", T_TWO, 2, T_MED,    "s:108");
 		add(all, 56, "装备绑定",   "equip_binding",    "装备", T_RES, 2, T_MED,    "");
-		add(all, 57, "残缺装备",   "broken_equipment", "装备", T_RES, 2, T_MED,    "r:108");
+		done(all, 57, "残缺装备",   "broken_equipment", "装备", T_RES, 2, T_EASY,   "r:108",
+				"随机附魔时有 13% 概率获得「残缺」词缀：攻击力降低 20%，且不能进行装备觉醒。");
 		add(all, 58, "随机附魔",   "random_enchant",   "装备", T_BEN, 1, T_MED,    "s:108");
-		add(all, 59, "诅咒装备",   "cursed_equipment", "装备", T_RES, 2, T_MED,    "r:108");
+		done(all, 59, "诅咒装备",   "cursed_equipment", "装备", T_RES, 2, T_EASY,   "r:108",
+				"装备获得诅咒的概率提高 13%（原本 30%，提高后 43%）。");
 		done(all, 60, "家传法杖",   "heirloom_wand",    "装备", T_BEN, 1, T_EASY,   "",
 				"开局额外获得 13 种进阶法杖中随机的一支（已鉴定）。");
 		done(all, 79, "高级附魔台", "advanced_enchant", "装备", T_BEN, 1, T_EASY,   "",

@@ -936,6 +936,51 @@ public final class ChallengeEffects {
 	public static final int ADVANCED_ENCHANT = 79;
 	/** 17 情人节：攻击 13% 概率魅惑目标。 */
 	public static final int VALENTINE        = 17;
+	/** 57 残缺装备：13% 概率获得「残缺」附魔（攻击 −20%）。 */
+	public static final int BROKEN_EQUIPMENT = 57;
+	/** 59 诅咒装备：获得诅咒的概率 +13%。 */
+	public static final int CURSED_EQUIPMENT = 59;
+	/** 7 跳级生：可直接跳级（以物品形式实现）。 */
+	public static final int SKIP_STUDENT     = 7;
+
+	/** 57 残缺装备：触发概率 13%。 */
+	private static final int FLAWED_PCT = 13;
+	/** 59 诅咒装备：额外诅咒概率 13%。 */
+	private static final int CURSED_PCT = 13;
+
+	/**
+	 * END(挑战 57 残缺装备): 随机附魔时是否应给出「残缺」词缀。
+	 *
+	 * <p>调用点：{@code Weapon.Enchantment.random(...)}。
+	 * **只在勾选了 57 时才可能为 true** —— 未勾选时此方法恒返回 false，
+	 * 因此不会污染普通对局的随机附魔池。
+	 *
+	 * @param toIgnore 调用方要求排除的附魔类型；若已包含 Flawed 则不再给出
+	 */
+	public static boolean rollFlawedEnchant(Class<?>... toIgnore) {
+		if (!on(BROKEN_EQUIPMENT)) return false;
+
+		//调用方明确排除了 Flawed（例如已有该词缀），就不再给
+		if (toIgnore != null) {
+			for (Class<?> c : toIgnore) {
+				if (c != null && c.getName().endsWith("Flawed")) return false;
+			}
+		}
+
+		return Random.Int(100) < FLAWED_PCT;
+	}
+
+	/**
+	 * END(挑战 59 诅咒装备): 装备获得时，额外增加多少诅咒概率。
+	 *
+	 * <p>原表："装备获得诅咒概率增加 13%" —— 是**概率**提升，不是一个新附魔。
+	 * 调用点：{@code Weapon.random()} / {@code Armor.random()} 里判断是否诅咒处。
+	 *
+	 * @return 额外的诅咒概率（0~1）；未勾选时为 0
+	 */
+	public static float extraCurseChance() {
+		return on(CURSED_EQUIPMENT) ? (CURSED_PCT / 100f) : 0f;
+	}
 
 	/** 17 情人节：魅惑概率 13%。 */
 	private static final int VALENTINE_PCT = 13;
@@ -1037,6 +1082,7 @@ public final class ChallengeEffects {
 		if (on(HEIRLOOM_RING))  n++;
 		if (on(HEIRLOOM_ARMOR)) n++;
 		if (on(HEIRLOOM_WAND))  n++;
+		if (on(SKIP_STUDENT))   n++;   // 7 跳级券
 		return n;
 	}
 
@@ -1081,6 +1127,11 @@ public final class ChallengeEffects {
 				//拿不到就不发，绝不让"开局送装备"把游戏拖崩
 				System.err.println("[挑战 60 家传法杖] 生成法杖失败：" + t);
 			}
+		}
+
+		//7 跳级生：开局给 1 张跳级券（一次性物品，玩家自己决定何时用）
+		if (on(SKIP_STUDENT)) {
+			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.items.SkipTicket());
 		}
 
 		return out;
