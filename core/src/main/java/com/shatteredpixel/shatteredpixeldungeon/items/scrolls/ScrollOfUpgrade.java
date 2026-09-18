@@ -137,6 +137,23 @@ public class ScrollOfUpgrade extends InventoryScroll {
 			item = item.upgrade();
 		}
 
+		//==== END(挑战 55 不稳定强化): 13% 概率额外 +2 级 ====
+		//放在所有分支**之后**统一处理，一次覆盖武器/护甲/法杖/戒指/其它，
+		//不必在四个分支里各写一遍。
+		//
+		//注意：这里必须放在 if/else **外面**，不能塞进 Item.upgrade() 内部 ——
+		//Item.upgrade(n) 会循环调用 upgrade()，若在那里触发就会连锁放大。
+		int bonusLevels = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.bonusUpgradeLevels();
+		if (bonusLevels > 0 && item != null) {
+			item.upgrade( bonusLevels );
+			com.shatteredpixel.shatteredpixeldungeon.utils.GLog.p(
+					com.shatteredpixel.shatteredpixeldungeon.messages.Messages.get(
+							com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+									.ChallengeEffects.class,
+							"unstable_upgrade", bonusLevels));
+		}
+
 		Badges.validateItemLevelAquired( item );
 		Statistics.upgradesUsed++;
 		Badges.validateMageUnlock();

@@ -468,6 +468,15 @@ abstract public class Weapon extends KindOfWeapon {
 				enchant();
 			}
 
+			//==== END(挑战 58 随机附魔): 获得时 50% 概率随机附魔 ====
+			//在**原有判定之外**独立再判一次（原表："与 108 觉醒独立计算"）。
+			//放在这里而不是覆盖上面的分支：已附魔的不重复附，未附魔的才补。
+			if (enchantment == null
+					&& com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+							.ChallengeEffects.rollRandomEnchant()) {
+				enchant();
+			}
+
 		Random.popGenerator();
 
 		return this;

@@ -258,7 +258,8 @@ public final class ChallengeRegistry {
 		add(all, 88, "拍卖行",     "auction_house",    "经济", T_TWO, 2, T_MED,    "");
 
 		//---- 药剂 ----
-		add(all, 46, "药剂不稳定", "unstable_potions", "药剂", T_TWO, 2, T_MED,    "");
+		done(all, 46, "药剂不稳定", "unstable_potions", "药剂", T_TWO, 2, T_EASY,   "",
+				"饮用药水后 13% 概率追加一个随机效果（正负各半）。");
 		done(all, 47, "稀缺补给",   "scarce_supplies",  "药剂", T_RES, 2, T_EASY,   "x:48",
 				"消耗品（药水、卷轴、食物、炸弹）生成数量减少 40%。");
 		done(all, 48, "过量补给",   "excess_supplies",  "药剂", T_BEN, 1, T_EASY,   "x:47",
@@ -277,11 +278,13 @@ public final class ChallengeRegistry {
 				"每回合 5% 概率闪电随机劈中一个角色，伤害 = 3 × 层数 ÷ 5，并可能点燃。");
 
 		//---- 装备 ----
-		add(all, 55, "不稳定强化", "unstable_upgrade", "装备", T_TWO, 2, T_MED,    "s:108");
+		done(all, 55, "不稳定强化", "unstable_upgrade", "装备", T_TWO, 2, T_EASY,   "s:108",
+				"使用升级卷轴强化时，13% 概率额外 +2 级。");
 		add(all, 56, "装备绑定",   "equip_binding",    "装备", T_RES, 2, T_MED,    "");
 		done(all, 57, "残缺装备",   "broken_equipment", "装备", T_RES, 2, T_EASY,   "r:108",
 				"随机附魔时有 13% 概率获得「残缺」词缀：攻击力降低 20%，且不能进行装备觉醒。");
-		add(all, 58, "随机附魔",   "random_enchant",   "装备", T_BEN, 1, T_MED,    "s:108");
+		done(all, 58, "随机附魔",   "random_enchant",   "装备", T_BEN, 1, T_EASY,   "s:108",
+				"装备获得时 50% 概率带随机附魔词缀（与装备觉醒独立计算）。");
 		done(all, 59, "诅咒装备",   "cursed_equipment", "装备", T_RES, 2, T_EASY,   "r:108",
 				"装备获得诅咒的概率提高 13%（原本 30%，提高后 43%）。");
 		done(all, 60, "家传法杖",   "heirloom_wand",    "装备", T_BEN, 1, T_EASY,   "",
@@ -303,7 +306,8 @@ public final class ChallengeRegistry {
 		add(all, 67, "宝箱危机",   "chest_crisis",     "特殊", T_RISK,3, T_MED,    "");
 		done(all, 70, "生活部长",   "life_minister",    "特殊", T_NEU, 1, T_MED,    "",
 				"每回合 3% 概率停止行动，说出「首先，我是生活部部长」。");
-		add(all, 71, "喝大了",     "drunk",            "特殊", T_TWO, 2, T_MED,    "");
+		done(all, 71, "喝大了",     "drunk",            "特殊", T_TWO, 2, T_EASY,   "",
+				"每回合 3% 概率触发眩晕 3 回合。");
 		done(all, 72, "前程似锦",   "bright_future",    "特殊", T_NEU, 1, T_MED,    "",
 				"每回合 3% 概率停止行动，说出「王同学，我祝你前～程～似锦」。");
 		done(all, 95, "耗子尾汁",   "rat_tail_soup",    "特殊", T_BEN, 1, T_MED,    "",

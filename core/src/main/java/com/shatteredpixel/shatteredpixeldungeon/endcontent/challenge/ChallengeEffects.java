@@ -942,6 +942,119 @@ public final class ChallengeEffects {
 	public static final int CURSED_EQUIPMENT = 59;
 	/** 7 跳级生：可直接跳级（以物品形式实现）。 */
 	public static final int SKIP_STUDENT     = 7;
+	/** 58 随机附魔：装备获得时 50% 概率随机附魔。 */
+	public static final int RANDOM_ENCHANT   = 58;
+	/** 55 不稳定强化：强化时 13% 额外 +2。 */
+	public static final int UNSTABLE_UPGRADE = 55;
+	/** 71 喝大了：每回合 3% 眩晕 3 回合。 */
+	public static final int DRUNK             = 71;
+	/** 46 药剂不稳定：使用药水后 13% 产生随机效果。 */
+	public static final int UNSTABLE_POTION   = 46;
+
+	/** 71 喝大了：概率与眩晕回合数。 */
+	private static final int   DRUNK_PCT   = 3;
+	private static final float DRUNK_TURNS = 3f;
+	/** 46 药剂不稳定：触发概率 13%。 */
+	private static final int   UNSTABLE_POTION_PCT = 13;
+
+	/** 58 随机附魔：获得时附魔概率 50%。 */
+	private static final int RANDOM_ENCHANT_PCT = 50;
+	/** 55 不稳定强化：额外强化概率 13%，加成 +2。 */
+	private static final int UNSTABLE_PCT   = 13;
+	private static final int UNSTABLE_BONUS = 2;
+
+	/**
+	 * END(46 药剂不稳定): 玩家饮用药水后，13% 概率追加一个随机效果。
+	 *
+	 * <p>调用点：{@code Potion.drink()} —— 在 {@code apply()} **之后**，
+	 * 所以药水本身的效果照常生效，随机效果是额外叠加。
+	 *
+	 * <p>倾向为"双刃剑"（原表如此），因此效果表**正负各半**：
+	 * 可能给你增益，也可能给你减益。这才是这条规则的核心体验。
+	 */
+	public static void onPotionDrunk(
+			com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero hero) {
+		if (!on(UNSTABLE_POTION) || hero == null || !hero.isAlive()) return;
+		if (Random.Int(100) >= UNSTABLE_POTION_PCT) return;
+
+		int roll = Random.Int(6);
+		switch (roll) {
+			case 0:   //正面：急速
+				com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
+						hero, com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+								.Haste.class, 10f);
+				showPotionEffect(hero, "haste");
+				break;
+			case 1:   //正面：隐形
+				com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
+						hero, com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+								.Invisibility.class, 10f);
+				showPotionEffect(hero, "invisible");
+				break;
+			case 2:   //正面：护盾
+				//注意：Barrier 不是 FlavourBuff，没有带时长的 affect 重载，
+				//只能用无时长版本（它的持续时长由自身机制决定）。
+				com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(
+						hero, com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+								.Barrier.class);
+				showPotionEffect(hero, "barrier");
+				break;
+			case 3:   //负面：中毒
+				com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(
+						hero, com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+								.Poison.class);
+				showPotionEffect(hero, "poison");
+				break;
+			case 4:   //负面：燃烧
+				com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(
+						hero, com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+								.Burning.class);
+				showPotionEffect(hero, "burning");
+				break;
+			default:  //负面：眩晕
+				com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
+						hero, com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+								.Paralysis.class, 3f);
+				showPotionEffect(hero, "paralysed");
+				break;
+		}
+	}
+
+	/** 提示玩家随机效果是什么（46 药剂不稳定）。 */
+	private static void showPotionEffect(
+			com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero hero, String key) {
+		com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w(
+				com.shatteredpixel.shatteredpixeldungeon.messages.Messages.get(
+						ChallengeEffects.class, "unstable_potion_" + key));
+	}
+
+	/**
+	 * END(58 随机附魔): 装备获得时是否应随机附魔。
+	 *
+	 * <p>原表："装备获得时 50% 概率获得随机附魔词缀"（与 108 觉醒独立计算）。
+	 * 调用点：{@code Weapon.random()} / {@code Armor.random()} —— 在**原有**的
+	 * 10% 附魔判定之外**额外**判定一次，两者互不排斥。
+	 *
+	 * @return true 表示应给这件新装备附魔
+	 */
+	public static boolean rollRandomEnchant() {
+		return on(RANDOM_ENCHANT) && Random.Int(100) < RANDOM_ENCHANT_PCT;
+	}
+
+	/**
+	 * END(55 不稳定强化): 本次强化额外增加的等级。
+	 *
+	 * <p>原表："强化时 13% 额外 +2，13% 不变，其余正常"。
+	 * 即：13% 概率额外 +2 级；成功或失败的原判定照旧。
+	 *
+	 * <p>调用点：{@code ScrollOfUpgrade} / {@code Item.upgrade()} 的强化结算处。
+	 *
+	 * @return 额外等级（0 或 2）
+	 */
+	public static int bonusUpgradeLevels() {
+		if (!on(UNSTABLE_UPGRADE)) return 0;
+		return (Random.Int(100) < UNSTABLE_PCT) ? UNSTABLE_BONUS : 0;
+	}
 
 	/** 57 残缺装备：触发概率 13%。 */
 	private static final int FLAWED_PCT = 13;
@@ -1400,6 +1513,19 @@ public final class ChallengeEffects {
 			if (hero.HP > 1) {
 				hero.damage(1, hero);
 			}
+		}
+
+		//---- 71 喝大了：每回合 3% 触发眩晕 3 回合 ----
+		//原表："每回合3%触发眩晕3回合"。用 Paralysis 实现 ——
+		//它是本 fork 既有的"不能行动"状态，图标与回合递减都已处理好。
+		if (on(DRUNK) && Random.Int(100) < DRUNK_PCT) {
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
+					hero,
+					com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Paralysis.class,
+					DRUNK_TURNS);
+			com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w(
+					com.shatteredpixel.shatteredpixeldungeon.messages.Messages.get(
+							ChallengeEffects.class, "drunk_stun"));
 		}
 	}
 

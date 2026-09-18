@@ -62,7 +62,14 @@ public class WndChallenges extends Window {
 	private static final int BTN_HEIGHT = 16;
 	private static final int GAP        = 1;
 	/** 分类按钮高度。 */
-	private static final int CAT_H      = 14;
+	/**
+	 * END(修复·分类按钮被压扁): 分类栏高度。
+	 *
+	 * <p>原本写 14，但 {@code RedButton} 的九宫格边框本身要吃掉上下各几像素，
+	 * 14 虚拟像素装不下"文字 + 边框"，实测表现为**按钮被压扁、文字被裁切**。
+	 * 改用与其它按钮一致的 16。
+	 */
+	private static final int CAT_H      = 16;
 	/** 滚动区期望高度上限（实际还会受屏幕高度约束）。 */
 	private static final int MAX_LIST_H = 150;
 
@@ -218,8 +225,39 @@ public class WndChallenges extends Window {
 							.PixelScene.uiCamera.screenWidth() + " x "
 					+ com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene.uiCamera
 							.screenHeight());
+
+			//---- 滚动容器内部 camera：这才是"内容实际渲染到哪"的权威数据 ----
+			//ScrollPane 给 content 单独分配了一个 Camera（用于 GL 裁剪），
+			//它的 x/y/scroll 决定了列表真正画在屏幕的什么位置。
+			System.out.println("  --- ScrollPane 内部 ---");
+			dumpScrollPane("分类栏", catPane, catContent);
+			dumpScrollPane("列表", pane, content);
 		} catch (Throwable t) {
 			System.out.println("  诊断失败: " + t);
+		}
+	}
+
+	/** 打印 ScrollPane 及其 content 的 camera 状态（诊断用）。 */
+	private void dumpScrollPane(String label, ScrollPane sp, Component inner) {
+		if (sp == null) { System.out.println("    " + label + " ScrollPane=null"); return; }
+		com.watabou.noosa.Camera c = inner == null ? null : inner.camera;
+		System.out.println("    [" + label + "] ScrollPane left=" + sp.left() + " top=" + sp.top()
+				+ " w=" + sp.width() + " h=" + sp.height());
+		if (inner != null) {
+			System.out.println("         content 尺寸 = " + inner.width() + " x " + inner.height());
+		}
+		if (c != null) {
+			System.out.println("         content.camera x=" + c.x + " y=" + c.y
+					+ " w=" + c.width + " h=" + c.height
+					+ " scroll=(" + c.scroll.x + "," + c.scroll.y + ")"
+					+ " zoom=" + c.zoom
+					+ " screen=" + c.screenWidth() + "x" + c.screenHeight());
+			System.out.println("         => 内容左上角落屏幕 ("
+					+ ((0 - c.scroll.x) * c.zoom + c.x) + ", "
+					+ ((0 - c.scroll.y) * c.zoom + c.y) + ")"
+					+ "  可视区高 " + c.screenHeight() + " 物理像素");
+		} else {
+			System.out.println("         content.camera = null（未被 ScrollPane 接管）");
 		}
 	}
 
@@ -264,8 +302,11 @@ public class WndChallenges extends Window {
 					switchGroup( g );
 				}
 			};
-			//宽度按文字自适应，最小 30
-			int w = Math.max(30, (int)btn.reqWidth() + 4);
+			//宽度按文字自适应。
+			//END(修复): 余量从 +4 提到 +8 —— reqWidth() 对"中文 + 空格 + 数字"
+			//这种混排算得偏紧，实测会把末位数字压到边框外。
+			//最小宽度也提到 34，保证两字分类名不会挤成一团。
+			int w = Math.max(34, (int)btn.reqWidth() + 8);
 			btn.setRect( x, 0, w, CAT_H );
 
 			//当前分类高亮

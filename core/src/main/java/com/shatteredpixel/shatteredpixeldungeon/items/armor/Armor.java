@@ -733,10 +733,25 @@ public class Armor extends EquipableItem {
 			//30% chance to be cursed
 			//15% chance to be inscribed
 			float effectRoll = Random.Float();
-			if (effectRoll < 0.3f * ParchmentScrap.curseChanceMultiplier()) {
+
+			//END(挑战 59 诅咒装备): 诅咒概率 +13%
+			//与武器侧同理：**提高阈值**而不是多掷骰子，
+			//避免改变 RNG 消耗序列而破坏同种子的关卡生成。
+			float curseChance = 0.3f * ParchmentScrap.curseChanceMultiplier()
+					+ com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+							.ChallengeEffects.extraCurseChance();
+
+			if (effectRoll < curseChance) {
 				inscribe(Glyph.randomCurse());
 				cursed = true;
 			} else if (effectRoll >= 1f - (0.15f * ParchmentScrap.enchantChanceMultiplier())){
+				inscribe();
+			}
+
+			//==== END(挑战 58 随机附魔): 获得时 50% 概率随机附魔 ====
+			if (glyph == null
+					&& com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+							.ChallengeEffects.rollRandomEnchant()) {
 				inscribe();
 			}
 

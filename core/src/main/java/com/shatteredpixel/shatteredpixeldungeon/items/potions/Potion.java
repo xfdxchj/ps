@@ -291,6 +291,13 @@ public class Potion extends Item {
 		hero.spend( TIME_TO_DRINK );
 		hero.busy();
 		apply( hero );
+
+		//==== END(挑战 46 药剂不稳定): 13% 概率追加一个随机效果 ====
+		//放在 apply() **之后**：药水本身的效果照常生效，
+		//随机效果是"额外"叠加的，而不是替换。
+		//只对**玩家饮用**生效（throw 路径不触发，与"使用后"的语义一致）。
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
+				.onPotionDrunk( hero );
 		
 		Sample.INSTANCE.play( Assets.Sounds.DRINK );
 		
