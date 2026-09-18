@@ -261,6 +261,12 @@ public class WndChallenges extends Window {
 					+ ((0 - c.scroll.x) * c.zoom + c.x) + ", "
 					+ ((0 - c.scroll.y) * c.zoom + c.y) + ")"
 					+ "  可视区高 " + c.screenHeight() + " 物理像素");
+			//期望值：窗口坐标系里的位置
+			float wantX = (sp.left() - camera.scroll.x) * camera.zoom + camera.x;
+			float wantY = (sp.top()  - camera.scroll.y) * camera.zoom + camera.y;
+			System.out.println("         期望 x=" + (int) wantX + " y=" + (int) wantY
+					+ (Math.abs(c.x - wantX) < 2 && Math.abs(c.y - wantY) < 2
+						? "   [OK]" : "   [!! 不匹配]"));
 		} else {
 			System.out.println("         content.camera = null（未被 ScrollPane 接管）");
 		}
@@ -601,9 +607,50 @@ public class WndChallenges extends Window {
 	@Override
 	public void update() {
 		super.update();
-		//（保留一个轻量兜底：见 bindScrollPaneCamera 的说明）
+
+		//==== END(修复·实测仍在 (1280,922)): 直接纠正 content.camera ====
+		//上一版只把 ScrollPane 自身的 camera 绑定到窗口相机，期望它自己的
+		//layout() 就能算出正确位置。实测**没有生效** —— content.camera 仍被
+		//算成 (1280, 922)（= uiCamera 的中心 scroll），而不是 (980, 384)。
+		//
+		//原因：ScrollPane 的 content.camera 是它**自己 new 并 Camera.add() 的
+		//独立相机**，其 x/y 只由 ScrollPane.layout() 里那句
+		//`cs.x = camera().cameraToScreen(x,y).x` 设定；而 layout() 的调用时机
+		//与 camera() 当时解析到的对象都不受我们控制。
+		//
+		//所以改为：每帧直接把 content.camera 摆到窗口坐标系里的正确位置。
+		//这是唯一能对抗 layout() 覆盖的做法，且开销只是两次赋值。
 		bindScrollPaneCamera( catPane );
 		bindScrollPaneCamera( pane );
+
+		placeContentCamera( catPane, catPane == null ? 0 : catPane.height() );
+		placeContentCamera( pane,   pane  == null ? 0 : pane.height() );
+	}
+
+	/**
+	 * END(修复·列表偏移): 把 ScrollPane 的内部裁剪相机摆到窗口里的正确位置。
+	 *
+	 * <p>窗口渲染内容点 (cx, cy) 时落在屏幕 {@code (cx - scroll)*zoom + camera.x}。
+	 * content.camera 是**内容区自己的相机**，所以它应该落在：
+	 * <pre>
+	 *   x = (pane.left() - Window.camera.scroll.x) * zoom + Window.camera.x
+	 *   y = (pane.top()  - Window.camera.scroll.y) * zoom + Window.camera.y
+	 * </pre>
+	 * 并让它裁剪出 {@code pane.width() × pane.height()} 的区域。
+	 *
+	 * <p>同时必须保留 content.camera 的 **scroll**（那是滚动位置），
+	 * 只改 x/y/尺寸，否则滚动会被重置到顶部。
+	 */
+	private void placeContentCamera( ScrollPane sp, float h ) {
+		if (sp == null || sp.content() == null) return;
+		com.watabou.noosa.Camera inner = sp.content().camera;
+		if (inner == null) return;
+		if (camera == null) return;
+
+		inner.x = (int) ((sp.left() - camera.scroll.x) * camera.zoom + camera.x);
+		inner.y = (int) ((sp.top()  - camera.scroll.y) * camera.zoom + camera.y);
+		inner.zoom = camera.zoom;
+		inner.resize( Math.max(1, (int) sp.width()), Math.max(1, (int) h) );
 	}
 
 	/**
