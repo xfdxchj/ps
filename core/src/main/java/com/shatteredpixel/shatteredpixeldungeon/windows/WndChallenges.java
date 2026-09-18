@@ -86,8 +86,16 @@ public class WndChallenges extends Window {
 
 	private ArrayList<CheckBox> boxes = new ArrayList<>();
 
-	/** 分类按钮行（可横向滚动）。 */
-	private ScrollPane catPane;
+	/**
+	 * 与 {@link #boxes} 一一对应的规则定义。
+	 *
+	 * <p>点击由 {@code ScrollPane.onClick -> handleListClick} 手动分发时需要它
+	 * 反查被点中的是哪条规则；**必须与 boxes 同时清空**，否则会错位。
+	 */
+	private ArrayList<ChallengeDef> defs = new ArrayList<>();
+
+	/** 分类按钮行（两排网格，铺满窗口宽度）。 */
+	private Component catPane;   //（已弃用：分类栏现在是两排普通 Component，按钮自己收点击）
 	private Component catContent;
 	private ArrayList<RedButton> catButtons = new ArrayList<>();
 	private ArrayList<String> groups = new ArrayList<>();
@@ -138,18 +146,40 @@ public class WndChallenges extends Window {
 		add( passLevelText );
 
 		//分类按钮行
+		//==== END(改版·分类排两排，不滚动): 不再用 ScrollPane ====
+		//原先分类栏是横向滚动的 ScrollPane，两个问题：
+		//  · 只有 16 虚拟像素高（80 物理像素），手指在上面几乎拖不动，分类划不到后面
+		//  · ScrollPane 会吃掉点击，导致分类按钮点不动（要靠手动转发）
+		//改为**两排网格、铺满窗口宽度**后，10 个分类全部可见，
+		//既不需要滚动，也不需要手动转发点击 —— 直接用普通 Component。
 		catContent = new Component();
-		catPane = new ScrollPane( catContent );
+		add( catContent );
 		//END(修复): 必须在 add() 之后立刻绑定窗口相机 ——
-		//否则 ScrollPane 第一次 layout() 就会用错误的相机定位内部裁剪区，
-		//之后每次 setRect 还会反复覆盖成错的。
-		add( catPane );
-		bindScrollPaneCamera( catPane );
+		//（分类栏已改为普通 Component，见下方说明，不再需要相机绑定）
 		buildCategoryBar();
 
 		//列表区
 		content = new Component();
-		pane = new ScrollPane( content );
+
+		//==== END(修复·滑动条抢点击 / 点击抢滑动): 照原版 WndKeyBindings 的做法 ====
+		//1) ScrollPane 的 PointerController 在 DOWN 时返回 true
+		//   （PointerArea.onSignal 第 67 行），Signal.dispatch 遇到 true 就 return，
+		//   下层组件永远收不到点击。所以点击必须由 ScrollPane.onClick(x,y)
+		//   手动转发 —— 这正是 WndKeyBindings:109 的做法。
+		//2) 同时覆写 layout()，在 super 之后摆正内部裁剪相机。
+		//   放在 layout() 而不是每帧 update()：每帧 resize() 会反复动 GL viewport，
+		//   既浪费也可能干扰手势判定。layout() 只在尺寸变化时跑，正好够用。
+		pane = new ScrollPane( content ) {
+			@Override
+			protected void layout() {
+				super.layout();
+				placeContentCamera( this, height() );
+			}
+			@Override
+			public void onClick( float x, float y ) {
+				handleListClick( x, y );
+			}
+		};
 		add( pane );
 		bindScrollPaneCamera( pane );
 
@@ -162,8 +192,9 @@ public class WndChallenges extends Window {
 		}
 
 		//布局
-		catPane.setRect( 0, top, WIDTH, CAT_H );
-		top += CAT_H + 1;
+		//分类栏：两排网格，直接用普通 Component 铺在窗口上（不再滚动）
+		catContent.setPos( 0, top );
+		top += catHeight() + 1;
 
 		buildList();
 
@@ -211,18 +242,12 @@ public class WndChallenges extends Window {
 			//---- 对比：内容坐标 vs 内容实际落到的屏幕位置 ----
 			//若窗口 camera 居中而内容偏，差值会在这里暴露出来。
 			System.out.println("  --- 内容定位对比 ---");
-			dumpChild("分类栏 catPane", catPane);
 			dumpChild("列表 pane", pane);
 			dumpChild("底部 passLevelText", passLevelText);
 			System.out.println("  camera.scroll = (" + camera.scroll.x + ", " + camera.scroll.y + ")");
 			System.out.println("  camera 尺寸 = " + camera.width + " x " + camera.height
 					+ "  屏幕尺寸 = " + camera.screenWidth() + " x " + camera.screenHeight()
 					+ "  x=" + camera.x + " y=" + camera.y + " zoom=" + camera.zoom);
-			//按 Window 的公式推算：内容点 (cx,cy) 应落在屏幕
-			//  (cx - scroll.x)*zoom + camera.x
-			System.out.println("  推算 catPane 左上角屏幕坐标 = ("
-					+ ((catPane.left() - camera.scroll.x) * camera.zoom + camera.x) + ", "
-					+ ((catPane.top() - camera.scroll.y) * camera.zoom + camera.y) + ")");
 			System.out.println("  uiCamera 尺寸 = " + com.shatteredpixel.shatteredpixeldungeon
 					.scenes.PixelScene.uiCamera.width + " x "
 					+ com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene.uiCamera.height
@@ -235,7 +260,6 @@ public class WndChallenges extends Window {
 			//ScrollPane 给 content 单独分配了一个 Camera（用于 GL 裁剪），
 			//它的 x/y/scroll 决定了列表真正画在屏幕的什么位置。
 			System.out.println("  --- ScrollPane 内部 ---");
-			dumpScrollPane("分类栏", catPane, catContent);
 			dumpScrollPane("列表", pane, content);
 		} catch (Throwable t) {
 			System.out.println("  诊断失败: " + t);
@@ -299,37 +323,101 @@ public class WndChallenges extends Window {
 		catContent.clear();
 		catButtons.clear();
 
-		float x = 0;
-		for (final String g : groups) {
+		//==== END(改版·两排网格): 分类铺成两排，全部可见 ====
+		//窗口宽 120，两排各放 5 个 → 每格宽约 23.6。
+		//分类名是 2 个字（经典/药剂/经济/特殊/地图/战斗/怪物/环境/装备/格林），
+		//6 号字两个字约 12 像素，23 宽足够，所以**标签里不再带数量** ——
+		//数字会把按钮挤到只剩几个像素。
+		//当前分类的数量改由列表标题/底部文字体现。
+		final int COLS = 5;
+		int rows = (groups.size() + COLS - 1) / COLS;      //10 个 → 2 排
+		float cellW = (WIDTH - (COLS - 1)) / (float) COLS;
 
-			int count = 0;
-			for (ChallengeDef d : ChallengeRegistry.inGroup(g)) if (d.isImplemented()) count++;
+		for (int i = 0; i < groups.size(); i++) {
+			final String g = groups.get(i);
+			int row = i / COLS;
+			int col = i % COLS;
 
-			String label = g + " " + count;
-			RedButton btn = new RedButton( label, 6 ) {
+			RedButton btn = new RedButton( g, 6 ) {
 				@Override
 				protected void onClick() {
 					super.onClick();
 					switchGroup( g );
 				}
 			};
-			//宽度按文字自适应。
-			//END(修复): 余量从 +4 提到 +8 —— reqWidth() 对"中文 + 空格 + 数字"
-			//这种混排算得偏紧，实测会把末位数字压到边框外。
-			//最小宽度也提到 34，保证两字分类名不会挤成一团。
-			int w = Math.max(34, (int)btn.reqWidth() + 8);
-			btn.setRect( x, 0, w, CAT_H );
-
+			btn.setRect( col * (cellW + 1), row * (CAT_H + 1), cellW, CAT_H );
 			//当前分类高亮
 			btn.textColor( g.equals(currentGroup) ? 0xFFFF88 : 0xCCCCCC );
 
 			catContent.add( btn );
 			catButtons.add( btn );
-			x += w + 1;
 		}
 
-		catContent.setSize( Math.max(WIDTH, x), CAT_H );
+		catContent.setSize( WIDTH, rows * (CAT_H + 1) );
 		catContent.setPos( 0, 0 );
+		this.catRows = rows;
+	}
+
+	/** 分类栏占用的总高度（两排时为 2×16+1 = 33）。 */
+	private int catRows = 2;
+
+	private float catHeight() {
+		return catRows * (CAT_H + 1);
+	}
+
+	/**
+	 * END(修复·滑动条抢点击): 处理分类栏的点击。
+	 *
+	 * <p>调用点：{@code catPane} 覆写的 {@code onClick(x, y)}。
+	 * 坐标已由 {@code ScrollPane} 换算成**内容坐标**（即 catContent 的坐标系）。
+	 *
+	 * <p>为什么不用按钮自己的 onClick：{@code ScrollPane.PointerController}
+	 * 在 DOWN 时返回 true，事件不会继续分发给下层按钮（见 ScrollPane 构造处的说明）。
+	 */
+	private void handleCategoryClick( float x, float y ) {
+		if (y < 0 || y > catHeight()) return;
+
+		//两排网格：按坐标反算行列
+		final int COLS = 5;
+		float cellW = (WIDTH - (COLS - 1)) / (float) COLS;
+		int col = (int) (x / (cellW + 1));
+		int row = (int) (y / (CAT_H + 1));
+		if (col < 0 || col >= COLS || row < 0) return;
+
+		int index = row * COLS + col;
+		if (index >= 0 && index < groups.size()) {
+			switchGroup( groups.get(index) );
+		}
+	}
+
+	/**
+	 * END(修复·滑动条抢点击): 处理挑战列表的点击。
+	 *
+	 * <p>调用点：{@code pane} 覆写的 {@code onClick(x, y)}。
+	 * 坐标已换算成内容坐标（列表的坐标系）。
+	 *
+	 * <p>命中判定：先看 y 落在哪个条目上；
+	 * 若 x 落在条目右侧的"问号"图标区，则打开详情窗口，否则切换勾选。
+	 */
+	private void handleListClick( float x, float y ) {
+		for (int i = 0; i < boxes.size(); i++) {
+			CheckBox cb = boxes.get(i);
+			if (y < cb.top() || y > cb.bottom()) continue;
+
+			ChallengeDef d = (i < defs.size()) ? defs.get(i) : null;
+			if (d == null) return;
+
+			//右侧是"问号"详情区（宽度 16）
+			if (x >= cb.right()) {
+				ShatteredPixelDungeon.scene().add( new WndMessage( describe( d ) ) );
+				return;
+			}
+
+			if (!cb.active) return;         //不可选（未实装/互斥/前置未满足）
+
+			toggleChallenge( d );
+			return;
+		}
 	}
 
 	/** 切换分类：更新高亮 + 重建列表。 */
@@ -344,10 +432,11 @@ public class WndChallenges extends Window {
 
 		content.clear();
 		boxes.clear();
+		defs.clear();                     //与 boxes 同步清空
 		buildList();
 
 		//列表高度可能变化，重算窗口
-		float top = TTL_HEIGHT + (editable ? RANDOM_BAR_H : 0) + CAT_H + 1;
+		float top = TTL_HEIGHT + (editable ? RANDOM_BAR_H : 0) + catHeight() + 1;
 		float bottomH = 14;
 		float maxByScreen = com.watabou.noosa.Camera.main.height - top - bottomH - 6;
 		float listH = Math.min( content.height(),
@@ -458,11 +547,10 @@ public class WndChallenges extends Window {
 			CheckBox cb = new CheckBox( Messages.titleCase( label ) ) {
 				@Override
 				protected void onClick() {
-					boolean on = !checked();
-					checked( on );
-					mask = on ? mask.with( d.id ) : mask.without( d.id );
-					//互斥/前置会随选择变化，重建整表以刷新置灰
-					rebuildAll();
+					//这条路径在 ScrollPane 里实际收不到事件（被 PointerController 吃掉），
+					//真正生效的是 ScrollPane.onClick -> handleListClick。
+					//保留它是为了将来若把列表移出 ScrollPane 时仍能工作。
+					toggleChallenge( d );
 				}
 			};
 			cb.setRect( 0, pos, WIDTH - 16, BTN_HEIGHT );
@@ -471,6 +559,7 @@ public class WndChallenges extends Window {
 
 			content.add( cb );
 			boxes.add( cb );
+			defs.add( d );                    //与 boxes 一一对应（handleListClick 要用）
 
 			//问号按钮：查看详情
 			IconButton info = new IconButton( Icons.get( Icons.INFO ) ) {
@@ -490,11 +579,29 @@ public class WndChallenges extends Window {
 		content.setPos( 0, 0 );
 	}
 
+	/**
+	 * END(修复·滑动条抢点击): 切换一条挑战的勾选状态。
+	 *
+	 * <p>把逻辑抽出来是为了让"CheckBox 自己的 onClick"与
+	 * "ScrollPane 手动分发"两条路径**行为完全一致**。
+	 */
+	private void toggleChallenge( ChallengeDef d ) {
+		if (d == null) return;
+		if (!editable) return;
+		if (!canToggle( d ) && !mask.has( d.id )) return;
+
+		boolean on = !mask.has( d.id );
+		mask = on ? mask.with( d.id ) : mask.without( d.id );
+		//互斥/前置会随选择变化，重建整表以刷新置灰
+		rebuildAll();
+	}
+
 	/** 选择变化后重建（分类高亮 + 列表 + 通过等级）。 */
 	private void rebuildAll() {
 		buildCategoryBar();
 		content.clear();
 		boxes.clear();
+		defs.clear();                     //必须同步清空，否则会与 boxes 错位
 		buildList();
 		updatePassLevel();
 	}
@@ -620,11 +727,8 @@ public class WndChallenges extends Window {
 		//
 		//所以改为：每帧直接把 content.camera 摆到窗口坐标系里的正确位置。
 		//这是唯一能对抗 layout() 覆盖的做法，且开销只是两次赋值。
-		bindScrollPaneCamera( catPane );
 		bindScrollPaneCamera( pane );
-
-		placeContentCamera( catPane, catPane == null ? 0 : catPane.height() );
-		placeContentCamera( pane,   pane  == null ? 0 : pane.height() );
+		placeContentCamera( pane, pane == null ? 0 : pane.height() );
 	}
 
 	/**
