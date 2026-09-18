@@ -379,6 +379,14 @@ public class Hero extends Char {
 	}
 
 	public int pointsInTalent( Talent talent ){
+		//==== END(挑战 147 就业紧张): 职业天赋全部失效 ====
+		//在这一个方法里返回 0，所有下游的 hasTalent() / 天赋加成一并失效 ——
+		//比在几十处逐个判断可靠得多，也不会漏掉任何一处。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.talentsDisabled()) {
+			return 0;
+		}
+
 		for (LinkedHashMap<Talent, Integer> tier : talents){
 			for (Talent f : tier.keySet()){
 				if (f == talent) return tier.get(f);
@@ -421,12 +429,22 @@ public class Hero extends Char {
 				|| (tier == 3 && subClass == HeroSubClass.NONE)
 				|| (tier == 4 && armorAbility == null)) {
 			return 0;
-		} else if (buff(PotionOfDivineInspiration.DivineInspirationTracker.class) != null
-					&& buff(PotionOfDivineInspiration.DivineInspirationTracker.class).isBoosted(tier)) {
-			return 2;
-		} else {
-			return 0;
 		}
+
+		int bonus = 0;
+
+		if (buff(PotionOfDivineInspiration.DivineInspirationTracker.class) != null
+					&& buff(PotionOfDivineInspiration.DivineInspirationTracker.class).isBoosted(tier)) {
+			bonus += 2;
+		}
+
+		//==== END(挑战 146 醍醐灌顶): 每个天赋层级额外 +1 点 ====
+		//与神圣灵感药水**叠加**（不是覆盖）—— 两者来源不同，都该生效。
+		//与 147 就业紧张互斥（框架已强制置灰），不会同时生效。
+		bonus += com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.bonusTalentPoints(tier);
+
+		return bonus;
 	}
 	
 	public String className() {
@@ -906,6 +924,18 @@ public class Hero extends Char {
 		//三条互相独立，都不影响本回合是否行动（除非被冻住导致 paralysed）。
 		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
 				.onHeroTurnEnvironment(this);
+
+		//==== END(挑战 165 神圣之光): 13% 概率回复 2% 最大生命 ====
+		//满血时不触发（避免无意义的状态提示）。
+		int holyHeal = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.rollHolyLightHeal(this);
+		if (holyHeal > 0) {
+			HP = Math.min(HT, HP + holyHeal);
+			if (sprite != null) {
+				sprite.showStatus(com.shatteredpixel.shatteredpixeldungeon.sprites
+						.CharSprite.POSITIVE, "+" + holyHeal);
+			}
+		}
 
 		if (paralysed > 0) {
 			
@@ -2033,6 +2063,15 @@ public class Hero extends Char {
 	}
 	
 	public void earnExp( int exp, Class source ) {
+
+		//==== END(挑战 145 神圣附体): 经验获取 +20% ====
+		//放在最前：让加成后的经验同时作用于 this.exp 与下面的 percent
+		//（percent 驱动以太链、丰饶之角等充能，两边必须一致）。
+		float expMult = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.expMultiplier();
+		if (expMult != 1f && exp > 0) {
+			exp = Math.max(1, Math.round(exp * expMult));
+		}
 
 		//xp granted by ascension challenge is only for on-exp gain effects
 		if (source != AscensionChallenge.class) {

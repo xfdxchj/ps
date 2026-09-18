@@ -873,6 +873,215 @@ public final class ChallengeEffects {
 	public static final int THUNDERSTORM    = 90;
 	/** 123 大学生：玩家每回合 3% 受 1 点伤害（不致死）。 */
 	public static final int COLLEGE_STUDENT = 123;
+	/** 10 巨型化：13% 怪物获得更高生命值与更大体型。 */
+	public static final int GIANT             = 10;
+	/** 54 我爱花花：草 13% 替换成随机花。 */
+	public static final int FLOWER_LOVER      = 54;
+	/** 138 荒诞世界：怪物贴图随机变化。 */
+	public static final int ABSURD_WORLD      = 138;
+	/** 145 神圣附体：经验获取 +20%。 */
+	public static final int HOLY_POSSESSION   = 145;
+	/** 146 醍醐灌顶：每层获得 1 点额外天赋点。 */
+	public static final int ENLIGHTENMENT    = 146;
+	/** 147 就业紧张：职业天赋全部失效。 */
+	public static final int JOB_CRISIS       = 147;
+	/** 155 家传戒指：开局获得神射戒指。 */
+	public static final int HEIRLOOM_RING    = 155;
+	/** 156 家传铠甲：开局获得板甲。 */
+	public static final int HEIRLOOM_ARMOR   = 156;
+	/** 165 神圣之光：13% 概率回复 2% 生命。 */
+	public static final int HOLY_LIGHT       = 165;
+
+	/** 145 神圣附体：经验倍率 1.2。 */
+	private static final float HOLY_EXP_MULT    = 1.20f;
+	/** 146 醍醐灌顶：每个天赋层级额外点数。 */
+	private static final int   ENLIGHTEN_BONUS  = 1;
+	/** 165 神圣之光：触发概率与回复比例。 */
+	private static final int   HOLY_LIGHT_PCT   = 13;
+	private static final float HOLY_LIGHT_HEAL  = 0.02f;
+
+	/**
+	 * END(145 神圣附体): 经验获取倍率。
+	 * <p>调用点：{@code Hero.gainExp()} / 经验计算处。
+	 */
+	public static float expMultiplier() {
+		return on(HOLY_POSSESSION) ? HOLY_EXP_MULT : 1f;
+	}
+
+	/**
+	 * END(146 醍醐灌顶): 该天赋层级应获得多少**额外**天赋点。
+	 *
+	 * <p>调用点：{@code Hero.bonusTalentPoints(tier)}。
+	 * 每个层级都 +1（原表说"每层获得 1 点额外天赋点"，
+	 * "每层"指每提高一级，这里按"每个天赋层级各 +1"实现，
+	 * 效果等价于每次升级都多一点可分配。
+	 *
+	 * <p>与 147 就业紧张**互斥**（框架已强制置灰），不会同时生效。
+	 */
+	public static int bonusTalentPoints(int tier) {
+		return on(ENLIGHTENMENT) ? ENLIGHTEN_BONUS : 0;
+	}
+
+	/**
+	 * END(147 就业紧张): 职业天赋是否应全部失效。
+	 *
+	 * <p>调用点：{@code Hero.pointsInTalent()} —— 让它直接返回 0，
+	 * 所有下游的 {@code hasTalent()} / 天赋加成一并失效。
+	 * 这比在几十处逐个判断可靠得多。
+	 */
+	public static boolean talentsDisabled() {
+		return on(JOB_CRISIS);
+	}
+
+	/**
+	 * END(165 神圣之光): 每回合 13% 概率回复 2% 最大生命。
+	 *
+	 * <p>调用点：{@code Hero.act()}（与其它回合类规则同处）。
+	 * 满血时不触发（避免无意义的状态提示）。
+	 *
+	 * @return 实际回复量（0 表示未触发或已满血）
+	 */
+	public static int rollHolyLightHeal(Char ch) {
+		if (!on(HOLY_LIGHT) || ch == null) return 0;
+		if (ch.HP >= ch.HT) return 0;                       //满血不回
+		if (Random.Int(100) >= HOLY_LIGHT_PCT) return 0;
+
+		int heal = Math.max(1, Math.round(ch.HT * HOLY_LIGHT_HEAL));
+		return Math.min(heal, ch.HT - ch.HP);               //不溢出上限
+	}
+
+	/**
+	 * END(155 家传戒指 / 156 家传铠甲): 开局额外获得的装备**数量**。
+	 *
+	 * <p>单独提供这个方法是为了可测试性：构造 Item 实例会触发
+	 * ItemSpriteSheet 的纹理加载（需要 libGDX 图形环境），
+	 * 在无图形的环境里无法实例化。数量判断则不依赖实例。
+	 */
+	public static int startingGearCount() {
+		int n = 0;
+		if (on(HEIRLOOM_RING))  n++;
+		if (on(HEIRLOOM_ARMOR)) n++;
+		return n;
+	}
+
+	/**
+	 * END(155 家传戒指 / 156 家传铠甲): 开局额外获得的装备。
+	 *
+	 * <p>调用点：{@code Dungeon.init()}，在 {@code initHero} 之后。
+	 * 返回需要发放的装备实例列表（**每次调用都新建**，不要缓存）。
+	 *
+	 * <p>同时勾选两条时两件都发。
+	 */
+	public static java.util.ArrayList<com.shatteredpixel.shatteredpixeldungeon.items.Item>
+			startingGear() {
+
+		java.util.ArrayList<com.shatteredpixel.shatteredpixeldungeon.items.Item> out =
+				new java.util.ArrayList<>();
+
+		//155 家传戒指：神射戒指
+		if (on(HEIRLOOM_RING)) {
+			out.add(new com.shatteredpixel.shatteredpixeldungeon.items.rings.RingOfSharpshooting());
+		}
+
+		//156 家传铠甲：板甲
+		if (on(HEIRLOOM_ARMOR)) {
+			out.add(new com.shatteredpixel.shatteredpixeldungeon.items.armor.PlateArmor());
+		}
+
+		return out;
+	}
+
+	/** 10 巨型化：触发概率 13%。 */
+	private static final int   GIANT_PCT        = 13;
+	/** 10 巨型化：生命倍率。 */
+	private static final float GIANT_HP_MULT    = 1.50f;
+	/** 54 我爱花花：替换概率 13%。 */
+	private static final int   FLOWER_PCT       = 13;
+	/** 138 荒诞世界：贴图随机变化概率。 */
+	private static final int   ABSURD_PCT       = 100;
+
+	/**
+	 * END(10 巨型化): 决定该怪物是否被巨型化（13% 概率）。
+	 *
+	 * <p>调用点：{@code Level.createMob()} —— 怪物实例化的唯一出口，
+	 * 所以是"生成时决定一次"而非每回合判定。
+	 *
+	 * <p>Boss / 小 Boss 不参与（否则血量 ×1.5 会严重失衡）；NPC 也不参与。
+	 */
+	public static boolean rollGiant(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob m) {
+		if (!on(GIANT) || m == null) return false;
+
+		if (Char.hasProp(m, Char.Property.BOSS) || Char.hasProp(m, Char.Property.MINIBOSS)) {
+			return false;
+		}
+		if (m.alignment != Char.Alignment.ENEMY) return false;
+
+		return Random.Int(100) < GIANT_PCT;
+	}
+
+	/**
+	 * END(10 巨型化): 应用生命加成并打上标记。
+	 *
+	 * <p>当前血量同步提升，否则巨型怪会以"残血"状态登场。
+	 * 视觉放大由 {@code Mob.sprite()} 读取标记后设置
+	 * （**不加 Property.LARGE** —— 那会让怪进不了门道，
+	 * 超出了原表"更高生命值及更大体型"的范围）。
+	 */
+	public static void applyGiant(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob m) {
+		if (m == null) return;
+
+		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(
+				m, com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+						.ChallengeGiantMark.class);
+
+		int newHT = Math.max(1, Math.round(m.HT * GIANT_HP_MULT));
+		int gained = newHT - m.HT;
+		m.HT = newHT;
+		m.HP = Math.min(newHT, m.HP + Math.max(0, gained));
+	}
+
+	/** END(10 巨型化): 该角色是否带巨型化标记（供 {@code Mob.sprite()} 使用）。 */
+	public static boolean isGiant(Char ch) {
+		return ch != null && ch.buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+				.ChallengeGiantMark.class) != null;
+	}
+
+	/** END(54 我爱花花): 是否勾选了该挑战（用于跳过整图遍历）。 */
+	public static boolean flowerEnabled() {
+		return on(FLOWER_LOVER);
+	}
+
+	/** END(54 我爱花花): 单格草地是否应替换成花（13%）。 */
+	public static boolean rollFlower() {
+		if (!on(FLOWER_LOVER)) return false;
+		return Random.Int(100) < FLOWER_PCT;
+	}
+
+	/**
+	 * END(138 荒诞世界): 怪物贴图是否随机变化。
+	 *
+	 * <p>**纯外观，绝不改数值**。原表没给概率，取"全部变化"。
+	 */
+	public static boolean rollAbsurdSprite() {
+		if (!on(ABSURD_WORLD)) return false;
+		return Random.Int(100) < ABSURD_PCT;
+	}
+
+	/**
+	 * END(138 荒诞世界): 确保该怪物已挂上"贴图记录"标记。
+	 *
+	 * <p>调用点：{@code Mob.sprite()}。返回 true 表示需要走换贴图流程。
+	 * 标记本身承载"这次换成哪个贴图"，避免每次重建 sprite 都重新随机
+	 * 导致贴图闪烁。
+	 */
+	public static boolean onAbsurdWorld(Char ch) {
+		if (!on(ABSURD_WORLD) || ch == null) return false;
+
+		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(
+				ch, com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+						.ChallengeAbsurdMark.class);
+		return true;
+	}
 
 	//==== 概率与数值 ====
 

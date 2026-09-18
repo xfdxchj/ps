@@ -344,6 +344,18 @@ public class Dungeon {
 		
 		GamesInProgress.selectedClass.initHero( hero );
 
+		//==== END(挑战 155 家传戒指 / 156 家传铠甲): 开局额外装备 ====
+		//必须在 initHero 之后 —— 那时 hero.belongings 才建好，能收纳物品。
+		//用 collect() 而不是直接塞背包：collect 会走正常的入包流程
+		//（处理堆叠、容量、图鉴登记），比手工操作 belongings 可靠。
+		for (Item gear : com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.startingGear()) {
+			if (gear != null) {
+				gear.identify();
+				gear.collect();
+			}
+		}
+
 		//END 便利测试挑战:勾选 CONVENIENCE 的开局给整套“新增内容+素材”,便于直接做/用所有新增物:
 		//5 种宝石各一、13 把进化法杖各一、30 张升级卷、若干强化符石(炼金蜕变料),并全部 identify+入包,
 		//同时把它们登记为“本局已见/图鉴已记录”(日志直接可见)。不影响未勾选的普通对局。

@@ -118,11 +118,14 @@ public class MenuPane extends Component {
 		};
 		add(depthButton);
 
-		if (Challenges.activeChallenges() > 0){
+		//END(修复·掩码): 用完整掩码计数 —— 旧 int 只数原版 12 条，
+		//只勾了新规则时这里会显示 0，连图标都不出现。
+		int activeChallenges = Dungeon.challengeMask.activeCount();
+		if (activeChallenges > 0){
 			challengeIcon = Icons.get(Icons.CHAL_COUNT);
 			add(challengeIcon);
 
-			challengeText = new BitmapText( Integer.toString( Challenges.activeChallenges() ), PixelScene.pixelFont);
+			challengeText = new BitmapText( Integer.toString( activeChallenges ), PixelScene.pixelFont);
 			challengeText.hardlight( 0xCACFC2 );
 			challengeText.measure();
 			add( challengeText );
@@ -130,7 +133,8 @@ public class MenuPane extends Component {
 			challengeButton = new Button(){
 				@Override
 				protected void onClick() {
-					GameScene.show(new WndChallenges(Dungeon.challenges, false));
+					//END(修复·掩码): 传完整掩码，否则菜单里看不到新规则
+					GameScene.show(new WndChallenges(Dungeon.challengeMask, false));
 				}
 
 				@Override

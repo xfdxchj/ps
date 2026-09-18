@@ -173,4 +173,158 @@ public class DesktopPlatformSupport extends PlatformSupport {
 			return regularsplitter.split(text);
 		}
 	}
+
+	//==== END(存档继承): 手动导入外部存档 ====
+	/**
+	 * END(存档继承): 桌面端实现 —— 弹目录选择框，导入原版存档。
+	 *
+	 * <p>与启动时的自动导入的区别：**允许覆盖**。
+	 * 自动导入只在目标为空时执行，手动导入是玩家显式要求，
+	 * 所以要覆盖已有文件（但会先问一次确认）。
+	 *
+	 * @return 导入条目数；0 = 用户取消；-1 = 无可用源
+	 */
+	/** END(存档继承): 桌面端支持手动导入。 */
+	@Override
+	public boolean importSupported() {
+		return true;
+	}
+
+	@Override
+	public int importExternalSaves() {
+		//目标 = 当前 MOD 的存档目录（External + 包名）
+		java.io.File dest = resolveSaveDir();
+		if (dest == null) {
+			return -1;
+		}
+
+		//候选源目录：与原版/旧版本的常见位置一致
+		java.util.List<java.io.File> candidates = new java.util.ArrayList<>();
+
+		String env = System.getenv("DSH_IMPORT_SAVE");
+		if (env != null && !env.isEmpty()) {
+			candidates.add(new java.io.File(env));
+		}
+
+		java.io.File parent = dest.getParentFile();
+		if (parent != null) {
+			candidates.add(new java.io.File(parent, "Shattered Pixel Dungeon"));
+			candidates.add(new java.io.File(parent, "Tomorrow RogueNight"));
+			candidates.add(new java.io.File(parent, "null"));
+		}
+
+		java.io.File src = null;
+		for (java.io.File c : candidates) {
+			if (c.exists() && !c.equals(dest) && hasSaveContent(c)) {
+				src = c;
+				break;
+			}
+		}
+
+		//没找到就弹目录选择框，让玩家自己指
+		if (src == null) {
+			String picked = org.lwjgl.util.tinyfd.TinyFileDialogs.tinyfd_selectFolderDialog(
+					"选择要导入的原版存档目录（含 game1 / badges.dat 等）",
+					System.getProperty("user.home"));
+			if (picked != null && !picked.isEmpty()) {
+				java.io.File f = new java.io.File(picked);
+				if (hasSaveContent(f)) src = f;
+			}
+		}
+
+		if (src == null) {
+			return -1;
+		}
+
+		//覆盖前确认
+		boolean ok = org.lwjgl.util.tinyfd.TinyFileDialogs.tinyfd_messageBox(
+				"导入存档",
+				"将从「" + src.getName() + "」导入：\n" +
+						"存档槽、成就、图鉴、排行榜、骸骨。\n\n" +
+						"已存在的同名文件会被**覆盖**。确定继续吗？",
+				"yesno", "warning", false);
+		if (!ok) {
+			return 0;
+		}
+
+		dest.mkdirs();
+
+		int copied = 0;
+		for (int i = 1; i <= 6; i++) {
+			copied += copyDirOverwrite(new java.io.File(src, "game" + i),
+					                   new java.io.File(dest, "game" + i));
+		}
+		for (String f : new String[]{ "badges.dat", "rankings.dat",
+				                      "journal.dat", "bones.dat" }) {
+			if (copyFileOverwrite(new java.io.File(src, f), new java.io.File(dest, f))) {
+				copied++;
+			}
+		}
+
+		System.out.println("[存档继承·手动] 从「" + src.getName() + "」导入 " + copied + " 项。");
+		return copied;
+	}
+
+	/** 当前 MOD 的存档目录（External 根 + 包名）。 */
+	private static java.io.File resolveSaveDir() {
+		try {
+			String home = System.getProperty("user.home");
+			//libGDX 的 External 根：Windows 是 %APPDATA%，其它是 ~/.prefs 附近
+			String os = System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT);
+			java.io.File base;
+			if (os.contains("win")) {
+				String appdata = System.getenv("APPDATA");
+				base = (appdata != null) ? new java.io.File(appdata) : new java.io.File(home);
+			} else {
+				base = new java.io.File(home);
+			}
+			return new java.io.File(base, ".shatteredpixel");
+		} catch (Throwable t) {
+			return null;
+		}
+	}
+
+	/** 该目录里有没有存档内容。 */
+	private static boolean hasSaveContent( java.io.File dir ) {
+		if (dir == null || !dir.isDirectory()) return false;
+		for (int i = 1; i <= 6; i++) {
+			java.io.File g = new java.io.File(dir, "game" + i);
+			if (g.isDirectory() && g.list() != null && g.list().length > 0) return true;
+		}
+		return new java.io.File(dir, "badges.dat").exists()
+				|| new java.io.File(dir, "rankings.dat").exists();
+	}
+
+	/** 递归复制目录（**覆盖**已存在文件）。 */
+	private static int copyDirOverwrite( java.io.File src, java.io.File dst ) {
+		if (src == null || !src.isDirectory()) return 0;
+		dst.mkdirs();
+		int n = 0;
+		java.io.File[] kids = src.listFiles();
+		if (kids == null) return 0;
+		for (java.io.File k : kids) {
+			java.io.File t = new java.io.File(dst, k.getName());
+			if (k.isDirectory()) {
+				n += copyDirOverwrite(k, t);
+			} else if (copyFileOverwrite(k, t)) {
+				n++;
+			}
+		}
+		return n;
+	}
+
+	/** 复制单个文件（**覆盖**）。 */
+	private static boolean copyFileOverwrite( java.io.File src, java.io.File dst ) {
+		if (src == null || !src.isFile()) return false;
+		try {
+			dst.getParentFile().mkdirs();
+			java.nio.file.Files.copy( src.toPath(), dst.toPath(),
+					java.nio.file.StandardCopyOption.REPLACE_EXISTING,
+					java.nio.file.StandardCopyOption.COPY_ATTRIBUTES );
+			return true;
+		} catch (Throwable t) {
+			System.err.println("[存档继承·手动] 复制失败 " + src.getName() + ": " + t);
+			return false;
+		}
+	}
 }

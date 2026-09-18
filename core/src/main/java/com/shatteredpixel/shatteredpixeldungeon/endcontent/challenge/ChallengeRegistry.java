@@ -169,7 +169,8 @@ public final class ChallengeRegistry {
 		//==== 易档第一批（已实装）====
 		done(all, 9,  "狂暴",       "berserk",          "战斗", T_MON, 2, T_EASY,   "",
 				"怪物受击后获得 20% 攻击提升，持续 2 回合，不叠加。");
-		add(all, 10, "巨型化",     "giant",            "战斗", T_MON, 2, T_EASY,   "");
+		done(all, 10, "巨型化",     "giant",            "战斗", T_MON, 2, T_EASY,   "",
+				"13% 的怪物生命值提高 50%，体型增大（不影响寻路）。");
 		done(all, 11, "脆弱",       "fragile",          "战斗", T_TWO, 2, T_EASY,   "",
 				"玩家与怪物受到的伤害提高 13%。");
 		done(all, 12, "玻璃大炮",   "glass_cannon",     "战斗", T_TWO, 2, T_EASY,   "",
@@ -179,7 +180,7 @@ public final class ChallengeRegistry {
 		done(all, 14, "精英强化",   "elite_boost",      "战斗", T_MON, 2, T_EASY,   "s:4,75",
 				"精英怪的生命上限、伤害、命中、闪避各提高 20%。本项会让精英怪出现，无需其它挑战配合。");		add(all, 15, "首领护卫",   "boss_guard",       "战斗", T_MON, 3, T_MED,    "");
 		done(all, 16, "大力水手",   "popeye",           "战斗", T_TWO, 1, T_EASY,   "",
-				"玩家近战物理攻击 +25%，攻击速度 −20%。");
+				"玩家近战物理攻击 +25%，攻击速度 -20%。");
 		add(all, 17, "情人节",     "valentine",        "战斗", T_BEN, 1, T_MED,    "");
 		add(all, 18, "老龄化",     "aging",            "战斗", T_BEN, 3, T_MED,    "");
 		done(all, 19, "风驰电掣",   "swift",            "战斗", T_TWO, 1, T_EASY,   "s:103",
@@ -262,7 +263,8 @@ public final class ChallengeRegistry {
 		//---- 环境 ----
 		add(all, 49, "切尔诺贝利", "chernobyl",        "环境", T_TWO, 3, T_MED,    "s:111");
 		add(all, 52, "陷阱泛滥",   "trap_overflow",    "环境", T_MON, 2, T_HARD,   "");
-		add(all, 54, "我爱花花",   "flower_lover",     "环境", T_NEU, 1, T_EASY,   "");
+		done(all, 54, "我爱花花",   "flower_lover",     "环境", T_NEU, 1, T_EASY,   "",
+				"13% 的草地被替换为随机植物。纯趣味，不影响数值。");
 		add(all, 74, "热带雨林",   "rainforest",       "环境", T_MON, 2, T_MED,    "");
 		done(all, 80, "冰天雪地",   "frozen_world",     "环境", T_TWO, 2, T_EASY,   "",
 				"玩家每回合 13% 概率寒冷、2% 概率冰冻。");
@@ -308,7 +310,8 @@ public final class ChallengeRegistry {
 		add(all, 134,"黄金蜂蜜酒", "golden_mead",      "特殊", T_TWO, 3, T_MED,    "s:128");
 		done(all, 137,"奶龙大笑",   "milk_dragon",      "特殊", T_NEU, 1, T_MED,    "",
 				"每回合 3% 概率触发奶龙大笑音效。");
-		add(all, 138,"荒诞世界",   "absurd_world",     "特殊", T_NEU, 1, T_EASY,   "");
+		done(all, 138,"荒诞世界",   "absurd_world",     "特殊", T_NEU, 1, T_EASY,   "",
+				"怪物贴图随机变化。纯外观，不影响属性与 AI。");
 
 		//---- 格林系列（125–133、136）· 链式前置 ----
 		add(all, 125,"格林之器",   "grimm_weapon",     "格林", T_BEN, 3, T_SER,    "s:126,127,128,129,130,131,132");
@@ -325,6 +328,48 @@ public final class ChallengeRegistry {
 		add(all, 132,"黑暗之魂",   "dark_soul",        "格林", T_TWO, 2, T_SER,    "p:125,126,127,128,129,130,131");
 		add(all, 133,"格林之器2",  "grimm_weapon_2",   "格林", T_BEN, 3, T_SER,    "s:125,126,127,128,129,130,131,132");
 		add(all, 136,"格林之器3",  "grimm_weapon_3",   "格林", T_BEN, 3, T_SER,    "s:125,126,127,128,129,130,131,132");
+
+		//==== 扩展包：139–147（表内有 ID 的新规则）====
+		//等级 / 倾向 / 关系均按清单给定；ID 139–147 经核实为原表空号，可直接使用。
+		add(all, 139,"紊乱法杖",   "chaos_wand",       "装备", T_TWO, 2, T_MED,    "s:60,21");
+		add(all, 140,"枪枪爆头",   "headshot",         "战斗", T_BEN, 2, T_MED,    "s:103,76");
+		add(all, 141,"禁魔空间",   "anti_magic_zone",  "环境", T_MON, 2, T_MED,    "x:139,21,60");
+		add(all, 142,"无下限术士", "no_lower_limit",   "怪物", T_MON, 2, T_MED,    "s:140");
+		add(all, 143,"吾为王者",   "i_am_king",        "怪物", T_MON, 3, T_MED,    "s:117,15");
+		add(all, 144,"破碎权柄",   "broken_authority", "怪物", T_MON, 3, T_MED,    "s:75,143");
+		done(all, 145,"神圣附体",   "holy_possession",  "特殊", T_BEN, 1, T_EASY,   "",
+				"经验获取增加 20%。");
+		done(all, 146,"醍醐灌顶",   "enlightenment",    "特殊", T_BEN, 2, T_EASY,   "x:147",
+				"每个天赋层级额外获得 1 点天赋点（与神圣灵感药水可叠加）。");
+		done(all, 147,"就业紧张",   "job_crisis",       "特殊", T_RISK,3, T_EASY,   "x:146",
+				"职业天赋全部失效（所有天赋加成一并无效）。");
+
+		//==== 扩展包：148–168（清单未给 ID，按清单顺序编号）====
+		add(all, 148,"飞天神偷",   "flying_thief",     "怪物", T_MON, 2, T_MED,    "");
+		add(all, 149,"黏糊蜂蜜",   "sticky_honey",     "环境", T_MON, 1, T_MED,    "");
+		add(all, 150,"淹没地牢",   "flooded_dungeon",  "地图", T_MON, 2, T_HARD,   "s:74");
+		add(all, 151,"圣明神明",   "holy_divinity",    "特殊", T_TWO, 3, T_HARD,   "s:145");
+		add(all, 152,"和平地牢",   "peaceful_dungeon", "怪物", T_TWO, 2, T_HARD,   "");
+		add(all, 153,"恶魔地牢",   "demon_dungeon",    "怪物", T_MON, 2, T_MED,    "s:158");
+		add(all, 154,"废弃地牢",   "abandoned_dungeon","地图", T_TWO, 2, T_HARD,   "s:112");
+		done(all, 155,"家传戒指",   "heirloom_ring",    "装备", T_BEN, 1, T_EASY,   "s:60",
+				"开局额外获得一枚神射戒指（已鉴定）。");
+		done(all, 156,"家传铠甲",   "heirloom_armor",   "装备", T_BEN, 1, T_EASY,   "",
+				"开局额外获得一件板甲（已鉴定）。");
+		add(all, 157,"附魔扩充",   "enchant_expansion","装备", T_BEN, 1, T_MED,    "s:58,108");
+		add(all, 158,"神圣之力",   "holy_power",       "特殊", T_BEN, 2, T_MED,    "s:153");
+		add(all, 159,"绵羊地牢",   "sheep_dungeon",    "环境", T_MON, 2, T_MED,    "");
+		add(all, 160,"氪金大佬",   "whale",            "经济", T_BEN, 2, T_MED,    "s:41");
+		add(all, 161,"钱就是命",   "money_is_life",    "经济", T_BEN, 2, T_MED,    "s:41");
+		add(all, 162,"真实地牢",   "realistic_dungeon","环境", T_RES, 2, T_MED,    "");
+		add(all, 163,"古代升级",   "ancient_upgrade",  "特殊", T_BEN, 2, T_MED,    "");
+		add(all, 164,"魔法地牢",   "magic_dungeon",    "怪物", T_MON, 2, T_MED,    "s:141");
+		done(all, 165,"神圣之光",   "holy_light",       "特殊", T_BEN, 1, T_EASY,   "s:145",
+				"每回合 13% 概率回复 2% 最大生命（满血时不触发）。");
+		//166 神圣天使：前置为 4 条神圣类规则（145 神圣附体 / 158 神圣之力 / 165 神圣之光 / 151 圣明神明）
+		add(all, 166,"神圣天使",   "holy_angel",       "特殊", T_BEN, 3, T_SER,    "p:145,158,165,151");
+		add(all, 167,"黄金地牢",   "golden_dungeon",   "经济", T_TWO, 3, T_HARD,   "p:41");
+		add(all, 168,"怪物地牢",   "monster_dungeon",  "怪物", T_MON, 3, T_MED,    "");
 	}
 
 	/** 登记一条待实装规则（{@code STATE_PENDING}）。 */

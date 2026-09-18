@@ -1044,6 +1044,8 @@ public class WndSettings extends WndTabbed {
 		ColorBlock sep3;
 		RenderedTextBlock txtTranifex;
 		RedButton btnCredits;
+		//END(存档继承): 手动导入外部（原版）存档
+		RedButton btnImportSave;
 
 		@Override
 		protected void createChildren() {
@@ -1204,6 +1206,35 @@ public class WndSettings extends WndTabbed {
 				add(btnCredits);
 			}
 
+			//==== END(存档继承): 手动导入原版存档按钮 ====
+			//为什么需要它：启动时的自动导入只在"首次启动且目标为空"时跑，
+			//玩家一旦点过"否"或已开过一局，就再没机会导入。
+			//本按钮随时可用，且**允许覆盖**已有文件（会先弹确认框）。
+			//
+			//平台差异：Android/iOS 返回 -1（不支持），按钮直接隐藏。
+			if (Game.platform != null && Game.platform.importSupported()) {
+				btnImportSave = new RedButton(Messages.get(this, "import_save"), 6) {
+					@Override
+					protected void onClick() {
+						super.onClick();
+
+						int result = Game.platform.importExternalSaves();
+
+						if (result > 0) {
+							ShatteredPixelDungeon.scene().addToFront(new WndMessage(
+									Messages.get(LangsTab.this, "import_ok", result)));
+						} else if (result == 0) {
+							//用户取消，什么都不做
+						} else {
+							ShatteredPixelDungeon.scene().addToFront(new WndMessage(
+									Messages.get(LangsTab.this, "import_fail")));
+						}
+					}
+				};
+				btnImportSave.textColor(0xCCCCCC);
+				add(btnImportSave);
+			}
+
 		}
 
 		@Override
@@ -1254,6 +1285,13 @@ public class WndSettings extends WndTabbed {
 				txtTranifex.maxWidth((int)width);
 
 				height = txtTranifex.bottom();
+			}
+
+			//END(存档继承): 导入按钮独占一行，放在最下方
+			if (btnImportSave != null){
+				btnImportSave.setSize(btnImportSave.reqWidth() + 2, 16);
+				btnImportSave.setPos((width - btnImportSave.width())/2, height + 3*GAP);
+				height = btnImportSave.bottom();
 			}
 
 		}

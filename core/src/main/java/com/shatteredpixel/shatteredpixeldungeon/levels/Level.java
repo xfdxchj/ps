@@ -330,6 +330,49 @@ public abstract class Level implements Bundlable {
 		//本方法内所有随机数都取自关卡种子序列，若在 pop 之前追加随机调用，
 		//会改变后续关卡的 RNG 序列，导致种子与关卡内容错位。
 		applyChestChallenges();
+
+		//==== END(挑战 54 我爱花花): 草 13% 替换成随机花 ====
+		//同样放在 popGenerator 之后，理由同上。
+		applyFlowerChallenge();
+	}
+
+	/**
+	 * END(挑战 54 我爱花花): 把 13% 的草地替换为随机植物。
+	 *
+	 * <p>机制：在 GRASS 格子上种一个随机种子（{@code Level.plant} 会把它
+	 * 变成带植物的草地）。纯趣味，不影响数值。
+	 *
+	 * <p>只处理普通 GRASS，不碰 HIGH_GRASS / FURROWED_GRASS ——
+	 * 那些是"高草"（有遮蔽效果），改了会影响潜行机制。
+	 */
+	private void applyFlowerChallenge() {
+
+		if (!com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.flowerEnabled()) {
+			return;   //未勾选 54，直接跳过（省掉整图遍历）
+		}
+
+		for (int i = 0; i < length(); i++) {
+			if (map[i] != Terrain.GRASS) continue;
+			if (heaps.get(i) != null) continue;              // 有物品的格子不动
+			if (!com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.rollFlower()) {
+				continue;
+			}
+
+			//随机选一种种子种下去
+			Plant.Seed seed = (Plant.Seed)
+					com.shatteredpixel.shatteredpixeldungeon.items.Generator
+							.random(com.shatteredpixel.shatteredpixeldungeon.items.Generator
+									.Category.SEED);
+			if (seed == null) continue;
+
+			try {
+				plant(seed, i);
+			} catch (Exception e) {
+				//某些格子不适合种植（地形/已有植物），跳过即可，不该让整个关卡生成失败
+			}
+		}
 	}
 
 	/**
@@ -603,6 +646,15 @@ public abstract class Level implements Bundlable {
 		if (statMult != 1f) {
 			m.HT = Math.max(1, Math.round(m.HT * statMult));
 			m.HP = m.HT;
+		}
+
+		//==== END(挑战 10 巨型化): 13% 怪物 HP ×1.5 + 体型放大 ====
+		//放在 119 的削弱**之后**：两者共存时先削到 20% 再 ×1.5，
+		//最终为原值的 30%，顺序符合"先应用挑战的数值修正、再叠加体型"的直觉。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.rollGiant(m)) {
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.applyGiant(m);
 		}
 
 		return m;

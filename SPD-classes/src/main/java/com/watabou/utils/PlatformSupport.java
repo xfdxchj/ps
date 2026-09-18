@@ -80,6 +80,33 @@ public abstract class PlatformSupport {
 		return Gdx.net.openURI( uri );
 	}
 
+	//==== END(存档继承): 手动导入外部存档 ====
+	/**
+	 * END(存档继承): 让玩家手动把外部（原版）存档导入进来。
+	 *
+	 * <p>默认返回 {@code -1} 表示"本平台不支持"（Android / iOS）。
+	 * 桌面端覆写它：弹一个目录选择框，确认后复制存档。
+	 *
+	 * <p>为什么要手动入口：自动导入只在**首次启动且目标为空**时执行，
+	 * 一旦玩家点过"否"或已经开过一局，就再也没有机会导入。
+	 *
+	 * @return 导入的条目数；0 表示用户取消；-1 表示平台不支持
+	 */
+	public int importExternalSaves() {
+		return -1;
+	}
+
+	/**
+	 * END(存档继承): 本平台是否支持手动导入存档。
+	 *
+	 * <p>默认 false（Android/iOS 的沙盒里没有"外部存档目录"这个概念，
+	 * 系统也不允许应用弹目录选择框）。桌面端覆写为 true。
+	 * UI 用它决定要不要显示"导入存档"按钮。
+	 */
+	public boolean importSupported() {
+		return false;
+	}
+
 	public void setOnscreenKeyboardVisible(boolean value, boolean multiline){
 		//by default ignore multiline
 		Gdx.input.setOnscreenKeyboardVisible(value, Input.OnscreenKeyboardType.Default);

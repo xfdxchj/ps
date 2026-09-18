@@ -810,17 +810,26 @@ public class HeroSelectScene extends PixelScene {
 					//	return;
 					//}
 
-					ShatteredPixelDungeon.scene().addToFront(new WndChallenges(SPDSettings.challenges(), true) {
+					//==== END(修复·掩码丢失): 必须传**完整掩码**，不能传旧 int ====
+					//原先写的是 SPDSettings.challenges()，它返回被夹到 4095 的旧 int，
+					//窗口会经 fromLegacyInt() 重建 —— 只能恢复原版那 12 条，
+					//新规则（139-168 等）的勾选每次都读不回来，于是：
+					//  打开窗口 → 新规则显示未勾 → 关窗保存 → 真的把它们清掉。
+					//这就是"选择原版以外的不会生效 / 启动后仍显示未选择"的根因。
+					ShatteredPixelDungeon.scene().addToFront(
+							new WndChallenges(SPDSettings.challengeMask(), true) {
 						public void onBackPressed() {
 							super.onBackPressed();
-							icon(Icons.get(SPDSettings.challenges() > 0 ? Icons.CHALLENGE_COLOR : Icons.CHALLENGE_GREY));
+							icon(Icons.get(!SPDSettings.challengeMask().isEmpty()
+									? Icons.CHALLENGE_COLOR : Icons.CHALLENGE_GREY));
 							updateOptionsColor();
 						}
 					} );
 				}
 			};
 			challengeButton.leftJustify = true;
-			challengeButton.icon(Icons.get(SPDSettings.challenges() > 0 ? Icons.CHALLENGE_COLOR : Icons.CHALLENGE_GREY));
+			challengeButton.icon(Icons.get(!SPDSettings.challengeMask().isEmpty()
+					? Icons.CHALLENGE_COLOR : Icons.CHALLENGE_GREY));
 			add(challengeButton);
 			buttons.add(challengeButton);
 
@@ -946,13 +955,21 @@ public class HeroSelectScene extends PixelScene {
 								chalMasks.add((int)Math.pow(2, i));
 							}
 							Random.shuffle(chalMasks);
-							int mask = 0;
+							int legacyMask = 0;
 							for (int i = 0; i < chals; i++){
-								mask += chalMasks.remove(0);
+								legacyMask += chalMasks.remove(0);
 							}
-							SPDSettings.challenges(mask);
-							challengeButton.icon(Icons.get(SPDSettings.challenges() > 0 ? Icons.CHALLENGE_COLOR : Icons.CHALLENGE_GREY));
-							ShatteredPixelDungeon.scene().addToFront(new WndChallenges(mask, false));
+							//END(修复·掩码): 必须同时写完整掩码 ——
+							//只写 SPDSettings.challenges(legacyMask) 的话，
+							//新规则的掩码不会被更新，且下一次读 challengeMask()
+							//时三个 long 键仍是非空旧值，导致"随机"看似无效。
+							com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeMask
+									randomMask = com.shatteredpixel.shatteredpixeldungeon.endcontent
+											.challenge.ChallengeRegistry.fromLegacyInt(legacyMask);
+							SPDSettings.challengeMask(randomMask);
+							Dungeon.setChallengeMask(randomMask);
+							challengeButton.icon(Icons.get(!randomMask.isEmpty() ? Icons.CHALLENGE_COLOR : Icons.CHALLENGE_GREY));
+							ShatteredPixelDungeon.scene().addToFront(new WndChallenges(randomMask, false));
 						}
 
 						if (chkHero.checked()){

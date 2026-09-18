@@ -218,7 +218,77 @@ public abstract class Mob extends Char {
 	}
 	
 	public CharSprite sprite() {
-		return Reflection.newInstance(spriteClass);
+		CharSprite s = Reflection.newInstance(spriteClass);
+
+		//==== END(挑战 138 荒诞世界): 怪物贴图随机变化 ====
+		//**纯外观**：只换贴图类，属性、AI、行为一律不变（原表要求）。
+		//
+		//关键：随机结果必须**固定**在 buff 上，不能每次调用都随机 ——
+		//本方法是每次调用都新建 sprite，直接随机会导致贴图疯狂闪烁。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.onAbsurdWorld(this)) {
+
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ChallengeAbsurdMark mark =
+					buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+							.ChallengeAbsurdMark.class);
+
+			//第一次：掷一次色子并记下来
+			if (mark != null && mark.spriteClassName == null
+					&& com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+							.ChallengeEffects.rollAbsurdSprite()) {
+				mark.spriteClassName = pickRandomSpriteClassName();
+			}
+
+			//之后（含读档）：始终用记下来的那个
+			if (mark != null && mark.spriteClassName != null) {
+				try {
+					Class<?> c = Class.forName(mark.spriteClassName);
+					if (com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite.class
+							.isAssignableFrom(c)) {
+						@SuppressWarnings("unchecked")
+						Class<? extends com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite> sc =
+								(Class<? extends com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite>) c;
+						s = Reflection.newInstance(sc);
+					}
+				} catch (Exception e) {
+					//类名失效（版本变更等）就保持原贴图，纯外观规则绝不能影响游戏
+				}
+			}
+		}
+
+		//==== END(挑战 10 巨型化): 体型放大 ====
+		//在贴图确定**之后**设置：若 138 换了贴图，放大仍要生效。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.isGiant(this)) {
+			s.scale.set(com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+					.ChallengeGiantMark.SCALE);
+		}
+
+		return s;
+	}
+
+	/**
+	 * END(挑战 138): 从本层怪物轮换表里随机挑一个 sprite 类名。
+	 *
+	 * <p>为什么用本层轮换表：那些贴图与当前层级的怪物尺寸/帧数一致，
+	 * 不会出现越界或错帧。若轮换表为空则返回 null（调用方保持原贴图）。
+	 */
+	private String pickRandomSpriteClassName() {
+		try {
+			java.util.ArrayList<Class<? extends Mob>> rotation =
+					MobSpawner.getMobRotation(Dungeon.depth);
+			if (rotation == null || rotation.isEmpty()) return null;
+
+			Class<? extends Mob> alt = rotation.get(
+					com.watabou.utils.Random.Int(rotation.size()));
+			Mob probe = Reflection.newInstance(alt);
+			if (probe != null && probe.spriteClass != null) {
+				return probe.spriteClass.getName();
+			}
+		} catch (Exception e) {
+			//忽略：拿不到就保持原贴图
+		}
+		return null;
 	}
 	
 	@Override

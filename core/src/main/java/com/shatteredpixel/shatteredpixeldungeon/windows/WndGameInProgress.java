@@ -67,15 +67,19 @@ public class WndGameInProgress extends Window {
 		title.setRect( 0, 0, WIDTH, 0 );
 		add(title);
 		
-		if (info.challenges > 0) GAP -= 2;
+		//END(修复·掩码): 统一用完整掩码判断与展示。
+		//info.challenges 是旧 int，只装得下原版 12 条 ——
+		//只勾了新规则的存档在旧判断下不会显示"挑战"按钮。
+		boolean hasChallenges = info.challengeMask != null && !info.challengeMask.isEmpty();
+		if (hasChallenges) GAP -= 2;
 		
 		pos = title.bottom() + GAP;
 		
-		if (info.challenges > 0) {
+		if (hasChallenges) {
 			RedButton btnChallenges = new RedButton( Messages.get(this, "challenges") ) {
 				@Override
 				protected void onClick() {
-					Game.scene().add( new WndChallenges( info.challenges, false ) );
+					Game.scene().add( new WndChallenges( info.challengeMask, false ) );
 				}
 			};
 			btnChallenges.icon(Icons.get(Icons.CHALLENGE_COLOR));

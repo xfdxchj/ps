@@ -62,12 +62,15 @@ public class WndGame extends Window {
 		curBtn.icon(Icons.get(Icons.PREFS));
 
 		// Challenges window
-		if (Dungeon.challenges > 0) {
+		//END(修复·掩码): 改用完整掩码判断 —— 旧 int 只装得下原版 12 条，
+		//只勾了新规则的存档在旧判断下会被当成"没有挑战"，按钮都不显示。
+		if (!Dungeon.challengeMask.isEmpty()) {
 			addButton( curBtn = new RedButton( Messages.get(this, "challenges") ) {
 				@Override
 				protected void onClick() {
 					hide();
-					GameScene.show( new WndChallenges( Dungeon.challenges, false ) );
+					//传完整掩码，否则窗口里看不到新规则
+					GameScene.show( new WndChallenges( Dungeon.challengeMask, false ) );
 				}
 			} );
 			curBtn.icon(Icons.get(Icons.CHALLENGE_COLOR));
