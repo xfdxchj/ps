@@ -937,6 +937,37 @@ public class Hero extends Char {
 			}
 		}
 
+		//==== END(挑战 162 真实地牢): 空气稀薄，定期停下深呼吸 ====
+		//与 70/72/96 的"停止行动"同样处理：消耗本回合并退出。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.tickRealisticBreath(this)) {
+			curAction = null;
+			spendAndNext( TICK );
+			return false;
+		}
+
+		//==== END(挑战 159 绵羊地牢): 玩家周围 13% 概率生成 1~2 只绵羊 ====
+		//生成在**玩家视野外**的空地上（见 findSheepSpot 的说明）——
+		//羊突然在眼前冒出来会很突兀，而且会挡住视野。
+		//有 20 回合 CD，所以不会每回合刷屏。
+		int sheepCount = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.rollSheepSpawn(this);
+		for (int i = 0; i < sheepCount; i++) {
+			int cell = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.findSheepSpot(pos,
+							com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+									.ChallengeEffects.sheepRadius());
+			if (cell < 0) break;    //周围没有空位就不再尝试
+
+			com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Sheep sheep =
+					new com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Sheep();
+			sheep.pos = cell;
+			//lifespan 给 15（低于 20）—— 避免被 interact() 当成"羊毛炸弹召唤的羊"
+			//而允许玩家交互驱散。羊会自行消失。
+			sheep.initialize(15f);
+			com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.add(sheep);
+		}
+
 		if (paralysed > 0) {
 			
 			curAction = null;

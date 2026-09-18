@@ -315,6 +315,53 @@ public abstract class RegularLevel extends Level {
 			}
 		}
 
+		//==== END(挑战 149 黏糊蜂蜜): 每层额外刷新 2 只蜜蜂 ====
+		//在这里（普通怪循环结束之后）单独生成，而不是加进 mobsToSpawn ——
+		//后者刷的是"本层的普通怪"，而蜜蜂是**额外**的固定数量。
+		//复用上面已经算好的候选房间与入口 FOV 判定，避免在入口/不可站立的格子上刷怪。
+		int bees = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.honeyBeeCount();
+		for (int i = 0; i < bees; i++) {
+			Mob bee = new com.shatteredpixel.shatteredpixeldungeon.actors.mobs
+					.Bee();
+			boolean placed = false;
+			for (int tries = 30; tries >= 0; tries--) {
+				if (stdRooms.isEmpty()) break;
+				Room roomToSpawn = stdRooms.get(Random.Int(stdRooms.size()));
+				bee.pos = pointToCell(roomToSpawn.random());
+				if (findMob(bee.pos) == null
+						&& !entranceFOV[bee.pos]
+						&& passable[bee.pos]
+						&& !solid[bee.pos]
+						&& traps.get(bee.pos) == null
+						&& plants.get(bee.pos) == null
+						&& bee.pos != exit()) {
+					placed = true;
+					break;
+				}
+			}
+			if (placed) mobs.add(bee);
+		}
+
+		//==== END(挑战 74 热带雨林): 水中 13% 生成食人鱼 ====
+		//遍历所有水域格，按概率放食人鱼。
+		//食人鱼只在水里活动，所以必须落在 Terrain.WATER 上，
+		//否则它们会卡在岸上不动。
+		int piranhaChance = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.rainforestPiranhaChance();
+		if (piranhaChance > 0) {
+			for (int cell = 0; cell < length(); cell++) {
+				if (map[cell] != Terrain.WATER) continue;
+				if (findMob(cell) != null) continue;
+				if (Random.Int(100) >= piranhaChance) continue;
+
+				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Piranha p =
+						new com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Piranha();
+				p.pos = cell;
+				mobs.add(p);
+			}
+		}
+
 		for (Mob m : mobs){
 			if (map[m.pos] == Terrain.HIGH_GRASS || map[m.pos] == Terrain.FURROWED_GRASS) {
 				map[m.pos] = Terrain.GRASS;

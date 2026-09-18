@@ -251,11 +251,22 @@ public class Shopkeeper extends NPC {
 		Game.runOnRenderThread(new Callback() {
 			@Override
 			public void call() {
-				String[] options = new String[2+ buybackItems.size()];
+				//==== END(挑战 40 贷款): 商店加"贷款"选项 ====
+				//只有在勾选 40 时才显示，未勾选时选项数量与原来完全一致。
+				final boolean loan = com.shatteredpixel.shatteredpixeldungeon.endcontent
+						.challenge.ChallengeEffects.loanAvailable();
+
+				int baseCount = loan ? 3 : 2;      // sell / talk / (loan)
+				String[] options = new String[baseCount + buybackItems.size()];
 				int maxLen = PixelScene.landscape() ? 30 : 25;
 				int i = 0;
 				options[i++] = Messages.get(Shopkeeper.this, "sell");
 				options[i++] = Messages.get(Shopkeeper.this, "talk");
+				if (loan) {
+					options[i++] = Messages.get(Shopkeeper.this, "challenge_loan");
+				}
+				//buyback 段起始索引 —— 后面用它做判断，避免硬编码
+				final int buybackStart = i;
 				for (Item item : buybackItems){
 					options[i] = Messages.get(Heap.class, "for_sale", item.value(), Messages.titleCase(item.title()));
 					if (options[i].length() > maxLen) options[i] = options[i].substring(0, maxLen-3) + "...";
@@ -270,9 +281,12 @@ public class Shopkeeper extends NPC {
 							sell();
 						} else if (index == 1){
 							GameScene.show(new WndTitledMessage(sprite(), Messages.titleCase(name()), chatText()));
-						} else if (index > 1){
+						} else if (loan && index == 2){
+							//==== END(挑战 40 贷款): 弹出金额选择 ====
+							showLoanWindow();
+						} else if (index >= buybackStart){
 							GLog.i(Messages.get(Shopkeeper.this, "buyback"));
-							Item returned = buybackItems.remove(index-2);
+							Item returned = buybackItems.remove(index - buybackStart);
 							Dungeon.gold -= returned.value();
 							Statistics.goldCollected -= returned.value();
 							if (returned instanceof MissileWeapon && returned.isUpgradable()){
@@ -286,8 +300,12 @@ public class Shopkeeper extends NPC {
 
 					@Override
 					protected boolean enabled(int index) {
-						if (index > 1){
-							return Dungeon.gold >= buybackItems.get(index-2).value();
+						if (index >= buybackStart){
+							return Dungeon.gold >= buybackItems.get(index - buybackStart).value();
+						} else if (loan && index == 2) {
+							//已经欠着一笔时不能再借
+							return com.shatteredpixel.shatteredpixeldungeon.endcontent
+									.challenge.ChallengeEffects.canTakeLoan(Dungeon.hero);
 						} else {
 							return super.enabled(index);
 						}
@@ -295,13 +313,13 @@ public class Shopkeeper extends NPC {
 
 					@Override
 					protected boolean hasIcon(int index) {
-						return index > 1;
+						return index >= buybackStart;
 					}
 
 					@Override
 					protected Image getIcon(int index) {
-						if (index > 1){
-							return new ItemSprite(buybackItems.get(index-2));
+						if (index >= buybackStart){
+							return new ItemSprite(buybackItems.get(index - buybackStart));
 						}
 						return null;
 					}
@@ -315,6 +333,47 @@ public class Shopkeeper extends NPC {
 			}
 		});
 		return true;
+	}
+
+	/**
+	 * END(挑战 40 贷款): 让玩家选择贷款金额。
+	 *
+	 * <p>用现成的 {@link WndOptions} 而不是自造输入界面 ——
+	 * 本 fork 没有通用的数字输入控件，而"自选金额"用几个档位
+	 * 已经完全够用（100 / 300 / 500 / 1000）。
+	 *
+	 * <p>每个档位都标注了到期应还的金额，避免玩家借完才发现要还 110%。
+	 */
+	private void showLoanWindow() {
+
+		final int[] amounts = com.shatteredpixel.shatteredpixeldungeon.endcontent
+				.challenge.ChallengeEffects.LOAN_AMOUNTS;
+
+		String[] options = new String[amounts.length];
+		for (int i = 0; i < amounts.length; i++) {
+			int owed = Math.round(amounts[i]
+					* com.shatteredpixel.shatteredpixeldungeon.actors.buffs.LoanDebt.REPAY_MULT);
+			options[i] = Messages.get(this, "challenge_loan_option", amounts[i], owed);
+		}
+
+		GameScene.show(new WndOptions(sprite(),
+				Messages.get(this, "challenge_loan_title"),
+				Messages.get(this, "challenge_loan_desc",
+						(int) com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+								.LoanDebt.REPAY_TURNS),
+				options) {
+			@Override
+			protected void onSelect(int index) {
+				super.onSelect(index);
+				if (index < 0 || index >= amounts.length) return;
+
+				int got = com.shatteredpixel.shatteredpixeldungeon.endcontent
+						.challenge.ChallengeEffects.takeLoan(Dungeon.hero, amounts[index]);
+				if (got > 0) {
+					GLog.i(Messages.get(Shopkeeper.this, "challenge_loan_taken", got));
+				}
+			}
+		});
 	}
 
 	public String chatText(){

@@ -320,7 +320,19 @@ public class StatusPane extends Component {
 		shieldHP.scale.x = healthPercent + shieldPercent;
 
 		if (oldHP != health || oldShield != shield || oldMax != max){
-			if (shield <= 0) {
+			//==== END(挑战 104 命悬一线): 不显示血量数字，只显示状态描述 ====
+			//原表："生命不显示数值，只显示状态描述"。
+			//玩家因此无法精确判断还能挨几下 —— 这正是这条规则的体验核心。
+			//血量条本身仍然显示（那是"大致感觉"，不是精确数值）。
+			String hpLabel = com.shatteredpixel.shatteredpixeldungeon.endcontent
+					.challenge.ChallengeEffects.hideHpNumbers()
+							? com.shatteredpixel.shatteredpixeldungeon.endcontent
+									.challenge.ChallengeEffects.hpStateDescription(health, max)
+							: null;
+
+			if (hpLabel != null) {
+				hpText.text(hpLabel);
+			} else if (shield <= 0) {
 				hpText.text(health + "/" + max);
 			} else {
 				hpText.text(health + "+" + shield + "/" + max);

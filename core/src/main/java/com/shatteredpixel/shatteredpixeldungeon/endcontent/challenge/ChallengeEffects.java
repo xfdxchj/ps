@@ -950,6 +950,716 @@ public final class ChallengeEffects {
 	public static final int DRUNK             = 71;
 	/** 46 药剂不稳定：使用药水后 13% 产生随机效果。 */
 	public static final int UNSTABLE_POTION   = 46;
+	/** 52 陷阱泛滥：地图陷阱数量增加。 */
+	public static final int TRAP_OVERFLOW     = 52;
+	/** 49 切尔诺贝利：全图毒气。 */
+	public static final int CHERNOBYL         = 49;
+	/** 74 热带雨林：水中 13% 生成食人鱼。 */
+	public static final int RAINFOREST        = 74;
+	/** 141 禁魔空间：所有魔法伤害 −20%。 */
+	public static final int ANTI_MAGIC_ZONE   = 141;
+	/** 149 黏糊蜂蜜：每层刷新 2 只蜜蜂。 */
+	public static final int STICKY_HONEY      = 149;
+	/** 162 真实地牢：空气稀薄，需要定期停下深呼吸。 */
+	public static final int REALISTIC_DUNGEON = 162;
+	/** 159 绵羊地牢：玩家周围周期性生成绵羊。 */
+	public static final int SHEEP_DUNGEON     = 159;
+	/** 65 及时雨：第一次致命伤害不死，保留 1 点生命。 */
+	public static final int TIMELY_RAIN       = 65;
+	/** 104 命悬一线：致命伤 13% 保 1 点。 */
+	public static final int CLOSE_CALL        = 104;
+	/** 40 贷款：可贷款金币。 */
+	public static final int LOAN              = 40;
+	/** 81 搏杀赌徒：改变升级系统。 */
+	public static final int GAMBLER           = 81;
+	/** 2 楼层混乱：普通楼层随机重排。 */
+	public static final int FLOOR_SHUFFLE     = 2;
+
+	//==================================================================
+	//2 楼层混乱
+	//==================================================================
+
+	/**
+	 * END(2 楼层混乱): 本局"游玩顺序 -> 楼层编号"的映射。
+	 *
+	 * <h3>设计</h3>
+	 * 原表："普通楼层随机重排，Boss 层固定；楼层编号与游玩顺序分离"。
+	 *
+	 * <p>约束（来自文档所有者）：
+	 * <ol>
+	 *   <li>1-25 层构成一个**随机排列**，每层只去一次，共 25 步。</li>
+	 *   <li><b>第 5/10/15/20/25 步必须是 Boss 层</b>（5/10/15/20/25），
+	 *       即游玩节奏与原版一致，只是中间普通层的编号被打乱。</li>
+	 *   <li>每层的"下一层"必须**固定** —— 否则玩家存档后重进会走到别的层。</li>
+	 * </ol>
+	 *
+	 * <p>由约束 1+2 可推出：只能在**每个区域内部**打乱那 4 个普通层。
+	 * 例如第 1 区是 {1,2,3,4} 的某个排列，第 5 步固定为 5；
+	 * 第 2 区是 {6,7,8,9} 的某个排列，第 10 步固定为 10；以此类推。
+	 *
+	 * <h3>为什么用固定种子</h3>
+	 * 用常量种子（而非每次调用重新掷骰）保证：
+	 * 同一个存档里"从 3F 下楼"永远到同一层，读档/回退都不会错位。
+	 *
+	 * <p>数组含义：{@code ORDER[step] = depth}，step 为 0..24（对应第 1..25 步）。
+	 */
+	private static int[] shuffleOrder = null;
+
+	/** 排列用的固定种子。 */
+	private static final long SHUFFLE_SEED = 0x5EEDF100L;
+
+	/** 构建本局的楼层排列。种子固定 → 结果固定。 */
+	private static void buildShuffleOrder() {
+		com.watabou.utils.Random.pushGenerator(SHUFFLE_SEED);
+
+		//==== END(修订): 普通层**全局**打乱，不再限制在区域内 ====
+		//文档所有者给出的例子是
+		//   1 → 4 → 21 → 12 → 5 → 9 → 18 → 2 → 6 → 10
+		//其中第 5 步是 5F、第 10 步是 10F，**Boss 固定在原步数**，
+		//而中间的普通层来自各个区域（4、21、12 分属不同区）。
+		//
+		//做法：把 20 个普通层**整体打乱**，然后每 4 个插入一个 Boss：
+		//   位置 1-4   普通层（随机）
+		//   位置 5     Boss 5F
+		//   位置 6-9   普通层（随机）
+		//   位置 10    Boss 10F
+		//   ... 以此类推
+		//
+		//==== END(再修订): 第 1 步**固定为 1F** ====
+		//文档所有者要求"让第一层必定为一"。
+		//因此把 1F 从打乱池里拿出来，钉在首位；其余 19 个普通层照常打乱。
+		//这样既保证开局在下水道（不会一上来就跳到某个高层），
+		//又不破坏"每层只去一次"与"Boss 步数固定"。
+
+		java.util.ArrayList<Integer> normals = new java.util.ArrayList<>();
+		for (int d = 2; d <= 25; d++) {          //从 2 开始：1F 被固定
+			if (d % 5 != 0) normals.add(d);      //排除 5/10/15/20/25
+		}
+		com.watabou.utils.Random.shuffle(normals);
+
+		shuffleOrder = new int[25];
+		shuffleOrder[0] = 1;                     //第 1 步固定 1F
+		int n = 0;
+		for (int step = 1; step < 25; step++) {
+			if ((step + 1) % 5 == 0) {
+				//第 5/10/15/20/25 步：Boss 层
+				shuffleOrder[step] = step + 1;
+			} else {
+				shuffleOrder[step] = normals.get(n++);
+			}
+		}
+
+		com.watabou.utils.Random.popGenerator();
+	}
+
+	/**
+	 * END(2 楼层混乱): 给定"当前楼层"，返回它的下一层。
+	 *
+	 * <p>先查出当前楼层在游玩顺序中的位置，再取下一个位置对应的楼层。
+	 * 若当前楼层不在排列里（挑战区 26F+ 等），原样返回 {@code depth + 1}。
+	 */
+	public static int nextShuffledDepth(int depth) {
+		if (!on(FLOOR_SHUFFLE)) return depth + 1;
+		if (depth < 1 || depth > 25) return depth + 1;
+
+		if (shuffleOrder == null) buildShuffleOrder();
+
+		for (int step = 0; step < shuffleOrder.length; step++) {
+			if (shuffleOrder[step] == depth) {
+				if (step + 1 >= shuffleOrder.length) return depth + 1;   //最后一步，无下层
+				return shuffleOrder[step + 1];
+			}
+		}
+		return depth + 1;
+	}
+
+	/** END(2 楼层混乱): 当前楼层在游玩顺序中是第几步（1-based）；不适用时返回 0。 */
+	public static int shuffleStepOf(int depth) {
+		if (!on(FLOOR_SHUFFLE) || depth < 1 || depth > 25) return 0;
+		if (shuffleOrder == null) buildShuffleOrder();
+		for (int step = 0; step < shuffleOrder.length; step++) {
+			if (shuffleOrder[step] == depth) return step + 1;
+		}
+		return 0;
+	}
+
+	/**
+	 * END(2 楼层混乱): 给定"当前楼层"，返回它的**上一层**（沿同一排列往回走）。
+	 *
+	 * <p>上楼必须走排列的逆方向，否则会跳到错误的楼层。
+	 * 未勾选 2 或不在排列内时返回 {@code depth - 1}（等价原版）。
+	 */
+	public static int prevShuffledDepth(int depth) {
+		if (!on(FLOOR_SHUFFLE)) return depth - 1;
+		if (depth < 1 || depth > 25) return depth - 1;
+
+		if (shuffleOrder == null) buildShuffleOrder();
+
+		for (int step = 0; step < shuffleOrder.length; step++) {
+			if (shuffleOrder[step] == depth) {
+				if (step == 0) return Math.max(0, depth - 1);   //第一步，没有上层
+				return shuffleOrder[step - 1];
+			}
+		}
+		return depth - 1;
+	}
+
+	/** 诊断用：当前的排列（副本）。 */
+	public static int[] shuffleOrderCopy() {
+		if (shuffleOrder == null) buildShuffleOrder();
+		return shuffleOrder.clone();
+	}
+
+	/** 换局时重置，让它按新局重新（用同一常量种子）构建。 */
+	public static void resetShuffleOrder() {
+		shuffleOrder = null;
+	}
+
+	/** 104 命悬一线：保命概率 13%。 */
+	private static final int CLOSE_CALL_PCT = 13;
+
+	/**
+	 * END(65 及时雨 / 104 命悬一线): 致命伤害的"保命"判定。
+	 *
+	 * <p>调用点：{@code Char.damage()} 在扣血之前。
+	 *
+	 * <p><b>触发顺序（原表明确要求：先及时雨后命悬一线）</b>：
+	 * <ol>
+	 *   <li><b>65 及时雨</b>：整局**第一次**致命伤害必定不死，保留 1 点。
+	 *       用一次性标记，用完就失效。</li>
+	 *   <li><b>104 命悬一线</b>：之后每次致命伤害有 13% 概率保 1 点，**可重复触发**。</li>
+	 * </ol>
+	 *
+	 * <p>两者可同时勾选：先用掉及时雨的那一次，之后靠命悬一线赌 13%。
+	 *
+	 * @param dmg 即将生效的伤害
+	 * @return true 表示本次伤害应被削到"保留 1 点生命"
+	 */
+	public static boolean survivingFatalBlow(Char target, int dmg) {
+		if (target == null) return false;
+		//只对玩家生效（两条都是"玩家收益"）
+		if (!(target instanceof Hero)) return false;
+		//不是致命伤就不用管
+		if (dmg < target.HP) return false;
+		if (target.HP <= 1) return false;      //已经只剩 1 点，没有可保的
+
+		//---- 65 及时雨：整局第一次 ----
+		if (on(TIMELY_RAIN) && !timelyRainUsed) {
+			timelyRainUsed = true;
+			return true;
+		}
+
+		//---- 104 命悬一线：每次都判 ----
+		if (on(CLOSE_CALL) && Random.Int(100) < CLOSE_CALL_PCT) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/** 65 及时雨的"已用掉"标记（每局重置，不存读档）。 */
+	private static boolean timelyRainUsed = false;
+
+	public static void resetTimelyRain() {
+		timelyRainUsed = false;
+	}
+
+	/** 诊断用：及时雨是否已经用掉。 */
+	public static boolean timelyRainUsed() {
+		return timelyRainUsed;
+	}
+
+	/**
+	 * END(104 命悬一线): 是否隐藏血量数字。
+	 *
+	 * <p>调用点：{@code StatusPane} 的血量文本处。
+	 */
+	public static boolean hideHpNumbers() {
+		return on(CLOSE_CALL);
+	}
+
+	/**
+	 * END(104 命悬一线): 用文字描述代替血量数字。
+	 *
+	 * <p>分档刻意做得**粗**（每档 20%）—— 太细就等同于显示数值，
+	 * 那就失去这条规则的意义了。
+	 *
+	 * @return 描述文本；未勾选 104 时返回 null（调用方回退到数字显示）
+	 */
+	public static String hpStateDescription(int hp, int max) {
+		if (!on(CLOSE_CALL) || max <= 0) return null;
+
+		float pct = hp / (float) max;
+
+		//边界：先用整数比较，避免浮点误差把正好 100% 判成 99.99%
+		if (hp >= max)                      return msg("hp_perfect");
+		if (hp * 5 >= max * 4)              return msg("hp_good");        // >=80%
+		if (hp * 5 >= max * 3)              return msg("hp_hurt");        // >=60%
+		if (hp * 2 >= max)                  return msg("hp_bad");         // >=50%
+		if (hp * 5 >= max)                  return msg("hp_severe");      // >=20%
+		if (hp * 10 >= max)                 return msg("hp_critical");    // >=10%
+		return msg("hp_brink");                                           // <10%
+	}
+
+	/** 取一条描述文案。 */
+	private static String msg(String key) {
+		return com.shatteredpixel.shatteredpixeldungeon.messages.Messages.get(
+				ChallengeEffects.class, key);
+	}
+
+	/**
+	 * END(81 搏杀赌徒): 是否停止常规的升级卷轴投放。
+	 *
+	 * <p>调用点：{@code Dungeon.souNeeded()}。
+	 */
+	public static boolean gamblerNoUpgradeScrolls() {
+		return on(GAMBLER);
+	}
+
+	/**
+	 * END(81 搏杀赌徒): 财富戒指产出的卷轴里，升级卷轴应占多大比重。
+	 *
+	 * <p>原表："财富戒指可获得升级卷轴" —— 但没说概率。
+	 * 这里给 **8%**：足够让玩家偶尔摸到，又不能让戒指变成稳定的升级来源
+	 * （否则"不再主动刷新升级卷轴"的代价就不成立了）。
+	 *
+	 * <p>调用点：{@code RingOfWealth} 生成卷轴处。
+	 *
+	 * @return 概率（0~1）；未勾选 81 时为 0
+	 */
+	public static final float GAMBLER_SOU_CHANCE = 0.08f;
+
+	public static float gamblerUpgradeScrollChance() {
+		return on(GAMBLER) ? GAMBLER_SOU_CHANCE : 0f;
+	}
+
+	/**
+	 * END(81 搏杀赌徒): 开户赠送的财富戒指等级。
+	 *
+	 * <p>原表："开局获得 +3 财富戒指"。
+	 */
+	public static final int GAMBLER_RING_LEVEL = 3;
+
+	public static boolean gamblerStarterRing() {
+		return on(GAMBLER);
+	}
+
+	/**
+	 * END(40 贷款): 是否可以在商店贷款。
+	 *
+	 * <p>同时要求"商店存在"—— 没勾这条规则时不出现贷款选项。
+	 */
+	public static boolean loanAvailable() {
+		return on(LOAN);
+	}
+
+	/** END(40 贷款): 可贷款的金额档位（玩家在商店里自选）。 */
+	public static final int[] LOAN_AMOUNTS = { 100, 300, 500, 1000 };
+
+	/**
+	 * END(40 贷款): 是否允许再借一笔。
+	 *
+	 * <p>同一时间只允许**一笔未还清的债务** —— 否则玩家可以无限叠加，
+	 * 把"1000 回合后还 110%"变成没有约束的白送。
+	 */
+	public static boolean canTakeLoan(
+			com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero hero) {
+		if (!on(LOAN) || hero == null) return false;
+		return hero.buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+				.LoanDebt.class) == null;
+	}
+
+	/**
+	 * END(40 贷款): 借入一笔钱。
+	 *
+	 * @return 实际借到的金额（0 表示借不了）
+	 */
+	public static int takeLoan(
+			com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero hero, int amount) {
+		if (!canTakeLoan(hero) || amount <= 0) return 0;
+
+		Dungeon.gold += amount;
+
+		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.LoanDebt debt =
+				com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(
+						hero,
+						com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+								.LoanDebt.class);
+		debt.setPrincipal(amount);
+
+		return amount;
+	}
+
+	/** 141 禁魔空间：魔法伤害倍率 0.8。 */
+	private static final float ANTI_MAGIC_MULT = 0.80f;
+	/** 52 陷阱泛滥：陷阱数量倍率 2.0。 */
+	private static final float TRAP_COUNT_MULT = 2.0f;
+	/** 74 热带雨林：水中生成食人鱼概率 13%。 */
+	private static final int   RAINFOREST_PCT  = 13;
+	/** 149 黏糊蜂蜜：每层蜜蜂数量。 */
+	private static final int   HONEY_BEES      = 2;
+
+	/**
+	 * END(141 禁魔空间): 魔法伤害的整体倍率。
+	 *
+	 * <p>调用点：{@code Char.damage()} 里判明伤害来源属于魔法
+	 * （{@code AntiMagic.RESISTS.contains(src.getClass())}）之后。
+	 *
+	 * <p>玩家与怪物**都**受影响 —— 这才是原表说的"包括玩家与怪物"。
+	 */
+	public static int magicDamageTaken(int dmg) {
+		if (!on(ANTI_MAGIC_ZONE) || dmg <= 0) return dmg;
+		return Math.max(1, Math.round(dmg * ANTI_MAGIC_MULT));
+	}
+
+	/**
+	 * END(52 陷阱泛滥): 地图陷阱数量的倍率。
+	 *
+	 * <p>调用点：{@code RegularLevel} 里生成陷阱处。
+	 * 实现方式与其它"数量倍率"（30/119 怪物数量）保持一致：
+	 * 倍率作用在**生成上限**上，而不是逐条掷骰。
+	 */
+	public static float trapCountMultiplier() {
+		return on(TRAP_OVERFLOW) ? TRAP_COUNT_MULT : 1f;
+	}
+
+	/**
+	 * END(49 切尔诺贝利): 该格是否应变成毒气。
+	 *
+	 * <p>原表："全图毒气，玩家受影响，怪物免疫"。
+	 * 这里返回是否启用；具体的毒气铺设与"怪物免疫"由调用点处理。
+	 */
+	public static boolean chernobylEnabled() {
+		return on(CHERNOBYL);
+	}
+
+	/**
+	 * END(49 切尔诺贝利): 每层额外发放的净化药水数量。
+	 *
+	 * <p>原表："开局给净化药水，每层额外给"。
+	 * 这里是**每层**给的数量；开局那份由 {@link #startingGear()} 单独发放。
+	 */
+	public static final int CHERNOBYL_PURIFY_PER_FLOOR = 1;
+
+	public static int chernobylPurifyPerFloor() {
+		return on(CHERNOBYL) ? CHERNOBYL_PURIFY_PER_FLOOR : 0;
+	}
+
+	/**
+	 * END(49 切尔诺贝利): 净化药水的持续回合数。
+	 *
+	 * <p>原表："持续时间增加至 300 回合"。未勾选 49 时返回原版的
+	 * {@code BlobImmunity.DURATION}（20），勾选后为 300。
+	 */
+	public static final float CHERNOBYL_PURITY_DURATION = 300f;
+
+	public static float purityDuration(float vanilla) {
+		return on(CHERNOBYL) ? CHERNOBYL_PURITY_DURATION : vanilla;
+	}
+
+	/**
+	 * END(49 切尔诺贝利): 全面净化（进化版净化药水）的持续回合数。
+	 *
+	 * <p>原表："全面净化持续回合增加到 900" —— 但文档所有者后来修正为 **600**。
+	 * 未勾选 49 时返回原版的 {@code PotionOfCleansing.Cleanse.DURATION}（5）。
+	 */
+	public static final float CHERNOBYL_CLEANSE_DURATION = 600f;
+
+	public static float cleanseDuration(float vanilla) {
+		return on(CHERNOBYL) ? CHERNOBYL_CLEANSE_DURATION : vanilla;
+	}
+
+	/**
+	 * END(49 切尔诺贝利): 净化药水是否应**只保留解毒功能**。
+	 *
+	 * <p>原表："净化药水改为只有解毒功能"。
+	 *
+	 * <p>含义：原本喝净化药水会给 {@code BlobImmunity}（对所有气体免疫），
+	 * 勾选 49 后改为**只清除身上已有的负面效果**，
+	 * 不再提供"站在毒气里也不受伤"的全免疫 ——
+	 * 否则全图毒气这条规则就形同虚设。
+	 */
+	public static boolean purityOnlyCuresDebuffs() {
+		return on(CHERNOBYL);
+	}
+
+	/**
+	 * END(159 绵羊地牢): 玩家周围是否该刷羊，并返回刷几只。
+	 *
+	 * <p>原表："回合在玩家 7×7 范围 13% 生成 1~2 绵羊，生成后有 20 回合 CD"。
+	 *
+	 * <p>三条约束：
+	 * <ol>
+	 *   <li><b>7×7 范围</b>：以玩家为中心、半径 3 格内找空位。</li>
+	 *   <li><b>20 回合 CD</b>：用独立计数器，不挂 buff（这是纯生成节流，
+	 *       中途存读档重新计数无伤大雅）。</li>
+	 *   <li><b>13% 概率</b>。</li>
+	 * </ol>
+	 *
+	 * @return 本次应生成的绵羊数量（0 表示不生成）
+	 */
+	private static final int   SHEEP_RADIUS = 3;      // 7x7 => 半径 3
+	private static final int   SHEEP_PCT    = 13;
+	private static final int   SHEEP_COOLDOWN = 20;
+	private static int sheepCooldown = 0;
+
+	public static int rollSheepSpawn(
+			com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero hero) {
+
+		if (!on(SHEEP_DUNGEON) || hero == null || !hero.isAlive()) {
+			sheepCooldown = 0;
+			return 0;
+		}
+
+		//CD 中：递减并跳过
+		if (sheepCooldown > 0) {
+			sheepCooldown--;
+			return 0;
+		}
+
+		if (Random.Int(100) >= SHEEP_PCT) return 0;
+
+		sheepCooldown = SHEEP_COOLDOWN;
+		return Random.IntRange(1, 2);     // 1~2 只
+	}
+
+	/**
+	 * END(159 绵羊地牢): 在玩家周围找一个可站立的空位。
+	 *
+	 * @return 格子编号；找不到返回 -1
+	 */
+	public static int findSheepSpot(int heroPos, int radius) {
+		if (Dungeon.level == null) return -1;
+
+		java.util.ArrayList<Integer> candidates = new java.util.ArrayList<>();
+		int w = Dungeon.level.width();
+		int cx = heroPos % w;
+		int cy = heroPos / w;
+
+		for (int dy = -radius; dy <= radius; dy++) {
+			for (int dx = -radius; dx <= radius; dx++) {
+				if (dx == 0 && dy == 0) continue;          //玩家自己那格不刷
+				int x = cx + dx, y = cy + dy;
+				if (x < 0 || y < 0 || x >= w || y >= Dungeon.level.height()) continue;
+				int cell = x + y * w;
+				//必须能站、没被占、且玩家看得到（否则羊在视野外莫名出现）
+				if (!Dungeon.level.passable[cell]) continue;
+				if (Dungeon.level.solid[cell]) continue;
+				if (Dungeon.level.heroFOV[cell]) continue; //刷在可见格会突兀
+				if (com.shatteredpixel.shatteredpixeldungeon.actors.Actor.findChar(cell)
+						!= null) continue;
+				candidates.add(cell);
+			}
+		}
+
+		if (candidates.isEmpty()) return -1;
+		return candidates.get(Random.Int(candidates.size()));
+	}
+
+	public static int sheepRadius() { return SHEEP_RADIUS; }
+
+	//==================================================================
+	//1 牢地碎破：区域交叉
+	//==================================================================
+
+	/** 1 牢地碎破：区域倒置（1区↔5区、2区↔4区、3区不变）。 */
+	public static final int CRUMBLING_DUNGEON = 1;
+
+	/**
+	 * END(1 牢地碎破): 把"实际楼层"映射成"用于查怪物表的楼层"。
+	 *
+	 * <p>实现的是**区域倒置**：
+	 * <pre>
+	 *   实际 1区(1-5F)   -> 5区(21-25F)
+	 *   实际 2区(6-10F)  -> 4区(16-20F)
+	 *   实际 3区(11-15F) -> 3区(11-15F)   不变
+	 *   实际 4区(16-20F) -> 2区(6-10F)
+	 *   实际 5区(21-25F) -> 1区(1-5F)
+	 * </pre>
+	 *
+	 * <p>映射只改"用哪张表"，怪物配比（每种几只）沿用原表，
+	 * 因此不必重写五张表 —— 这是最不容易出错的做法。
+	 *
+	 * <p>未勾选 1 时原样返回 {@code depth}。
+	 */
+	public static int crumblingCrossDepth(int depth) {
+		if (!on(CRUMBLING_DUNGEON)) return depth;
+		if (depth < 1) return depth;
+
+		//只处理主线 1-25 层；挑战区（26F 起）有自己的刷怪表，不参与倒置
+		if (depth > 25) return depth;
+
+		int region = (depth - 1) / 5;              //0..4
+		int within = (depth - 1) % 5;              //区域内偏移 0..4
+
+		//区域倒置：0<->4, 1<->3, 2 不变
+		int mirroredRegion = 4 - region;
+
+		return mirroredRegion * 5 + within + 1;
+	}
+
+	/**
+	 * END(1 牢地碎破): 取某个角色当前所在的区域（1..5），用于查数值表。
+	 *
+	 * <p>用 {@code Dungeon.depth} 的**实际楼层**分区，而不是交叉后的楼层 ——
+	 * 因为数值表本身就是按"实际区域"配的（1 区的表里写的是魅魔等）。
+	 *
+	 * @return 区域编号；不在主线 1-25 层时返回 0（表示"不适用"）
+	 */
+	public static int crumblingRegion() {
+		int d = Dungeon.depth;
+		if (d < 1 || d > 25) return 0;
+		return (d - 1) / 5 + 1;
+	}
+
+	/** 查表：某个角色对应的数值行；无表项或未勾选挑战时返回 null。 */
+	private static com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+			.CrumblingStats.Stats crumblingRow(Char ch) {
+		if (!on(CRUMBLING_DUNGEON) || ch == null) return null;
+		//只对怪物生效（玩家数值不受这条规则影响）
+		if (!(ch instanceof Mob)) return null;
+		int region = crumblingRegion();
+		if (region == 0) return null;
+		return com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.CrumblingStats.lookup(region, ch.getClass().getSimpleName());
+	}
+
+	/**
+	 * END(1 牢地碎破): 覆写攻击命中。
+	 *
+	 * <p>调用点：{@code Char.hit()} —— 全游戏唯一的命中判定点。
+	 * 未勾选或表里没有该怪物时原样返回 {@code vanilla}。
+	 */
+	public static float crumblingAccuracy(Char attacker, float vanilla) {
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.CrumblingStats.Stats s = crumblingRow(attacker);
+		return (s == null) ? vanilla : s.acc;
+	}
+
+	/** END(1 牢地碎破): 覆写闪避。调用点同上。 */
+	public static float crumblingEvasion(Char defender, float vanilla) {
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.CrumblingStats.Stats s = crumblingRow(defender);
+		return (s == null) ? vanilla : s.eva;
+	}
+
+	/** END(1 牢地碎破): 覆写护甲。调用点：{@code Char.attack()} 的 drRoll 处。 */
+	public static int crumblingArmor(Char target, int vanilla) {
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.CrumblingStats.Stats s = crumblingRow(target);
+		if (s == null) return vanilla;
+		//表里给的是 [min,max] 区间，取随机值（与原版 drRoll 的语义一致）
+		return Random.NormalIntRange(s.drMin, s.drMax);
+	}
+
+	/**
+	 * END(1 牢地碎破): 覆写攻击伤害。
+	 *
+	 * <p>只在**表里有该怪物**时生效；表里的伤害是 [min,max]，按原版语义取随机。
+	 */
+	public static float crumblingDamage(Char attacker, float vanilla) {
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.CrumblingStats.Stats s = crumblingRow(attacker);
+		if (s == null) return vanilla;
+		if (s.dmgMax <= 0) return 0;          //幽灵死灵法师、菌丝节点等伤害为 0
+		return Random.NormalIntRange(s.dmgMin, s.dmgMax);
+	}
+
+	/**
+	 * END(1 牢地碎破): 覆写生命上限。
+	 *
+	 * <p>HP/HT 是**实例字段**（不像命中/伤害是方法），所以可以直接赋值。
+	 * 调用点：{@code Level.createMob()} —— 全游戏怪物实例化的唯一出口。
+	 *
+	 * @return 覆写后的 HP；表里没有则返回 {@code vanilla}
+	 */
+	public static int crumblingHP(Char mob, int vanilla) {
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.CrumblingStats.Stats s = crumblingRow(mob);
+		return (s == null) ? vanilla : Math.max(1, s.hp);
+	}
+
+	/**
+	 * END(1 牢地碎破): 5 区刷原 1 区怪物时，是否应追加"移速×2 + 永久祝福"。
+	 *
+	 * <p>配置表说明："原1区来源的怪物（出现在5区）已追加移速×2，永久祝福"。
+	 * 这些怪物的表项在 5 区，所以判据是"当前区域为 5 且该怪在表中有 5 区项"。
+	 */
+	public static boolean crumblingSwiftBlessed(Char mob) {
+		if (!on(CRUMBLING_DUNGEON) || mob == null) return false;
+		return crumblingRegion() == 5 && crumblingRow(mob) != null;
+	}
+
+	/**
+	 * END(74 热带雨林): 水中是否生成食人鱼，以及概率。
+	 *
+	 * <p>调用点：地图生成后遍历水域格。
+	 *
+	 * @return 生成概率（0~100）；未勾选时为 0
+	 */
+	public static int rainforestPiranhaChance() {
+		return on(RAINFOREST) ? RAINFOREST_PCT : 0;
+	}
+
+	/**
+	 * END(149 黏糊蜂蜜): 每层额外刷新的蜜蜂数量。
+	 *
+	 * <p>调用点：{@code RegularLevel.createMobs()} 之后。
+	 */
+	public static int honeyBeeCount() {
+		return on(STICKY_HONEY) ? HONEY_BEES : 0;
+	}
+
+	/**
+	 * END(162 真实地牢): 空气稀薄 —— 玩家需要每 N 回合停下深呼吸一次。
+	 *
+	 * <p>原表："每下一个区域，空气会稀薄，需要每 50−5×(层数/5) 回合停下来深呼吸"。
+	 * 即**层数越深，间隔越短**：第 5 层 = 50−5 = 45 回合，第 25 层 = 50−25 = 25 回合。
+	 * 最低不低于 {@link #REALISTIC_MIN_INTERVAL}，避免深层变成每回合都要停。
+	 *
+	 * @return 两次深呼吸之间的回合间隔
+	 */
+	public static final int REALISTIC_MIN_INTERVAL = 15;
+
+	public static int realisticBreathInterval() {
+		int region = Math.max(1, Dungeon.depth / 5);        //第 5 层算 1 区
+		int interval = 50 - 5 * region;
+		return Math.max(REALISTIC_MIN_INTERVAL, interval);
+	}
+
+	/**
+	 * END(162 真实地牢): 玩家本回合是否需要"停下深呼吸"。
+	 *
+	 * <p>用独立的计数器，而不是挂 buff —— 这个状态不需要存读档
+	 * （深呼吸只是每 N 回合强制消耗一回合，中途存读档重新计数无伤大雅）。
+	 *
+	 * @return true 表示本回合被强制停下
+	 */
+	private static int breathCounter = 0;
+
+	public static boolean tickRealisticBreath(
+			com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero hero) {
+		if (!on(REALISTIC_DUNGEON) || hero == null || !hero.isAlive()) {
+			breathCounter = 0;
+			return false;
+		}
+
+		breathCounter++;
+		int interval = realisticBreathInterval();
+		if (breathCounter < interval) return false;
+
+		breathCounter = 0;
+
+		//停下深呼吸：消耗本回合 + 给一个短暂的可视反馈
+		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
+				hero,
+				com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Paralysis.class,
+				1f);
+		com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w(
+				com.shatteredpixel.shatteredpixeldungeon.messages.Messages.get(
+						ChallengeEffects.class, "breath_stop"));
+		return true;
+	}
 
 	/** 71 喝大了：概率与眩晕回合数。 */
 	private static final int   DRUNK_PCT   = 3;
@@ -1196,6 +1906,8 @@ public final class ChallengeEffects {
 		if (on(HEIRLOOM_ARMOR)) n++;
 		if (on(HEIRLOOM_WAND))  n++;
 		if (on(SKIP_STUDENT))   n++;   // 7 跳级券
+		if (on(CHERNOBYL))      n++;   // 49 净化药水
+		if (on(GAMBLER))        n++;   // 81 财富戒指
 		return n;
 	}
 
@@ -1245,6 +1957,21 @@ public final class ChallengeEffects {
 		//7 跳级生：开局给 1 张跳级券（一次性物品，玩家自己决定何时用）
 		if (on(SKIP_STUDENT)) {
 			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.items.SkipTicket());
+		}
+
+		//49 切尔诺贝利：开局给净化药水（否则第 1 层就开始中毒，没有解药）
+		if (on(CHERNOBYL)) {
+			out.add(new com.shatteredpixel.shatteredpixeldungeon.items.potions
+					.PotionOfPurity());
+		}
+
+		//81 搏杀赌徒：开局给 +3 财富戒指
+		//（常规升级卷轴投放已被取消，这枚戒指是唯一的升级来源）
+		if (on(GAMBLER)) {
+			com.shatteredpixel.shatteredpixeldungeon.items.rings.RingOfWealth ring =
+					new com.shatteredpixel.shatteredpixeldungeon.items.rings.RingOfWealth();
+			ring.level(GAMBLER_RING_LEVEL);
+			out.add(ring);
 		}
 
 		return out;

@@ -141,6 +141,31 @@ public abstract class Mob extends Char {
 			HT = Math.round(HT * AscensionChallenge.statModifier(this));
 			HP = Math.round(HT * percent);
 			firstAdded = false;
+
+			//==== END(挑战 1 牢地碎破): 按配置表覆写生命上限 ====
+			//为什么放在 onAdd() 而不是 Level.createMob()：
+			//createMob() 只覆盖"关卡刷出的普通怪"。而 Boss 的召唤物
+			//（古神的六只拳头、幼虫、YogEye/YogScorpio/YogRipper）
+			//走 Reflection.newInstance 直接创建，**完全绕过 createMob()**。
+			//
+			//为什么也不放在 GameScene.add(Mob)：
+			//全仓有 60 多处直接 `Dungeon.level.mobs.add(...)` 绕过了它 ——
+			//其中包括 Goo 的四种 Boss 房间（DiamondGooRoom 等），
+			//放在那里会导致 25F 的 Goo 不被覆写。
+			//
+			//onAdd() 由 Actor.add() 调用，是**所有 Actor 入场的最终汇聚点**，
+			//且被 firstAdded 保证只执行一次，因此是唯一不漏的落点。
+			//
+			//注意顺序：放在 AscensionChallenge 之后。
+			//挑战 1 给的是"配置表里的绝对值"，应当**覆盖**前面的百分比修正，
+			//否则两者叠加会得到既不是原版、也不是配置表的结果。
+			//未勾选 1 或表里没有该怪物时原样返回，本段等价于不存在。
+			int tableHP = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.crumblingHP(this, HT);
+			if (tableHP != HT) {
+				HT = tableHP;
+				HP = tableHP;      //召唤物/新刷出的怪都是满血入场
+			}
 		}
 	}
 

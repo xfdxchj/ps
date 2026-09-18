@@ -69,12 +69,21 @@ public class LevelTransition extends Rect implements Bundlable {
 		this.type = type;
 		switch (type){
 			case REGULAR_ENTRANCE: default:
-				destDepth = Dungeon.depth-1;
+				//==== END(挑战 2 楼层混乱): 上楼回到"排列中的上一层" ====
+				//原版是 depth-1。勾选 2 后楼层被重排，上楼必须沿着
+				//同一个排列往回走一格，否则会跳到错误的楼层。
+				//未勾选时 prevShuffledDepth 返回 depth-1，等价于原版。
+				destDepth = com.shatteredpixel.shatteredpixeldungeon.endcontent
+						.challenge.ChallengeEffects.prevShuffledDepth(Dungeon.depth);
 				destBranch = Dungeon.branch;
 				destType = Type.REGULAR_EXIT;
 				break;
 			case REGULAR_EXIT:
-				destDepth = Dungeon.depth+1;
+				//==== END(挑战 2 楼层混乱): 下楼走到"排列中的下一层" ====
+				//原版是 depth+1。勾选 2 后由排列决定下一层是几号；
+				//排列用固定种子构建，因此存读档后目标不会变。
+				destDepth = com.shatteredpixel.shatteredpixeldungeon.endcontent
+						.challenge.ChallengeEffects.nextShuffledDepth(Dungeon.depth);
 				destBranch = Dungeon.branch;
 				destType = Type.REGULAR_ENTRANCE;
 				break;

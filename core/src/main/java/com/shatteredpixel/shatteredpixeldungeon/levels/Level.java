@@ -334,6 +334,55 @@ public abstract class Level implements Bundlable {
 		//==== END(挑战 54 我爱花花): 草 13% 替换成随机花 ====
 		//同样放在 popGenerator 之后，理由同上。
 		applyFlowerChallenge();
+
+		//==== END(挑战 49 切尔诺贝利): 全图毒气 ====
+		//也是确定性铺设（不掷骰），放在 popGenerator 之后不影响关卡生成。
+		applyChernobyl();
+	}
+
+	/**
+	 * END(挑战 49 切尔诺贝利): 全图铺毒气，玩家受影响、怪物免疫。
+	 *
+	 * <p>用法照搬 {@code ToxicGasRoom} 的现成逻辑（那是本 fork 已验证的毒气铺法）：
+	 * <ul>
+	 *   <li><b>只铺 {@code Terrain.EMPTY}</b> —— 原版毒气室就是这么判的。
+	 *       不能用 {@code passable[]}：那里包含水、草、门，
+	 *       在这些格子上铺毒气语义不对（水里冒毒气、门上冒毒气）。</li>
+	 *   <li><b>每个格子给 30 的量</b> —— 原版注释写"as if gas has been
+	 *       spreading in the room for a while"，即模拟毒气已扩散一会儿的状态。
+	 *       给得太多会让整层毒气浓度过高，反而失真。</li>
+	 * </ul>
+	 *
+	 * <p>"怪物免疫"通过给每只怪挂 {@code BlobImmunity} 实现，
+	 * 而不是改 {@code ToxicGas} 本身 —— 后者会连带影响玩家丢出的毒气瓶。
+	 */
+	private static final int CHERNOBYL_SEED = 30;
+
+	private void applyChernobyl() {
+
+		if (!com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.chernobylEnabled()) {
+			return;   //未勾选 49，直接跳过（省掉整图遍历与 Blob 分配）
+		}
+
+		//---- 全图铺毒气（判据与 ToxicGasRoom 一致：只铺 EMPTY）----
+		for (int i = 0; i < length(); i++) {
+			if (map[i] != Terrain.EMPTY) continue;
+			com.shatteredpixel.shatteredpixeldungeon.actors.blobs.Blob.seed(
+					i, CHERNOBYL_SEED,
+					com.shatteredpixel.shatteredpixeldungeon.actors.blobs.ToxicGas.class,
+					this);
+		}
+
+		//---- 怪物免疫（原表："玩家受影响，怪物免疫"）----
+		for (com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob m : mobs) {
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
+					m,
+					com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+							.BlobImmunity.class,
+					com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+							.BlobImmunity.DURATION);
+		}
 	}
 
 	/**
@@ -635,6 +684,28 @@ public abstract class Level implements Bundlable {
 
 		Mob m = Reflection.newInstance(mobsToSpawn.remove(0));
 		ChampionEnemy.rollForChampion(m);
+
+		//==== END(挑战 1 牢地碎破): 配置表数值覆写（HP 部分见 Mob.onAdd）====
+		//注意：HP/HT 的覆写**不在**这里，而在 Mob.onAdd()。
+		//原因：createMob() 只覆盖"关卡刷出的普通怪"，而 Boss 召唤物
+		//（古神的拳头/幼虫等）与 60 多处直接 level.mobs.add(...) 都绕过它。
+		//onAdd() 由 Actor.add() 调用，覆盖全部入场路径。
+		//
+		//命中/闪避/护甲/伤害是**方法**，在 Char.hit / Char.attack 里覆写，
+		//与创建路径无关，因此不受此影响。
+
+		//5 区刷原 1 区怪物时的"移速×2 + 永久祝福"（见配置表说明）
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.crumblingSwiftBlessed(m)) {
+			//移速 ×2：用 Adrenaline 不是"速度"，这里改用 Haste（本 fork 的加速 buff）
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(
+					m, com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Haste.class);
+			//永久祝福：用一个极长时长的 Blessing
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
+					m,
+					com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Bless.class,
+					9999f);
+		}
 
 		//==== END(挑战 119 怪物浪潮): 怪物数值 ×0.2 ====
 		//这里是全游戏**怪物实例化的唯一出口**，一处生效即覆盖全部。

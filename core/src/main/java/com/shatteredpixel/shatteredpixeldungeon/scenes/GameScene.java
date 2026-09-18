@@ -1167,6 +1167,12 @@ public class GameScene extends PixelScene {
 	}
 	
 	public static void add( Mob mob, float delay ) {
+
+		//注意：挑战 1 牢地碎破的 HP 覆写**不在这里**，而在 Mob.onAdd()。
+		//原因：全仓有 60 多处直接 Dungeon.level.mobs.add(...) 绕过本方法
+		//（含 Goo 的四种 Boss 房间），放在这里会漏。
+		//onAdd() 由 Actor.add() 调用，是所有 Actor 入场的最终汇聚点。
+
 		Dungeon.level.mobs.add( mob );
 		//mobs added on partial turns wait until next full turn to act
 		delay = (float)Math.ceil(Actor.now() + delay) - Actor.now();

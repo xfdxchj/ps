@@ -69,7 +69,11 @@ public class PotionOfCleansing extends ExoticPotion {
 	}
 
 	public static void cleanse(Char ch){
-		cleanse(ch, Cleanse.DURATION);
+		//==== END(挑战 49 切尔诺贝利): 全面净化持续 600 回合 ====
+		//未勾选 49 时为原版的 Cleanse.DURATION（5）。
+		//原表写的是 900，文档所有者后修正为 600。
+		cleanse(ch, com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.cleanseDuration(Cleanse.DURATION));
 	}
 
 	public static void cleanse(Char ch, float duration){

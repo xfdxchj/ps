@@ -344,9 +344,14 @@ public class Dungeon {
 		
 		GamesInProgress.selectedClass.initHero( hero );
 
+		//==== END(挑战 65 及时雨): 每局重置"第一次必保"标记 ====
+		//该标记是静态的，若不重置会跨局残留 —— 上一局用掉了，
+		//这一局就不会触发，玩家会以为规则坏了。
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
+				.resetTimelyRain();
+
 		//==== END(挑战 155 家传戒指 / 156 家传铠甲): 开局额外装备 ====
-		//必须在 initHero 之后 —— 那时 hero.belongings 才建好，能收纳物品。
-		//用 collect() 而不是直接塞背包：collect 会走正常的入包流程
+		//必须在 initHero 之后 —— 那时 hero.belongings 才建好，能收纳物品。		//用 collect() 而不是直接塞背包：collect 会走正常的入包流程
 		//（处理堆叠、容量、图鉴登记），比手工操作 belongings 可靠。
 		for (Item gear : com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 				.ChallengeEffects.startingGear()) {
@@ -621,10 +626,40 @@ public class Dungeon {
 								"enchant_region_gain", scrolls));
 			}
 		}
+
+		//==== END(挑战 49 切尔诺贝利): 每层额外给净化药水 ====
+		//注意这是**每层**（不是每区域），所以放在上面 depth%5==1 的块**外面**。
+		//原表："全图毒气…开局给净化药水，每层额外给" —— 没有解药这层就没法玩。
+		int purify = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.chernobylPurifyPerFloor();
+		if (purify > 0 && hero != null) {
+			for (int i = 0; i < purify; i++) {
+				//直接进背包：丢在出生点容易被毒气盖住而看不见
+				new com.shatteredpixel.shatteredpixeldungeon.items.potions
+						.PotionOfPurity().collect();
+			}
+		}
 		
 		Level level;
 		if (branch == 0) {
-			switch (depth) {
+
+			//==== END(挑战 1 牢地碎破): 贴图/环境也倒置 ====
+			//原表描述只提了"区域交叉"，但文档所有者要求**贴图一并倒置**：
+			//1 区用 5 区（恶魔大厅）的地板墙壁，5 区用 1 区（下水道）。
+			//
+			//做法：复用同一个映射函数选**关卡类**（关卡类决定了 painter → 贴图与地形风格）。
+			//Boss 层也一并倒置（5F 的 Boss 层改用 25F 的 HallsBossLevel）。
+			//
+			//注意与"怪物数值查表"分开：
+			//  · 贴图  = 用映射后的 depth 选关卡类（这里）
+			//  · 数值  = 用**实际** depth 查配置表（ChallengeEffects.crumblingRegion）
+			//两者用不同的基准，因为配置表是按"玩家实际所处的区域"配的。
+			//
+			//未勾选 1 时原样返回 depth，本段等价于不存在。
+			int levelDepth = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.crumblingCrossDepth(depth);
+
+			switch (levelDepth) {
 				case 1:
 				case 2:
 				case 3:
@@ -919,6 +954,19 @@ public class Dungeon {
 	}
 	
 	public static boolean souNeeded() {
+
+		//==== END(挑战 81 搏杀赌徒): 不再主动刷新升级卷轴 ====
+		//原表："不再主动刷新升级卷轴" —— 整局的升级来源改为
+		//"财富戒指产出"，因此这里直接判否，让常规投放完全停止。
+		//
+		//注意放在**掷骰之前**返回：下方的 Random.Int() 会消耗关卡 RNG，
+		//提前返回可以让"勾了 81"时的随机序列与"没勾"时保持一致，
+		//不至于因为这条规则而改变同种子的关卡布局。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.gamblerNoUpgradeScrolls()) {
+			return false;
+		}
+
 		int souLeftThisSet;
 		//3 SOU each floor set
 		souLeftThisSet = 3 - (LimitedDrops.UPGRADE_SCROLLS.count - (depth / 5) * 3);

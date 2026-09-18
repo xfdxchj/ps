@@ -91,6 +91,42 @@ public class PotionOfPurity extends Potion {
 	
 	@Override
 	public void apply( Hero hero ) {
+
+		//==== END(挑战 49 切尔诺贝利): 净化药水改为"只有解毒功能" ====
+		//原表："持续时间增加至 300 回合…净化药水改为只有解毒功能"。
+		//
+		//含义：原本给的是 BlobImmunity（对所有气体免疫），
+		//勾选 49 后**只清除中毒**，不再提供"站在毒气里也不受伤"的全免疫 ——
+		//否则"全图毒气"这条规则就形同虚设（喝一瓶就能横穿全图）。
+		//
+		//但持续回合仍按 300 计：这是"解毒后的一段时间内不再中毒"，
+		//而不是永久免疫毒气伤害。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.purityOnlyCuresDebuffs()) {
+
+			//清除已有的中毒
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Poison poison =
+					hero.buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+							.Poison.class);
+			if (poison != null) poison.detach();
+
+			//300 回合内不再中毒（而不是对所有气体免疫）
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
+					hero,
+					com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+							.PoisonImmunity.class,
+					com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+							.ChallengeEffects.purityDuration(
+									com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+											.BlobImmunity.DURATION));
+
+			GLog.w( Messages.get(this, "protected") );
+			SpellSprite.show(hero, SpellSprite.PURITY);
+			identify();
+			return;
+		}
+
+		//---- 未勾选 49：原版行为 ----
 		GLog.w( Messages.get(this, "protected") );
 		Buff.prolong( hero, BlobImmunity.class, BlobImmunity.DURATION );
 		SpellSprite.show(hero, SpellSprite.PURITY);

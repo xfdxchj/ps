@@ -156,8 +156,12 @@ public final class ChallengeRegistry {
 	private static void registerPending(List<ChallengeDef> all) {
 
 		//---- 地图变化 ----
-		add(all, 1,  "牢地碎破",   "shattered_land",   "地图", T_MON, 3, T_HARD,   "s:6;2,3,4,5");
-		add(all, 2,  "楼层混乱",   "floor_shuffle",    "地图", T_TWO, 2, T_HARD,   "s:3,4,5");
+		//END(修正): 原关系串 "s:6;2,3,4,5" 里第二段缺前缀（会被当成未知类型解析）。
+		//1 与 2/3/4/5 同属"地图变化"系列，统一标为联动。
+		done(all, 1,  "牢地碎破",   "shattered_land",   "地图", T_MON, 3, T_HARD,   "s:6,2,3,4,5",
+				"区域倒置：1 区刷 5 区的怪、2 区刷 4 区、4 区刷 2 区、5 区刷 1 区；所有怪物数值按专用配置表重配。");
+		done(all, 2,  "楼层混乱",   "floor_shuffle",    "地图", T_TWO, 2, T_HARD,   "s:3,4,5",
+				"普通楼层随机重排：每个区域内的 4 个普通层打乱顺序，Boss 层位置不变（第 5/10/15/20/25 步仍是 Boss）。楼层编号与游玩顺序分离。");
 		add(all, 3,  "区域错位",   "region_shift",     "地图", T_TWO, 2, T_HARD,   "s:2,4,5");
 		add(all, 4,  "精英迁徙",   "elite_migration",  "地图", T_MON, 2, T_HARD,   "s:14,75");
 		add(all, 5,  "怪物入侵",   "monster_invasion", "地图", T_MON, 1, T_HARD,   "s:2,3,4");
@@ -245,7 +249,8 @@ public final class ChallengeRegistry {
 				"把物品卖给商店所得 ×1.5。");
 		add(all, 38, "盲盒",       "loot_box",         "经济", T_TWO, 1, T_MED,    "");
 		add(all, 39, "All or Nothing","all_or_nothing", "经济", T_RISK,3, T_MED,   "");
-		add(all, 40, "贷款",       "loan",             "经济", T_TWO, 2, T_MED,    "");
+		done(all, 40, "贷款",       "loan",             "经济", T_TWO, 2, T_EASY,   "",
+				"可在商店贷款金币（100/300/500/1000 自选），1000 回合内偿还本金的 110%。同一时间只能欠一笔。");
 		add(all, 41, "钱是万能",   "money_is_power",   "经济", T_BEN, 2, T_MED,    "");
 		add(all, 42, "等价交换",   "equivalent_exchange","经济",T_TWO,1, T_MED,    "");
 		done(all, 43, "一贫如洗",   "destitute",        "经济", T_RES, 2, T_EASY,   "",
@@ -267,11 +272,14 @@ public final class ChallengeRegistry {
 		add(all, 124,"野生狗奶",   "wild_milk",        "药剂", T_RISK,3, T_MED,    "");
 
 		//---- 环境 ----
-		add(all, 49, "切尔诺贝利", "chernobyl",        "环境", T_TWO, 3, T_MED,    "s:111");
-		add(all, 52, "陷阱泛滥",   "trap_overflow",    "环境", T_MON, 2, T_HARD,   "");
+		done(all, 49, "切尔诺贝利", "chernobyl",        "环境", T_TWO, 3, T_MED,    "s:111",
+				"全图铺满毒气，玩家受影响、怪物免疫。开局与每层额外获得净化药水。");
+		done(all, 52, "陷阱泛滥",   "trap_overflow",    "环境", T_MON, 2, T_EASY,   "",
+				"地图陷阱数量翻倍。");
 		done(all, 54, "我爱花花",   "flower_lover",     "环境", T_NEU, 1, T_EASY,   "",
 				"13% 的草地被替换为随机植物。纯趣味，不影响数值。");
-		add(all, 74, "热带雨林",   "rainforest",       "环境", T_MON, 2, T_MED,    "");
+		done(all, 74, "热带雨林",   "rainforest",       "环境", T_MON, 2, T_MED,    "",
+				"水中有 13% 概率生成食人鱼。");
 		done(all, 80, "冰天雪地",   "frozen_world",     "环境", T_TWO, 2, T_EASY,   "",
 				"玩家每回合 13% 概率寒冷、2% 概率冰冻。");
 		done(all, 90, "雷暴",       "thunderstorm",     "环境", T_TWO, 2, T_EASY,   "",
@@ -291,7 +299,8 @@ public final class ChallengeRegistry {
 				"开局额外获得 13 种进阶法杖中随机的一支（已鉴定）。");
 		done(all, 79, "高级附魔台", "advanced_enchant", "装备", T_BEN, 1, T_EASY,   "",
 				"每进入一个新区域（每 5 层）获得 1 个附魔秘卷。");
-		add(all, 81, "搏杀赌徒",   "gambler",          "装备", T_TWO, 2, T_MED,    "x:126");
+		done(all, 81, "搏杀赌徒",   "gambler",          "装备", T_TWO, 2, T_MED,    "x:126",
+				"开局获得 +3 财富戒指；财富戒指有 8% 概率产出升级卷轴；常规的升级卷轴投放被完全取消。");
 		add(all, 108,"装备觉醒",   "awakening",        "装备", T_BEN, 1, T_MED,    "r:57,59");
 
 		//---- 特殊 / 娱乐 ----
@@ -302,7 +311,8 @@ public final class ChallengeRegistry {
 		add(all, 63, "鼠鼠可爱",   "cute_rats",        "特殊", T_NEU, 1, T_HARD,   "");
 		done(all, 64, "宝物猎人",   "treasure_hunter",  "特殊", T_TWO, 1, T_EASY,   "",
 				"普通怪物掉落减少 30%，每个宝箱额外增加 1 件物品。");
-		add(all, 65, "及时雨",     "timely_rain",      "特殊", T_BEN, 2, T_MED,    "s:104");
+		done(all, 65, "及时雨",     "timely_rain",      "特殊", T_BEN, 2, T_EASY,   "s:104",
+				"整局第一次致命伤害不会死，保留 1 点生命（触发顺序在命悬一线之前）。");
 		add(all, 67, "宝箱危机",   "chest_crisis",     "特殊", T_RISK,3, T_MED,    "");
 		done(all, 70, "生活部长",   "life_minister",    "特殊", T_NEU, 1, T_MED,    "",
 				"每回合 3% 概率停止行动，说出「首先，我是生活部部长」。");
@@ -314,7 +324,8 @@ public final class ChallengeRegistry {
 				"每回合 3% 概率显示「耗子尾汁」，并播放随机音效。");
 		done(all, 96, "奥利给",     "oligei",           "特殊", T_TWO, 1, T_MED,    "",
 				"每回合 3% 概率停止行动，喊「奥利给」，获得 1 回合狂暴。");
-		add(all, 104,"命悬一线",   "close_call",       "特殊", T_TWO, 2, T_MED,    "s:65,68");
+		done(all, 104,"命悬一线",   "close_call",       "特殊", T_TWO, 2, T_MED,    "s:65,68",
+				"生命不显示数值，只显示状态描述；致命伤害时 13% 概率保留 1 点生命。");
 		done(all, 118,"天意侵蚀",   "providence",       "特殊", T_TWO, 1, T_MED,    "",
 				"每回合 13% 概率随机播放一段新三国音效。");
 		add(all, 120,"404",        "error_404",        "特殊", T_RISK,2, T_MED,    "");
@@ -353,7 +364,8 @@ public final class ChallengeRegistry {
 		add(all, 139,"紊乱法杖",   "chaos_wand",       "装备", T_TWO, 2, T_MED,    "s:60,21");
 		done(all, 140,"枪枪爆头",   "headshot",         "战斗", T_BEN, 2, T_EASY,   "s:103,76",
 				"玩家与目标距离 5 格以上时，远程攻击伤害必定为最大值。");
-		add(all, 141,"禁魔空间",   "anti_magic_zone",  "环境", T_MON, 2, T_MED,    "x:139,21,60");
+		done(all, 141,"禁魔空间",   "anti_magic_zone",  "环境", T_MON, 2, T_EASY,   "x:139,21,60",
+				"所有魔法伤害降低 20%（玩家与怪物都受影响）。");
 		add(all, 142,"无下限术士", "no_lower_limit",   "怪物", T_MON, 2, T_MED,    "s:140");
 		add(all, 143,"吾为王者",   "i_am_king",        "怪物", T_MON, 3, T_MED,    "s:117,15");
 		add(all, 144,"破碎权柄",   "broken_authority", "怪物", T_MON, 3, T_MED,    "s:75,143");
@@ -366,7 +378,8 @@ public final class ChallengeRegistry {
 
 		//==== 扩展包：148–168（清单未给 ID，按清单顺序编号）====
 		add(all, 148,"飞天神偷",   "flying_thief",     "怪物", T_MON, 2, T_MED,    "");
-		add(all, 149,"黏糊蜂蜜",   "sticky_honey",     "环境", T_MON, 1, T_MED,    "");
+		done(all, 149,"黏糊蜂蜜",   "sticky_honey",     "环境", T_MON, 1, T_MED,    "",
+				"每一层额外刷新 2 只蜜蜂。");
 		add(all, 150,"淹没地牢",   "flooded_dungeon",  "地图", T_MON, 2, T_HARD,   "s:74");
 		add(all, 151,"圣明神明",   "holy_divinity",    "特殊", T_TWO, 3, T_HARD,   "s:145");
 		add(all, 152,"和平地牢",   "peaceful_dungeon", "怪物", T_TWO, 2, T_HARD,   "");
@@ -378,10 +391,12 @@ public final class ChallengeRegistry {
 				"开局额外获得一件板甲（已鉴定）。");
 		add(all, 157,"附魔扩充",   "enchant_expansion","装备", T_BEN, 1, T_MED,    "s:58,108");
 		add(all, 158,"神圣之力",   "holy_power",       "特殊", T_BEN, 2, T_MED,    "s:153");
-		add(all, 159,"绵羊地牢",   "sheep_dungeon",    "环境", T_MON, 2, T_MED,    "");
+		done(all, 159,"绵羊地牢",   "sheep_dungeon",    "环境", T_MON, 2, T_MED,    "",
+				"玩家周围 7x7 范围内 13% 概率生成 1~2 只绵羊，触发后有 20 回合冷却。");
 		add(all, 160,"氪金大佬",   "whale",            "经济", T_BEN, 2, T_MED,    "s:41");
 		add(all, 161,"钱就是命",   "money_is_life",    "经济", T_BEN, 2, T_MED,    "s:41");
-		add(all, 162,"真实地牢",   "realistic_dungeon","环境", T_RES, 2, T_MED,    "");
+		done(all, 162,"真实地牢",   "realistic_dungeon","环境", T_RES, 2, T_EASY,   "",
+				"空气稀薄：每 50-5x(层数/5) 回合必须停下深呼吸一次（层数越深间隔越短）。");
 		add(all, 163,"古代升级",   "ancient_upgrade",  "特殊", T_BEN, 2, T_MED,    "");
 		add(all, 164,"魔法地牢",   "magic_dungeon",    "怪物", T_MON, 2, T_MED,    "s:141");
 		done(all, 165,"神圣之光",   "holy_light",       "特殊", T_BEN, 1, T_EASY,   "s:145",

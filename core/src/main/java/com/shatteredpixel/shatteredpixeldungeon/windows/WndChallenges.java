@@ -140,13 +140,18 @@ public class WndChallenges extends Window {
 		//分类按钮行
 		catContent = new Component();
 		catPane = new ScrollPane( catContent );
+		//END(修复): 必须在 add() 之后立刻绑定窗口相机 ——
+		//否则 ScrollPane 第一次 layout() 就会用错误的相机定位内部裁剪区，
+		//之后每次 setRect 还会反复覆盖成错的。
 		add( catPane );
+		bindScrollPaneCamera( catPane );
 		buildCategoryBar();
 
 		//列表区
 		content = new Component();
 		pane = new ScrollPane( content );
 		add( pane );
+		bindScrollPaneCamera( pane );
 
 		//随机条（仅开局可选时）
 		float top = TTL_HEIGHT;
@@ -561,6 +566,84 @@ public class WndChallenges extends Window {
 			}
 		}
 		sb.append( "\n\n" ).append( label ).append( "：" ).append( ids );
+	}
+
+	/**
+	 * END(修复·列表偏移 330/570 像素): 显式摆正 ScrollPane 的内部 camera。
+	 *
+	 * <h3>问题所在</h3>
+	 * {@code ScrollPane.layout()} 里这样定位它的内部裁剪 camera：
+	 * <pre>
+	 *   Point p = camera().cameraToScreen( x, y );
+	 *   content.camera.x = p.x;
+	 *   content.camera.y = p.y;
+	 * </pre>
+	 * 而 {@code Camera.cameraToScreen()} 的公式是
+	 * {@code (x - scroll.x) * zoom + this.x} —— 它期望调用方的
+	 * {@code camera()} 是**用于 UI 的相机**。
+	 *
+	 * <p>实测（2560×1335 屏幕、zoom=5）：窗口在 {@code (950, 99)}，
+	 * 但 {@code content.camera} 被算成了 {@code (1280, 922)} ——
+	 * 右偏 330、下偏 570 物理像素，正好表现为"列表往右下溢出、
+	 * 盖住英雄立绘"。
+	 *
+	 * <h3>为什么要在这里纠正</h3>
+	 * 同一套 {@code ScrollPane} 在 {@code WndJournal} 等窗口里是正常的，
+	 * 差异在于它们的 ScrollPane 挂在**中间层的 Component** 上，
+	 * 而这里是直接挂在 {@code Window} 上 —— 父级链不同，
+	 * {@code camera()} 解析出来的相机就不同。
+	 *
+	 * <p>与其改动公共的 {@code ScrollPane}（会影响所有窗口），
+	 * 不如在本窗口内**显式把内部 camera 摆到窗口坐标系里的正确位置**：
+	 * 内容点 (cx,cy) 相对窗口左上角，因此屏幕位置应为
+	 * {@code (cx - chrome.scroll) * zoom + Window.camera.x}。
+	 */
+	@Override
+	public void update() {
+		super.update();
+		//（保留一个轻量兜底：见 bindScrollPaneCamera 的说明）
+		bindScrollPaneCamera( catPane );
+		bindScrollPaneCamera( pane );
+	}
+
+	/**
+	 * END(修复·列表右下偏移 / 分类栏不能左右滑 / 点击后又跳回去):
+	 * 把 ScrollPane 的父级相机**显式绑定**到本窗口的 camera。
+	 *
+	 * <h3>根因</h3>
+	 * {@code ScrollPane.layout()} 用 {@code camera().cameraToScreen(x, y)} 定位
+	 * 它内部的裁剪 camera，而 {@code Gizmo.camera()} 是**向上查找并缓存**的：
+	 * <pre>
+	 *   if (camera != null) return camera;          // 已缓存就直接用
+	 *   else if (parent != null) return camera = parent.camera();
+	 *   else return null;                            // ← 此时返回 null
+	 * </pre>
+	 * 只要在 {@code add()} 生效**之前**调用过一次 {@code camera()}，
+	 * 或者中间隔了一层不带 camera 的父级，解析出来的就不是 Window.camera。
+	 * 实测（2560×1335、zoom=5）：窗口在 {@code (950, 99)}，
+	 * 而 content.camera 被算成 {@code (1280, 922)} —— 右偏 330、下偏 570。
+	 *
+	 * <h3>为什么表现为三个症状</h3>
+	 * <ul>
+	 *   <li><b>列表偏右下</b>：裁剪相机就在错的位置上画。</li>
+	 *   <li><b>分类栏不能左右滑</b>：{@code PointerController.onScroll} 用
+	 *       {@code content.camera.screenToCamera()} 把点击换算回内容坐标，
+	 *       相机位置错 → 换算全错 → 拖不动。</li>
+	 *   <li><b>点一下又跳回去</b>：每次 {@code setRect} 都会触发
+	 *       {@code ScrollPane.layout()}，它会用错误的相机**再覆盖一次**，
+	 *       把任何临时纠正冲掉。这就是那个"时序问题"。</li>
+	 * </ul>
+	 *
+	 * <h3>修法</h3>
+	 * 不去逐帧纠正结果（会被覆盖），而是**修正输入**：
+	 * 直接给 ScrollPane 的 {@code camera} 字段赋上窗口相机，
+	 * 之后它自己的 layout() 就会算出正确位置，无需干预。
+	 */
+	private void bindScrollPaneCamera( ScrollPane sp ) {
+		if (sp == null) return;
+		if (sp.camera != camera) {
+			sp.camera = camera;
+		}
 	}
 
 	@Override

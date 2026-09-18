@@ -86,6 +86,15 @@ public class Poison extends Buff implements Hero.Doom {
 
 	@Override
 	public boolean attachTo(Char target) {
+
+		//==== END(挑战 49 切尔诺贝利): 中毒免疫拦截 ====
+		//喝过"只解毒版"净化药水后，一段时间内不会再中毒。
+		//放在 super.attachTo 之前：拒绝挂载比挂上再 detach 更干净
+		//（后者会触发一次 attach/detach 的粒子与日志）。
+		if (target != null && target.buff(PoisonImmunity.class) != null) {
+			return false;
+		}
+
 		if (super.attachTo(target) && target.sprite != null){
 			CellEmitter.center(target.pos).burst( PoisonParticle.SPLASH, 5 );
 			return true;

@@ -217,6 +217,22 @@ public class RingOfWealth extends Ring {
 			case 2:
 				return Generator.randomUsingDefaults(Generator.Category.POTION);
 			case 3:
+				//==== END(挑战 81 搏杀赌徒): 财富戒指可产出升级卷轴 ====
+				//升级卷轴在 Category.SCROLL 里的概率是 **0**（见 Generator），
+				//所以原版财富戒指永远摸不到它。勾选 81 后单独给一个小概率，
+				//作为"常规投放被取消"之后唯一的升级来源。
+				//
+				//判定放在原 switch 分支**之内**：Random.Int(4) 已经掷过，
+				//这里额外掷一次不影响前面的序列；未勾选 81 时
+				//gamblerUpgradeScrollChance() 返回 0，等价于原版行为。
+				if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+						.ChallengeEffects.gamblerUpgradeScrollChance() > 0
+						&& Random.Float() < com.shatteredpixel.shatteredpixeldungeon
+								.endcontent.challenge.ChallengeEffects
+								.gamblerUpgradeScrollChance()) {
+					return new com.shatteredpixel.shatteredpixeldungeon.items.scrolls
+							.ScrollOfUpgrade();
+				}
 				return Generator.randomUsingDefaults(Generator.Category.SCROLL);
 		}
 	}

@@ -393,10 +393,36 @@ public class YogDzewa extends Mob {
 
 		if (phase == 0 || findFist() != null) return;
 
+		//==== END(挑战 1 牢地碎破): 阶段阈值随最大生命缩放 ====
+		//
+		//【原版机制】HT = 1000，每推进一个阶段要再打掉 **300** 血：
+		//    1000 -> 700  召唤拳头 #1   (phase 1)
+		//     700 -> 400  召唤拳头 #2   (phase 2)
+		//     400 -> 100  召唤拳头 #3   (phase 3)
+		//     100 ->       进入最终阶段  (phase 4 -> 5)
+		//原版把 300 写死在两处（下面的下限托底与 phase++ 判定）。
+		//
+		//【为什么必须改】挑战 1 会把 YogDzewa 的 HT 改成 70（让它出现在实际 1 区）。
+		//此时 HT - 300*phase 变成负数，phase++ 的条件 `HP <= HT - 300*phase`
+		//永远不成立 -> 阶段卡死在 1，三只拳头不会依次出现。
+		//
+		//【缩放系数】300 / 1000 = 3/10，即每个阶段消耗最大生命的 30%。
+		//用 HT*3/10 而不是写死的 300：
+		//  · HT = 1000（原版）  -> 300，**行为与原版完全一致**
+		//  · HT = 70（挑战 1）  -> 21，阶段仍能正常推进
+		//
+		//⚠️ 早先版本这里误写成 HT/10（HT=1000 时得 100，不是 300），
+		//   那会把原版的三次召唤全部提前，属于改坏了原版行为，已修正。
+		int phaseStep = Math.max(1, HT * 3 / 10);
+
 		if (phase < 4) {
-			HP = Math.max(HP, HT - 300 * phase);
+			HP = Math.max(HP, HT - phaseStep * phase);
 		} else if (phase == 4) {
-			HP = Math.max(HP, 100);
+			//phase 4 的"血量地板"同样按缩放走。
+			//原版这里写死 100，而 100 正好等于 HT - phaseStep*3
+			//（1000 - 300*3 = 100）—— 它是上面那条公式在 phase=3 时的结果，
+			//不是独立常量。写死会导致 HT 被改小后 HP 反而被抬到超过 HT。
+			HP = Math.max(HP, Math.max(1, HT - phaseStep * 3));
 		}
 		int dmgTaken = preHP - HP;
 
@@ -405,7 +431,7 @@ public class YogDzewa extends Mob {
 			summonCooldown -= dmgTaken / 10f;
 		}
 
-		if (phase < 4 && HP <= HT - 300*phase){
+		if (phase < 4 && HP <= HT - phaseStep * phase){
 
 			phase++;
 

@@ -384,6 +384,11 @@ public abstract class Char extends Actor {
 		} else if (hit( this, enemy, accMulti, false )) {
 			
 			int dr = Math.round(enemy.drRoll() * AscensionChallenge.statModifier(enemy));
+
+			//==== END(挑战 1 牢地碎破): 护甲覆写 ====
+			//drRoll() 同样是方法，子类各自覆写，只能在这里按表覆盖。
+			dr = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.crumblingArmor(enemy, dr);
 			
 			if (this instanceof Hero){
 				Hero h = (Hero)this;
@@ -410,6 +415,13 @@ public abstract class Char extends Actor {
 			} else {
 				dmg = damageRoll();
 			}
+
+			//==== END(挑战 1 牢地碎破): 伤害覆写 ====
+			//damageRoll() 是方法，各 mob 子类各自覆写，只能在这里按表覆盖。
+			//放在"拿到基础伤害之后、所有倍率之前" —— 与 140 枪枪爆头同一位置，
+			//两者互斥（140 只有玩家、1 只有怪物），不会互相干扰。
+			dmg = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.crumblingDamage(this, dmg);
 
 			//==== END(挑战 140 枪枪爆头): 距离 >=5 时远程伤害必为最大值 ====
 			//放在拿到基础伤害之后、所有倍率之前 ——
@@ -697,6 +709,15 @@ public abstract class Char extends Actor {
 	public static boolean hit( Char attacker, Char defender, float accMulti, boolean magic ) {
 		float acuStat = attacker.attackSkill( defender );
 		float defStat = defender.defenseSkill( attacker );
+
+		//==== END(挑战 1 牢地碎破): 命中/闪避覆写 ====
+		//attackSkill/defenseSkill 都是**方法**，各 mob 子类各自覆写，
+		//改字段没有用。所以在这里（全游戏唯一的命中判定点）统一按表覆写。
+		//未勾选 1 时两个方法原样返回，本段等价于不存在。
+		acuStat = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.crumblingAccuracy(attacker, acuStat);
+		defStat = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.crumblingEvasion(defender, defStat);
 
 		if (defender instanceof Hero && ((Hero) defender).damageInterrupt){
 			((Hero) defender).interrupt();
@@ -1030,6 +1051,14 @@ public abstract class Char extends Actor {
 		
 		//TODO improve this when I have proper damage source logic
 		if (AntiMagic.RESISTS.contains(src.getClass())){
+
+			//==== END(挑战 141 禁魔空间): 所有魔法伤害 -20% ====
+			//放在 AntiMagic 减免**之前**：这是"魔法伤害"这一类的整体压制，
+			//应该作用在原始魔法伤害上，而不是在抗魔减免之后。
+			//玩家与怪物**都**受影响（原表："包括玩家与怪物"）。
+			dmg = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.magicDamageTaken(dmg);
+
 			dmg -= AntiMagic.drRoll(this, glyphLevel(AntiMagic.class));
 			if (buff(ArcaneArmor.class) != null) {
 				dmg -= Random.NormalIntRange(0, buff(ArcaneArmor.class).level());
@@ -1055,6 +1084,27 @@ public abstract class Char extends Actor {
 		int shielded = dmg;
 		dmg = ShieldBuff.processDamage(this, dmg, src);
 		shielded -= dmg;
+
+		//==== END(挑战 65 及时雨 / 104 命悬一线): 致命伤保命 ====
+		//放在护盾处理**之后**：只有真正会扣掉最后一点生命的伤害才算"致命伤"，
+		//被护盾挡下的不算。
+		//触发顺序按原表要求：先 65 及时雨（整局第一次必保），
+		//之后才轮到 104 命悬一线（每次 13%）。
+		if (dmg >= HP
+				&& com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+						.ChallengeEffects.survivingFatalBlow(this, dmg)) {
+			dmg = Math.max(0, HP - 1);          //保留 1 点生命
+			if (sprite != null) {
+				sprite.showStatus(CharSprite.POSITIVE,
+						Messages.get(this, "invulnerable"));
+			}
+			com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w(
+					com.shatteredpixel.shatteredpixeldungeon.messages.Messages.get(
+							com.shatteredpixel.shatteredpixeldungeon.endcontent
+									.challenge.ChallengeEffects.class,
+							"close_call_survive"));
+		}
+
 		HP -= dmg;
 
 		//==== END(挑战 78 烈火焚身): 玩家受击 13% 概率燃烧 ====

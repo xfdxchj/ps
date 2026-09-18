@@ -68,8 +68,20 @@ public class MobSpawner extends Actor {
 			return ak;
 		}
 
-		ArrayList<Class<? extends Mob>> mobs = standardMobRotation( depth );
-		addRareMobs(depth, mobs);
+		//==== END(挑战 1 牢地碎破): 区域交叉 ====
+		//把当前 depth 映射成"查表用的 depth"，实现区域倒置：
+		//  1区(1-5F)   -> 用 5区(21-25F) 的表
+		//  2区(6-10F)  -> 用 4区(16-20F) 的表
+		//  3区(11-15F) -> 不变
+		//  4区(16-20F) -> 用 2区(6-10F)  的表
+		//  5区(21-25F) -> 用 1区(1-5F)   的表
+		//只改"用哪张表"，不动表本身 —— 原版的怪物配比（每种几只）因此一并沿用。
+		//未勾选该挑战时 crumbledCrossDepth 原样返回 depth，本段等价于不存在。
+		int tableDepth = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.crumblingCrossDepth( depth );
+
+		ArrayList<Class<? extends Mob>> mobs = standardMobRotation( tableDepth );
+		addRareMobs(tableDepth, mobs);
 		swapMobAlts(mobs);
 		Random.shuffle(mobs);
 		return mobs;

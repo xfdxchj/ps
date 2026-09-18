@@ -70,6 +70,17 @@ public abstract class RegularPainter extends Painter {
 	private float[] trapChances;
 	
 	public RegularPainter setTraps(int num, Class<?>[] classes, float[] chances){
+
+		//==== END(挑战 52 陷阱泛滥): 陷阱数量倍率 ====
+		//在**这个参数注入点**统一乘倍率，而不是改 RegularLevel.nTraps() ——
+		//因为 nTraps() 会被 VaultLevel / SewerBossLevel 等子类覆写，
+		//只改基类会漏掉那些关卡；而所有关卡都必须经过 setTraps()。
+		float trapMult = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.trapCountMultiplier();
+		if (trapMult != 1f && num > 0) {
+			num = Math.max(1, Math.round(num * trapMult));
+		}
+
 		nTraps = num;
 		trapClasses = (Class<? extends Trap>[]) classes;
 		trapChances = chances;
