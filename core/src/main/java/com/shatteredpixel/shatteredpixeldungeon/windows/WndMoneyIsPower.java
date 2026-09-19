@@ -117,8 +117,20 @@ public class WndMoneyIsPower extends Window {
 		//所以顺序必须是：先 add（接上父链），再 setRect（此时才有相机）。
 		//原版 WndChallenges 也是这个顺序。
 		ScrollPane pane = new ScrollPane(content);
+		this.pane = pane;
 		add(pane);
 		pane.setRect(0, pos, WIDTH, Math.min(150, cPos));
+
+		//==== END(修复·右下偏移): 两道保险 ====
+		//文档所有者报告："和以前的挑战一样的问题，右下偏移"。
+		//
+		//挑战窗口当时用两个手段修好了，这里复用同一套（已抽成工具类）：
+		//  ① bindCamera      —— 把 pane.camera 绑到窗口相机，
+		//                        避免 camera() 向上解析到 uiCamera
+		//  ② placeContentCamera —— 在 update() 里每帧重算内部相机位置，
+		//                        覆盖 layout() 可能算错的结果
+		com.shatteredpixel.shatteredpixeldungeon.ui.ScrollPaneCamera
+				.bindCamera(pane, this);
 
 		pos = pane.bottom() + 2;
 
@@ -132,6 +144,29 @@ public class WndMoneyIsPower extends Window {
 		add(close);
 
 		resize(WIDTH, (int) close.bottom());
+	}
+
+	/** 采购列表的滚动容器（供 update() 每帧纠正相机）。 */
+	private ScrollPane pane;
+
+	/**
+	 * END(修复·右下偏移): 每帧重算内部裁剪相机的位置。
+	 *
+	 * <h3>为什么必须在 update() 里做</h3>
+	 * {@code ScrollPane.layout()} 用 {@code camera().cameraToScreen()} 定位
+	 * 它内部的裁剪相机 —— 那个结果依赖"当时父链解析到了哪个相机"。
+	 * 在 {@code add()} 之前或父链尚未接好时会算偏（实测为 uiCamera 的中心坐标）。
+	 *
+	 * <p>{@code layout()} 的调用时机不受我们控制（{@code setRect}/{@code resize}
+	 * 都会触发），所以唯一可靠的做法是**每帧覆盖一次**。开销只是几次赋值。
+	 */
+	@Override
+	public void update() {
+		super.update();
+		if (pane != null) {
+			com.shatteredpixel.shatteredpixeldungeon.ui.ScrollPaneCamera
+					.placeContentCamera(pane, this, pane.height());
+		}
 	}
 
 	/** END(41): 尝试购买。 */

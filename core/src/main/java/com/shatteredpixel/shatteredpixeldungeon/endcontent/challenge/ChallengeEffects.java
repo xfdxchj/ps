@@ -245,24 +245,6 @@ public final class ChallengeEffects {
 		return mult;
 	}
 
-	//==== 第 4 步：特殊替换（中档，预留钩子）====
-
-	/**
-	 * END(第4步·特殊替换): 高优先级伤害替换。
-	 *
-	 * <p>「20 等我启动」会把伤害**直接替换**为固定比例（第一次20%/第二次50%/
-	 * 第三次及以后110%），而不是乘系数。属**中档**，尚未实装。
-	 *
-	 * @param attacker 攻击方
-	 * @param enemy    目标
-	 * @param dmg      当前伤害（第 3 步之后）
-	 * @return 替换后的伤害；未实装时**原样返回**
-	 */
-	public static float specialOverride(Char attacker, Char enemy, float dmg) {
-		//TODO(中档): 20 等我启动 —— 需要记录"对同一目标的攻击次数"
-		return dmg;
-	}
-
 	//==== 第 5 步：目标方减伤 ====
 
 	/**
@@ -597,13 +579,6 @@ public final class ChallengeEffects {
 
 		//永远不能把原本存在的资源压到 0
 		return Math.max(1, result);
-	}
-
-	//==== 掉落类：按"物品类型"决定倍率 ====
-
-	/** 该物品是否属于"消耗品"（药水 / 卷轴 / 食物等一次性资源）。 */
-	public static boolean isConsumable(com.shatteredpixel.shatteredpixeldungeon.items.Item item) {
-		return item != null && isConsumableClass(item.getClass());
 	}
 
 	/**
@@ -1345,10 +1320,6 @@ public final class ChallengeEffects {
 	 */
 	public static final int GAMBLER_RING_LEVEL = 3;
 
-	public static boolean gamblerStarterRing() {
-		return on(GAMBLER);
-	}
-
 	/**
 	 * END(40 贷款): 是否可以在商店贷款。
 	 *
@@ -1997,34 +1968,6 @@ public final class ChallengeEffects {
 
 		int heal = Math.max(1, Math.round(ch.HT * HOLY_LIGHT_HEAL));
 		return Math.min(heal, ch.HT - ch.HP);               //不溢出上限
-	}
-
-	/**
-	 * END(155 家传戒指 / 156 家传铠甲): 开局额外获得的装备**数量**。
-	 *
-	 * <p>单独提供这个方法是为了可测试性：构造 Item 实例会触发
-	 * ItemSpriteSheet 的纹理加载（需要 libGDX 图形环境），
-	 * 在无图形的环境里无法实例化。数量判断则不依赖实例。
-	 */
-	public static int startingGearCount() {
-		int n = 0;
-		if (on(HEIRLOOM_RING))  n++;
-		if (on(HEIRLOOM_ARMOR)) n++;
-		if (on(HEIRLOOM_WAND))  n++;
-		if (on(SKIP_STUDENT))   n++;   // 7 跳级券
-		if (on(CHERNOBYL))      n++;   // 49 净化药水
-		if (on(GAMBLER))        n++;   // 81 财富戒指
-		if (on(GRIMM_WEAPON))   n += 2; // 125 银色短铳 + 兔子怀表
-		if (on(GRIMM_WEAPON_2)) n++;    // 133 神天使双剑
-		if (on(GRIMM_WEAPON_3)) n += 2; // 136 怨恨之剑 + 勇剑
-		if (on(GRIMM_RING))     n++;    // 127 黑兔戒指
-		if (on(GRIMM_ART))      n++;    // 128 镇魂歌
-		if (on(GOLDEN_MEAD))    n += 3; // 134 黄金蜂蜜酒 x3
-		if (on(GRIMM_HEART))    n++;    // 126 魂之容器
-		if (on(ALL_OR_NOTHING)) n++;    // 39 赌徒之骰
-		if (on(EXCHANGE))       n++;    // 42 交换契约
-		if (on(MONEY_IS_POWER)) n++;    // 41 万能钱袋
-		return n;
 	}
 
 	/**
@@ -2923,25 +2866,6 @@ public final class ChallengeEffects {
 
 		safeLogI(msg("awakening_done"));
 	}
-
-	/** END(108 装备觉醒): 护甲格挡计数。 */
-	public static void onArmorBlockForAwakening(
-			com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor armor) {
-		if (!on(AWAKENING) || armor == null) return;
-		armor.awakenBlockCount++;
-		if (armor.awakenBlockCount >= AWAKEN_BLOCKS && !armor.awakenedOnce) {
-			if (!cannotAwaken(armor)) {
-				armor.awakenedOnce = true;
-				if (armor.glyph == null) {
-					armor.inscribe();
-				} else {
-					armor.inscribe();
-				}
-				armor.identify();
-				safeLogI(msg("awakening_done"));
-			}
-		}
-	}
 	/** 157 附魔扩充：向随机附魔池加入「锋利」「力量」。 */
 	public static final int ENCHANT_EXPANSION = 157;
 
@@ -3078,11 +3002,6 @@ public final class ChallengeEffects {
 	/** 完整地牢下每区的层数（9 普通 + 1 Boss）。 */
 	public static final int FULL_REGION_SIZE = 10;
 
-	/** END(6 完整地牢): 是否启用加长地牢。 */
-	public static boolean fullDungeonEnabled() {
-		return on(FULL_DUNGEON);
-	}
-
 	/**
 	 * END(6 完整地牢): 把"实际深度"映射成"用于取资源的原版深度"。
 	 *
@@ -3129,19 +3048,6 @@ public final class ChallengeEffects {
 		}
 
 		return region * 5 + mappedWithin + 1;
-	}
-
-	/** END(6 完整地牢): 给定实际深度，返回它所在的区域（1..5）。 */
-	public static int fullDungeonRegion(int depth) {
-		if (depth < 1) return 1;
-		return Math.min(5, (depth - 1) / FULL_REGION_SIZE + 1);
-	}
-
-	/** END(6 完整地牢): 该实际深度是否是 Boss 层。 */
-	public static boolean fullDungeonIsBossLevel(int depth) {
-		if (!on(FULL_DUNGEON)) return false;
-		if (depth < 1 || depth > 50) return false;
-		return (depth - 1) % FULL_REGION_SIZE == FULL_REGION_SIZE - 1;
 	}
 
 	/**
@@ -3360,11 +3266,6 @@ public final class ChallengeEffects {
 		momentumTarget.put(attacker, target);
 		momentumCount.put(attacker, n);
 		return n;
-	}
-
-	/** END(20): 当前连击数（供测试与界面显示）。 */
-	public static int momentumStacks(Char attacker) {
-		return momentumCount.containsKey(attacker) ? momentumCount.get(attacker) : 0;
 	}
 
 	//---- 29 雇佣童工 ----
@@ -3709,11 +3610,6 @@ public final class ChallengeEffects {
 	/** END(86): 换局时清空。 */
 	public static void clearVengefulSouls() {
 		pendingVengefulSouls = 0;
-	}
-
-	/** END(86): 当前待处理数量（供测试）。 */
-	public static int pendingVengefulSouls() {
-		return pendingVengefulSouls;
 	}
 	//==================================================================
 	//76 原始状态：非远程怪物扔石头
@@ -4078,9 +3974,6 @@ public final class ChallengeEffects {
 	/** 41 钱是万能。 */
 	public static final int MONEY_IS_POWER = 41;
 
-	/** END(41): 是否可以用金币买任何物品。 */
-	public static boolean moneyPurchaseEnabled() { return on(MONEY_IS_POWER); }
-
 	/**
 	 * END(41 钱是万能): 按类别"购买"一件物品。
 	 *
@@ -4222,17 +4115,6 @@ public final class ChallengeEffects {
 		auctionMults.clear();                 //换层 → 重新定价
 		auctionBidUpThisFloor = on(AUCTION_HOUSE) && Random.Int(100) < 35;
 	}
-
-	/** END(88): 本层是否被抬价（供界面提示）。 */
-	public static boolean auctionBidUpActive() {
-		return on(AUCTION_HOUSE) && auctionBidUpThisFloor;
-	}
-
-	/** END(88): 换局时清空。 */
-	public static void clearAuction() {
-		auctionMults.clear();
-		auctionBidUpThisFloor = false;
-	}
 	//==================================================================
 	//151 圣明神明 / 164 魔法地牢 / 144 破碎权柄
 	//==================================================================
@@ -4258,22 +4140,52 @@ public final class ChallengeEffects {
 	}
 
 	/**
-	 * END(151 圣明神明): "停止并祷告" —— 玩家每回合开始时有概率被定住一回合。
+	 * END(151 圣明神明): "行动一回合，麻痹一回合" —— **严格交替**。
 	 *
-	 * <p>文档所有者说明："每 1 回合要停止并祷告"。
+	 * <h3>修订记录</h3>
+	 * 我最初实现为"每回合 25% 概率麻痹"，还留了个注释说
+	 * "字面每回合都停会让游戏无法进行" —— **那是我自作主张**。
+	 * 文档所有者明确要的是**行动 1 回合 / 麻痹 1 回合交替**。
 	 *
-	 * <p>字面"每回合都停"会让游戏完全无法进行（玩家永远动不了），
-	 * 所以实现为**每回合开始时有概率**被祷告打断。
-	 * 概率取 25% —— 明显能感觉到，但不至于卡死。
+	 * <p>这不是"不能玩"：麻痹的是**每隔一回合**，玩家仍然每两回合
+	 * 能完整行动一次，节奏变成"打一下、停一下"。
 	 *
-	 * <p>如果文档所有者要的是"真的每回合",把 {@link #DEITY_PRAY_PCT} 改成 100 即可。
+	 * <h3>天使形态（166）</h3>
+	 * 集齐所有神圣类变成天使后，节律放宽为**每 4 回合才麻痹 1 次** ——
+	 * 那是"神圣天使"这条规则的奖励。
+	 *
+	 * <p>用**回合计数器**实现交替，而不是概率 —— 概率会产生
+	 * "连续麻痹三次"这种玩家无法预期的结果。
 	 */
-	private static final int DEITY_PRAY_PCT = 25;
+	private static int deityTurnCounter = 0;
 
-	/** END(151): 本回合是否要"停下来祷告"。 */
+	/** END(151/166): 本回合是否要"停下来祷告"。 */
 	public static boolean rollDeityPray() {
 		if (!on(HOLY_DEITY)) return false;
-		return Random.Int(100) < DEITY_PRAY_PCT;
+
+		//==== END(修订): 每 5 回合触发 1 回合 ====
+		//文档所有者最终定稿："祷告改为每 5 回合触发 1 回合"。
+		//
+		//与之前的区别：
+		//  · 之前是"每 2 回合交替"（行动 1 / 祷告 1）
+		//  · 现在是**每 5 回合里有 1 回合**要祷告 —— 宽松得多
+		//
+		//天使形态（166）**不再改变节律**：它的奖励改为
+		//"祷告不消耗回合"（见 prayCostsTurn），那本身就等于取消了限制。
+		boolean pray = (deityTurnCounter % 5) == 0;
+		deityTurnCounter++;
+
+		return pray;
+	}
+
+	/** END(166): 祷告是否消耗回合（天使形态不消耗）。 */
+	public static boolean prayCostsTurn() {
+		return !angelForm();
+	}
+
+	/** END(151): 换局时重置节律计数。 */
+	public static void resetDeityPrays() {
+		deityTurnCounter = 0;
 	}
 
 	//---- 164 魔法地牢 ----
@@ -4508,14 +4420,85 @@ public final class ChallengeEffects {
 		return on(PEACEFUL_DUNGEON) && peaceBrokenThisFloor;
 	}
 
-	/** END(152): 记录一次"玩家动手了"。 */
+	/** END(152): 记录一次"玩家动手了"，并给本层怪物加上强化。 */
 	public static void breakPeace() {
-		if (on(PEACEFUL_DUNGEON)) peaceBrokenThisFloor = true;
+		if (!on(PEACEFUL_DUNGEON)) return;
+		if (peaceBrokenThisFloor) return;        //已经违反过了，不重复加
+		peaceBrokenThisFloor = true;
+		applyPeaceBrokenBuffs();
+	}
+
+	/**
+	 * END(修复·152 违反和平后没有 buff): 违反和平时给**全层怪物**加强化。
+	 *
+	 * <h3>原先的问题</h3>
+	 * 我写了 {@link #peaceBrokenStatMult()}，但**没有任何地方调用它** ——
+	 * "违反合约"只是让怪物恢复了主动攻击，属性 +50% 完全没生效
+	 * （文档所有者实测："违反和平后没有buff"）。
+	 *
+	 * <h3>现在怎么做</h3>
+	 * 违反的瞬间遍历本层所有敌人，挂一个 {@code PeaceBrokenMark}：
+	 * <ul>
+	 *   <li><b>Boss 层</b>：Boss **生命 +50%**（原表口径）</li>
+	 *   <li><b>常规层</b>：怪物**生命 +50%**，伤害 +50%（靠标记在伤害计算时乘）</li>
+	 * </ul>
+	 * 换层时由 {@link #resetPeaceful()} 统一清除，符合"每下一层重置"。
+	 */
+	private static void applyPeaceBrokenBuffs() {
+		if (Dungeon.level == null || Dungeon.level.mobs == null) return;
+
+		boolean bossFloor = Dungeon.bossLevel();
+		for (Mob m : Dungeon.level.mobs.toArray(new Mob[0])) {
+			if (m == null || !m.isAlive()) continue;
+			if (m.alignment != Char.Alignment.ENEMY) continue;
+
+			boolean isBoss = Char.hasProp(m, Char.Property.BOSS)
+					|| Char.hasProp(m, Char.Property.MINIBOSS);
+
+			try {
+				//挂标记（永久）—— 伤害 +50% 由 Mob.damageRoll 读它
+				com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(
+						m,
+						com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+								.PeaceBrokenMark.class,
+						9999f);
+
+				//生命 +50%：Boss 层只给 Boss 加，常规层给所有怪加
+				if (isBoss || !bossFloor) {
+					int add = Math.max(1, m.HT / 2);
+					m.HT += add;
+					m.HP = Math.min(m.HT, m.HP + add);
+				}
+			} catch (Throwable t) {
+				//挂不上就算了 —— 不该把游戏拖崩
+			}
+		}
+
+		safeLogW("你违反了和平合约。");
+	}
+
+	/** END(152): 换层时清除强化标记（"每下一层重置"）。 */
+	private static void clearPeaceBrokenBuffs() {
+		if (Dungeon.level == null || Dungeon.level.mobs == null) return;
+		for (Mob m : Dungeon.level.mobs.toArray(new Mob[0])) {
+			if (m == null) continue;
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.PeaceBrokenMark mk =
+					m.buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+							.PeaceBrokenMark.class);
+			if (mk != null) mk.detach();
+		}
 	}
 
 	/** END(152): 换层时重置（"每下一层重置"）。 */
 	public static void resetPeaceful() {
+		clearPeaceBrokenBuffs();
 		peaceBrokenThisFloor = false;
+	}
+
+	/** END(152): 本层怪物是否处于"合约已破"的强化状态。 */
+	public static boolean isPeaceBroken(Char ch) {
+		return ch != null && ch.buff(com.shatteredpixel.shatteredpixeldungeon.actors
+				.buffs.PeaceBrokenMark.class) != null;
 	}
 
 	/**
@@ -4564,11 +4547,6 @@ public final class ChallengeEffects {
 			if (!on(id)) return false;
 		}
 		return true;
-	}
-
-	/** END(166): 祷告的实际 CD（天使形态下 +4）。 */
-	public static int angelPrayCooldown() {
-		return ANGEL_PRAY_BASE_CD + (angelForm() ? ANGEL_PRAY_CD_BONUS : 0);
 	}
 
 	//---- 120 404 ----
@@ -4762,11 +4740,6 @@ public final class ChallengeEffects {
 
 	/** 63 鼠鼠可爱。 */
 	public static final int CUTE_RATS = 63;
-
-	/** END(63): 是否启用"怪物全变小鼠"。 */
-	public static boolean cuteRatsOn() {
-		return on(CUTE_RATS);
-	}
 
 	/**
 	 * END(63): 这只怪物是否要变成小鼠。

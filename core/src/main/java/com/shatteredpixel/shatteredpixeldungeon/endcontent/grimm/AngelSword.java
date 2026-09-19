@@ -36,12 +36,56 @@ import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
  * 按原表字面"每攻击一次加一"，**不做战斗结束重置**（那会削弱它）。
  * 只在**切换楼层**时清零，避免跨层累积到看不懂的地步。
  */
-public class AngelSword extends MeleeWeapon {
+public class AngelSword extends MeleeWeapon
+		implements com.shatteredpixel.shatteredpixeldungeon.actors.Char.MultiHitWeapon {
 
 	/** 每次攻击的伤害倍率。 */
 	public static final float HIT_MULT = 0.60f;
 	/** 攻击次数的上限。 */
 	public static final int MAX_HITS = 7;
+
+	/**
+	 * END(修订·必定命中): 神天使双剑**必定命中**。
+	 *
+	 * <p>文档所有者要求："神天使之剑加上必定命中"。
+	 *
+	 * <p>做成整个连击链都必中（而不是只有第一下）——
+	 * 否则这个武器会变成"第一下必中、后面全靠运气"，
+	 * 与描述里"挥动时会自行加速"的爽感不符。
+	 *
+	 * <p>实现：给命中倍率一个极大的值，{@code hit()} 的判定必然通过。
+	 */
+	public static final int PERFECT_ACCURACY = 10000;
+
+	/**
+	 * END(修复·多段攻击没生效): 让 attack() 真正打出 N 段。
+	 *
+	 * <h3>原先的问题</h3>
+	 * {@code currentHits()} / {@code advance()} 都写了，
+	 * 但**没有任何地方调用它们** —— 全是死代码。
+	 * 文档所有者实测："多段武器好像没有多段"。
+	 *
+	 * @return {段数, 每段倍率×100, 命中倍率×100}
+	 */
+	@Override
+	public int[] multiHitProfile(Char attacker, Char enemy) {
+		int hits = currentHits(attacker);
+		if (hits <= 1) hits = 1;      //至少 1 段（第一次攻击也要走这个路径）
+
+		return new int[]{ hits, Math.round(HIT_MULT * 100), PERFECT_ACCURACY };
+	}
+
+	/**
+	 * END(133): 一整轮打完后推进连击层数。
+	 *
+	 * <p>注意：{@code advance()} 的语义是"**每回合**只加一层"，
+	 * 所以这里在"一次攻击（可能含多段）结束"后调一次，
+	 * 由它内部按回合去重。
+	 */
+	@Override
+	public void onMultiHitFinished(Char attacker, Char enemy) {
+		advance(attacker);
+	}
 
 	{
 		image = ItemSpriteSheet.GRIMM_ANGELSWORD;

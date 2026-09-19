@@ -379,11 +379,152 @@ public abstract class Char extends Actor {
 	final public boolean attack( Char enemy ){
 		return attack(enemy, 1f, 0f, 1f);
 	}
+
+	/**
+	 * END(136/133 多段武器): 防止多段攻击递归重入的标记。
+	 *
+	 * <p>多段攻击的实现是"调 N 次 attack()"，而每次 attack() 都会再走一遍
+	 * 本方法开头的多段判定 —— 那会无限递归。所以第一段进入时打标记，
+	 * 后续几段直接跳过判定。
+	 */
+	private boolean multiHitInProgress = false;
+
+	/**
+	 * END(136/133): 本次攻击要打几段、每段伤害倍率是多少、是否必中。
+	 *
+	 * <p>返回 {@code null} 表示"不需要多段"（普通武器）。
+	 *
+	 * <h3>为什么要问"装备的武器"，而不是让武器覆写本方法</h3>
+	 * 本方法在 {@code Char} 上，而武器类（{@code MeleeWeapon} 的子类）
+	 * **不是 Char 的子类** —— 它没法覆写这里。
+	 *
+	 * <p>所以方向反过来：由 {@code Char} **主动去问**当前装备的武器
+	 * "你这次要打几段"。判定条件是"武器实现了多段接口"。
+	 */
+	protected int[] multiHitProfile(Char enemy) {
+		//看当前武器是否声明了多段配置
+		com.shatteredpixel.shatteredpixeldungeon.items.Item weapon = null;
+		if (this instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) {
+			weapon = ((com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) this)
+					.belongings.attackingWeapon();
+		}
+		if (weapon instanceof MultiHitWeapon) {
+			return ((MultiHitWeapon) weapon).multiHitProfile(this, enemy);
+		}
+		return null;
+	}
+
+	/**
+	 * END(136/133): 多段武器接口。
+	 *
+	 * <p>武器实现它来描述"我这次打几段"。返回值含义：
+	 * <pre>
+	 *   [0] = 段数（≥1）
+	 *   [1] = 每段伤害倍率 × 100
+	 *   [2] = 命中倍率 × 100（缺省 100 = 不变；给很大的值即为"必定命中"）
+	 * </pre>
+	 *
+	 * <p>返回 {@code null} 表示本次不需要多段。
+	 */
+	public interface MultiHitWeapon {
+		int[] multiHitProfile(Char attacker, Char enemy);
+
+		/** 多段全部打完后调用（用于推进循环状态）。 */
+		void onMultiHitFinished(Char attacker, Char enemy);
+	}
+
+	/**
+	 * END(136/133): 多段攻击结束后调用一次（推进武器自己的循环状态）。
+	 */
+	protected void onMultiHitFinished(Char enemy) {
+		com.shatteredpixel.shatteredpixeldungeon.items.Item weapon = null;
+		if (this instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) {
+			weapon = ((com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) this)
+					.belongings.attackingWeapon();
+		}
+		if (weapon instanceof MultiHitWeapon) {
+			((MultiHitWeapon) weapon).onMultiHitFinished(this, enemy);
+		}
+	}
+
+	/**
+	 * END(136 勇剑): 本次是否需要推进"单段循环"。
+	 *
+	 * <p>勇剑第 2 段只有 1 下（不走多段展开），但仍要推进三段循环。
+	 * 那种情况武器会在 {@code multiHitProfile()} 里设一个待推进标记，
+	 * 基类打完后调本方法取走。
+	 *
+	 * <p>默认返回 false —— 其它武器不需要。
+	 */
+	protected boolean consumePendingAdvance() {
+		return false;
+	}
 	
 	public boolean attack( Char enemy, float dmgMulti, float dmgBonus, float accMulti ) {
 
 		if (enemy == null) return false;
-		
+
+		//==== END(136/133 多段武器): 在这里展开多段攻击 ====
+		//文档所有者实测："多段武器好像没有多段" ——
+		//根因：勇剑/神天使双剑的状态机写了，但**没有任何地方驱动它**。
+		//
+		//修法：在攻击流程的收口点（本方法）检测武器的多段配置，
+		//命中后按倍率**重复调用自己**若干次。
+		//
+		//为什么用 multiHitInProgress 防重入：
+		//递归调用会再次走到这里，没有标记就会无限递归。
+		if (!multiHitInProgress) {
+			int[] profile = multiHitProfile(enemy);
+			//只要武器**显式声明**了多段配置（哪怕只有 1 段）就展开 ——
+			//勇剑第 2 段正是"1 段但必中且要推进循环"。
+			if (profile != null && profile.length >= 2 && profile[0] >= 1) {
+				multiHitInProgress = true;
+				try {
+					int hits = profile[0];
+					float mult = profile[1] / 100f;
+					float acc = profile.length >= 3 ? profile[2] / 100f : 1f;
+
+					boolean anyHit = false;
+					for (int i = 0; i < hits; i++) {
+						if (!enemy.isAlive()) break;      //目标死了就停
+						boolean r = attack(enemy, mult, dmgBonus, acc);
+						anyHit = anyHit || r;
+					}
+					if (anyHit) onMultiHitFinished(enemy);
+					return anyHit;
+				} finally {
+					multiHitInProgress = false;
+				}
+			}
+		}
+
+		//==== END(136 勇剑): "单段但要多段框架"的情况 ====
+		//勇剑第 2 段是"1 次必中"，不需要循环打 N 下，
+		//但它**仍要推进三段循环**。那种情况由武器返回 {1, 100, 大命中}，
+		//这里识别到"段数 = 1 但被显式声明"就照常展开（打 1 下 + 推进）。
+		if (!multiHitInProgress) {
+			multiHitInProgress = true;
+			try {
+				//真正的一次攻击（原逻辑）
+				boolean r = attackOnce(enemy, dmgMulti, dmgBonus, accMulti);
+				//多段武器的收尾：走 onMultiHitFinished；
+				//单段但需要推进的（勇剑第 2 段）走 consumePendingAdvance。
+				onMultiHitFinished(enemy);
+				consumePendingAdvance();
+				return r;
+			} finally {
+				multiHitInProgress = false;
+			}
+		}
+
+		return attackOnce(enemy, dmgMulti, dmgBonus, accMulti);
+	}
+
+	/** END(重构): 单次攻击的实际逻辑（原 attack() 的正文）。 */
+	private boolean attackOnce(Char enemy, float dmgMulti, float dmgBonus, float accMulti) {
+
+		//END(重构): visibleFight 原本定义在 attack() 里，
+		//拆出 attackOnce() 后必须挪进来 —— 否则这里引用不到（编译报"找不到符号"）。
 		boolean visibleFight = Dungeon.level.heroFOV[pos] || Dungeon.level.heroFOV[enemy.pos];
 
 		if (enemy.isInvulnerable(getClass())) {
@@ -506,6 +647,18 @@ public abstract class Char extends Actor {
 					.challenge.ChallengeEffects.lowHpMultiplier(this);
 			if (challengeMult != 1f) {
 				dmg *= challengeMult;
+			}
+
+			//==== END(修复·152 和平地牢): 违反合约后怪物伤害 +50% ====
+			//文档所有者实测："违反和平后没有buff" ——
+			//根因：我写了 peaceBrokenStatMult()，但**没有任何地方调用它**。
+			//
+			//现在生命 +50% 在挂标记时直接加了（一次性），
+			//伤害 +50% 在这里每次结算时乘（伤害是每回合重算的）。
+			if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.isPeaceBroken(this)) {
+				dmg *= com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+						.PeaceBrokenMark.DMG_MULT;
 			}
 
 			//==== END(挑战 119 怪物浪潮): 怪物输出 ×0.2 ====

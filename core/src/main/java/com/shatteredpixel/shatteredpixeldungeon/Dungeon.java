@@ -609,11 +609,6 @@ public class Dungeon {
 						.toLegacyInt( challengeMask );
 	}
 
-	/** END(挑战框架): 按**表 ID** 判断某条规则是否启用（新写法）。 */
-	public static boolean isChallengedId( int challengeId ) {
-		return challengeMask.has( challengeId );
-	}
-
 	public static boolean levelHasBeenGenerated(int depth, int branch){
 		return generatedLevels.contains(depth + 1000*branch);
 	}
@@ -866,6 +861,13 @@ public class Dungeon {
 
 		//（挑战 120 404 的接线在 Hero.act()：每回合 0.5% 概率）
 
+
+		//==== END(挑战 151/166 圣明神明): 重置祷告节律计数 ====
+		//天使形态（166）会把"每 2 回合停一次"放宽到"每 4 回合"，
+		//而 angelForm() 依赖当前掩码 —— 换局时计数器应该从头开始，
+		//否则新的一局会从上局的位置接着数。
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.resetDeityPrays();
 
 		//==== END(挑战 88 拍卖行): 换层时重新定价 + 掷抬价 ====
 		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge

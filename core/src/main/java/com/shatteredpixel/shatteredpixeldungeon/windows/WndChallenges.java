@@ -220,14 +220,15 @@ public class WndChallenges extends Window {
 		catContent.clear();
 		catButtons.clear();
 
-		//==== END(改版·两排网格): 分类铺成两排，全部可见 ====
-		//窗口宽 120，两排各放 5 个 → 每格宽约 23.6。
+		//==== END(改版·每行 4 个): 分类铺成 4 列网格 ====
+		//窗口宽 120，每行 4 个 → 每格宽约 29.75（比之前的 23.6 更宽，字更清楚）。
 		//分类名是 2 个字（经典/药剂/经济/特殊/地图/战斗/怪物/环境/装备/格林），
 		//6 号字两个字约 12 像素，23 宽足够，所以**标签里不再带数量** ——
 		//数字会把按钮挤到只剩几个像素。
 		//当前分类的数量改由列表标题/底部文字体现。
-		final int COLS = 5;
-		int rows = (groups.size() + COLS - 1) / COLS;      //10 个 → 2 排
+		//END(改版): 每行 **4 个** —— 11 个分类 → 4+4+3 三行
+		final int COLS = 4;
+		int rows = (groups.size() + COLS - 1) / COLS;      //11 个 → 3 排
 		float cellW = (WIDTH - (COLS - 1)) / (float) COLS;
 
 		for (int i = 0; i < groups.size(); i++) {
@@ -282,8 +283,8 @@ public class WndChallenges extends Window {
 	private void handleCategoryClick( float x, float y ) {
 		if (y < 0 || y > catHeight()) return;
 
-		//两排网格：按坐标反算行列
-		final int COLS = 5;
+		//4 列网格：按坐标反算行列（必须与 buildCategoryBar 的 COLS 一致）
+		final int COLS = 4;
 		float cellW = (WIDTH - (COLS - 1)) / (float) COLS;
 		int col = (int) (x / (cellW + 1));
 		int row = (int) (y / (CAT_H + 1));
@@ -613,16 +614,26 @@ public class WndChallenges extends Window {
 	 */
 	private void relayout() {
 		float top = TTL_HEIGHT;
-		if (editable && randomBar != null) {
-			randomBar.setRect(0, TTL_HEIGHT, WIDTH, RANDOM_BAR_H);
-			top = TTL_HEIGHT + RANDOM_BAR_H;
-		}
 
-		//分类栏：位置在这里**唯一**确定
+		//==== END(改版·每行 4 个 + 随机条下移): 分类栏在标题正下方 ====
+		//文档所有者要求：
+		//  · 分类栏每行 **4 个**（原为 5 个）—— 11 个分类 → 4+4+3 三行
+		//  · **随机条移到分类栏下方**（原在标题与分类栏之间）
+		//
+		//新布局：
+		//  标题      0 .. 16
+		//  分类栏    16 .. 67    （3 排 × 17）
+		//  随机条    67 .. 85
+		//  列表      85 ..
 		if (catContent != null) {
 			catContent.setPos(0, top);
 		}
 		top += catHeight() + 1;
+
+		if (editable && randomBar != null) {
+			randomBar.setRect(0, top, WIDTH, RANDOM_BAR_H);
+			top += RANDOM_BAR_H;
+		}
 
 		//列表
 		float bottomH = 14;
@@ -839,15 +850,10 @@ public class WndChallenges extends Window {
 	 * 只改 x/y/尺寸，否则滚动会被重置到顶部。
 	 */
 	private void placeContentCamera( ScrollPane sp, float h ) {
-		if (sp == null || sp.content() == null) return;
-		com.watabou.noosa.Camera inner = sp.content().camera;
-		if (inner == null) return;
-		if (camera == null) return;
-
-		inner.x = (int) ((sp.left() - camera.scroll.x) * camera.zoom + camera.x);
-		inner.y = (int) ((sp.top()  - camera.scroll.y) * camera.zoom + camera.y);
-		inner.zoom = camera.zoom;
-		inner.resize( Math.max(1, (int) sp.width()), Math.max(1, (int) h) );
+		//END(重构): 实现抽到 ScrollPaneCamera 工具类 ——
+		//WndMoneyIsPower 也要用同一套修正，不该复制两份。
+		com.shatteredpixel.shatteredpixeldungeon.ui.ScrollPaneCamera
+				.placeContentCamera(sp, this, h);
 	}
 
 	/**
@@ -884,10 +890,9 @@ public class WndChallenges extends Window {
 	 * 之后它自己的 layout() 就会算出正确位置，无需干预。
 	 */
 	private void bindScrollPaneCamera( ScrollPane sp ) {
-		if (sp == null) return;
-		if (sp.camera != camera) {
-			sp.camera = camera;
-		}
+		//END(重构): 同上，委托给工具类。
+		com.shatteredpixel.shatteredpixeldungeon.ui.ScrollPaneCamera
+				.bindCamera(sp, this);
 	}
 
 	@Override

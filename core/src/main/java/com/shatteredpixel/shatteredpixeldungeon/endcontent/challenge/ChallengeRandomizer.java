@@ -165,25 +165,4 @@ public final class ChallengeRandomizer {
 		}
 		return false;
 	}
-
-	/**
-	 * 给出几个常见的目标分档位，供 UI 做快捷按钮。
-	 *
-	 * <p>档位会根据**当前候选池的可达上限**裁剪 —— 只算已实装时上限只有 22，
-	 * 就不该给出 30 这个永远凑不满的选项。
-	 */
-	public static int[] suggestedTargets(boolean includePending) {
-		int max = maxTarget(includePending);
-		int[] wanted = { 3, 6, 10, 15, 20, 30, 45, 60 };
-
-		java.util.List<Integer> out = new java.util.ArrayList<>();
-		for (int w : wanted) {
-			if (w <= max) out.add(w);
-		}
-		if (out.isEmpty()) out.add(Math.max(1, max));
-
-		int[] arr = new int[out.size()];
-		for (int i = 0; i < arr.length; i++) arr[i] = out.get(i);
-		return arr;
-	}
 }

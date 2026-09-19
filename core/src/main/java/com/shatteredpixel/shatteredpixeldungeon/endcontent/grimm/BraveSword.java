@@ -32,7 +32,8 @@ import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
  * 若挥空也推进，玩家会靠空挥来"刷"到必中那一段，
  * 违背"第 2 段是奖励"的设计意图。
  */
-public class BraveSword extends MeleeWeapon {
+public class BraveSword extends MeleeWeapon
+		implements com.shatteredpixel.shatteredpixeldungeon.actors.Char.MultiHitWeapon {
 
 	/** 多段攻击时每击的伤害倍率。 */
 	public static final float MULTI_HIT_MULT = 0.60f;
@@ -49,7 +50,47 @@ public class BraveSword extends MeleeWeapon {
 		DLY = 1f;
 	}
 
-	@Override public String name(){ return "勇剑"; }
+	@Override public String name(){ return "勇剑沃柏尔"; }
+
+	/**
+	 * END(修复·多段攻击没生效): 驱动三段循环。
+	 *
+	 * <h3>原先的问题</h3>
+	 * {@code attackProfile()} / {@code advanceStage()} 都写了，
+	 * 但**没有任何地方调用它们** —— 全是死代码。
+	 * 文档所有者实测："多段武器好像没有多段"。
+	 *
+	 * <h3>现在的接法</h3>
+	 * 覆写 {@code Char.multiHitProfile()}：基类会在攻击流程里
+	 * 按返回的 {段数, 倍率×100, 命中×100} 重复调用 attack()。
+	 * 全部打完后由 {@code onMultiHitFinished()} 推进到下一段。
+	 *
+	 * <p>第 2 段（单次必中）返回 {@code null}（只有 1 段，不需要多段框架），
+	 * 它由 {@code MeleeWeapon} 的普通攻击路径处理；
+	 * "推进循环"那一步在 {@link #multiHitProfile} 的调用点旁边补齐 ——
+	 * 见下方 {@code advanceIfSingleStage}。
+	 *
+	 * @return {连击数, 每击倍率×100, 命中倍率×100}；1 段时返回 null（走普通攻击）
+	 */
+	@Override
+	public int[] multiHitProfile(Char attacker, Char enemy) {
+		int[] p = attackProfile(currentStage(attacker));
+		int hits = p[0];
+
+		if (hits <= 1) {
+			//第 2 段：单次**必中**。
+			//命中倍率给 100 倍 —— hit() 里越大越容易命中，远超正常值即"必定命中"。
+			return new int[]{ 1, 100, 10000 };
+		}
+
+		return new int[]{ hits, Math.round(MULTI_HIT_MULT * 100), 100 };
+	}
+
+	/** END(136): 三段全部打完后推进循环。 */
+	@Override
+	public void onMultiHitFinished(Char attacker, Char enemy) {
+		advanceStage(attacker);
+	}
 
 	@Override public int min(int lvl){ return 4 + lvl; }
 	@Override public int max(int lvl){ return 18 + 5*lvl; }

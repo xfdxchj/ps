@@ -318,7 +318,7 @@ public final class ChallengeRegistry {
 		done(all, 74, "热带雨林",   "rainforest",       "环境", T_MON, 2, T_MED,    "",
 				"水中有 13% 概率生成食人鱼。");
 		done(all, 80, "冰天雪地",   "frozen_world",     "环境", T_TWO, 2, T_EASY,   "",
-				"玩家每回合 13% 概率寒冷、2% 概率冰冻。");
+				"玩家每回合 **1%** 概率寒冷、**1%** 概率冰冻（原表为 13%/2%，实测过高已下调）。");
 		done(all, 90, "雷暴",       "thunderstorm",     "环境", T_TWO, 2, T_EASY,   "",
 				"每回合 5% 概率闪电随机劈中一个角色，伤害 = 3 × 层数 ÷ 5，并可能点燃。");
 
@@ -364,7 +364,7 @@ public final class ChallengeRegistry {
 		done(all, 95, "耗子尾汁",   "rat_tail_soup",    "特殊", T_BEN, 1, T_MED,    "",
 				"每回合 3% 概率显示「耗子尾汁」，并播放随机音效。");
 		done(all, 96, "奥利给",     "oligei",           "特殊", T_TWO, 1, T_MED,    "",
-				"每回合 3% 概率停止行动，喊「奥利给」，获得 1 回合狂暴。");
+				"每回合 **1%** 概率停止行动，喊「奥利给」，获得 1 回合狂暴。");
 		done(all, 104,"命悬一线",   "close_call",       "特殊", T_TWO, 2, T_MED,    "s:65,68",
 				"生命不显示数值，只显示状态描述；致命伤害时 13% 概率保留 1 点生命。");
 		done(all, 118,"天意侵蚀",   "providence",       "特殊", T_TWO, 1, T_MED,    "",
@@ -438,15 +438,15 @@ public final class ChallengeRegistry {
 		done(all, 149,"黏糊蜂蜜",   "sticky_honey",     "环境", T_MON, 1, T_MED,    "",
 				"每一层额外刷新 2 只蜜蜂。");
 		done(all, 150,"淹没地牢",   "flooded_dungeon",  "地图", T_MON, 2, T_HARD,   "s:74;x:154",
-				"每一层都是水域生态（整层被水淹没），水中 20% 生成幻影食人鱼。与「废弃地牢」互斥。");
+				"每一层都是水域生态（整层被水淹没），水中 **3%** 生成幻影食人鱼（原表 20%，实测过多已下调）。与「废弃地牢」互斥。");
 		done(all, 151,"圣明神明",   "holy_divinity",    "特殊", T_TWO, 3, T_HARD,   "s:145",
-				"玩家**生命 / 命中 / 闪避 +50%**、**攻击 +30%**，但每回合有 **25%** 概率必须停下来祷告（本回合无法行动）。");
+				"玩家**生命 / 命中 / 闪避 +50%**、**攻击 +30%**，但**每 5 回合有 1 回合**必须停下来祷告（那回合无法行动）。");
 		done(all, 152,"和平地牢",   "peaceful_dungeon", "怪物", T_TWO, 2, T_HARD,   "",
 				"所有怪物**不会主动攻击你**，直到你**主动攻击任何怪物**（违反合约）。违反后本层怪物属性 +50%（Boss 层为 Boss 生命 +50%），**每下一层重置**。");
 		done(all, 153,"恶魔地牢",   "demon_dungeon",    "怪物", T_MON, 2, T_MED,    "s:158",
 				"所有怪物被视为恶魔类（只改属性标记，不改外观与数值）。");
 		done(all, 154,"废弃地牢",   "abandoned_dungeon","地图", T_TWO, 2, T_HARD,   "s:112;x:150",
-				"每一层都是草木生态（整层长满植被），踩踏植物时 20% 概率被缠绕 3 回合。与「淹没地牢」互斥。");
+				"每一层都是草木生态（整层长满植被），踩踏植物时 **3%** 概率被缠绕 3 回合（原表 20%，实测过多已下调）。与「淹没地牢」互斥。");
 		done(all, 155,"家传戒指",   "heirloom_ring",    "装备", T_BEN, 1, T_EASY,   "s:60",
 				"开局额外获得一枚神射戒指（已鉴定）。");
 		done(all, 156,"家传铠甲",   "heirloom_armor",   "装备", T_BEN, 1, T_EASY,   "",
@@ -471,7 +471,7 @@ public final class ChallengeRegistry {
 				"每回合 13% 概率回复 2% 最大生命（满血时不触发）。");
 		//166 神圣天使：前置为 4 条神圣类规则（145 神圣附体 / 158 神圣之力 / 165 神圣之光 / 151 圣明神明）
 		done(all, 166,"神圣天使",   "holy_angel",       "特殊", T_BEN, 3, T_SER,    "p:145,158,165,151",
-				"集齐所有神圣类挑战后**变为天使**：祷告 CD **+4**，每次祷告获得 **2% 护盾 + 2% 回血**。");
+				"集齐所有神圣类挑战后**变为天使**：祷告**不再消耗回合**，并获得 **2% 护盾 + 2% 回血**。");
 		done(all, 167,"黄金地牢",   "golden_dungeon",   "经济", T_TWO, 3, T_HARD,   "p:41",
 				"怪物**不掉落任何物品**；地面生成的物品**全部换算成金币**。任务/剧情物品除外。");
 		done(all, 168,"怪物地牢",   "monster_dungeon",  "怪物", T_MON, 3, T_MED,    "",
@@ -557,15 +557,6 @@ public final class ChallengeRegistry {
 		}
 		int[] out = new int[ids.size()];
 		for (int i = 0; i < out.length; i++) out[i] = ids.get(i);
-		return out;
-	}
-
-	/** 已实装（可以真正勾选生效）的规则。 */
-	public static List<ChallengeDef> implemented() {
-		List<ChallengeDef> out = new ArrayList<>();
-		for (ChallengeDef def : ALL) {
-			if (def.isImplemented()) out.add(def);
-		}
 		return out;
 	}
 

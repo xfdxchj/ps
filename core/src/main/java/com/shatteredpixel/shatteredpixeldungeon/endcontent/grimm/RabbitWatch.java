@@ -120,19 +120,6 @@ public class RabbitWatch extends Item {
 		@Override public int icon(){ return BuffIndicator.NONE; }
 	}
 
-	/** END(125): 怀表当前是否可用。 */
-	public static boolean watchReady(Hero hero){
-		return hero != null && hero.buff(WatchCooldown.class) == null;
-	}
-
-	/** END(125): 怀表剩余冷却回合。 */
-	public static int watchCooldownTurns(Hero hero){
-		if (hero == null) return 0;
-		WatchCooldown cd = hero.buff(WatchCooldown.class);
-		if (cd == null) return 0;
-		return Math.max(0, (int) Math.ceil(cd.visualcooldown()));
-	}
-
 	@Override
 	public int value(){ return 0; }        //不可出售
 }

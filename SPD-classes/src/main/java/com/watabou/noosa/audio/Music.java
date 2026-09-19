@@ -193,7 +193,22 @@ public enum Music {
 		this.looping = false;
 		this.shuffle = shuffle;
 
+		//==== END(诊断 130): 打印队列构建结果 ====
+		//上一版只打了"收到 6 首"，但没有任何 [Music.play] ——
+		//说明 playTracks 内部**没走到 play()**。这条日志区分两种可能：
+		//  · 队列为空（所有 Random.Float() 都没中概率）
+		//  · 队列非空但 enabled=false
+		if (DEBUG_MUSIC) {
+			System.out.println("[Music.playTracks] 队列=" + trackQueue.size()
+					+ " / " + trackList.length
+					+ "  enabled=" + enabled
+					+ "  队列内容=" + trackQueue);
+		}
+
 		if (!enabled || trackQueue.isEmpty()){
+			if (DEBUG_MUSIC && trackQueue.isEmpty()) {
+				System.out.println("[Music.playTracks] 队列为空 → 不播放任何曲目！");
+			}
 			return;
 		}
 

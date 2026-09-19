@@ -306,11 +306,4 @@ public class SilverGun extends Weapon {
 		cd.detach();
 		return true;
 	}
-
-	/** END(125): 当前冷却剩余回合；不在冷却时返回 0。 */
-	public static int cooldownTurns( Hero hero ) {
-		if (hero == null) return 0;
-		SilverGunCooldown cd = hero.buff(SilverGunCooldown.class);
-		return cd == null ? 0 : cd.turnsLeft();
-	}
 }

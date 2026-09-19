@@ -187,11 +187,6 @@ public final class ChallengeSfx {
 		}
 	}
 
-	/** 本局加载失败的音效数（诊断用）。 */
-	public static int failedCount() {
-		return failed.size();
-	}
-
 	private static void loadAll(String[] assets) {
 		for (String a : assets) loadOne(a);
 	}

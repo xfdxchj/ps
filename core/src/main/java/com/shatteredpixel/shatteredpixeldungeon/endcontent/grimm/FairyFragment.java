@@ -89,42 +89,6 @@ public class FairyFragment extends Item {
 	@Override
 	public int value(){ return 0; }
 
-	//==================================================================
-	//9 个角色的名称与设定
-	//==================================================================
-
-	/** END(129): 角色名。 */
-	public static String characterName(int kind){
-		switch (kind){
-			case 0: return "贞德";
-			case 1: return "多萝西";
-			case 2: return "艾露玛";
-			case 3: return "古兹";
-			case 4: return "卡塔丽娜";
-			case 5: return "伊丽莎白";
-			case 6: return "蕾克";
-			case 7: return "爱丽丝";
-			case 8: return "仙度瑞拉";
-			default: return "？";
-		}
-	}
-
-	/** END(129): 角色对应的童话原型。 */
-	public static String fairyTaleOf(int kind){
-		switch (kind){
-			case 0: return "圣女贞德";
-			case 1: return "绿野仙踪";
-			case 2: return "卖火柴的小女孩";
-			case 3: return "黄金鹅";
-			case 4: return "山德利亚的圣女";
-			case 5: return "女王伊丽莎白";
-			case 6: return "小红帽";
-			case 7: return "爱丽丝梦游仙境";
-			case 8: return "灰姑娘";
-			default: return "—";
-		}
-	}
-
 	/**
 	 * END(129): 角色的设定文本。
 	 *

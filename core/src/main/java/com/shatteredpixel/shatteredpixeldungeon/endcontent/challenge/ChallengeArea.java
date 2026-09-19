@@ -69,22 +69,6 @@ public final class ChallengeArea {
 	 */
 	public static final int CHAL_ID_BASE = 180;
 
-	/**
-	 * END(改造): 挑战区对应的挑战规则 ID 范围。
-	 * <p>用于判断"某个 ID 是不是挑战区"。
-	 */
-	public static boolean isAreaChallengeId(int chalId) {
-		return chalId > CHAL_ID_BASE && chalId < CHAL_ID_BASE + 32;
-	}
-
-	/** END(改造): 按挑战规则 ID 反查挑战区；不是挑战区则返回 null。 */
-	public static ChallengeArea byChallengeId(int chalId) {
-		for (ChallengeArea a : ALL) {
-			if (a.chalId == chalId) return a;
-		}
-		return null;
-	}
-
 	private ChallengeArea(int id, String name, int floors, boolean implemented) {
 		this.id = id;
 		this.name = name;

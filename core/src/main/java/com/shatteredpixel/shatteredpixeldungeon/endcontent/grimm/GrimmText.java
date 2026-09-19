@@ -133,45 +133,6 @@ public class GrimmText {
 	}
 
 	//==================================================================
-	//拳头的名称（六个方向）
-	//==================================================================
-
-	/**
-	 * END(131): 拳头的名称。
-	 *
-	 * <p>原版是"燃烧之拳/大地之拳/…"。莉耶芙版本改成"她的六种笔触"——
-	 * 与"作者"的设定呼应，同时保留每个拳头的能力指向。
-	 */
-	public static String fistName(String originalName) {
-		if (!grimmEnemyEnabled()) return originalName;
-
-		switch (originalName) {
-			case "燃烧之拳": return "炽笔之拳";
-			case "大地之拳": return "厚土之拳";
-			case "腐烂之拳": return "霉斑之拳";
-			case "锈蚀之拳": return "褪色之拳";
-			case "辉耀之拳": return "描金之拳";
-			case "暗影之拳": return "涂黑之拳";
-			default:         return originalName;
-		}
-	}
-
-	/** END(131): 英文版拳头名。 */
-	public static String fistNameEn(String originalName) {
-		if (!grimmEnemyEnabled()) return originalName;
-
-		switch (originalName) {
-			case "Burning fist": return "Scorching quill";
-			case "Soiled fist":  return "Heavy earth";
-			case "Rotting fist": return "Mildewed page";
-			case "Rusted fist":  return "Faded ink";
-			case "Bright fist":  return "Gilded stroke";
-			case "Dark fist":    return "Blotted out";
-			default:             return originalName;
-		}
-	}
-
-	//==================================================================
 	//132 黑暗之魂：古神护符 → 爱丽丝
 	//==================================================================
 

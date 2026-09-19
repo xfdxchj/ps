@@ -1016,13 +1016,34 @@ public class Hero extends Char {
 		//时长 1 回合 —— 正好卡掉一次操作。
 		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 				.ChallengeEffects.rollDeityPray()) {
+			//用专属的 DeityPray 而不是原版 Paralysis ——
+			//后者挂上时会打印"你被麻痹了！"，那是中毒/陷阱的语义，
+			//而这里应该显示"你停下来祷告"。
 			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
 					this,
 					com.shatteredpixel.shatteredpixeldungeon.actors.buffs
-							.Paralysis.class,
-					1f);
-			com.shatteredpixel.shatteredpixeldungeon.utils.GLog
-					.i("你停下来祷告。（本回合无法行动）");
+							.DeityPray.class,
+					com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+							.DeityPray.DURATION);
+
+			//==== END(166 神圣天使): 天使形态下祷告**不消耗回合** ====
+			//文档所有者说明："天使形态不需要消耗回合"。
+			//
+			//做法：立刻把这次祷告的时间退还 ——
+			//DeityPray.attachTo() 会给 paralysed 计数 +1（跳过本回合），
+			//这里在天使形态下把它减回去，等于"祷告了但没花时间"。
+			//
+			//为什么不在 DeityPray 里判断：那个 buff 不知道自己是"谁的祷告"，
+			//而 angelForm() 是本挑战的全局状态，放在调用方更清晰。
+			if (!com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.prayCostsTurn()) {
+				com.shatteredpixel.shatteredpixeldungeon.actors.buffs.DeityPray dp =
+						buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+								.DeityPray.class);
+				if (dp != null) dp.detach();     //立刻解除，不占本回合
+				com.shatteredpixel.shatteredpixeldungeon.utils.GLog
+						.i("你默祷了一句。（天使形态：不消耗回合）");
+			}
 		}
 
 		//==== END(挑战·音频 70/72/96/118/137): 玩家每回合结算 ====
