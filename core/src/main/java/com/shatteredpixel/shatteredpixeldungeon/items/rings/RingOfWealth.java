@@ -105,7 +105,20 @@ public class RingOfWealth extends Ring {
 	}
 	
 	public static float dropChanceMultiplier( Char target ){
-		return (float)Math.pow(1.20, getBuffedBonus(target, Wealth.class));
+		float base = (float)Math.pow(1.20, getBuffedBonus(target, Wealth.class));
+
+		//==== END(挑战 198 幸运药水): 财富戒效果 +50% ====
+		//文档所有者定稿："提升财富戒/幸运附魔 50% 效果，50 回合。"
+		//
+		//注意乘的是**额外部分**（base - 1），不是整个 base：
+		//否则没有财富戒时（base = 1）会凭空变成 1.5 倍掉落 —— 那就不是
+		//"提升财富戒效果"而是"白送幸运"了。
+		if (target != null && target.buff(com.shatteredpixel.shatteredpixeldungeon
+				.actors.buffs.LuckyPotionBuff.class) != null) {
+			base = 1f + (base - 1f) * com.shatteredpixel.shatteredpixeldungeon.actors
+					.buffs.LuckyPotionBuff.MULT;
+		}
+		return base;
 	}
 	
 	public static ArrayList<Item> tryForBonusDrop(Char target, int tries ){
@@ -203,6 +216,20 @@ public class RingOfWealth extends Ring {
 		//10% chance + 2% per level. Starting from +15: 40%+2%*(lvl-15)
 		} else {
 			latestDropTier = 3;
+
+			//==== END(挑战 198 幸运药水): 幸运药水的获取途径 ====
+			//文档所有者定稿："获得方式财富/幸运掉落。"
+			//
+			//接在**高价值档**（10% 那一档）—— 而不是低/中档：
+			//药水的效果不弱，放在常见档会泛滥。
+			//
+			//而且只有勾选 198 时才可能掉（未勾选时概率为 0）。
+			if (Random.Float() < com.shatteredpixel.shatteredpixeldungeon.endcontent
+					.challenge.ChallengeEffects.luckyPotionDropChance()) {
+				return new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+						.LuckyPotion();
+			}
+
 			return genHighValueConsumable();
 		}
 	}

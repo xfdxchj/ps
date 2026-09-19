@@ -1005,6 +1005,12 @@ public class Hero extends Char {
 			return true;
 		}
 
+		//==== END(挑战 191 时间之神): 每 10 回合给 2 回合时间气泡 ====
+		//用原版现成的 Swiftthistle.TimeBubble（文档所有者确认"是 buff，也是已有的"）。
+		//未勾选 191 时 grantTimeGodBubble 直接返回 false，零开销。
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
+				.grantTimeGodBubble(this);
+
 		//==== END(挑战 151 圣明神明): 每回合停下来祷告 ====
 		//文档所有者说明："每 1 回合要停止并祷告"。
 		//

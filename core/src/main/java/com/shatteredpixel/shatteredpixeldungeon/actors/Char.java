@@ -1279,6 +1279,20 @@ public abstract class Char extends Actor {
 
 		dmg = Math.round(damage);
 
+		//==== END(挑战 194 怪物之王): 怪物获得 20% 免伤 ====
+		//文档所有者定稿："选择所有怪物增强类后，怪物获得 20% 免伤。"
+		//
+		//放在"最终伤害已算出、但还没扣血"的位置 ——
+		//这样它与护甲、抗性、精英减伤的结算顺序是"最后一道关卡"。
+		//
+		//未勾选 194（或目标不是怪物）时返回 false，等价于原版。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.kingDamageReduction(this)) {
+			dmg = Math.max(1, Math.round(dmg
+					* (1f - com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+							.ChallengeEffects.KING_DAMAGE_REDUCTION)));
+		}
+
 		//we ceil these specifically to favor the player vs. champ dmg reduction
 		// most important vs. giant champions in the earlygame
 		for (ChampionEnemy buff : buffs(ChampionEnemy.class)){
@@ -1407,6 +1421,34 @@ public abstract class Char extends Actor {
 		if (dmg >= HP
 				&& com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 						.ChallengeEffects.payToSurvive(this, dmg)) {
+			return;
+		}
+
+		//==== END(挑战 192 不死之身): 怪物生命归零时改为麻痹 50 回合 ====
+		//文档所有者定稿："怪物无法死亡，改为麻痹 50 回合。"
+		//
+		//接在 HP 扣除**之前** —— 命中就把生命压到 1 并挂 50 回合麻痹，
+		//怪物永远不会走到 die() 那条路径。
+		//
+		//Boss 不参与（把 Boss 变成打不死的会让整局无法通关）。
+		if (dmg >= HP
+				&& this instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob
+				&& com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+						.ChallengeEffects.shouldSurviveDeath(
+								(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob)
+										this)) {
+			HP = 1;
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
+					this,
+					com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+							.Paralysis.class,
+					com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+							.ChallengeEffects.UNDYING_PARALYSIS);
+			if (sprite != null) {
+				sprite.showStatus(
+						com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite
+								.NEGATIVE, "沉睡");
+			}
 			return;
 		}
 

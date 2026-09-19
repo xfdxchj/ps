@@ -82,6 +82,13 @@ public class ShatteredPixelDungeon extends Game {
 		//说明是 Music.play 那条路径没走到（而不是映射表的问题）。
 		System.out.println("[格林之音] TrackMapper 已注册至 Music（挑战 130 的 BGM 替换钩子）");
 
+		//END(挑战 189 时间加速): 注册全局速度倍率钩子。
+		//与 TrackMapper 同一套做法（底层模块不能反向依赖 core）。
+		//未勾选 189 时返回 1，行为与原来完全一致。
+		com.watabou.noosa.Game.setTimeScaleProvider(
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+						.ChallengeEffects::timeScale);
+
 	}
 
 	@Override

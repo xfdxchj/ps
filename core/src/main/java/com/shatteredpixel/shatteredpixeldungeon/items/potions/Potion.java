@@ -286,7 +286,20 @@ public class Potion extends Item {
 	
 	protected void drink( Hero hero ) {
 		
-		detach( hero.belongings.backpack );
+		//==== END(挑战 197 再来一瓶): 13% 概率不消耗 ====
+		//文档所有者定稿："喝下药水 13% 不消耗。"
+		//
+		//放在 detach() **之前**判定 —— 命中就整段跳过消耗。
+		//原版没有这个机制，所以"不消耗"必须在这里实现。
+		boolean keep = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.rollOneMorePotion();
+
+		if (keep) {
+			com.shatteredpixel.shatteredpixeldungeon.utils.GLog
+					.i("这一瓶居然没有见底。");
+		} else {
+			detach( hero.belongings.backpack );
+		}
 		
 		hero.spend( TIME_TO_DRINK );
 		hero.busy();
@@ -337,6 +350,35 @@ public class Potion extends Item {
 	
 	public void apply( Hero hero ) {
 		shatter( hero.pos );
+
+		//==== END(挑战 195 药水永恒): 打上"药水效果"标记 ====
+		//文档所有者定稿："药水持续时间提升 20%。"
+		//
+		//标记由 {@code Buff.prolong()} 消费（那是所有带时长 buff 的统一入口），
+		//用它来区分"这个 buff 是药水给的"还是别的来源。
+		//
+		//注意：子类覆写 apply() 时应在**自己的效果代码前**调 super.apply()，
+		//这样标记才会在 buff 挂载期间有效。
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.beginPotionEffect();
+
+		//==== END(挑战 196 是药三分毒): 喝下药水 13% 中毒 ====
+		//文档所有者定稿："喝下药水 13% 概率获得中毒。"
+		//
+		//放在**基类**里：所有药水都经过 apply()，
+		//不必逐个药水去加（那既容易漏，也会漏掉以后新增的药水）。
+		//
+		//未勾选 196 时 rollToxicPotion() 恒为 false，等价于原版。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.rollToxicPotion()) {
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Poison poison =
+					com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(
+							hero, com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+									.Poison.class);
+			poison.set(2f + hero.lvl / 5f);   //Poison.set(float) 只接受时长
+			com.shatteredpixel.shatteredpixeldungeon.utils.GLog
+					.w("药水里掺了别的东西。");
+		}
 	}
 	
 	public void shatter( int cell ) {

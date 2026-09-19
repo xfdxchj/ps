@@ -224,6 +224,7 @@ public abstract class Mob extends Char {
 				becomeWraith();
 			}
 
+
 			//==== END(挑战 148 飞天神偷): 怪物 13% 获得隐身 ====
 			//一次性判定（onAdd 只跑一次），不是每回合重掷 ——
 			//否则怪物会一会儿可见一会儿不可见，非常闪烁。

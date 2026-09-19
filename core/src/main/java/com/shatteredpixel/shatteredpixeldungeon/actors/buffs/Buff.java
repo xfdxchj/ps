@@ -190,7 +190,22 @@ public class Buff extends Actor {
 	//postpones an already active buff, or creates & attaches a new buff and delays that.
 	public static<T extends FlavourBuff> T prolong( Char target, Class<T> buffClass, float duration ) {
 		T buff = affect( target, buffClass );
-		buff.postpone( duration * target.resist(buffClass) );
+
+		//==== END(挑战 195 药水永恒): 药水带来的 buff 时长 +20% ====
+		//文档所有者定稿："药水持续时间提升 20%。"
+		//
+		//本方法是**所有带时长 buff 的统一入口**，只接这一处就够。
+		//怎么区分"这个 buff 是药水给的" —— 用调用方打的标记：
+		//{@code Potion.apply()} 生效前打上标记，这里查一次、用完即清
+		//（不清的话会连带影响之后其它来源的 buff）。
+		float mult = 1f;
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.consumePotionDurationFlag()) {
+			mult = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.POTION_DURATION_MULT;
+		}
+
+		buff.postpone( duration * mult * target.resist(buffClass) );
 		return buff;
 	}
 

@@ -269,6 +269,22 @@ public class Game implements ApplicationListener {
 	protected void update() {
 		//game will not process more than 200ms of graphics time per frame
 		float frameDelta = Math.min(0.2f, Gdx.graphics.getDeltaTime());
+
+		//==== END(挑战 189 时间加速): 每帧询问全局速度倍率 ====
+		//文档所有者定稿："增加游戏动画速度"。
+		//
+		//{@code Game.elapsed} 同时驱动**动画**与**Actor 的时间推进**（回合调度），
+		//所以改 {@code timeScale} 是"整个游戏加速"—— 动画更快、怪物也行动更快。
+		//这正是文档所有者确认的效果（属于"双刃剑"倾向）。
+		//
+		//本类在 SPD-classes 层，不能反向依赖 core，所以用回调：
+		//core 在启动时注册一个"速度倍率提供者"。
+		//未注册时恒为 1，行为与原来完全一致。
+		//
+		//**每帧都要设**（而不是启动时设一次）—— 因为 {@code Game.reset()}
+		//会把 timeScale 打回 1，而那个方法在切场景时会跑。
+		Game.timeScale = (timeScaleProvider == null) ? 1f : timeScaleProvider.get();
+
 		Game.elapsed = Game.timeScale * frameDelta;
 		Game.timeTotal += Game.elapsed;
 		
@@ -280,6 +296,22 @@ public class Game implements ApplicationListener {
 		Sample.INSTANCE.update();
 		scene.update();
 		Camera.updateAll();
+	}
+
+	//==== END(189): 全局速度倍率提供者 ====
+	//为什么用回调而不是直接调用：本类在底层模块，不能依赖 core（会循环依赖）。
+	//与 Music.setTrackMapper（挑战 130）是同一套做法。
+
+	/** 速度倍率提供者：返回当前应使用的 timeScale。 */
+	public interface TimeScaleProvider {
+		float get();
+	}
+
+	private static TimeScaleProvider timeScaleProvider;
+
+	/** 由 core 层注册（见 ShatteredPixelDungeon 的初始化）。传 null 可取消。 */
+	public static void setTimeScaleProvider(TimeScaleProvider provider) {
+		timeScaleProvider = provider;
 	}
 	
 	public static void reportException( Throwable tr ) {

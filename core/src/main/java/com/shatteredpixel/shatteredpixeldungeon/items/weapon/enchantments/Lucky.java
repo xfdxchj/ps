@@ -43,6 +43,18 @@ public class Lucky extends Weapon.Enchantment {
 		// lvl 1 ~ 12%
 		// lvl 2 ~ 14%
 		float procChance = Math.min(1f, (level+4f)/(level+40f) * procChanceMultiplier(attacker) + activeChanceAdd());
+
+		//==== END(挑战 198 幸运药水): 幸运附魔触发率 +50% ====
+		//文档所有者定稿："提升财富戒/幸运附魔 50% 效果，50 回合。"
+		//
+		//与财富戒那边同样的处理：只放大**概率本身**，不碰其它乘数。
+		//封顶仍是 1（100%），所以不会出现"必定触发"。
+		if (attacker != null && attacker.buff(com.shatteredpixel.shatteredpixeldungeon
+				.actors.buffs.LuckyPotionBuff.class) != null) {
+			procChance = Math.min(1f, procChance * com.shatteredpixel.shatteredpixeldungeon
+					.actors.buffs.LuckyPotionBuff.MULT);
+		}
+
 		if (Random.Float() < procChance){
 
 			float powerMulti = Math.max(1f, procChance);

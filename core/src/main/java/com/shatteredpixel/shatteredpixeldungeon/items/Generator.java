@@ -712,6 +712,26 @@ public class Generator {
 	}
 
 	public static Item randomUsingDefaults(){
+		//==== END(挑战 201 药水盛宴): 药水刷新率 +20% ====
+		//文档所有者定稿："药水刷新率提升 20%。"
+		//
+		//做法：在**类别权重**里把 POTION 的权值乘 1.2 再抽 ——
+		//"掉出来的东西里药水更多"。
+		//
+		//注意不要改 POTION.probs：那是"药水**内部**出哪种"的分布，
+		//语义不同（那会变成"某种药水更容易出"）。
+		//
+		//未勾选 201 时倍率为 1，走的还是原版那条路径。
+		float potionMult = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.potionSpawnMultiplier();
+		if (potionMult != 1f) {
+			java.util.HashMap<Category, Float> boosted =
+					new java.util.HashMap<>(defaultCatProbs);
+			Float p = boosted.get(Category.POTION);
+			if (p != null) boosted.put(Category.POTION, p * potionMult);
+			return randomUsingDefaults(Random.chances(boosted));
+		}
+
 		return randomUsingDefaults(Random.chances( defaultCatProbs ));
 	}
 	
@@ -756,12 +776,55 @@ public class Generator {
 					}
 				}
 
+				//==== END(挑战 199 混合药水): 刷新出来的药水变成紊乱魔药 ====
+				//实现已抽到 mixedPotionReplace()，两条生成路径共用一份规则。
+				Item mixed = mixedPotionReplace(cat, itemCls);
+				if (mixed != null) return mixed;
+
 				return ((Item) Reflection.newInstance(itemCls)).random();
 		}
 	}
 
 	//overrides any deck systems and always uses default probs
 	// except for artifacts, which must always use a deck
+	/**
+	 * END(挑战 199 混合药水): 药水生成时替换为紊乱魔药。
+	 *
+	 * <h3>为什么需要这个独立方法</h3>
+	 * 药水有**两条**生成路径：
+	 * <ol>
+	 *   <li>{@code random(Category.POTION)} —— 按类别直接抽</li>
+	 *   <li>{@code randomUsingDefaults(Category.POTION)} —— 按"默认权重"抽</li>
+	 * </ol>
+	 * 我最初只改了第 1 条，而**掉落用得最多的是第 2 条** ——
+	 * 于是 199 几乎没生效。现在两条都调本方法。
+	 *
+	 * <h3>规则</h3>
+	 * 文档所有者定稿："药水生成时替换为紊乱药水，不会应用力量药水"
+	 * <ul>
+	 *   <li>只对 {@code Category.POTION} 生效</li>
+	 *   <li>**力量药水除外**（它是成长资源）</li>
+	 *   <li>只影响"刷新出来的" —— 商店购买走各自独立的构造路径，不经过这里</li>
+	 * </ul>
+	 *
+	 * @param cat     生成的类别
+	 * @param itemCls 原本要生成的类
+	 * @return 替换后的物品；不需要替换时返回 null
+	 */
+	private static Item mixedPotionReplace(Category cat, Class<?> itemCls) {
+		if (cat != Category.POTION) return null;
+		if (itemCls == null) return null;
+		if (!com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.mixedPotionsEnabled()) return null;
+
+		//力量药水除外
+		if (itemCls == com.shatteredpixel.shatteredpixeldungeon.items.potions
+				.PotionOfStrength.class) return null;
+
+		return new com.shatteredpixel.shatteredpixeldungeon.items.potions.brews
+				.UnstableBrew();
+	}
+
 	public static Item randomUsingDefaults( Category cat ){
 		if (cat == Category.WEAPON){
 			return randomWeapon(true);
@@ -770,7 +833,10 @@ public class Generator {
 		} else if (cat.defaultProbs == null || cat == Category.ARTIFACT) {
 			return random(cat);
 		} else if (cat.defaultProbsTotal != null){
-			return ((Item) Reflection.newInstance(cat.classes[Random.chances(cat.defaultProbsTotal)])).random();
+			Class<?> cls = cat.classes[Random.chances(cat.defaultProbsTotal)];
+			Item mixed = mixedPotionReplace(cat, cls);
+			if (mixed != null) return mixed;
+			return ((Item) Reflection.newInstance(cls)).random();
 		} else {
 			Class<?> itemCls = cat.classes[Random.chances(cat.defaultProbs)];
 
@@ -783,6 +849,10 @@ public class Generator {
 					itemCls = ExoticScroll.regToExo.get(itemCls);
 				}
 			}
+
+			//==== END(199): 这条路径原本漏了 ====
+			Item mixed = mixedPotionReplace(cat, itemCls);
+			if (mixed != null) return mixed;
 
 			return ((Item) Reflection.newInstance(itemCls)).random();
 		}
@@ -828,6 +898,20 @@ public class Generator {
 	public static MeleeWeapon randomWeapon(int floorSet, boolean useDefaults) {
 
 		floorSet = (int)GameMath.gate(0, floorSet, floorSetTierProbs.length-1);
+
+		//==== END(改版·格林之器改为掉落刷新) ====
+		//文档所有者要求："格林之器不要开局给武器，获得方式为和 5 阶武器一样刷新。"
+		//
+		//所以在这里插入一次判定：只有**本层轮到的档位是 5 阶**时，
+		//才有可能掉格林武器 —— 这就是"和 5 阶武器一样刷新"的意思：
+		//出现概率、出现楼层、稀有度都与普通 T5 武器一致。
+		//
+		//未勾选 125/133/136 时 grimmWeaponFor 返回 null，零影响。
+		MeleeWeapon grimm = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.rollGrimmWeaponDrop();
+		if (grimm != null) {
+			return grimm;
+		}
 
 		MeleeWeapon w;
 		if (useDefaults){

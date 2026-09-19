@@ -147,7 +147,28 @@ public abstract class Recipe {
 			}
 			
 			//sample output and real output are identical in this case.
-			return sampleOutput(null);
+			Item result = sampleOutput(null);
+
+			//==== END(挑战 200 炼金术士): 13% 概率获得两份 ====
+			//文档所有者定稿："制作秘药 13% 获得两份。"
+			//
+			//接在**所有**配方共用的 brew() 上 —— 不必逐个配方去改。
+			//只对秘药类（Elixir）生效：原表说的是"制作秘药"，
+			//不该把卷轴/炸弹的合成也算进去。
+			if (result instanceof com.shatteredpixel.shatteredpixeldungeon.items.potions
+					.exotic.ExoticPotion
+					|| result instanceof com.shatteredpixel.shatteredpixeldungeon.items.potions
+							.elixirs.Elixir
+					|| (result != null && result.getClass().getSimpleName().contains("Elixir"))) {
+				if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+						.ChallengeEffects.rollAlchemist()) {
+					result.quantity(result.quantity() * 2);
+					com.shatteredpixel.shatteredpixeldungeon.utils.GLog
+							.p("配方多出了一份。");
+				}
+			}
+
+			return result;
 		}
 		
 		//ingredients are ignored, as output doesn't vary

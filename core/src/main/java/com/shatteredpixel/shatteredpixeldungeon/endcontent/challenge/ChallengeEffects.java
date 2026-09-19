@@ -2024,30 +2024,15 @@ public final class ChallengeEffects {
 					.PotionOfPurity());
 		}
 
-		//==== END(格林系列): 开局发放专属装备 ====
-		//125 格林之器：银色短铳 + 兔子怀表
-		//（原表把怨恨之剑/勇剑也写在 125 里，但文档所有者明确
-		//  "125 没有后面两个武器，那是 3 里的"，所以 125 只发这两件）
-		if (on(GRIMM_WEAPON)) {
-			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
-					.SilverGun());
-			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
-					.RabbitWatch());
-		}
-
-		//133 格林之器2：神天使双剑
-		if (on(GRIMM_WEAPON_2)) {
-			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
-					.AngelSword());
-		}
-
-		//136 格林之器3：怨恨之剑 + 勇剑
-		if (on(GRIMM_WEAPON_3)) {
-			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
-					.HateSword());
-			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
-					.BraveSword());
-		}
+		//==== END(改版·格林之器不给开局武器) ====
+		//文档所有者要求："格林之器不要开局给武器，获得方式为和 5 阶武器一样刷新。"
+		//
+		//所以这里**不再发放** 125/133/136 的三件武器（银色短铳、神天使双剑、
+		//怨恨之剑、勇剑沃柏尔）—— 它们改由 {@link #grimmWeaponDropChance()}
+		//在关卡掉落时按 5 阶武器的概率出现。
+		//
+		//仍然发放的是"道具类"（怀表、戒指、镇魂歌…）—— 那些不是武器，
+		//原表也没说它们要改成掉落。
 
 		//127 格林之戒：黑兔戒指
 		if (on(GRIMM_RING)) {
@@ -2066,6 +2051,15 @@ public final class ChallengeEffects {
 		if (on(MONEY_IS_POWER)) {
 			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
 					.AlmightyPurse());
+		}
+
+		//==== END(188 时间之力): 开局发放时间沙漏 ====
+		//文档所有者指出："188 的物品是原版已有的" ——
+		//就是 {@code TimekeepersHourglass}（时空沙漏），
+		//一件可以通过"时间冻结"让自己额外行动的神器。
+		if (on(TIME_POWER)) {
+			out.add(new com.shatteredpixel.shatteredpixeldungeon.items.artifacts
+					.TimekeepersHourglass());
 		}
 
 		//42 等价交换：交换契约
@@ -4831,5 +4825,343 @@ public final class ChallengeEffects {
 			}
 		}
 		return null;
+	}
+	//==================================================================
+	//第二批 14 条（188-201）：时间 / 怪物 / 药剂
+	//==================================================================
+
+	public static final int TIME_POWER    = 188;   //时间之力
+	public static final int TIME_ACCEL    = 189;   //时间加速
+	public static final int TIME_REVERSE  = 190;   //时间倒转
+	public static final int TIME_GOD      = 191;   //时间之神
+	public static final int UNDYING       = 192;   //不死之身
+	public static final int EMPOWERED_MOBS= 193;   //强化怪物
+	public static final int KING_OF_MOBS  = 194;   //怪物之王
+	public static final int LASTING_POTIONS = 195; //药水永恒
+	public static final int TOXIC_POTIONS = 196;   //是药三分毒
+	public static final int ONE_MORE      = 197;   //再来一瓶
+	public static final int LUCKY_POTION  = 198;   //幸运药水
+	public static final int MIXED_POTIONS = 199;   //混合药水
+	public static final int ALCHEMIST     = 200;   //炼金术士
+	public static final int POTION_FEAST  = 201;   //药水盛宴
+
+	//---- 195 药水永恒：持续时间 +20% ----
+
+	/** 药水持续时间倍率。 */
+	public static final float POTION_DURATION_MULT = 1.20f;
+
+	/**
+	 * END(195 药水永恒): 调整药水带来的 buff 时长。
+	 *
+	 * <p>调用点：所有"喝药水 → 挂 buff"的地方。
+	 * 未勾选 195 时原样返回。
+	 */
+	public static float potionDuration(float base) {
+		if (!on(LASTING_POTIONS)) return base;
+		if (base <= 0) return base;
+		return base * POTION_DURATION_MULT;
+	}
+
+	//---- 196 是药三分毒 / 197 再来一瓶 ----
+
+	/** 触发概率（%）。 */
+	private static final int TOXIC_PCT   = 13;
+	private static final int ONE_MORE_PCT = 13;
+
+	/**
+	 * END(196 是药三分毒): 喝下这瓶药水后是否中毒。
+	 *
+	 * <p>调用点：{@code Potion.apply()} 之后统一掷一次。
+	 */
+	public static boolean rollToxicPotion() {
+		if (!on(TOXIC_POTIONS)) return false;
+		return Random.Int(100) < TOXIC_PCT;
+	}
+
+	/** END(197 再来一瓶): 这瓶药水是否不消耗。 */
+	public static boolean rollOneMorePotion() {
+		if (!on(ONE_MORE)) return false;
+		return Random.Int(100) < ONE_MORE_PCT;
+	}
+
+	//---- 200 炼金术士 / 201 药水盛宴 ----
+
+	/** 制作秘药时额外产出的概率（%）。 */
+	private static final int ALCHEMIST_PCT = 13;
+
+	/** END(200 炼金术士): 制作秘药是否额外得一份。 */
+	public static boolean rollAlchemist() {
+		if (!on(ALCHEMIST)) return false;
+		return Random.Int(100) < ALCHEMIST_PCT;
+	}
+
+	/** END(201 药水盛宴): 药水生成的数量倍率。 */
+	public static float potionSpawnMultiplier() {
+		return on(POTION_FEAST) ? 1.20f : 1f;
+	}
+
+	//---- 193 强化怪物 ----
+
+	/** 触发概率（%）。 */
+	private static final int EMPOWERED_PCT = 13;
+	/** 体型倍率。 */
+	public static final float EMPOWERED_SCALE = 1.50f;
+	/** 生命倍率。 */
+	public static final float EMPOWERED_HP_MULT = 1.50f;
+
+	/**
+	 * END(193 强化怪物): 这只怪物是否被强化。
+	 *
+	 * <p>13% 概率：体型 ×1.5、生命 ×1.5。
+	 * 与 10 巨型化（体型 ×2）**可叠加** —— 两者同开时体型更夸张。
+	 */
+	public static boolean rollEmpoweredMob(Mob mob) {
+		if (!on(EMPOWERED_MOBS) || mob == null) return false;
+		if (Char.hasProp(mob, Char.Property.BOSS)
+				|| Char.hasProp(mob, Char.Property.MINIBOSS)) return false;
+		return Random.Int(100) < EMPOWERED_PCT;
+	}
+
+	//---- 192 不死之身 ----
+
+	/** 麻痹回合数（原表：50）。 */
+	public static final float UNDYING_PARALYSIS = 50f;
+
+	/**
+	 * END(192 不死之身): 怪物是否"不该死"。
+	 *
+	 * <p>调用点：{@code Mob.die()} 的最前面 —— 命中就改为麻痹 50 回合。
+	 *
+	 * <p>Boss 不参与（把 Boss 变成打不死的会让整局无法通关）。
+	 */
+	public static boolean shouldSurviveDeath(Mob mob) {
+		if (!on(UNDYING) || mob == null) return false;
+		if (Char.hasProp(mob, Char.Property.BOSS)
+				|| Char.hasProp(mob, Char.Property.MINIBOSS)) return false;
+		return true;
+	}
+
+	//---- 194 怪物之王 ----
+
+	/** 免伤比例。 */
+	public static final float KING_DAMAGE_REDUCTION = 0.20f;
+
+	/**
+	 * END(194 怪物之王): 该怪物是否享受 20% 免伤。
+	 *
+	 * <p>前置是"选择所有怪物增强类" —— 由注册表的 {@code p:} 声明保证，
+	 * 这里只查 194 本身是否勾选。
+	 */
+	public static boolean kingDamageReduction(Char ch) {
+		if (!on(KING_OF_MOBS) || ch == null) return false;
+		if (ch instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) {
+			return false;                 //只对怪物生效
+		}
+		return ch instanceof Mob;
+	}
+
+	//---- 191 时间之神 ----
+
+	/** 触发间隔（回合）。 */
+	public static final int TIME_GOD_INTERVAL = 10;
+	/** 获得的时间气泡回合数。 */
+	public static final float TIME_GOD_BUBBLE = 2f;
+
+	/**
+	 * END(191 时间之神): 每 10 回合给玩家 2 回合时间气泡。
+	 *
+	 * <h3>用的是原版现成的 buff</h3>
+	 * 文档所有者指出："时间气泡是 buff，也是已有的" ——
+	 * 就是快刀蓟（{@code Swiftthistle}）的 {@code TimeBubble}：
+	 * 一小团加速的时间，让持有者立即行动；**攻击或施法会打破它**。
+	 *
+	 * <p>所以本方法只负责"发气泡"，静滞效果由那个 buff 自己实现。
+	 *
+	 * <h3>节律用游戏时钟</h3>
+	 * 与 151 同样的理由：{@code Hero.act()} 一回合会跑很多次，
+	 * 用调用次数当回合数会变成"每回合都触发"。
+	 *
+	 * @return true 表示本次发出了气泡
+	 */
+	private static float timeGodLastAt = Float.NEGATIVE_INFINITY;
+
+	public static boolean grantTimeGodBubble(
+			com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero hero) {
+		if (!on(TIME_GOD) || hero == null) return false;
+
+		float now = com.shatteredpixel.shatteredpixeldungeon.actors.Actor.now();
+		if (now - timeGodLastAt < TIME_GOD_INTERVAL) return false;
+		timeGodLastAt = now;
+
+		try {
+			com.shatteredpixel.shatteredpixeldungeon.plants.Swiftthistle.TimeBubble tb =
+					com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(
+							hero,
+							com.shatteredpixel.shatteredpixeldungeon.plants
+									.Swiftthistle.TimeBubble.class);
+			//reset(turns) —— 传 2 表示 2 回合
+			tb.reset((int) TIME_GOD_BUBBLE);
+			safeLogI("时间之神眷顾了你。（时间气泡 " + (int) TIME_GOD_BUBBLE + " 回合）");
+			return true;
+		} catch (Throwable t) {
+			return false;
+		}
+	}
+
+	/** END(191): 换局时重置。 */
+	public static void resetTimeGod() {
+		timeGodLastAt = Float.NEGATIVE_INFINITY;
+	}
+	//==================================================================
+	//格林之器改为掉落刷新
+	//==================================================================
+
+	/**
+	 * END(改版·格林之器): 本次武器生成是否掉出格林武器。
+	 *
+	 * <h3>文档所有者要求</h3>
+	 * "格林之器不要开局给武器，获得方式为**和 5 阶武器一样刷新**。"
+	 *
+	 * <h3>怎么做到"和 5 阶武器一样"</h3>
+	 * 调用点是 {@code Generator.randomWeapon()} —— 那是**所有武器生成的统一出口**。
+	 * 但直接插在那里会让格林武器在**任何楼层**都能掉，不符合"5 阶"的语义。
+	 *
+	 * <p>所以这里加一道楼层门槛：只有**当前有效深度处于第 5 区**
+	 * （{@code effectiveDepth()/5 >= 4}，即 21 层之后）才有机会出现 ——
+	 * 那正是原版 T5 武器开始出现的区间。
+	 *
+	 * <h3>概率</h3>
+	 * 取 25%。原版一个 5 阶武器池有十几件，单件出现率大约就是这个量级；
+	 * 而且这里是要"顶替"一件普通武器，太高会让普通武器绝迹。
+	 *
+	 * @return 格林武器；不触发时返回 null（调用方走原本的随机）
+	 */
+	private static final int GRIMM_WEAPON_DROP_PCT = 25;
+
+	public static com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee
+			.MeleeWeapon rollGrimmWeaponDrop() {
+		//三条武器规则都没勾 → 直接跳过（零开销）
+		boolean any = on(GRIMM_WEAPON) || on(GRIMM_WEAPON_2) || on(GRIMM_WEAPON_3);
+		if (!any) return null;
+
+		//楼层门槛：只有第 5 区（21 层起）才有机会
+		int depth = Dungeon.effectiveDepth();
+		if (depth < 21) return null;
+
+		if (Random.Int(100) >= GRIMM_WEAPON_DROP_PCT) return null;
+
+		//从已勾选的规则里收集候选
+		java.util.ArrayList<com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee
+				.MeleeWeapon> pool = new java.util.ArrayList<>();
+
+		//125 格林之器：银色短铳（它继承 Weapon，不是 MeleeWeapon，所以不进这个池）
+		//—— 见下方单独处理。
+		if (on(GRIMM_WEAPON_2)) {
+			pool.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+					.AngelSword());
+		}
+		if (on(GRIMM_WEAPON_3)) {
+			pool.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+					.HateSword());
+			pool.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+					.BraveSword());
+		}
+
+		if (pool.isEmpty()) return null;
+
+		com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon w =
+				pool.get(Random.Int(pool.size()));
+		w.random();          //与普通武器一样随机等级
+		return w;
+	}
+	//==================================================================
+	//195 药水永恒：时长标记
+	//==================================================================
+
+	/**
+	 * END(195 药水永恒): "本次 buff 来自药水"的标记。
+	 *
+	 * <h3>为什么需要它</h3>
+	 * 药水时长 +20% 要改的是"药水产生的 buff"，
+	 * 而不是"所有 buff"（那样会连带强化卷轴、天赋、植物等一切来源）。
+	 *
+	 * <p>{@code Buff.prolong()} 是所有带时长 buff 的统一入口，
+	 * 没法从那里分辨来源 —— 所以由 {@code Potion.apply()} 在生效前打标记，
+	 * {@code prolong} 查一次并立刻清掉。
+	 *
+	 * <p>标记是"一次性"的：不清的话，药水之后挂的其它 buff 也会被误加时长。
+	 */
+	private static boolean potionEffectActive = false;
+
+	/** END(195): 开始一次"药水效果"（Potion.apply 调用）。 */
+	public static void beginPotionEffect() {
+		potionEffectActive = on(LASTING_POTIONS);
+	}
+
+	/** END(195): 结束这次药水效果。 */
+	public static void endPotionEffect() {
+		potionEffectActive = false;
+	}
+
+	/**
+	 * END(195): 查一次标记并清除。
+	 *
+	 * @return true 表示"刚刚那个 buff 是药水给的"
+	 */
+	public static boolean consumePotionDurationFlag() {
+		boolean v = potionEffectActive;
+		potionEffectActive = false;
+		return v;
+	}
+	//==================================================================
+	//199 混合药水
+	//==================================================================
+
+	/** END(199 混合药水): 刷新出来的药水是否要变成紊乱魔药。 */
+	public static boolean mixedPotionsEnabled() {
+		return on(MIXED_POTIONS);
+	}
+	//==================================================================
+	//189 时间加速
+	//==================================================================
+
+	/** 加速倍率。 END(修订): 1.5 -> 2.0（文档所有者指定）。 */
+	public static final float TIME_ACCEL_MULT = 2.00f;
+
+	/**
+	 * END(189 时间加速): 全局游戏速度倍率。
+	 *
+	 * <p>文档所有者定稿："增加游戏动画速度"。
+	 *
+	 * <h3>影响范围</h3>
+	 * {@code Game.timeScale} 同时驱动**动画**与 **Actor 的时间推进**，
+	 * 所以这是"整个游戏加速"：动画更快、怪物也行动更快。
+	 * 文档所有者确认这**就是**要的效果（属于"双刃剑"倾向）。
+	 *
+	 * <p>调用点：{@code Game.update()} —— 用的是回调（{@link Game.TimeScaleProvider}），
+	 * 因为那个类在底层模块，不能反向依赖 core。
+	 */
+	public static float timeScale() {
+		return on(TIME_ACCEL) ? TIME_ACCEL_MULT : 1f;
+	}
+	//==================================================================
+	//198 幸运药水：掉落
+	//==================================================================
+
+	/** 高价值档里掉出幸运药水的概率。 */
+	private static final float LUCKY_POTION_DROP = 0.25f;
+
+	/**
+	 * END(198 幸运药水): 财富/幸运掉落时出幸运药水的概率。
+	 *
+	 * <p>文档所有者定稿："获得方式财富/幸运掉落。"
+	 *
+	 * <p>只在高价值档判定（见 {@code RingOfWealth.genConsumableDrop}），
+	 * 所以实际获取率 ≈ 10%（高价值档）× 25% = 2.5% 每次财富掉落。
+	 *
+	 * @return 概率（0 表示不触发）
+	 */
+	public static float luckyPotionDropChance() {
+		return on(LUCKY_POTION) ? LUCKY_POTION_DROP : 0f;
 	}
 }
