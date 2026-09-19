@@ -458,6 +458,14 @@ public abstract class Char extends Actor {
 			dmg *= com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
 					.GoldenMead.madnessAttackMultiplier(this);
 
+			//==== END(挑战 20 等我启动): 对同一目标的连击递增 ====
+			//原表："对同一目标伤害：第一次 20%，第二次 50%，第三次及以后 110%"
+			//
+			//计数记在**攻击方**身上、以目标为键：换目标就重新从第一次算。
+			//未勾选 20 时原样返回 dmg，等价于原版。
+			dmg = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.applyMomentumDamage(this, enemy, dmg);
+
 			//==== END(挑战·伤害管线 第2步): 攻击方增益，**加法叠加** ====
 			//玻璃大炮 +20% / 破釜沉舟 +30% / 极致攻哈 +20% / 狂暴 +20%（怪物侧）
 			//注意：必须加法，若各自连乘结果会偏大（×1.872 而非 ×1.70）。
@@ -676,6 +684,12 @@ public abstract class Char extends Actor {
 			//  5) 24 以牙还牙 —— 最后做，因为它会发起一次新攻击
 			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
 					.onAttackHitBleed(enemy);
+			//==== END(挑战 8 混乱): 命中时给被打的一方挂随机 buff ====
+			//原表："战斗过程中产生随机 buff" —— 没指定对象，
+			//这里选"防守方"，因为"谁挨打谁出状况"最直观，
+			//而且玩家与怪物都会中招，符合"双刃剑"的倾向。
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.rollChaosBuff(enemy);
 			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
 					.onHeroAttackCharm(this, enemy);
 			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
@@ -924,6 +938,15 @@ public abstract class Char extends Actor {
 		//放在**基类**里，Hero/Mob 覆写 speed() 时都会经 super.speed() 走到这里。
 		speed *= com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 				.ChallengeEffects.speedModifier(this);
+
+		//==== END(挑战 29 雇佣童工): 童工移速 ×2 ====
+		//用独立标记而不是挂 Haste：Haste 的语义是"暂时的加速"，
+		//而且会与玩家自己施放的加速混淆（读界面时看不出是规则还是自己上的）。
+		if (buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+				.ChildLaborMark.class) != null) {
+			speed *= com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.childLaborSpeedMultiplier();
+		}
 
 		return speed;
 	}

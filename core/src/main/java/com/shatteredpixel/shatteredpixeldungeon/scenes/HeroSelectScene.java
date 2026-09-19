@@ -833,23 +833,16 @@ public class HeroSelectScene extends PixelScene {
 			add(challengeButton);
 			buttons.add(challengeButton);
 
-			//END(移植自魔绫·挑战区): 开局多选“挑战区域”（主线 25F 之后按 id 顺序依次进入）
-			areaButton = new StyledButton(Chrome.Type.BLANK, "挑战区域", 6){
-				@Override
-				protected void onClick() {
-					ShatteredPixelDungeon.scene().addToFront(new com.shatteredpixel.shatteredpixeldungeon.windows.WndChallengeAreas(SPDSettings.challengeAreas(), true) {
-						public void onBackPressed() {
-							super.onBackPressed();
-							icon(Icons.get(SPDSettings.challengeAreas() > 0 ? Icons.CHALLENGE_COLOR : Icons.CHALLENGE_GREY));
-							updateOptionsColor();
-						}
-					} );
-				}
-			};
-			areaButton.leftJustify = true;
-			areaButton.icon(Icons.get(SPDSettings.challengeAreas() > 0 ? Icons.CHALLENGE_COLOR : Icons.CHALLENGE_GREY));
-			add(areaButton);
-			buttons.add(areaButton);
+			//==== END(改造·挑战区并入挑战列表): 删掉独立的"挑战区域"按钮 ====
+			//6 个挑战区已经是挑战窗口（WndChallenges）里的条目，
+			//分组名「挑战区」、勾选后仍然走原本的 26F+ 流程。
+			//
+			//保留这个按钮会导致两个入口、两份状态，容易不同步；
+			//所以按文档所有者要求删掉它。
+			//
+			//旧的 SPDSettings.challengeAreas() 键**仍然保留**：
+			//  1) 老存档里已经选了区的，进游戏时由 Dungeon.init() 回退读取
+			//  2) WndChallengeAreas 类本身不删（存档/其它引用可能还在）
 
 			int unlockedCount = 0;
 			for (HeroClass cls : HeroClass.values()){

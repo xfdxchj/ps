@@ -215,4 +215,22 @@ public final class ChallengeMask {
 		}
 		return sb.append(']').toString();
 	}
+	/**
+	 * END(改造·挑战区并入挑战列表): 提取"挑战区"那一段位，压成旧的区域掩码。
+	 *
+	 * <p>挑战区的 ID 是 {@code ChallengeArea.CHAL_ID_BASE + 区内序号}，
+	 * 而挑战区流程读的是 {@code bit = 区内序号}。这里做位段平移。
+	 *
+	 * @return 旧的区域掩码（bit = 区内序号）；没有勾选任何区时返回 0
+	 */
+	public int areaBits() {
+		int out = 0;
+		for (int id = ChallengeArea.CHAL_ID_BASE + 1;
+			 id < ChallengeArea.CHAL_ID_BASE + 32; id++) {
+			if (!has(id)) continue;
+			int areaId = id - ChallengeArea.CHAL_ID_BASE;
+			out |= (1 << areaId);
+		}
+		return out;
+	}
 }

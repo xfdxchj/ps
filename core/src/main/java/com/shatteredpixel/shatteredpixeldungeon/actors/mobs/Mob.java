@@ -179,6 +179,51 @@ public abstract class Mob extends Char {
 				properties.add(Property.DEMONIC);
 			}
 
+			//==== END(挑战 29 雇佣童工): 13% 怪物变成"童工" ====
+			//原表："怪物 13% 概率被替换：生命=原 20%，移速×2"
+			//
+			//放在 onAdd 的最末尾：它是**最终覆盖**，必须跑在
+			//牢地碎破（配置表绝对值）之后，否则会被那张表冲掉。
+			//
+			//Boss 不参与（把 Boss 削到 20% 血会让整局失去意义）。
+			if (!properties.contains(Property.BOSS)
+					&& !properties.contains(Property.MINIBOSS)
+					&& com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+							.ChallengeEffects.rollChildLabor()) {
+				int newHP = Math.max(1, Math.round(HT
+						* com.shatteredpixel.shatteredpixeldungeon.endcontent
+								.challenge.ChallengeEffects.childLaborHpMultiplier()));
+				HT = newHP;
+				HP = newHP;
+
+				//移速 ×2：挂一个永久 Haste（原版有现成的）
+				com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(
+						this,
+						com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+								.Haste.class,
+						99999f);
+
+				//标记成童工，供"移速倍率"查询识别
+				com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(
+						this,
+						com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+								.ChildLaborMark.class,
+						99999f);
+			}
+
+			//==== END(挑战 73 神秘复苏): 13% 的怪物直接变成幽灵 ====
+			//原表："13% 生成幽灵"
+			//
+			//做法与 29 童工不同：那条是改数值，这条是**换怪**。
+			//但 Mob.onAdd 里已经没法把 this 换成另一个类，
+			//所以改为"把它变成幽灵的外观 + 数值"——
+			//即：把贴图换成 WraithSprite、HP 压到 1、清掉经验。
+			//这样它在行为上就是一只幽灵，而且不需要新建实例（避免递归 onAdd）。
+			if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.rollMysticRevival(this)) {
+				becomeWraith();
+			}
+
 			//==== END(挑战 148 飞天神偷): 怪物 13% 获得隐身 ====
 			//一次性判定（onAdd 只跑一次），不是每回合重掷 ——
 			//否则怪物会一会儿可见一会儿不可见，非常闪烁。
@@ -1097,6 +1142,41 @@ public abstract class Mob extends Char {
 		}
 	}
 	
+	/**
+	 * END(挑战 73 神秘复苏): 把这只怪"变成幽灵"。
+	 *
+	 * <h3>为什么不换成另一个实例</h3>
+	 * 我们正在 {@code onAdd()} 里 —— 那时 this 已经在 level.mobs 里了，
+	 * 新建一个 Wraith 再删掉自己会打乱 Actor 的注册顺序（而且可能递归）。
+	 *
+	 * <p>所以改为**就地改造**：把外观与关键数值改成幽灵的样子。
+	 * 行为上它就已经是一只幽灵了（飞行、1 血、无经验）。
+	 *
+	 * <h3>改了哪些</h3>
+	 * <ul>
+	 *   <li>{@code spriteClass} → {@code WraithSprite}（外观）</li>
+	 *   <li>HP/HT → 1（幽灵只有 1 点血）</li>
+	 *   <li>EXP → 0（打死幽灵不给经验）</li>
+	 *   <li>{@code flying} → true</li>
+	 *   <li>属性加 UNDEAD / INORGANIC</li>
+	 * </ul>
+	 */
+	private void becomeWraith() {
+		try {
+			spriteClass = com.shatteredpixel.shatteredpixeldungeon.sprites
+					.WraithSprite.class;
+
+			HP = HT = 1;
+			EXP = 0;
+			flying = true;
+
+			properties.add(Property.UNDEAD);
+			properties.add(Property.INORGANIC);
+		} catch (Throwable t) {
+			//改造失败就保持原样 —— 那只是少一只幽灵
+		}
+	}
+
 	@Override
 	public void die( Object cause ) {
 
@@ -1129,6 +1209,23 @@ public abstract class Mob extends Char {
 			//这条与 108 无关，是独立的成长系统（126 关闭了经验，改为攒魂）。
 			com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
 					.BlackSoul.onMobKilled(this);
+
+			//==== END(挑战 77 亡灵法师): 死亡后 20% 留下幽灵 ====
+			//原表："怪物死亡后 20% 变成幽灵"
+			//在原地生成一只真幽灵（而不是像 73 那样就地改造自己 ——
+			//那时它已经死了，改造没有意义）。
+			if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.rollNecromancer(this)) {
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+						.ChallengeEffects.spawnWraithAt(pos);
+			}
+
+			//==== END(挑战 86 复仇之魂): 10% 在下一层复仇 ====
+			//原表："被击杀怪物 10% 概率在下一层以幽灵形式复仇"
+			//这里只**记账**，真正的生成发生在进入下一层时
+			//（Level.create() 调 consumeVengefulSouls）。
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.rollVengefulSoul(this);
 
 			rollToDropLoot();
 

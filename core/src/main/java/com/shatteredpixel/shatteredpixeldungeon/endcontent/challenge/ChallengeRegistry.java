@@ -109,6 +109,18 @@ public final class ChallengeRegistry {
 		//这些条目在 UI 中置灰显示（见 WndChallenges），勾选无效，直到各自实装。
 		registerPending(all);
 
+		//==== END(改造·挑战区并入挑战列表): 6 个挑战区 ====
+		//原先 6 个区有独立的选单窗口（WndChallengeAreas）与独立的存档键
+		//（SPDSettings.challengeAreas()）。文档所有者要求把它们**并入挑战规则列表**，
+		//但勾选后仍然走原本的挑战区流程（通关 25F 后进入 26F+）。
+		//
+		//ID 用 ChallengeArea.CHAL_ID_BASE + 区内序号（201/203/204/205/206/207）——
+		//不能直接用区内序号，因为 1 和 2 已被「牢地碎破」「楼层混乱」占用。
+		//
+		//**单选**：与原设计一致（同时勾多个区会串接层号、剧情分支冲突）。
+		//互斥关系用 x: 声明，由注册表统一处理。
+		registerChallengeAreas(all);
+
 		ALL = Collections.unmodifiableList(all);
 
 		for (ChallengeDef def : ALL) {
@@ -174,7 +186,8 @@ public final class ChallengeRegistry {
 				"开局获得一张跳级券，使用后直接前往下一区域的第一层，并获得 +2 力量、+3 升级卷轴、+4 力量药水。");
 
 		//---- 战斗 ----
-		add(all, 8,  "混乱",       "chaos",            "战斗", T_TWO, 1, T_MED,    "");
+		done(all, 8,  "混乱",       "chaos",            "战斗", T_TWO, 1, T_MED,    "",
+				"战斗命中时 25% 概率给被打的一方挂一个随机 buff（加速/虚弱/寒冷/隐身/致盲/祝福）。");
 		//==== 易档第一批（已实装）====
 		done(all, 9,  "狂暴",       "berserk",          "战斗", T_MON, 2, T_EASY,   "",
 				"怪物受击后获得 20% 攻击提升，持续 2 回合，不叠加。");
@@ -187,7 +200,9 @@ public final class ChallengeRegistry {
 		done(all, 13, "狂热",       "frenzy",           "战斗", T_MON, 2, T_EASY,   "",
 				"怪物每次成功攻击后攻速 +13%，最多叠加 3 层（上限 +39%），持续 5 回合。");
 		done(all, 14, "精英强化",   "elite_boost",      "战斗", T_MON, 2, T_EASY,   "s:4,75",
-				"精英怪的生命上限、伤害、命中、闪避各提高 20%。本项会让精英怪出现，无需其它挑战配合。");		add(all, 15, "首领护卫",   "boss_guard",       "战斗", T_MON, 3, T_MED,    "");
+				"精英怪的生命上限、伤害、命中、闪避各提高 20%。本项会让精英怪出现，无需其它挑战配合。");
+		done(all, 15, "首领护卫",   "boss_guard",       "战斗", T_MON, 3, T_MED,    "",
+				"每个 Boss 战额外生成 3 个精英护卫（生命/伤害/命中/闪避各 +20%）。");
 		done(all, 16, "大力水手",   "popeye",           "战斗", T_TWO, 1, T_EASY,   "",
 				"玩家近战物理攻击 +25%，攻击速度 -20%。");
 		done(all, 17, "情人节",     "valentine",        "战斗", T_BEN, 1, T_EASY,   "",
@@ -196,8 +211,10 @@ public final class ChallengeRegistry {
 				"普通怪物每回合 13% 概率睡眠 1 回合（Boss 与精英怪免疫）。");
 		done(all, 19, "风驰电掣",   "swift",            "战斗", T_TWO, 1, T_EASY,   "s:103",
 				"玩家攻速 +20%，怪物移速 +20%。");
-		add(all, 20, "等我启动",   "wind_up",          "战斗", T_TWO, 2, T_MED,    "");
-		add(all, 21, "法术连击",   "spell_combo",      "战斗", T_BEN, 2, T_MED,    "");
+		done(all, 20, "等我启动",   "wind_up",          "战斗", T_TWO, 2, T_MED,    "",
+				"对**同一目标**的伤害递增：第一次 20%，第二次 50%，第三次及以后 110%。换目标就重新计算。");
+		done(all, 21, "法术连击",   "spell_combo",      "战斗", T_BEN, 2, T_MED,    "",
+				"施法后 13% 概率**立即再施放一次**，不消耗充能与回合；单次最多追加一次。");
 		done(all, 22, "物极必反",   "overkill_reverse", "战斗", T_TWO, 3, T_EASY,   "",
 				"单次伤害超过目标最大生命 150% 时，该次伤害被完全免疫（只对怪物生效）。");
 		done(all, 23, "血流成河",   "bloodbath",        "战斗", T_TWO, 1, T_EASY,   "",
@@ -212,7 +229,8 @@ public final class ChallengeRegistry {
 				"玩家与怪物的攻击各提高 20%。");
 		done(all, 28, "不动如山",   "immovable",        "战斗", T_MON, 2, T_EASY,   "",
 				"怪物受击时 13% 概率完全免疫该次伤害。");
-		add(all, 68, "极端状态",   "extreme_state",    "战斗", T_TWO, 3, T_MED,    "s:104");
+		done(all, 68, "极端状态",   "extreme_state",    "战斗", T_TWO, 3, T_MED,    "s:104",
+				"开局生命上限降到 **10%**（最低 10 点），但**攻击力与命中翻倍**。");
 		done(all, 69, "九九归一",   "nine_to_one",      "战斗", T_TWO, 2, T_EASY,   "",
 				"最终伤害为 9 的倍数时，改为 1 点。");
 		done(all, 78, "烈火焚身",   "immolation",       "战斗", T_MON, 3, T_EASY,   "",
@@ -224,16 +242,20 @@ public final class ChallengeRegistry {
 				"玩家生命低于 10% 时，造成的伤害翻倍。");
 
 		//---- 怪物 ----
-		add(all, 29, "雇佣童工",   "child_labor",      "怪物", T_TWO, 2, T_MED,    "");
+		done(all, 29, "雇佣童工",   "child_labor",      "怪物", T_TWO, 2, T_MED,    "",
+				"13% 的怪物生命降到 20%，但移速 ×2。");
 		done(all, 30, "人口密集",   "crowded",          "怪物", T_MON, 2, T_EASY,   "s:75",
 				"普通怪物生成数量提高 20%（与 119 怪物浪潮可叠加）。");
-		add(all, 73, "神秘复苏",   "mystic_revival",   "怪物", T_MON, 2, T_MED,    "s:77,86");
+		done(all, 73, "神秘复苏",   "mystic_revival",   "怪物", T_MON, 2, T_MED,    "s:77,86",
+				"13% 的怪物一出生就是**幽灵**（1 血、飞行、无经验）。");
 		//END: 原联动串为 "s:14,30,97"，其中 97 已删除，故移除该引用（保留 14/30）。
 		done(all, 75, "精英地牢",   "elite_dungeon",    "怪物", T_MON, 3, T_MED,    "s:14,30",
 				"13% 的怪物被替换为其稀有变种（白化老鼠、寄居蟹、强盗等）。");
 		add(all, 76, "原始状态",   "primal_state",     "怪物", T_MON, 2, T_MED,    "s:103");
-		add(all, 77, "亡灵法师",   "necromancer",      "怪物", T_MON, 3, T_MED,    "s:73,86");
-		add(all, 86, "复仇之魂",   "vengeful_spirit",  "怪物", T_MON, 2, T_MED,    "s:73,77");
+		done(all, 77, "亡灵法师",   "necromancer",      "怪物", T_MON, 3, T_MED,    "s:73,86",
+				"怪物死亡后 **20%** 在原地留下一个幽灵。");
+		done(all, 86, "复仇之魂",   "vengeful_spirit",  "怪物", T_MON, 2, T_MED,    "s:73,77",
+				"被击杀的怪物有 **10%** 概率在**下一层**以幽灵形式复仇（每层最多 5 只）。");
 		done(all, 87, "盗贼鼠群",   "thief_rats",       "怪物", T_TWO, 1, T_EASY,   "",
 				"怪物攻击命中时 5% 概率偷走 5% 金币；击杀该怪物后双倍返还。");
 		//END(已取消): 97 我的世界 / 122 我的世界II —— 按文档所有者要求删除，不做。
@@ -586,4 +608,47 @@ public final class ChallengeRegistry {
 	}
 
 	private ChallengeRegistry() {}
+
+	/**
+	 * END(改造·挑战区并入挑战列表): 把 6 个挑战区注册成挑战规则。
+	 *
+	 * <p>它们的分组是「挑战区」，倾向写"中性"（这些区本身不改变数值，
+	 * 只是"多一段内容"），等级 1。
+	 *
+	 * <p><b>单选</b>：用 {@code x:} 互斥把每一对都连起来 ——
+	 * 这样勾选任意一个会自动取消其余五个，与原 {@code WndChallengeAreas}
+	 * 的单选行为一致。
+	 *
+	 * <p>所有区都标记为**已实装**（{@code done()}）：它们本来就是可玩的内容，
+	 * 只是入口换了地方。
+	 */
+	private static void registerChallengeAreas(List<ChallengeDef> all) {
+		//先把所有区的 chalId 收齐，供互斥声明使用
+		StringBuilder excl = new StringBuilder();
+		for (ChallengeArea a : ChallengeArea.ALL) {
+			if (excl.length() > 0) excl.append(",");
+			excl.append(a.chalId);
+		}
+		String allIds = excl.toString();
+
+		for (ChallengeArea a : ChallengeArea.ALL) {
+			//互斥列表 = 除自己以外的所有区
+			StringBuilder mine = new StringBuilder();
+			for (ChallengeArea b : ChallengeArea.ALL) {
+				if (b == a) continue;
+				if (mine.length() > 0) mine.append(",");
+				mine.append(b.chalId);
+			}
+			mine.append(";s:7");      //与 7 跳级生联动（跳级会跳过区域入口）
+
+			String name = a.name + (a.implemented ? "" : "（未实装）");
+			String effect = (a.desc == null ? "" : a.desc)
+					+ "\n\n勾选后：通关 25F 会进入本区的 "
+					+ a.floors + " 层内容（26F 起）。";
+
+			done(all, a.chalId, name, "area_" + a.id, "挑战区",
+					ChallengeDef.TENDENCY_NEUTRAL, 1, ChallengeDef.TIER_HARD,
+					"x:" + mine, effect);
+		}
+	}
 }

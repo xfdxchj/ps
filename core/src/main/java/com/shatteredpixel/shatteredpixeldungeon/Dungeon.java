@@ -287,12 +287,25 @@ public class Dungeon {
 		}
 
 		//END(移植自魔绫·挑战区): 把开局勾选的挑战区域写入 Statistics（Hollow 等）
+		//
+		//==== END(改造·挑战区并入挑战列表): 改从 ChallengeMask 读 ====
+		//原先这里读的是 SPDSettings.challengeAreas()（挑战区**独立**的存档键）。
+		//现在 6 个区已经是挑战规则表里的条目，勾选状态存在 challengeMask 里，
+		//所以优先从那里推导；旧键作为**回退**保留，让老存档仍然能进挑战区。
+		//
+		//优先顺序：
+		//  1) 存档里已有的 Statistics.challengeMask（本局已定，不能被外部设置污染）
+		//  2) 从当前 challengeMask 推导出的区域掩码（新入口）
+		//  3) SPDSettings.challengeAreas()（旧键，兼容老存档）
 		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeArea
-				//END(修复·存档隔离): 只在存档尚无区域记录时才从全局设置初始化。
-				//否则「新开挑战改设置」会污染旧存档的区域。
-				.applySelection( Statistics.challengeMask != 0
-						? Statistics.challengeMask
-						: SPDSettings.challengeAreas() );
+				.applySelection( com.shatteredpixel.shatteredpixeldungeon.endcontent
+						.challenge.ChallengeArea.areasFromChallengeMask(
+								Statistics.challengeMask != 0
+										? Statistics.challengeMask
+										: (Dungeon.challengeMask != null
+												? Dungeon.challengeMask.areaBits()
+												: 0),
+								SPDSettings.challengeAreas() ) );
 		mobsToChampion = 1;
 
 		Actor.clear();
@@ -351,7 +364,14 @@ public class Dungeon {
 				.resetTimelyRain();
 
 		//==== END(挑战 155 家传戒指 / 156 家传铠甲): 开局额外装备 ====
-		//必须在 initHero 之后 —— 那时 hero.belongings 才建好，能收纳物品。		//用 collect() 而不是直接塞背包：collect 会走正常的入包流程
+		//必须在 initHero 之后 —— 那时 hero.belongings 才建好，能收纳物品。		//==== END(挑战 68 极端状态): 开局压低生命、翻倍命中 ====
+		//放在 initHero 之后、发放装备之前 ——
+		//必须在这里算，因为它改的是 HT（最大生命）；
+		//若放到"每次升级时"，后续升级会把 HT 抬回去，破坏"最低 10"。
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.applyExtremeState(hero);
+
+		//用 collect() 而不是直接塞背包：collect 会走正常的入包流程
 		//（处理堆叠、容量、图鉴登记），比手工操作 belongings 可靠。
 		for (Item gear : com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 				.ChallengeEffects.startingGear()) {
@@ -814,6 +834,24 @@ public class Dungeon {
 		}
 
 		if (branch == 0) Statistics.qualifiedForNoKilling = !bossLevel();
+
+		//==== END(挑战 15 首领护卫): Boss 层额外生成 3 个精英护卫 ====
+		//放在 level.create() 之后：
+		//  · 此时地形与既有怪物都已就位，能找到合法的生成格
+		//  · 且还没进入"玩家已经开始行动"的阶段
+		//
+		//为什么不用 Level.seal()（那是"进入 Boss 战"的统一点）：
+		//玩家可能用传送/位移绕过 Boss 房再回来，seal 会被多次触发；
+		//而 newLevel 每层只跑一次，语义清晰。
+		if (bossLevel()) {
+			int guards = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.bossGuardCount();
+			if (guards > 0) {
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+						.ChallengeEffects.spawnBossGuards(level, guards);
+			}
+		}
+
 		Statistics.qualifiedForBossChallengeBadge = false;
 		
 		return level;

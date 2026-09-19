@@ -539,6 +539,8 @@ public abstract class Wand extends Item {
 		Invisibility.dispel();
 		updateQuickslot();
 
+		//（挑战 21 法术连击的接线在 onZap 调用处，见上方 curWand.onZap 附近）
+
 		curUser.spendAndNext( TIME_TO_ZAP );
 	}
 	
@@ -766,6 +768,28 @@ public abstract class Wand extends Item {
 						curWand.fx(shot, new Callback() {
 							public void call() {
 								curWand.onZap(shot);
+
+								//==== END(挑战 21 法术连击): 13% 追加一次施法 ====
+								//原表："施法后 13% 概率再次施法，不消耗新资源，
+								//单次最多追加一次"
+								//
+								//放在 onZap **之后**：这里才是"法术真的生效了"的位置。
+								//追加 = 直接用同一个 shot 再调一次 onZap ——
+								//shot 是 Ballistica（射线），几何数据可以直接复用，
+								//而且不经过 use()，所以**不消耗充能、不消耗回合**，
+								//正好符合"不消耗新资源"。
+								//
+								//"最多追加一次"由 rollSpellCombo 内部的
+								//SpellComboMark 保证：追加的那次也会走到这里，
+								//但那时标记已存在，不会再触发。
+								if (com.shatteredpixel.shatteredpixeldungeon.endcontent
+										.challenge.ChallengeEffects
+												.rollSpellCombo(curUser)) {
+									com.shatteredpixel.shatteredpixeldungeon.utils.GLog
+											.i("法术回响。");
+									curWand.onZap(shot);
+								}
+
 								if (Random.Float() < WondrousResin.extraCurseEffectChance()){
 									WondrousResin.forcePositive = true;
 									CursedWand.cursedZap(curWand,

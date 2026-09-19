@@ -70,6 +70,9 @@ public class WndChallenges extends Window {
 	 * 改用与其它按钮一致的 16。
 	 */
 	private static final int CAT_H      = 16;
+
+	/** END: UI 布局诊断开关。定稿后关闭，避免刷屏。 */
+	private static final boolean UI_DEBUG = false;
 	/** 滚动区期望高度上限（实际还会受屏幕高度约束）。 */
 	private static final int MAX_LIST_H = 150;
 

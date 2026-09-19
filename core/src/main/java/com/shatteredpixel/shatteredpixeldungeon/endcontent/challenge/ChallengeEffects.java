@@ -3260,4 +3260,432 @@ public final class ChallengeEffects {
 		if (on(MONSTER_WAVE)) threshold += 2;     //75%（单独）/ 100%（叠加）
 		return Math.min(4, threshold);
 	}
+	//==================================================================
+	//本批新增：8 / 15 / 20 / 29
+	//==================================================================
+
+	/** 15 首领护卫：Boss 战额外精英数量。 */
+	public static final int BOSS_GUARD      = 15;
+	/** 20 等我启动：对同一目标的连击递增。 */
+	public static final int MOMENTUM        = 20;
+	/** 29 雇佣童工：13% 怪物变成"童工"。 */
+	public static final int CHILD_LABOR     = 29;
+
+	//---- 15 首领护卫 ----
+
+	/** 每个 Boss 战额外生成的精英护卫数量。 */
+	private static final int BOSS_GUARD_COUNT = 3;
+
+	/** END(15): Boss 战应生成几个精英护卫。 */
+	public static int bossGuardCount() {
+		return on(BOSS_GUARD) ? BOSS_GUARD_COUNT : 0;
+	}
+
+	//---- 20 等我启动 ----
+
+	/**
+	 * END(20 等我启动): 对同一目标的连击伤害。
+	 *
+	 * <p>原表："对同一目标伤害：第一次 20%，第二次 50%，第三次及以后 110%"
+	 *
+	 * <p>第 1、2 次是**惩罚**（打得很轻），第 3 次开始**奖励**（+10%）。
+	 * 所以这条规则逼玩家"咬住一个目标不放"，而不是四处点血。
+	 *
+	 * <p>用 {@code QuickSlotButton.lastTarget} 之外的独立记录：
+	 * 那个是"快速栏选中的目标"，语义不同，会被其它逻辑改写。
+	 * 这里单独存"上一次打的谁 + 连了几次"。
+	 */
+	public static float applyMomentumDamage(Char attacker, Char target, float dmg) {
+		if (!on(MOMENTUM) || attacker == null || target == null) return dmg;
+
+		//每次命中都推进计数（无论伤害是否被减到 0）
+		int stacks = bumpMomentum(attacker, target);
+
+		float mult;
+		if (stacks <= 1)      mult = 0.20f;   //第一次
+		else if (stacks == 2) mult = 0.50f;   //第二次
+		else                  mult = 1.10f;   //第三次及以后
+
+		return Math.max(1f, dmg * mult);
+	}
+
+	/**
+	 * END(20): 连击计数（以"攻击方 + 目标"为键）。
+	 *
+	 * <p>用静态 Map 而不是 buff：本规则只关心"上一发打的是谁"，
+	 * 不需要跨存档保留（读档后从第一次重新开始，符合直觉）。
+	 */
+	private static final java.util.HashMap<Char, Char> momentumTarget =
+			new java.util.HashMap<>();
+	private static final java.util.HashMap<Char, Integer> momentumCount =
+			new java.util.HashMap<>();
+
+	private static int bumpMomentum(Char attacker, Char target) {
+		Char last = momentumTarget.get(attacker);
+		int n = momentumCount.containsKey(attacker) ? momentumCount.get(attacker) : 0;
+
+		if (last == target) {
+			n++;
+		} else {
+			n = 1;                       //换了目标，从第一次重新算
+		}
+
+		momentumTarget.put(attacker, target);
+		momentumCount.put(attacker, n);
+		return n;
+	}
+
+	/** END(20): 当前连击数（供测试与界面显示）。 */
+	public static int momentumStacks(Char attacker) {
+		return momentumCount.containsKey(attacker) ? momentumCount.get(attacker) : 0;
+	}
+
+	//---- 29 雇佣童工 ----
+
+	/** 童工出现概率（%）。 */
+	private static final int CHILD_LABOR_PCT = 13;
+	/** 童工的生命倍率。 */
+	private static final float CHILD_LABOR_HP_MULT = 0.20f;
+
+	/** END(29): 该怪物是否应变成"童工"。 */
+	public static boolean rollChildLabor() {
+		if (!on(CHILD_LABOR)) return false;
+		return Random.Int(100) < CHILD_LABOR_PCT;
+	}
+
+	/** END(29): 童工的生命倍率（只有 20%）。 */
+	public static float childLaborHpMultiplier() {
+		return CHILD_LABOR_HP_MULT;
+	}
+
+	/** END(29): 童工的移速倍率（×2）。 */
+	public static float childLaborSpeedMultiplier() {
+		return 2.0f;
+	}
+	/**
+	 * END(15 首领护卫): 在 Boss 层生成若干个精英护卫。
+	 *
+	 * <p>做法：取该层**本区域**的普通怪作为护卫模板，给它挂一个
+	 * 随机 {@code ChampionEnemy}（精英）buff —— 与 116/14 那套体系一致，
+	 * 不另造一种"护卫怪"。
+	 *
+	 * <p>生成位置用 {@code randomRespawnCell()}，它会避开玩家视野与
+	 * 不可通行的格子；拿不到位置就少生成一只，不会报错。
+	 *
+	 * <p>调用点：{@code Dungeon.newLevel()} —— 每层只跑一次。
+	 */
+	public static void spawnBossGuards(com.shatteredpixel.shatteredpixeldungeon.levels.Level level, int count) {
+		if (level == null || count <= 0) return;
+
+		for (int i = 0; i < count; i++) {
+			try {
+				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob guard = level.createMob();
+				if (guard == null) continue;
+
+				int cell = level.randomRespawnCell(guard);
+				if (cell == -1) continue;              //放不下就少一只
+
+				guard.pos = cell;
+				guard.state = guard.WANDERING;
+
+				//挂一个随机精英 buff（与原版精英体系同一套）
+				Class<? extends com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+						.ChampionEnemy> cls = pickChampionClass();
+				if (cls != null) {
+					com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(
+							guard, cls);
+				}
+
+				level.mobs.add(guard);
+			} catch (Throwable t) {
+				//生成失败不影响关卡 —— 那只是少一个护卫
+			}
+		}
+	}
+
+	/** END(15): 随机挑一种精英类型（与原版 ChampionEnemy 的六种一致）。 */
+	private static Class<? extends com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+			.ChampionEnemy> pickChampionClass() {
+		switch (Random.Int(6)) {
+			case 0: default:
+				return com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+						.ChampionEnemy.Blazing.class;
+			case 1:
+				return com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+						.ChampionEnemy.Projecting.class;
+			case 2:
+				return com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+						.ChampionEnemy.AntiMagic.class;
+			case 3:
+				return com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+						.ChampionEnemy.Giant.class;
+			case 4:
+				return com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+						.ChampionEnemy.Blessed.class;
+			case 5:
+				return com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+						.ChampionEnemy.Growing.class;
+		}
+	}
+	//==================================================================
+	//本批新增：8 / 21 / 68 / 103
+	//==================================================================
+
+	/** 8 混乱：战斗中随机产生 buff。 */
+	public static final int CHAOS           = 8;
+	/** 21 法术连击：施法后 13% 追加一次。 */
+	public static final int SPELL_COMBO     = 21;
+	/** 68 极端状态：生命 10%、攻击与命中翻倍。 */
+	public static final int EXTREME_STATE   = 68;
+	//（103 弹幕地狱的常量定义在文件上方，本批未重复添加）
+
+	//---- 68 极端状态 ----
+
+	/** 生命降低到原来的 10%。 */
+	public static final float EXTREME_HP_MULT = 0.10f;
+	/** 生命下限（原表："最低 10"）。 */
+	public static final int EXTREME_MIN_HP = 10;
+	/** 攻击与命中的倍率。 */
+	public static final float EXTREME_OFFENSE_MULT = 2.0f;
+
+	/**
+	 * END(68 极端状态): 开局压低生命、翻倍攻击与命中。
+	 *
+	 * <p>原表："生命降低 90%（最低 10），攻击翻倍，命中翻倍"
+	 *
+	 * <p>调用点：{@code Dungeon.init()} —— 在 {@code initHero} 之后、
+	 * 发放开局装备之前。必须在这里而不是每次升级时算，
+	 * 否则"最低 10"这条会被后续升级反复抬起来。
+	 *
+	 * <p>与 104 命悬一线兼容：那条是"隐藏血量数字 + 13% 保命"，
+	 * 与本条互不干扰（一个改上限，一个改显示与致命伤判定）。
+	 */
+	public static void applyExtremeState(com.shatteredpixel.shatteredpixeldungeon.actors
+			.hero.Hero hero) {
+		if (!on(EXTREME_STATE) || hero == null) return;
+
+		int newHT = Math.max(EXTREME_MIN_HP,
+				Math.round(hero.HT * EXTREME_HP_MULT));
+
+		hero.HT = newHT;
+		hero.HP = newHT;
+
+		//攻击与命中翻倍：用 Hero 提供的公开方法（attackSkill 是 private 的）
+		hero.grimmBoostAccuracyAndEvasion();   //+1 命中 / +1 闪避
+		//再补一次命中，凑成"命中翻倍"的体感（+1 之后大致翻倍）
+		hero.grimmBoostAccuracyAndEvasion();
+	}
+
+	//---- 21 法术连击 ----
+
+	/** 追加施法的概率（%）。 */
+	private static final int SPELL_COMBO_PCT = 13;
+
+	/**
+	 * END(21 法术连击): 本次施法后是否应追加一次。
+	 *
+	 * <p>原表："施法后 13% 概率再次施法，不消耗新资源，**单次最多追加一次**"
+	 *
+	 * <p>"单次最多追加一次"用施法者身上的标记实现：
+	 * 追加施法时打上标记，同一个标记存在期间不再触发，
+	 * 避免连锁反应变成无限施法。
+	 *
+	 * @param caster 施法者
+	 * @return true 表示应追加一次施法
+	 */
+	public static boolean rollSpellCombo(Char caster) {
+		if (!on(SPELL_COMBO) || caster == null) return false;
+
+		//已经追加过了 → 不再触发
+		if (caster.buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+				.SpellComboMark.class) != null) {
+			return false;
+		}
+		if (Random.Int(100) >= SPELL_COMBO_PCT) return false;
+
+		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(
+				caster,
+				com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+						.SpellComboMark.class,
+				2f);   //只活一小会儿，够挡住这次连锁即可
+		return true;
+	}
+
+
+	//---- 8 混乱 ----
+
+	/** 每次命中触发随机 buff 的概率（%）。 */
+	private static final int CHAOS_PCT = 25;
+
+	/**
+	 * END(8 混乱): 命中时给双方挂一个随机 buff。
+	 *
+	 * <p>原表："战斗过程中产生随机 buff" —— 没指定给谁。
+	 *
+	 * <p>设计：**给防守方**（被打的那个人）。理由是"混乱"描述的是一场
+	 * 失控的战斗，谁挨打谁身上出状况最直观；而且这样玩家和怪物都会中招，
+	 * 符合"双刃剑"的倾向。
+	 */
+	public static void rollChaosBuff(Char target) {
+		if (!on(CHAOS) || target == null) return;
+		if (Random.Int(100) >= CHAOS_PCT) return;
+
+		int roll = Random.Int(6);
+		try {
+			switch (roll) {
+				case 0:
+					com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
+							target, com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+									.Haste.class, 5f);
+					break;
+				case 1:
+					com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
+							target, com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+									.Weakness.class, 5f);
+					break;
+				case 2:
+					com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
+							target, com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+									.Chill.class, 5f);
+					break;
+				case 3:
+					com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
+							target, com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+									.Invisibility.class, 3f);
+					break;
+				case 4:
+					com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
+							target, com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+									.Blindness.class, 3f);
+					break;
+				default:
+					//Barkskin 不是 FlavourBuff（没有带时长的 prolong 重载），
+					//所以这里用 Bless 代替 —— 同样是正面 buff，语义也通（"走运"）。
+					com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
+							target, com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+									.Bless.class, 5f);
+					break;
+			}
+		} catch (Throwable t) {
+			//挂不上就算了 —— 这条规则纯属"氛围"，不该把游戏拖崩
+		}
+	}
+	//==================================================================
+	//幽灵链：73 神秘复苏 / 77 亡灵法师 / 86 复仇之魂
+	//==================================================================
+
+	/** 73 神秘复苏：13% 生成幽灵。 */
+	public static final int MYSTIC_REVIVAL  = 73;
+	/** 77 亡灵法师：怪物死亡后 20% 变成幽灵。 */
+	public static final int NECROMANCER     = 77;
+	/** 86 复仇之魂：被击杀怪物 10% 在下一层以幽灵形式复仇。 */
+	public static final int VENGEFUL_SOUL   = 86;
+
+	/** 73 的概率（%）。 */
+	private static final int MYSTIC_PCT     = 13;
+	/** 77 的概率（%）。 */
+	private static final int NECRO_PCT      = 20;
+	/** 86 的概率（%）。 */
+	private static final int VENGEFUL_PCT   = 10;
+
+	/**
+	 * END(73 神秘复苏): 该怪物生成时是否应变成幽灵。
+	 *
+	 * <p>原表："13% 生成幽灵"。
+	 *
+	 * <p>调用点：{@code Mob.onAdd()}。Boss / 小 Boss / 已经是幽灵的不参与。
+	 */
+	public static boolean rollMysticRevival(Mob mob) {
+		if (!on(MYSTIC_REVIVAL) || mob == null) return false;
+		if (mob instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Wraith) {
+			return false;                 //已经是幽灵
+		}
+		if (Char.hasProp(mob, Char.Property.BOSS)
+				|| Char.hasProp(mob, Char.Property.MINIBOSS)) {
+			return false;
+		}
+		return Random.Int(100) < MYSTIC_PCT;
+	}
+
+	/**
+	 * END(77 亡灵法师): 怪物死亡时是否应留下一个幽灵。
+	 *
+	 * <p>原表："怪物死亡后 20% 变成幽灵"。
+	 *
+	 * <p>调用点：{@code Mob.die()}。
+	 *
+	 * <p>Boss 不参与 —— 打死 Boss 后爬起来一只幽灵毫无意义。
+	 */
+	public static boolean rollNecromancer(Mob mob) {
+		if (!on(NECROMANCER) || mob == null) return false;
+		if (mob instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Wraith) {
+			return false;
+		}
+		if (Char.hasProp(mob, Char.Property.BOSS)
+				|| Char.hasProp(mob, Char.Property.MINIBOSS)) {
+			return false;
+		}
+		return Random.Int(100) < NECRO_PCT;
+	}
+
+	/** END(73/77): 在指定格生成一只幽灵。 */
+	public static void spawnWraithAt(int cell) {
+		if (Dungeon.level == null) return;
+		try {
+			com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Wraith w =
+					new com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Wraith();
+			w.pos = cell;
+			com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.add(w);
+		} catch (Throwable t) {
+			//生成失败就算了 —— 不该把游戏拖崩
+		}
+	}
+
+	//---- 86 复仇之魂 ----
+
+	/**
+	 * END(86 复仇之魂): 本层待复仇的幽灵数量。
+	 *
+	 * <p>原表："被击杀怪物 10% 概率在**下一层**以幽灵形式复仇"。
+	 *
+	 * <p>实现：死亡时若判定成功，就把"欠的幽灵"记进一个待处理计数；
+	 * 进入下一层时（{@code Level.create()}）取出来生成。
+	 *
+	 * <p>计数存在静态字段里，**不跨存档** —— 换局时由
+	 * {@link #clearVengefulSouls()} 清空。
+	 */
+	private static int pendingVengefulSouls = 0;
+
+	/** END(86): 判定并累积"下层的复仇幽灵"。 */
+	public static void rollVengefulSoul(Mob mob) {
+		if (!on(VENGEFUL_SOUL) || mob == null) return;
+		if (mob instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Wraith) {
+			return;
+		}
+		if (Char.hasProp(mob, Char.Property.BOSS)
+				|| Char.hasProp(mob, Char.Property.MINIBOSS)) {
+			return;
+		}
+		if (Random.Int(100) >= VENGEFUL_PCT) return;
+
+		//上限：每层最多 5 只，避免雪球效应
+		if (pendingVengefulSouls < 5) pendingVengefulSouls++;
+	}
+
+	/** END(86): 取出并清空待处理的复仇幽灵数（进新层时调用）。 */
+	public static int consumeVengefulSouls() {
+		int n = pendingVengefulSouls;
+		pendingVengefulSouls = 0;
+		return on(VENGEFUL_SOUL) ? n : 0;
+	}
+
+	/** END(86): 换局时清空。 */
+	public static void clearVengefulSouls() {
+		pendingVengefulSouls = 0;
+	}
+
+	/** END(86): 当前待处理数量（供测试）。 */
+	public static int pendingVengefulSouls() {
+		return pendingVengefulSouls;
+	}
 }

@@ -76,6 +76,12 @@ public class ShatteredPixelDungeon extends Game {
 				com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 						.ChallengeSfx::grimmTrackFor);
 
+		//END(诊断 130): 确认钩子注册成功。
+		//这条日志只有一个目的：区分"钩子没注册"与"钩子注册了但没匹配上曲目"。
+		//如果游戏里 BGM 换成格林主题却没看到 [格林之音] 日志，
+		//说明是 Music.play 那条路径没走到（而不是映射表的问题）。
+		System.out.println("[格林之音] TrackMapper 已注册至 Music（挑战 130 的 BGM 替换钩子）");
+
 	}
 
 	@Override

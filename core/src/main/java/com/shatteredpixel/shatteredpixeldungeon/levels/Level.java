@@ -365,6 +365,19 @@ public abstract class Level implements Bundlable {
 		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 				.ChernobylKeeper.ensureRunning();
 
+		//==== END(挑战 86 复仇之魂): 生成上一层的"复仇幽灵" ====
+		//原表："被击杀怪物 10% 概率在下一层以幽灵形式复仇"
+		//上一层死亡时记下的数量在这里取出来生成。
+		//consumeVengefulSouls() 会同时清空计数，所以每层只生成一次。
+		int vengeful = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.consumeVengefulSouls();
+		for (int i = 0; i < vengeful; i++) {
+			int cell = randomRespawnCell(null);
+			if (cell == -1) break;
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.spawnWraithAt(cell);
+		}
+
 		//==== END(挑战 129 心爱的少女): 童话残片 ====
 		//每 2 层刷一枚，每层最多一枚（文档所有者定稿）。
 		//放在最后：它需要用到已经铺好的地形找落点。

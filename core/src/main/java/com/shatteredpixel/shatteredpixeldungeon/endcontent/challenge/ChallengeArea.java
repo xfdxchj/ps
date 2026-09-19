@@ -42,12 +42,46 @@ public final class ChallengeArea {
 	//之前没有这个字段，玩家在界面里看到区域名却不知道里面是什么内容。
 	public final String desc;
 
+	/**
+	 * END(改造·挑战区并入挑战规则列表): 本区在 {@code ChallengeRegistry} 里的 ID。
+	 *
+	 * <p>背景：原先挑战区有**独立的选单窗口**（{@code WndChallengeAreas}）
+	 * 与独立的存档键（{@code SPDSettings.challengeAreas()}）。
+	 * 文档所有者要求把 6 个区**并入挑战规则列表**，但勾选后仍然走
+	 * 原本的挑战区流程（26F+）。
+	 *
+	 * <p>为什么不直接用 {@link #id}：那个是**区内序号**（1/3/4/5/6/7），
+	 * 而 1 和 2 已经被"牢地碎破""楼层混乱"占用 —— 直接复用会撞车。
+	 * 所以另开一段 ID：{@link #CHAL_ID_BASE} + 区内序号。
+	 */
+	public final int chalId;
+
+	/** END(改造): 挑战区在挑战规则表里的 ID 段起点（远离现有 1-168）。 */
+	public static final int CHAL_ID_BASE = 200;
+
+	/**
+	 * END(改造): 挑战区对应的挑战规则 ID 范围。
+	 * <p>用于判断"某个 ID 是不是挑战区"。
+	 */
+	public static boolean isAreaChallengeId(int chalId) {
+		return chalId > CHAL_ID_BASE && chalId < CHAL_ID_BASE + 32;
+	}
+
+	/** END(改造): 按挑战规则 ID 反查挑战区；不是挑战区则返回 null。 */
+	public static ChallengeArea byChallengeId(int chalId) {
+		for (ChallengeArea a : ALL) {
+			if (a.chalId == chalId) return a;
+		}
+		return null;
+	}
+
 	private ChallengeArea(int id, String name, int floors, boolean implemented) {
 		this.id = id;
 		this.name = name;
 		this.floors = floors;
 		this.implemented = implemented;
 		this.desc = "";
+		this.chalId = CHAL_ID_BASE + id;
 	}
 
 	/** 带简介的构造器。 */
@@ -57,6 +91,7 @@ public final class ChallengeArea {
 		this.floors = floors;
 		this.implemented = implemented;
 		this.desc = (desc == null) ? "" : desc;
+		this.chalId = CHAL_ID_BASE + id;
 	}
 
 	//==== 注册表（id 顺序 = 进入顺序）====
@@ -219,5 +254,24 @@ public final class ChallengeArea {
 		}
 		//未知区：占位
 		return new DeadEndLevel();
+	}
+	/**
+	 * END(改造·挑战区并入挑战列表): 从挑战规则的勾选结果推导旧式的"区域掩码"。
+	 *
+	 * <p>6 个区现在是挑战规则表里的条目（ID = {@code CHAL_ID_BASE + 区内序号}），
+	 * 而 {@link #applySelection(int)} 与整套挑战区流程读的仍是
+	 * **旧的位掩码**（bit = 区内序号）。这里做一次转换。
+	 *
+	 * @param fromMask    挑战区在挑战表里的勾选位（由 ChallengeMask 提供）
+	 * @param legacyValue 旧存档键的值（回退用）
+	 * @return 旧的区域掩码（bit = area.id）
+	 */
+	public static int areasFromChallengeMask(int fromMask, int legacyValue) {
+		//新入口有勾选 → 以它为准
+		if (fromMask != 0) {
+			return firstSelectedOnly(fromMask);
+		}
+		//没有 → 回退到旧键（老存档、或玩家只用了旧窗口）
+		return firstSelectedOnly(legacyValue);
 	}
 }
