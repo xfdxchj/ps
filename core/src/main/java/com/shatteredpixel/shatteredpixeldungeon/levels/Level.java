@@ -1280,6 +1280,25 @@ public abstract class Level implements Bundlable {
 
 		}
 
+		//==== END(挑战 167 黄金地牢): 地面不刷物品，只刷金币 ====
+		//原表（文档所有者说明）："地面不刷新物品，只刷新金币"。
+		//
+		//做法：把要掉的物品**换算成等值金币**再掉 ——
+		//直接丢弃会让"金币地牢"变成"什么都没有的地牢"，
+		//而换算成金币才符合"只刷金币"的字面意思。
+		//
+		//**任务/剧情物品不换算**（天狗面具等），否则主线会断。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.shouldConvertDropToGold(item)) {
+			int value = Math.max(1, item.value() * Math.max(1, item.quantity()));
+			//金币的价值换算：原版 1 金币 ≈ 1 价值单位，
+			//但直接按原价会太慷慨（物品原价通常远高于玩家实际能卖到的钱），
+			//所以打 4 折 —— 与"卖店"的手感接近。
+			value = Math.max(1, value * 2 / 5);
+			item = new com.shatteredpixel.shatteredpixeldungeon.items.Gold().random();
+			((com.shatteredpixel.shatteredpixeldungeon.items.Gold) item).quantity(value);
+		}
+
 		//==== END(挑战 47/48/35/36): 掉落增减 ====
 		//放在最前：被"减少"规则丢弃的物品直接走 dummy heap 分支，
 		//不进入任何后续逻辑（不生成 Heap、不进 FOV 记录）。

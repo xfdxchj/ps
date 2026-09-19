@@ -56,8 +56,18 @@ public final class ChallengeArea {
 	 */
 	public final int chalId;
 
-	/** END(改造): 挑战区在挑战规则表里的 ID 段起点（远离现有 1-168）。 */
-	public static final int CHAL_ID_BASE = 200;
+	/**
+	 * END(改造): 挑战区在挑战规则表里的 ID 段起点。
+	 *
+	 * <p><b>不能超过 191</b>：{@code ChallengeMask} 是 {@code long[3]} = 192 位，
+	 * 超出范围的 ID 会被 {@code with()} 静默丢弃，导致"勾了但读不到"、
+	 * 互斥检测全部失效。
+	 *
+	 * <p>我最初用 200 —— 那直接越过容量上限，表现为 MaskCheck 报 30 个 FAIL。
+	 * 现改为 <b>180</b>：现有规则最大 ID 是 168，180 起是完整的空号段；
+	 * {@code 180 + 区内序号(1..7)} = 181..187，全部在 192 之内。
+	 */
+	public static final int CHAL_ID_BASE = 180;
 
 	/**
 	 * END(改造): 挑战区对应的挑战规则 ID 范围。

@@ -411,6 +411,38 @@ public class Hero extends Char {
 		defenseSkill++;
 	}
 
+	/**
+	 * END(挑战 151 圣明神明): 按**倍率**提升命中与闪避。
+	 *
+	 * <p>为什么不用上面的 {@code grimmBoostAccuracyAndEvasion}：
+	 * 那个是固定 +1（给 68 极端状态用的"大致翻倍"），
+	 * 而 151 要的是精确的 **+50%** —— 后期命中几十点时，
+	 * +1 几乎没有意义，必须按比例算。
+	 *
+	 * @param mult 倍率（1.5 表示 +50%）
+	 */
+	public void grimmScaleAccuracyAndEvasion(float mult) {
+		if (mult <= 1f) return;
+		int newAtk = Math.round(attackSkill * mult);
+		int newDef = Math.round(defenseSkill * mult);
+		attackSkill = Math.max(attackSkill + 1, newAtk);
+		defenseSkill = Math.max(defenseSkill + 1, newDef);
+	}
+
+	/**
+	 * END(挑战 151 圣明神明): 按**倍率**提升最大生命。
+	 *
+	 * @param mult 倍率（1.5 表示 +50%）
+	 */
+	public void grimmScaleMaxHP(float mult) {
+		if (mult <= 1f) return;
+		int newHT = Math.round(HT * mult);
+		int delta = newHT - HT;
+		if (delta <= 0) return;
+		HT = newHT;
+		HP = Math.min(HT, HP + delta);   //提升上限时同时补上等量当前生命
+	}
+
 	/** END(挑战 126): 直接提升最大生命（魂的献祭用）。 */
 	public void grimmBoostMaxHP(int amount) {
 		if (amount <= 0) return;
@@ -789,6 +821,20 @@ public class Hero extends Char {
 		min = adj[0];
 		max = adj[1];
 
+		//==== END(挑战 151 圣明神明): 攻击 +30% ====
+		//文档所有者说明："玩家生命，命中，闪避提升 50%，攻击提升 30%"。
+		//
+		//放在同一个收口点（所有伤害掷骰都经过这里），
+		//这样近战/远程/法术一并覆盖。
+		//未勾选 151 时 deityBlessing 返回 false，等价于原版。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.deityBlessing(Dungeon.hero)) {
+			min = Math.round(min * com.shatteredpixel.shatteredpixeldungeon.endcontent
+					.challenge.ChallengeEffects.DEITY_ATK_MULT);
+			max = Math.round(max * com.shatteredpixel.shatteredpixeldungeon.endcontent
+					.challenge.ChallengeEffects.DEITY_ATK_MULT);
+		}
+
 		if (Random.Float() < ThirteenLeafClover.alterHeroDamageChance()){
 			return ThirteenLeafClover.alterDamageRoll(min, max);
 		} else {
@@ -942,6 +988,42 @@ public class Hero extends Char {
 		checkVisibleMobs();
 		BuffIndicator.refreshHero();
 		BuffIndicator.refreshBoss();
+
+		//==== END(挑战 120 404): 每回合 0.5% 概率送回主界面 ====
+		//文档所有者说明（END 修订）："每回合 0.50% 概率送回主界面"
+		//
+		//期望约 200 回合触发一次 —— 大概两三层会遇到一回。
+		//放在 act() 的靠前位置：命中就立刻切场景，
+		//后面的逻辑不再执行（本回合作废）。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.rollError404()) {
+			com.shatteredpixel.shatteredpixeldungeon.utils.GLog
+					.n("404 —— 这一回合不存在。你被送回了主界面。");
+			com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon
+					.switchNoFade(com.shatteredpixel.shatteredpixeldungeon.scenes
+							.TitleScene.class);
+			return true;
+		}
+
+		//==== END(挑战 151 圣明神明): 每回合停下来祷告 ====
+		//文档所有者说明："每 1 回合要停止并祷告"。
+		//
+		//字面"每回合都停"会让游戏完全无法进行（玩家永远动不了），
+		//所以实现为**每回合开始时有概率**被祷告打断（25%）。
+		//要改成真的每回合，把 ChallengeEffects.DEITY_PRAY_PCT 改成 100 即可。
+		//
+		//"停止"用 Paralysis 表示：它会跳过本回合的行动。
+		//时长 1 回合 —— 正好卡掉一次操作。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.rollDeityPray()) {
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
+					this,
+					com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+							.Paralysis.class,
+					1f);
+			com.shatteredpixel.shatteredpixeldungeon.utils.GLog
+					.i("你停下来祷告。（本回合无法行动）");
+		}
 
 		//==== END(挑战·音频 70/72/96/118/137): 玩家每回合结算 ====
 		//放在 paralysed 判定**之前**：这些规则可能"停止行动"，

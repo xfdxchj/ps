@@ -290,6 +290,24 @@ abstract public class MissileWeapon extends Weapon {
 
 			}
 		}
+
+		//==== END(挑战 103 弹幕地狱): 远程投射物变 3 发散射 ====
+		//原表："远程投射物数量变 3 发散射，有间隙可走位"
+		//
+		//做法：主投射物照常结算（上面那段），这里再补 2 发到**相邻格** ——
+		//"有间隙可走位"就是这个意思：3 发的覆盖不是无缝的，
+		//站在格与格之间能躲开。
+		//
+		//为什么要新建实例而不是复用 this：
+		//this 已经结算过（可能已被消耗/掉落），复用会导致数量错乱。
+		//
+		//未勾选 103 时 scatterCount 返回 1，本段完全不执行。
+		int scatter = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.projectileCount();
+		if (scatter > 1 && curUser != null) {
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.spawnScatterShots(this, curUser, cell, scatter - 1);
+		}
 	}
 
 	@Override

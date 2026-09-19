@@ -137,6 +137,8 @@ public abstract class Wand extends Item {
 
 	public abstract void onZap(Ballistica attack);
 
+
+
 	public abstract void onHit( MagesStaff staff, Char attacker, Char defender, int damage);
 
 	//not affected by enchantment proc chance changers
@@ -767,7 +769,31 @@ public abstract class Wand extends Item {
 					} else {
 						curWand.fx(shot, new Callback() {
 							public void call() {
-								curWand.onZap(shot);
+								//==== END(挑战 139 紊乱法杖): 施法时随机变成别的法杖 ====
+								//文档所有者定稿："对所有施法时生效" ——
+								//**不是**一件新物品，而是勾选 139 后任何法杖施法
+								//都可能放出另一种法杖的效果。
+								//
+								//做法：掷一次判定（未勾选 139 时恒为 false），
+								//命中就随机挑一个别的法杖类，把它的 onZap
+								//作用在**同一道射线**上。
+								//
+								//等级沿用当前法杖 —— 否则紊乱效果会顺带
+								//削弱或强化玩家的法杖投资。
+								Wand chaos = com.shatteredpixel.shatteredpixeldungeon
+										.endcontent.challenge.ChallengeEffects
+												.rollChaosWand(curWand);
+								if (chaos != null) {
+									chaos.level(curWand.buffedLvl());
+									chaos.curUser = curUser;
+									chaos.curCharges = 99;   //临时副本不受充能限制
+									com.shatteredpixel.shatteredpixeldungeon.utils.GLog
+											.i("杖身在手中扭了一下 —— 这次放出的是"
+													+ chaos.name() + "。");
+									chaos.onZap(shot);
+								} else {
+									curWand.onZap(shot);
+								}
 
 								//==== END(挑战 21 法术连击): 13% 追加一次施法 ====
 								//原表："施法后 13% 概率再次施法，不消耗新资源，

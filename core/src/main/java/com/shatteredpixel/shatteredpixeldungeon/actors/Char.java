@@ -225,6 +225,21 @@ public abstract class Char extends Actor {
 	}
 
 	public String name(){
+		//==== END(挑战 63 鼠鼠可爱): 怪物名字全部显示为"小鼠" ====
+		//文档所有者说明："怪物贴图、**文本**、近战后 UI 显示都变成小鼠"。
+		//
+		//放在 Char 基类的 name() 里 —— 那是**所有**显示名字的路径
+		//（点击窗口、击杀提示、血条、图鉴）的唯一收口点，
+		//改一处即全覆盖，不必逐个窗口去改。
+		//
+		//只对怪物生效（玩家自己的名字不该变成小鼠）。
+		int[] ratName = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.cuteRatName(this);
+		if (ratName != null) {
+			return com.shatteredpixel.shatteredpixeldungeon.messages.Messages.get(
+					com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Rat.class,
+					"name");
+		}
 		return Messages.get(this, "name");
 	}
 
@@ -458,6 +473,15 @@ public abstract class Char extends Actor {
 			dmg *= com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
 					.GoldenMead.madnessAttackMultiplier(this);
 
+			//==== END(挑战 124 野生狗奶): 全属性 ×0.25 ====
+			//原表："使用后全属性降低 75%"
+			//只作用于**伤害输出**这一处；命中/闪避的降低见 Char.hit()。
+			if (com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+					.WildDogMilk.isActive(this)) {
+				dmg *= com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+						.WildDogMilk.STAT_MULT;
+			}
+
 			//==== END(挑战 20 等我启动): 对同一目标的连击递增 ====
 			//原表："对同一目标伤害：第一次 20%，第二次 50%，第三次及以后 110%"
 			//
@@ -684,6 +708,16 @@ public abstract class Char extends Actor {
 			//  5) 24 以牙还牙 —— 最后做，因为它会发起一次新攻击
 			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
 					.onAttackHitBleed(enemy);
+			//==== END(挑战 152 和平地牢): 玩家动手即"违反合约" ====
+			//文档所有者说明："直到你违反了和平合约"。
+			//玩家只要**命中过任何怪物**就算违反，此后本层怪物恢复攻击性。
+			//换层时由 Dungeon.newLevel() 调用 resetPeaceful() 重置。
+			if (this instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero
+					&& enemy instanceof com.shatteredpixel.shatteredpixeldungeon.actors
+							.mobs.Mob) {
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+						.ChallengeEffects.breakPeace();
+			}
 			//==== END(挑战 8 混乱): 命中时给被打的一方挂随机 buff ====
 			//原表："战斗过程中产生随机 buff" —— 没指定对象，
 			//这里选"防守方"，因为"谁挨打谁出状况"最直观，
@@ -758,6 +792,19 @@ public abstract class Char extends Actor {
 				.ChallengeEffects.crumblingAccuracy(attacker, acuStat);
 		defStat = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 				.ChallengeEffects.crumblingEvasion(defender, defStat);
+
+		//==== END(挑战 124 野生狗奶): 命中与闪避 ×0.25 ====
+		//原表："全属性降低 75%" —— 命中与闪避也算"属性"。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+				.WildDogMilk.isActive(attacker)) {
+			acuStat *= com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+					.WildDogMilk.STAT_MULT;
+		}
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+				.WildDogMilk.isActive(defender)) {
+			defStat *= com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+					.WildDogMilk.STAT_MULT;
+		}
 
 		//==== END(挑战 143 吾为王者): Boss 命中/闪避 +20% ====
 		//放在碎破覆写**之后**：碎破给的是"配置表里的绝对值"，
@@ -1191,7 +1238,39 @@ public abstract class Char extends Actor {
 			return;                             //HP 已在方法内压到 1，不再扣血
 		}
 
+		//==== END(挑战 124 野生狗奶): 状态期间不会死 ====
+		//原表："效果持续期间无法死亡（生命值最低为 1）"
+		//与镇魂歌的区别：镇魂歌是"3 回合后仍会还债"，
+		//狗奶是**纯粹的续命** —— 状态结束就恢复正常，不结算期间的死亡。
+		if (dmg >= HP
+				&& com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+						.WildDogMilk.surviveFatal(this, dmg)) {
+			return;
+		}
+
+		//==== END(挑战 161 钱就是命): 用金币抵消致命伤 ====
+		//原表（文档所有者说明）："在受到致命伤时，用等量金币抵消"
+		//排在最后：如果前面的保命手段都没接住，才轮到花钱买命。
+		if (dmg >= HP
+				&& com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+						.ChallengeEffects.payToSurvive(this, dmg)) {
+			return;
+		}
+
 		HP -= dmg;
+
+		//==== END(挑战 144 破碎权柄): Boss 掉到 33% 后每 5 回合召唤稀有怪 ====
+		//照本 fork 已有的分阶段 Boss 写法（见 Pompeii / Talu_BlackSnake）：
+		//在 super.damage() 之后判定阈值，命中就切阶段。
+		//
+		//区别：那些是"逐个 Boss 改自己的类"，而 144 要覆盖**所有** Boss，
+		//所以放在 Char.damage() 这个公共路径上。
+		//未勾选 144 时 brokenPowerActive 返回 false，等价于原版。
+		if (this instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob) {
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.tryBrokenPowerSummon(
+							(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob) this);
+		}
 
 		//==== END(挑战 78 烈火焚身): 玩家受击 13% 概率燃烧 ====
 		//只在实际掉血时触发；护盾完全吸收(dmg==0)不算"受击"。

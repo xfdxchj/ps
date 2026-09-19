@@ -364,7 +364,22 @@ public class Dungeon {
 				.resetTimelyRain();
 
 		//==== END(挑战 155 家传戒指 / 156 家传铠甲): 开局额外装备 ====
-		//必须在 initHero 之后 —— 那时 hero.belongings 才建好，能收纳物品。		//==== END(挑战 68 极端状态): 开局压低生命、翻倍命中 ====
+		//必须在 initHero 之后 —— 那时 hero.belongings 才建好，能收纳物品。		//==== END(挑战 151 圣明神明): 生命/命中/闪避 +50%，攻击 +30% ====
+		//文档所有者说明："玩家生命，命中，闪避提升 50%，攻击提升 30%，
+		//但是每 1 回合要停止并祷告"
+		//
+		//数值部分在这里一次性结算（与 68 极端状态同一位置）。
+		//"每回合停止祷告"由 Hero.act() 处理。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.deityBlessing(hero)) {
+			hero.grimmScaleMaxHP(com.shatteredpixel.shatteredpixeldungeon.endcontent
+					.challenge.ChallengeEffects.DEITY_DEF_MULT);
+			hero.grimmScaleAccuracyAndEvasion(com.shatteredpixel.shatteredpixeldungeon
+					.endcontent.challenge.ChallengeEffects.DEITY_DEF_MULT);
+			//攻击 +30%：加在 damageRoll 的乘算里（见 Hero.damageRoll）
+		}
+
+		//==== END(挑战 68 极端状态): 开局压低生命、翻倍命中 ====
 		//放在 initHero 之后、发放装备之前 ——
 		//必须在这里算，因为它改的是 HT（最大生命）；
 		//若放到"每次升级时"，后续升级会把 HT 抬回去，破坏"最低 10"。
@@ -843,6 +858,19 @@ public class Dungeon {
 		//为什么不用 Level.seal()（那是"进入 Boss 战"的统一点）：
 		//玩家可能用传送/位移绕过 Boss 房再回来，seal 会被多次触发；
 		//而 newLevel 每层只跑一次，语义清晰。
+		//==== END(挑战 152 和平地牢): 换层重置合约 ====
+		//文档所有者说明："每下一层重置" —— 上一层的违约不带下去。
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.resetPeaceful();
+
+
+		//（挑战 120 404 的接线在 Hero.act()：每回合 0.5% 概率）
+
+
+		//==== END(挑战 88 拍卖行): 换层时重新定价 + 掷抬价 ====
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.rollAuctionBidUp();
+
 		if (bossLevel()) {
 			int guards = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 					.ChallengeEffects.bossGuardCount();

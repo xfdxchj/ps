@@ -775,6 +775,26 @@ public abstract class RegularLevel extends Level {
 			}
 		Random.popGenerator();
 
+		//==== END(挑战 67 宝箱危机): 每层 20% 生成一只宝箱怪 ====
+		//文档所有者说明："每层 20% 概率生成保险怪（黑檀、黄金等）"
+		//
+		//"保险怪"就是宝箱怪系列（Mimic / EbonyMimic / GoldenMimic）。
+		//照上面那段"ebony mimics"的官方写法：
+		//  1) 优先藏在普通堆（HEAP）下
+		//  2) 没有堆就藏门口或出口
+		//  3) 用 Mimic.spawnAt() 生成
+		//
+		//区别：
+		//  · 概率固定 20%（原版由 MimicTooth 饰品决定）
+		//  · 三类随机（普通 / 黑檀 / 黄金）
+		//  · 用自己的随机生成器，不污染关卡生成的 RNG 序列
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
+				.spawnMimicThreat(this);
+
+		//==== END(挑战 100 镜像对决): 每层 13% 生成敌对镜像 ====
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
+				.spawnHostileMirror(this);
+
 		//extra spyglass loot
 		Random.pushGenerator(Random.Long());
 			int items = (int)(Random.Float() + CrackedSpyglass.extraLootChance());

@@ -208,6 +208,16 @@ public class Shopkeeper extends NPC {
 		float merchantMult = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 				.ChallengeEffects.merchantPriceMultiplier();
 		if (merchantMult != 1f) p = (int)Math.ceil(p * merchantMult);
+
+		//==== END(挑战 88 拍卖行): 价格波动 + NPC 抬价 ====
+		//原表："商店物品可竞价，价格波动，可低价买入或被 NPC 抬价"
+		//
+		//简化版：每件商品在**首次查询时**定格一个 0.5~1.8 的倍率
+		//（之后不变，避免"看到的价格与结算价格不一致"），
+		//外加本层可能的 35% 概率全场抬价 ×1.5。
+		//未勾选 88 时原样返回。
+		p = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.auctionPrice(item, p);
 		return p;
 	}
 	

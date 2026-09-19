@@ -916,6 +916,9 @@ public final class ChallengeEffects {
 	public static final int GIANT             = 10;
 	/** 54 我爱花花：草 13% 替换成随机花。 */
 	public static final int FLOWER_LOVER      = 54;
+	/** END(诊断): 138 贴图诊断开关。定稿后改回 false。 */
+	public static final boolean ABSURD_SPRITE_DEBUG = true;
+
 	/** 138 荒诞世界：怪物贴图随机变化。 */
 	public static final int ABSURD_WORLD      = 138;
 	/** 145 神圣附体：经验获取 +20%。 */
@@ -2018,6 +2021,9 @@ public final class ChallengeEffects {
 		if (on(GRIMM_ART))      n++;    // 128 镇魂歌
 		if (on(GOLDEN_MEAD))    n += 3; // 134 黄金蜂蜜酒 x3
 		if (on(GRIMM_HEART))    n++;    // 126 魂之容器
+		if (on(ALL_OR_NOTHING)) n++;    // 39 赌徒之骰
+		if (on(EXCHANGE))       n++;    // 42 交换契约
+		if (on(MONEY_IS_POWER)) n++;    // 41 万能钱袋
 		return n;
 	}
 
@@ -2111,6 +2117,27 @@ public final class ChallengeEffects {
 		if (on(GRIMM_ART)) {
 			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
 					.SoulRequiem());
+		}
+
+		//41 钱是万能：万能钱袋
+		if (on(MONEY_IS_POWER)) {
+			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+					.AlmightyPurse());
+		}
+
+		//42 等价交换：交换契约
+		if (on(EXCHANGE)) {
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm.ExchangeContract ec =
+					new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+							.ExchangeContract();
+			ec.quantity(3);
+			out.add(ec);
+		}
+
+		//39 All or Nothing：赌徒之骰
+		if (on(ALL_OR_NOTHING)) {
+			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+					.GamblersDice());
 		}
 
 		//126 格林之心：魂之容器（攒魂/献祭的入口）
@@ -3687,5 +3714,1085 @@ public final class ChallengeEffects {
 	/** END(86): 当前待处理数量（供测试）。 */
 	public static int pendingVengefulSouls() {
 		return pendingVengefulSouls;
+	}
+	//==================================================================
+	//76 原始状态：非远程怪物扔石头
+	//==================================================================
+
+	/** 76 原始状态。 */
+	public static final int PRIMITIVE_STATE = 76;
+
+	/** 扔石头的最大距离（格）。 */
+	private static final int ROCK_RANGE = 6;
+
+	/**
+	 * END(76 原始状态): 这只怪物是否应该"扔石头"。
+	 *
+	 * <p>原表："非远程怪物可扔石头进行远程攻击"
+	 *
+	 * <p>排除条件：
+	 * <ul>
+	 *   <li>已经是远程怪（本来就能打到，不需要）</li>
+	 *   <li>Boss / 小 Boss（它们有自己的远程手段）</li>
+	 *   <li>距离超过 {@link #ROCK_RANGE} 格（太远了扔不到）</li>
+	 * </ul>
+	 */
+	public static boolean canThrowRock(Mob mob, Char enemy) {
+		if (!on(PRIMITIVE_STATE) || mob == null || enemy == null) return false;
+
+		//远程怪排除 —— 原版没有统一的"远程怪基类"，
+		//所以靠 isRangedMobByClass 的名单判断（见其说明）。
+		if (isRangedMobByClass(mob)) return false;
+
+		//Boss 排除
+		if (Char.hasProp(mob, Char.Property.BOSS)
+				|| Char.hasProp(mob, Char.Property.MINIBOSS)) return false;
+
+		//距离
+		if (Dungeon.level == null) return false;
+		int dist = Dungeon.level.distance(mob.pos, enemy.pos);
+		return dist > 1 && dist <= ROCK_RANGE;
+	}
+
+	/**
+	 * END(76): 靠类名判断是不是远程怪。
+	 *
+	 * <p>原版的远程怪并没有统一的基类或接口（GnollGeomancer 自己实现投石、
+	 * DM-100 用光束、Tengu 用飞刀…），所以只能按**已知会远程攻击的类**排除。
+	 * 这份名单不求完备 —— 漏掉一两个只会让那只怪多一个远程手段，
+	 * 不会破坏游戏。
+	 */
+	private static boolean isRangedMobByClass(Mob mob) {
+		String n = mob.getClass().getSimpleName();
+		switch (n) {
+			case "GnollGeomancer":      //豺狼法师：投石
+			case "GnollSapper":         //豺狼投弹手
+			case "DM100":               //电击
+			case "DM200":               //腐蚀
+			case "DM201":
+			case "DM300":               //Boss，但保险起见也列上
+			case "Tengu":               //飞刀
+			case "Warlock":             //亡灵法师：远程法球
+			case "Shaman":              //豺狼祭司：远程
+			case "Eye":                 //邪眼：即死射线
+			case "Scorpio":             //巨蝎：远程
+			case "Succubus":            //魅魔：传送+远程
+			case "RipperDemon":         //撕裂者：跳斩
+			case "Necromancer":         //亡灵法师
+			case "Elemental":           //元素：远程
+			case "FireElemental":
+			case "Sniper":              //狙击手
+			case "Centurion":           //整合运动干部
+				return true;
+			default:
+				return false;
+		}
+	}
+	//==================================================================
+	//经济类：160 / 161 / 167
+	//==================================================================
+
+	/** 160 氪金大佬：消耗金币给物品升级。 */
+	public static final int WHALE             = 160;
+	/** 161 钱就是命：致命伤用金币抵消。 */
+	public static final int MONEY_IS_LIFE     = 161;
+	/** 167 黄金地牢：只掉金币、可用钱买一切。 */
+	public static final int GOLDEN_DUNGEON    = 167;
+	/** 39 All or Nothing：赌徒之骰。 */
+	public static final int ALL_OR_NOTHING    = 39;
+	/** 42 等价交换：交换契约。 */
+	public static final int EXCHANGE          = 42;
+
+	//---- 161 钱就是命 ----
+
+	/**
+	 * END(161 钱就是命): 致命伤是否可以用金币抵消。
+	 *
+	 * <p>按文档所有者说明："在受到致命伤时，用**等量金币**抵消"。
+	 * 即：需要多少金币取决于伤害超出多少 —— 1 金币抵 1 点伤害。
+	 *
+	 * <p>调用点：{@code Char.damage()} 的致命伤拦截处（与 65/104/128/124 并列）。
+	 *
+	 * @param ch  受击者
+	 * @param dmg 即将造成的伤害
+	 * @return true 表示已用金币抵消（调用方不应再扣血）
+	 */
+	public static boolean payToSurvive(Char ch, int dmg) {
+		if (!on(MONEY_IS_LIFE) || ch == null) return false;
+		if (!(ch instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero)) {
+			return false;                      //只对玩家生效
+		}
+		if (dmg < ch.HP) return false;         //不是致命伤
+
+		//需要"刚好够活下来"的金币：伤害 - (当前生命 - 1)
+		int needed = dmg - (ch.HP - 1);
+		if (needed <= 0) return false;
+		if (Dungeon.gold < needed) return false;
+
+		Dungeon.gold -= needed;
+		ch.HP = 1;
+
+		if (ch.sprite != null) {
+			ch.sprite.showStatus(
+					com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite.POSITIVE,
+					"-" + needed + "G");
+		}
+		safeLogW("你用 " + needed + " 金币买回了自己的命。");
+		return true;
+	}
+
+	//---- 167 黄金地牢 ----
+
+	/** END(167): 怪物是否完全不掉落物品（只掉金币）。 */
+	public static boolean goldenNoDrops() {
+		return on(GOLDEN_DUNGEON);
+	}
+
+	/**
+	 * END(167): 地面生成的物品是否应被替换成金币。
+	 *
+	 * <p>按文档所有者说明："地面不刷新物品，只刷新金币"。
+	 *
+	 * <p>但**特殊物品不替换**（天狗面具等）—— 那些是剧情/任务道具，
+	 * 换成金币会让主线断掉。这里按"任务相关"判断。
+	 */
+	public static boolean shouldConvertDropToGold(com.shatteredpixel.shatteredpixeldungeon
+			.items.Item item) {
+		if (!on(GOLDEN_DUNGEON) || item == null) return false;
+		return !isQuestRelated(item);
+	}
+
+	/**
+	 * END(167): 该物品是否与剧情/任务相关（不能被换成金币）。
+	 *
+	 * <p>名单不求完备，覆盖主要剧情道具即可：
+	 * 天狗面具、各类任务物品、Boss 掉落的关键物。
+	 */
+	private static boolean isQuestRelated(com.shatteredpixel.shatteredpixeldungeon.items
+			.Item item) {
+		String n = item.getClass().getSimpleName();
+		switch (n) {
+			//天狗相关
+			case "CeremonialMask":
+			case "Mask":
+			//任务物品
+			case "CorpseDust":
+			case "DwarfToken":
+			case "Embers":
+			case "Pickaxe":
+			case "DarkGold":
+			case "Amulet":
+			case "DriedRose":
+			//笔记/图鉴类
+			case "Note":
+			case "GuidePage":
+				return true;
+			default:
+				//类名里带 Quest 的一律算任务相关
+				return n.contains("Quest");
+		}
+	}
+
+	//---- 160 氪金大佬 ----
+
+	/** 每次"氪金升级"消耗的金币（按等级递增）。 */
+	private static final int WHALE_BASE_COST = 100;
+
+	/**
+	 * END(160 氪金大佬): 把一件物品升级所需的金币。
+	 *
+	 * <p>按文档所有者说明："可以消耗金币，对物品升级"。
+	 *
+	 * <p>费用随当前等级递增 —— 否则后期金币充裕时升级会变成免费的。
+	 * 公式：{@code 100 × (等级 + 1)}，即 +0→100、+1→200、+2→300…
+	 */
+	public static int whaleUpgradeCost(com.shatteredpixel.shatteredpixeldungeon.items
+			.Item item) {
+		if (item == null) return Integer.MAX_VALUE;
+		return WHALE_BASE_COST * (Math.max(0, item.level()) + 1);
+	}
+
+	/** END(160): 是否可以用金币升级该物品。 */
+	public static boolean whaleCanUpgrade(com.shatteredpixel.shatteredpixeldungeon.items
+			.Item item) {
+		if (!on(WHALE) || item == null) return false;
+		if (!item.isUpgradable()) return false;
+		if (item.level() >= 10) return false;   //与原版升级卷轴同样的上限
+		return Dungeon.gold >= whaleUpgradeCost(item);
+	}
+
+	/**
+	 * END(160): 真的花钱升级。
+	 *
+	 * @return true 表示成功（金币已扣、物品已升级）
+	 */
+	public static boolean whaleUpgrade(com.shatteredpixel.shatteredpixeldungeon.items
+			.Item item) {
+		if (!whaleCanUpgrade(item)) return false;
+
+		int cost = whaleUpgradeCost(item);
+		Dungeon.gold -= cost;
+		item.upgrade();
+		item.identify();
+
+		safeLogI("花费 " + cost + " 金币，将" + item.name() + "强化至 +" + item.level() + "。");
+		return true;
+	}
+	//==================================================================
+	//33 黑市 / 38 盲盒
+	//==================================================================
+
+	/** 33 黑市：商店出现特殊商品。 */
+	public static final int BLACK_MARKET = 33;
+	/** 38 盲盒：商店可购买盲盒。 */
+	public static final int MYSTERY_BOX  = 38;
+
+	//---- 38 盲盒 ----
+
+	/** END(38): 商店是否上架盲盒。 */
+	public static boolean mysteryBoxEnabled() { return on(MYSTERY_BOX); }
+
+	/** END(38): 每家商店的盲盒数量。 */
+	public static int mysteryBoxStock() { return on(MYSTERY_BOX) ? 2 : 0; }
+
+	//---- 33 黑市 ----
+
+	/** END(33): 商店是否上架特殊商品。 */
+	public static boolean blackMarketEnabled() { return on(BLACK_MARKET); }
+
+	/** END(33): 每家商店的特殊商品数量（1-2 件）。 */
+	public static int blackMarketStock() {
+		return on(BLACK_MARKET) ? (1 + Random.Int(2)) : 0;
+	}
+
+	/**
+	 * END(33 黑市): 随机挑一件"原版以外"的物品。
+	 *
+	 * <p>来源是本 fork 新增的内容 —— 这些在正常对局里不会出现在商店，
+	 * 所以勾选 33 后玩家会明显感到"这家店不太对劲"。
+	 *
+	 * <p>**不含**格林系列的武器/戒指（那些是 125-136 的专属内容，
+	 * 放进普通商店会打乱那套规则的经济）。
+	 */
+	public static com.shatteredpixel.shatteredpixeldungeon.items.Item
+			rollBlackMarketItem() {
+		try {
+			switch (Random.Int(8)) {
+				case 0:
+					//进化法杖的原料
+					return new com.shatteredpixel.shatteredpixeldungeon.items.stones
+							.StoneOfEnchantment();
+				case 1:
+					//稀有符石
+					return new com.shatteredpixel.shatteredpixeldungeon.items.stones
+							.StoneOfAugmentation();
+				case 2:
+					//神器（正常对局很少见）
+					return com.shatteredpixel.shatteredpixeldungeon.items.Generator
+							.randomUsingDefaults(
+									com.shatteredpixel.shatteredpixeldungeon.items.Generator
+											.Category.ARTIFACT);
+				case 3:
+					//法杖
+					return com.shatteredpixel.shatteredpixeldungeon.items.Generator
+							.randomUsingDefaults(
+									com.shatteredpixel.shatteredpixeldungeon.items.Generator
+											.Category.WAND);
+				case 4:
+					//魂之容器（126 的入口道具）—— 商店能买到会方便很多
+					return new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+							.SoulVessel();
+				case 5:
+					//赌徒之骰（39 的道具）
+					return new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+							.GamblersDice();
+				case 6:
+					//野生狗奶（124 的道具）
+					return new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+							.WildDogMilk();
+				default:
+					//镇魂歌（128 的道具）
+					return new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+							.SoulRequiem();
+			}
+		} catch (Throwable t) {
+			//挑不出来就空着 —— 那只是少一件商品
+			return null;
+		}
+	}
+	//==================================================================
+	//139 紊乱法杖：施法时随机变成别的法杖
+	//==================================================================
+
+	/** 139 紊乱法杖。 */
+	public static final int CHAOS_WAND = 139;
+
+	/** 每次施法触发"紊乱"的概率（%）。 END(修订): 40% -> 13%（文档所有者指定）。 */
+	private static final int CHAOS_WAND_PCT = 13;
+
+	/**
+	 * END(139 紊乱法杖): 本次施法是否"紊乱"，若是则返回要冒充的法杖。
+	 *
+	 * <p>文档所有者定稿："对所有施法时生效" ——
+	 * **不是**一件新物品，而是勾选 139 后任何法杖施法
+	 * 都可能放出另一种法杖的效果。
+	 *
+	 * <p>概率 13%（文档所有者指定）：太低玩家感觉不到，太高会让"法杖选择"失去意义。
+	 *
+	 * @param current 玩家正在用的法杖
+	 * @return 要冒充的法杖（调用方会用它代替 current 施法）；不触发时返回 null
+	 */
+	public static com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand rollChaosWand(
+			com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand current) {
+		if (!on(CHAOS_WAND) || current == null) return null;
+		if (Random.Int(100) >= CHAOS_WAND_PCT) return null;
+
+		Class<?>[] pool = com.shatteredpixel.shatteredpixeldungeon.items.Generator
+				.Category.WAND.classes;
+		if (pool == null || pool.length == 0) return null;
+
+		//最多试 10 次，避免随机到"同一件"（那就不叫紊乱了）
+		for (int i = 0; i < 10; i++) {
+			Class<?> c = pool[Random.Int(pool.length)];
+			if (c == current.getClass()) continue;
+			try {
+				Object o = com.watabou.utils.Reflection.newInstance(c);
+				if (o instanceof com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand) {
+					return (com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand) o;
+				}
+			} catch (Throwable t) {
+				//换一个
+			}
+		}
+		return null;
+	}
+	//==================================================================
+	//41 钱是万能
+	//==================================================================
+
+	/** 41 钱是万能。 */
+	public static final int MONEY_IS_POWER = 41;
+
+	/** END(41): 是否可以用金币买任何物品。 */
+	public static boolean moneyPurchaseEnabled() { return on(MONEY_IS_POWER); }
+
+	/**
+	 * END(41 钱是万能): 按类别"购买"一件物品。
+	 *
+	 * <p>与商店不同：这里**不从库存里拿**，而是直接生成一件新的。
+	 * 所以"钱是万能"是真的"任何物品"，不受商店刷新限制。
+	 *
+	 * <p>键的语义：
+	 * <ul>
+	 *   <li>{@code POTION}/{@code SCROLL}/{@code SEED}/{@code STONE}/{@code WEAPON}/
+	 *       {@code ARMOR}/{@code WAND}/{@code RING}/{@code ARTIFACT}
+	 *       → 对应 {@code Generator.Category}</li>
+	 *   <li>{@code @STR} → 力量药水</li>
+	 *   <li>{@code @SOU} → 升级卷轴</li>
+	 *   <li>{@code @EXP} → 经验药水</li>
+	 * </ul>
+	 *
+	 * @return 生成的物品；键无效时返回 null
+	 */
+	public static com.shatteredpixel.shatteredpixeldungeon.items.Item purchaseItem(
+			String key) {
+		if (key == null) return null;
+
+		try {
+			switch (key) {
+				case "@STR":
+					return new com.shatteredpixel.shatteredpixeldungeon.items.potions
+							.PotionOfStrength();
+				case "@SOU":
+					return new com.shatteredpixel.shatteredpixeldungeon.items.scrolls
+							.ScrollOfUpgrade();
+				case "@EXP":
+					return new com.shatteredpixel.shatteredpixeldungeon.items.potions
+							.PotionOfExperience();
+				default:
+					break;
+			}
+
+			com.shatteredpixel.shatteredpixeldungeon.items.Generator.Category cat = null;
+			switch (key) {
+				case "POTION":   cat = com.shatteredpixel.shatteredpixeldungeon.items
+						.Generator.Category.POTION;   break;
+				case "SCROLL":   cat = com.shatteredpixel.shatteredpixeldungeon.items
+						.Generator.Category.SCROLL;   break;
+				case "SEED":     cat = com.shatteredpixel.shatteredpixeldungeon.items
+						.Generator.Category.SEED;     break;
+				case "STONE":    cat = com.shatteredpixel.shatteredpixeldungeon.items
+						.Generator.Category.STONE;    break;
+				case "WEAPON":   cat = com.shatteredpixel.shatteredpixeldungeon.items
+						.Generator.Category.WEAPON;   break;
+				case "ARMOR":    cat = com.shatteredpixel.shatteredpixeldungeon.items
+						.Generator.Category.ARMOR;    break;
+				case "WAND":     cat = com.shatteredpixel.shatteredpixeldungeon.items
+						.Generator.Category.WAND;     break;
+				case "RING":     cat = com.shatteredpixel.shatteredpixeldungeon.items
+						.Generator.Category.RING;     break;
+				case "ARTIFACT": cat = com.shatteredpixel.shatteredpixeldungeon.items
+						.Generator.Category.ARTIFACT; break;
+				default: return null;
+			}
+
+			return com.shatteredpixel.shatteredpixeldungeon.items.Generator
+					.randomUsingDefaults(cat);
+		} catch (Throwable t) {
+			return null;
+		}
+	}
+	//==================================================================
+	//88 拍卖行（简化版）
+	//==================================================================
+
+	/** 88 拍卖行。 */
+	public static final int AUCTION_HOUSE = 88;
+
+	/**
+	 * END(88 拍卖行): 简化版的"竞价"。
+	 *
+	 * <h3>原表效果</h3>
+	 * "商店物品可竞价，价格波动，可低价买入或被 NPC 抬价"
+	 *
+	 * <h3>简化版的做法</h3>
+	 * 不做完整的竞价 UI（那需要一套实时出价系统）。改为：
+	 * <ol>
+	 *   <li><b>价格波动</b>：每件商品在首次看到时定一个随机倍率
+	 *       （0.5 ~ 1.8），之后不变 —— 所以"逛店"是有意义的</li>
+	 *   <li><b>NPC 抬价</b>：进入商店时有概率触发一次全场抬价
+	 *       （×1.5），持续到离开这一层</li>
+	 * </ol>
+	 *
+	 * <p>为什么用"首次看到时定格"而不是"每次计算都随机"：
+	 * 后者会让玩家在购买界面看到的价格与结算价格不一致（很恼人）。
+	 *
+	 * @param item  商品
+	 * @param price 原价
+	 * @return 调整后的价格
+	 */
+	public static int auctionPrice(com.shatteredpixel.shatteredpixeldungeon.items.Item item,
+								   int price) {
+		if (!on(AUCTION_HOUSE) || item == null) return price;
+
+		float mult = auctionMultiplier(item);
+
+		//NPC 抬价：本层是否已被抬价
+		if (auctionBidUpThisFloor) mult *= AUCTION_BID_UP_MULT;
+
+		return Math.max(1, Math.round(price * mult));
+	}
+
+	/** 价格波动范围：0.5 ~ 1.8 倍。 */
+	private static final float AUCTION_MIN_MULT = 0.5f;
+	private static final float AUCTION_MAX_MULT = 1.8f;
+	/** NPC 抬价的倍率。 */
+	private static final float AUCTION_BID_UP_MULT = 1.5f;
+
+	/** 每件商品的价格倍率（首次查询时定格）。 */
+	private static final java.util.HashMap<com.shatteredpixel.shatteredpixeldungeon.items.Item,
+			Float> auctionMults = new java.util.HashMap<>();
+
+	/** 本层是否已被 NPC 抬价。 */
+	private static boolean auctionBidUpThisFloor = false;
+
+	private static float auctionMultiplier(
+			com.shatteredpixel.shatteredpixeldungeon.items.Item item) {
+		Float cached = auctionMults.get(item);
+		if (cached != null) return cached;
+
+		float m = AUCTION_MIN_MULT
+				+ Random.Float() * (AUCTION_MAX_MULT - AUCTION_MIN_MULT);
+		auctionMults.put(item, m);
+		return m;
+	}
+
+	/**
+	 * END(88): 进入新层时掷一次"NPC 抬价"。
+	 *
+	 * <p>调用点：{@code Dungeon.newLevel()}。
+	 * 概率 35% —— 太高会让这条规则纯粹变成惩罚。
+	 */
+	public static void rollAuctionBidUp() {
+		auctionMults.clear();                 //换层 → 重新定价
+		auctionBidUpThisFloor = on(AUCTION_HOUSE) && Random.Int(100) < 35;
+	}
+
+	/** END(88): 本层是否被抬价（供界面提示）。 */
+	public static boolean auctionBidUpActive() {
+		return on(AUCTION_HOUSE) && auctionBidUpThisFloor;
+	}
+
+	/** END(88): 换局时清空。 */
+	public static void clearAuction() {
+		auctionMults.clear();
+		auctionBidUpThisFloor = false;
+	}
+	//==================================================================
+	//151 圣明神明 / 164 魔法地牢 / 144 破碎权柄
+	//==================================================================
+
+	/** 151 圣明神明。 */
+	public static final int HOLY_DEITY   = 151;
+	/** 164 魔法地牢。 */
+	public static final int MAGIC_DUNGEON = 164;
+	/** 144 破碎权柄。 */
+	public static final int BROKEN_POWER  = 144;
+
+	//---- 151 圣明神明 ----
+
+	/** 生命/命中/闪避的倍率（原表：提升 50%）。 */
+	public static final float DEITY_DEF_MULT = 1.5f;
+	/** 攻击的倍率（原表：提升 30%）。 */
+	public static final float DEITY_ATK_MULT = 1.3f;
+
+	/** END(151): 该角色是否享受圣明神明的加成。只对玩家生效。 */
+	public static boolean deityBlessing(Char ch) {
+		return on(HOLY_DEITY)
+				&& ch instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
+	}
+
+	/**
+	 * END(151 圣明神明): "停止并祷告" —— 玩家每回合开始时有概率被定住一回合。
+	 *
+	 * <p>文档所有者说明："每 1 回合要停止并祷告"。
+	 *
+	 * <p>字面"每回合都停"会让游戏完全无法进行（玩家永远动不了），
+	 * 所以实现为**每回合开始时有概率**被祷告打断。
+	 * 概率取 25% —— 明显能感觉到，但不至于卡死。
+	 *
+	 * <p>如果文档所有者要的是"真的每回合",把 {@link #DEITY_PRAY_PCT} 改成 100 即可。
+	 */
+	private static final int DEITY_PRAY_PCT = 25;
+
+	/** END(151): 本回合是否要"停下来祷告"。 */
+	public static boolean rollDeityPray() {
+		if (!on(HOLY_DEITY)) return false;
+		return Random.Int(100) < DEITY_PRAY_PCT;
+	}
+
+	//---- 164 魔法地牢 ----
+
+	/** 怪物能使用魔法的概率（%）。 */
+	private static final int MAGIC_MOB_PCT = 13;
+
+	/** END(164): 这只怪物是否会使用魔法。 */
+	public static boolean rollMagicMob(Mob mob) {
+		if (!on(MAGIC_DUNGEON) || mob == null) return false;
+		if (Char.hasProp(mob, Char.Property.BOSS)
+				|| Char.hasProp(mob, Char.Property.MINIBOSS)) return false;
+		return Random.Int(100) < MAGIC_MOB_PCT;
+	}
+
+	/**
+	 * END(164): 该怪物使用的随机魔法。
+	 *
+	 * <p>"魔法"用**法杖的法术**来表示 —— 这是本作里最接近"怪物放法术"的现成机制，
+	 * 不必另造一套。抽取时会实例化一个临时法杖，
+	 * 由 {@code MobMagicCast} 负责在怪物回合里释放。
+	 *
+	 * @return 要释放的法杖（调用方用完即弃）；无法抽取时返回 null
+	 */
+	public static com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand rollMobMagic() {
+		Class<?>[] pool = com.shatteredpixel.shatteredpixeldungeon.items.Generator
+				.Category.WAND.classes;
+		if (pool == null || pool.length == 0) return null;
+		try {
+			Object o = com.watabou.utils.Reflection.newInstance(pool[Random.Int(pool.length)]);
+			if (o instanceof com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand) {
+				return (com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand) o;
+			}
+		} catch (Throwable t) {
+			//抽不到就算了
+		}
+		return null;
+	}
+
+	//---- 144 破碎权柄 ----
+
+	/** 触发召唤的生命阈值（33%）。 */
+	public static final float BROKEN_POWER_HP_THRESHOLD = 0.33f;
+	/** 召唤间隔（回合）。 */
+	public static final int BROKEN_POWER_INTERVAL = 5;
+
+	/** END(144): 这只 Boss 是否已进入"破碎权柄"阶段。 */
+	public static boolean brokenPowerActive(Mob boss) {
+		if (!on(BROKEN_POWER) || boss == null) return false;
+		if (!Char.hasProp(boss, Char.Property.BOSS)) return false;
+		return boss.HP <= Math.round(boss.HT * BROKEN_POWER_HP_THRESHOLD);
+	}
+
+	/**
+	 * END(144 破碎权柄): Boss 进入 33% 阶段后，每 5 回合召唤 1 只稀有怪。
+	 *
+	 * <p>调用点：{@code Mob.damage()} 的末尾 —— 每次 Boss 掉血时检查一次。
+	 *
+	 * <h3>为什么要用 buff 计时</h3>
+	 * "每 5 回合"需要一个跨回合的计数器。原版的现成做法就是挂一个
+	 * {@code FlavourBuff} 当计时器（它的时长会自动递减，归零时 detach）。
+	 * 这里复用同一个思路：挂一个 5 回合的 {@code BrokenPowerTimer}，
+	 * 它消失就说明 5 回合到了，于是再召唤一只并重新挂上。
+	 *
+	 * @param boss 掉血的 Boss
+	 */
+	public static void tryBrokenPowerSummon(Mob boss) {
+		if (!brokenPowerActive(boss)) return;
+
+		//计时器还在 → 没到 5 回合
+		if (boss.buff(BrokenPowerTimer.class) != null) return;
+
+		//召唤一只稀有怪
+		spawnRareMobNear(boss);
+
+		//重新开始计时
+		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(
+				boss, BrokenPowerTimer.class, BROKEN_POWER_INTERVAL);
+	}
+
+	/** END(144): 5 回合的计时器。 */
+	public static class BrokenPowerTimer
+			extends com.shatteredpixel.shatteredpixeldungeon.actors.buffs.FlavourBuff {
+		{
+			type = buffType.NEUTRAL;
+			announced = false;
+		}
+		@Override public int icon() {
+			return com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator.NONE;
+		}
+	}
+
+	/**
+	 * END(144): 在 Boss 附近生成一只"稀有怪"。
+	 *
+	 * <p>"稀有怪"用**精英怪**表示（{@code ChampionEnemy}）——
+	 * 与原版"稀有怪 = 带精英词缀的怪"的定义一致。
+	 */
+	private static void spawnRareMobNear(Mob boss) {
+		if (Dungeon.level == null || boss == null) return;
+		try {
+			Mob add = Dungeon.level.createMob();
+			if (add == null) return;
+
+			//找个 Boss 附近的空位
+			int cell = -1;
+			int[] n = com.watabou.utils.PathFinder.NEIGHBOURS8;
+			java.util.ArrayList<Integer> cand = new java.util.ArrayList<>();
+			for (int d : n) {
+				int c = boss.pos + d;
+				if (c < 0 || c >= Dungeon.level.length()) continue;
+				if (Dungeon.level.solid[c]) continue;
+				if (Dungeon.level.passable[c] && com.shatteredpixel.shatteredpixeldungeon
+						.actors.Actor.findChar(c) == null) {
+					cand.add(c);
+				}
+			}
+			if (cand.isEmpty()) return;
+			cell = cand.get(Random.Int(cand.size()));
+
+			add.pos = cell;
+			add.state = add.WANDERING;
+
+			//挂一个随机精英 buff —— 这就是"稀有怪"
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(add,
+					pickChampionClass());
+
+			com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.add(add);
+			safeLogW("权柄碎裂 —— 又一只怪物从裂缝中爬了出来。");
+		} catch (Throwable t) {
+			//召唤失败不影响 Boss 战
+		}
+	}
+	//==================================================================
+	//103 弹幕地狱：3 发散射
+	//==================================================================
+
+	/**
+	 * END(103 弹幕地狱): 在主投射物落点周围补若干发散射。
+	 *
+	 * <p>原表："远程投射物数量变 3 发散射，有间隙可走位"
+	 *
+	 * <h3>"有间隙可走位"怎么体现</h3>
+	 * 额外 2 发落在落点的**相邻格**（8 方向里随机挑，且互不重复）。
+	 * 所以 3 发的覆盖是 1 + 2 个点，而不是一整片 ——
+	 * 站在格与格之间、或者落点侧面，都能躲开。
+	 *
+	 * <h3>为什么不复用原物品实例</h3>
+	 * 主投射物在 {@code onThrow} 里已经结算过（可能已被消耗、掉落或碎裂），
+	 * 复用会让数量与耐久错乱。所以这里**新建同类型实例**，
+	 * 并把它标记为 {@code spawnedForEffect}（不参与掉落/消耗）。
+	 *
+	 * @param origin 主投射物（用来取类型与等级）
+	 * @param user   投掷者
+	 * @param cell   主落点
+	 * @param count  要补的散射数量（通常是 2）
+	 */
+	public static void spawnScatterShots(
+			com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.MissileWeapon
+					origin,
+			Char user, int cell, int count) {
+		if (origin == null || user == null || Dungeon.level == null) return;
+		if (count <= 0) return;
+
+		int[] n = com.watabou.utils.PathFinder.NEIGHBOURS8;
+
+		//先把候选格收集起来并打乱，避免两发落在同一格
+		java.util.ArrayList<Integer> cand = new java.util.ArrayList<>();
+		for (int d : n) {
+			int c = cell + d;
+			if (c < 0 || c >= Dungeon.level.length()) continue;
+			if (Dungeon.level.solid[c]) continue;
+			cand.add(c);
+		}
+		if (cand.isEmpty()) return;
+		java.util.Collections.shuffle(cand, new java.util.Random(
+				com.watabou.utils.Random.Long()));
+
+		int made = 0;
+		int dmgMin = Math.max(1, origin.damageRoll(user) / 2);   //散射伤害减半
+		for (int c : cand) {
+			if (made >= count) break;
+			try {
+				Char victim = com.shatteredpixel.shatteredpixeldungeon.actors.Actor
+						.findChar(c);
+				if (victim == null || victim == user) continue;
+
+				//散射不掷命中骰 —— 否则 3 发的命中期望反而低于 1 发，
+				//那这条规则就变成纯惩罚了。直接按半额伤害结算。
+				victim.damage(dmgMin, origin);
+				if (victim.sprite != null) {
+					victim.sprite.flash();
+				}
+				made++;
+			} catch (Throwable t) {
+				//补射失败就少一发，不影响主投射物
+			}
+		}
+	}
+	//==================================================================
+	//152 和平地牢 / 166 神圣天使 / 120 404
+	//==================================================================
+
+	/** 152 和平地牢。 */
+	public static final int PEACEFUL_DUNGEON = 152;
+	/** 166 神圣天使。 */
+	public static final int HOLY_ANGEL       = 166;
+	/** 120 404。 */
+	public static final int ERROR_404        = 120;
+
+	//---- 152 和平地牢 ----
+
+	/**
+	 * END(152 和平地牢): 玩家是否仍然遵守和平合约。
+	 *
+	 * <p>文档所有者说明："所有怪物不会对你有攻击行为，直到你违反了和平合约；
+	 * 违反后 Boss 层 Boss 生命 +50%，常规层视为怪物属性 +50%，每下一层重置"
+	 *
+	 * <h3>什么算"违反"</h3>
+	 * 玩家**主动攻击任何怪物**即视为违反。此后：
+	 * <ul>
+	 *   <li>本层怪物属性 +50%（Boss 层则是 Boss 生命 +50%）</li>
+	 *   <li>**每下一层重置** —— 也就是"道歉"之后重新和平</li>
+	 * </ul>
+	 *
+	 * <p>用一个静态标记记录"本层是否已违反"，由 {@link #resetPeaceful()} 在换层时清空。
+	 */
+	private static boolean peaceBrokenThisFloor = false;
+
+	/** END(152): 本层是否已破坏和平。 */
+	public static boolean peacefulBroken() {
+		return on(PEACEFUL_DUNGEON) && peaceBrokenThisFloor;
+	}
+
+	/** END(152): 记录一次"玩家动手了"。 */
+	public static void breakPeace() {
+		if (on(PEACEFUL_DUNGEON)) peaceBrokenThisFloor = true;
+	}
+
+	/** END(152): 换层时重置（"每下一层重置"）。 */
+	public static void resetPeaceful() {
+		peaceBrokenThisFloor = false;
+	}
+
+	/**
+	 * END(152): 怪物是否应"不攻击玩家"。
+	 *
+	 * <p>未破坏合约时所有怪物都不主动攻击；破坏后恢复原版行为。
+	 */
+	public static boolean monstersPassive() {
+		return on(PEACEFUL_DUNGEON) && !peaceBrokenThisFloor;
+	}
+
+	/** END(152): 破坏合约后的怪物属性倍率。 */
+	public static float peaceBrokenStatMult() {
+		return peacefulBroken() ? 1.5f : 1f;
+	}
+
+	//---- 166 神圣天使 ----
+
+	/** 祷告 CD 的基础值（回合）。 */
+	public static final int ANGEL_PRAY_BASE_CD = 10;
+	/** 选择"神圣天使"后 CD 增加的回合数。 */
+	public static final int ANGEL_PRAY_CD_BONUS = 4;
+	/** 祷告后获得的护盾比例。 */
+	public static final float ANGEL_SHIELD_PCT = 0.02f;
+	/** 祷告后回复的生命比例。 */
+	public static final float ANGEL_HEAL_PCT = 0.02f;
+
+	/**
+	 * END(166 神圣天使): 是否已满足"变为天使"的条件。
+	 *
+	 * <p>文档所有者说明："选择**所有神圣类**后，变为天使"
+	 *
+	 * <p>"神圣类"= 本表里所有带"神圣"名号的条目：
+	 * 145 神圣附体 / 151 圣明神明 / 158 神圣之力 / 166 神圣天使 / 神圣之光。
+	 */
+	private static final int[] HOLY_CHALLENGES = {
+			145,   //神圣附体
+			151,   //圣明神明
+			158,   //神圣之力
+			166,   //神圣天使
+	};
+
+	public static boolean angelForm() {
+		if (!on(HOLY_ANGEL)) return false;
+		for (int id : HOLY_CHALLENGES) {
+			if (!on(id)) return false;
+		}
+		return true;
+	}
+
+	/** END(166): 祷告的实际 CD（天使形态下 +4）。 */
+	public static int angelPrayCooldown() {
+		return ANGEL_PRAY_BASE_CD + (angelForm() ? ANGEL_PRAY_CD_BONUS : 0);
+	}
+
+	//---- 120 404 ----
+
+	/**
+	 * END(120 404): 本回合是否"退出到主界面"。
+	 *
+	 * <p>文档所有者说明（END 修订）："每回合 0.50% 概率送回主界面"
+	 *
+	 * <p>我最初写成"进入新层时 50%" —— **那是错的**：
+	 * 那样每次下楼有一半概率被踢出去，游戏根本没法玩。
+	 * 正确的语义是**每回合一个很小的概率**（0.5%），
+	 * 期望约 200 回合触发一次 —— 大概两层到三层会遇到一回。
+	 *
+	 * <p>调用点：{@code Hero.act()} —— 玩家每回合掷一次。
+	 */
+	public static boolean rollError404() {
+		if (!on(ERROR_404)) return false;
+		return Random.Float() < 0.005f;      //0.5%
+	}
+	//==================================================================
+	//67 宝箱危机
+	//==================================================================
+
+	/** 67 宝箱危机。 */
+	public static final int MIMIC_THREAT = 67;
+
+	/** 每层生成宝箱怪的概率（%）。 */
+	private static final int MIMIC_THREAT_PCT = 20;
+
+	/**
+	 * END(67 宝箱危机): 每层 20% 概率生成一只"保险怪"（宝箱怪）。
+	 *
+	 * <p>文档所有者说明："每层 20% 概率生成保险怪（黑檀、黄金等）"
+	 *
+	 * <h3>为什么照抄原版那段 ebony mimics</h3>
+	 * {@code RegularLevel} 里已经有一段官方写法（MimicTooth 饰品触发的），
+	 * 逻辑是"藏在堆下 → 没有堆就藏门口/出口"。这里复用同一套判据，
+	 * 只是把触发条件换成固定 20%、并把类型扩到三种。
+	 *
+	 * <h3>RNG 隔离</h3>
+	 * 用自己 push 的随机生成器 —— 否则会改变关卡后续的随机序列，
+	 * 让"勾了 67"和"没勾 67"的地图长得不一样（那会让种子分享失效）。
+	 */
+	public static void spawnMimicThreat(
+			com.shatteredpixel.shatteredpixeldungeon.levels.Level level) {
+		if (!on(MIMIC_THREAT) || level == null) return;
+		if (Random.Int(100) >= MIMIC_THREAT_PCT) return;
+
+		com.watabou.utils.Random.pushGenerator(com.watabou.utils.Random.Long());
+		try {
+			java.util.ArrayList<Integer> cand = new java.util.ArrayList<>();
+
+			//优先藏在普通堆下
+			for (com.shatteredpixel.shatteredpixeldungeon.items.Heap h
+					: level.heaps.valueList()) {
+				if (h.type == com.shatteredpixel.shatteredpixeldungeon.items.Heap.Type.HEAP
+						&& level.findMob(h.pos) == null) {
+					cand.add(h.pos);
+				}
+			}
+
+			//没有堆 → 退而求其次，藏门口
+			if (cand.isEmpty()) {
+				for (int i = 0; i < level.length(); i++) {
+					if (level.map[i] == com.shatteredpixel.shatteredpixeldungeon.levels
+							.Terrain.DOOR && level.findMob(i) == null) {
+						cand.add(i);
+					}
+				}
+			}
+
+			//再没有 → 出口
+			if (cand.isEmpty() && level.findMob(level.exit()) == null) {
+				cand.add(level.exit());
+			}
+
+			if (cand.isEmpty()) return;
+
+			int pos = cand.get(Random.Int(cand.size()));
+
+			//三种随机：普通 / 黑檀 / 黄金
+			Class<? extends com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mimic> kind;
+			switch (Random.Int(3)) {
+				case 0: default:
+					kind = com.shatteredpixel.shatteredpixeldungeon.actors.mobs
+							.Mimic.class;
+					break;
+				case 1:
+					kind = com.shatteredpixel.shatteredpixeldungeon.actors.mobs
+							.EbonyMimic.class;
+					break;
+				case 2:
+					kind = com.shatteredpixel.shatteredpixeldungeon.actors.mobs
+							.GoldenMimic.class;
+					break;
+			}
+
+			com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mimic m =
+					com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mimic
+							.spawnAt(pos, kind, true);
+			if (m != null) level.mobs.add(m);
+		} catch (Throwable t) {
+			//生成失败不影响关卡
+		} finally {
+			com.watabou.utils.Random.popGenerator();
+		}
+	}
+	//==================================================================
+	//100 镜像对决
+	//==================================================================
+
+	/** 100 镜像对决。 */
+	public static final int MIRROR_DUEL = 100;
+
+	/** 每层生成镜像的概率（%）。 */
+	private static final int MIRROR_DUEL_PCT = 13;
+
+	/**
+	 * END(100 镜像对决): 每层 13% 概率生成一只敌对镜像。
+	 *
+	 * <p>文档所有者说明："每层 13% 概率生成镜像，同玩家装备外观/攻击/生命，
+	 * 主动攻击，掉落随机复制品，不用道具和法杖"
+	 *
+	 * <p>调用点：{@code RegularLevel.createMobs()} 末尾。
+	 * 用自己 push 的随机生成器，避免污染关卡 RNG（保护种子分享）。
+	 */
+	public static void spawnHostileMirror(
+			com.shatteredpixel.shatteredpixeldungeon.levels.Level level) {
+		if (!on(MIRROR_DUEL) || level == null) return;
+		if (Dungeon.hero == null) return;
+		if (Random.Int(100) >= MIRROR_DUEL_PCT) return;
+
+		com.watabou.utils.Random.pushGenerator(com.watabou.utils.Random.Long());
+		try {
+			int cell = level.randomRespawnCell(null);
+			if (cell == -1) return;
+
+			com.shatteredpixel.shatteredpixeldungeon.actors.mobs.HostileMirror m =
+					com.shatteredpixel.shatteredpixeldungeon.actors.mobs.HostileMirror
+							.createFor(Dungeon.hero);
+			m.pos = cell;
+			level.mobs.add(m);
+
+			safeLogW("你看到了……你自己。");
+		} catch (Throwable t) {
+			//生成失败不影响关卡
+		} finally {
+			com.watabou.utils.Random.popGenerator();
+		}
+	}
+
+	/**
+	 * END(100): 镜像掉落的"随机复制品"。
+	 *
+	 * <p>文档所有者澄清："随机掉一件**同等级**的普通装备"。
+	 * 所以不复制玩家身上那件具体的装备，而是从对应类别里
+	 * 随机抽一件，并把等级对齐到玩家装备的水平。
+	 */
+	public static com.shatteredpixel.shatteredpixeldungeon.items.Item rollMirrorDrop() {
+		if (Dungeon.hero == null) return null;
+		try {
+			com.shatteredpixel.shatteredpixeldungeon.items.Item out;
+			if (Random.Int(2) == 0) {
+				out = com.shatteredpixel.shatteredpixeldungeon.items.Generator
+						.randomUsingDefaults(com.shatteredpixel.shatteredpixeldungeon
+								.items.Generator.Category.WEAPON);
+			} else {
+				out = com.shatteredpixel.shatteredpixeldungeon.items.Generator
+						.randomUsingDefaults(com.shatteredpixel.shatteredpixeldungeon
+								.items.Generator.Category.ARMOR);
+			}
+			if (out == null) return null;
+
+			//等级对齐：与玩家当前装备同级（"同等级"）
+			int lvl = 0;
+			com.shatteredpixel.shatteredpixeldungeon.items.KindOfWeapon w =
+					Dungeon.hero.belongings.attackingWeapon();
+			if (w != null) lvl = Math.max(0, w.level());
+			if (out.isUpgradable()) out.level(lvl);
+
+			out.identify();
+			return out;
+		} catch (Throwable t) {
+			return null;
+		}
+	}
+	//==================================================================
+	//63 鼠鼠可爱
+	//==================================================================
+
+	/** 63 鼠鼠可爱。 */
+	public static final int CUTE_RATS = 63;
+
+	/** END(63): 是否启用"怪物全变小鼠"。 */
+	public static boolean cuteRatsOn() {
+		return on(CUTE_RATS);
+	}
+
+	/**
+	 * END(63): 这只怪物是否要变成小鼠。
+	 *
+	 * <p>文档所有者说明："怪物贴图、文本、近战后 UI 显示都变成小鼠"。
+	 *
+	 * <p>排除 Boss 与小 Boss：把古神变成小鼠会让整场 Boss 战失去意义，
+	 * 而且 Boss 血条上的图标也会跟着变，视觉上很怪。
+	 */
+	public static boolean cuteRatsEnabled(Char ch) {
+		if (!on(CUTE_RATS) || ch == null) return false;
+		if (!(ch instanceof Mob)) return false;
+		if (ch instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Rat) {
+			return false;                       //本来就是小鼠
+		}
+		if (Char.hasProp(ch, Char.Property.BOSS)
+				|| Char.hasProp(ch, Char.Property.MINIBOSS)) return false;
+		return true;
+	}
+
+	/**
+	 * END(63): 名字是否要显示成"小鼠"。
+	 *
+	 * <p>返回 non-null 表示要替换（数组内容无意义，只是为了避免
+	 * 让调用方再多引一个类；用 boolean 会更清楚，但那样就要两处判断）。
+	 *
+	 * <p>实际上这里只需要一个"是/否" —— 名字从 Rat 的 messages 取。
+	 */
+	private static final int[] RAT_NAME_FLAG = { 0 };
+
+	public static int[] cuteRatName(Char ch) {
+		return cuteRatsEnabled(ch) ? RAT_NAME_FLAG : null;
 	}
 }

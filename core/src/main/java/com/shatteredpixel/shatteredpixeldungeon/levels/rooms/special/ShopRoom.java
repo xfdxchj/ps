@@ -309,6 +309,36 @@ public class ShopRoom extends SpecialRoom {
 		itemsToSpawn.add( new Ankh() );
 		itemsToSpawn.add( new StoneOfAugmentation() );
 
+		//==== END(挑战 38 盲盒): 商店上架盲盒 ====
+		//原表："商店可购买盲盒，随机获得物品"
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.mysteryBoxEnabled()) {
+			int boxes = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.mysteryBoxStock();
+			for (int i = 0; i < boxes; i++) {
+				itemsToSpawn.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent
+						.grimm.MysteryBox());
+			}
+		}
+
+		//==== END(挑战 33 黑市): 商店上架"原版以外"的特殊商品 ====
+		//原表："商店出现特殊商品（原版以外物品）"
+		//
+		//做法：从**本 fork 新增的内容**里随机挑 1-2 件上架。
+		//这些物品在正常对局里不会出现在商店，所以勾选 33 后
+		//会明显感到"这家店不太对劲"。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.blackMarketEnabled()) {
+			int specials = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.blackMarketStock();
+			for (int i = 0; i < specials; i++) {
+				com.shatteredpixel.shatteredpixeldungeon.items.Item special =
+						com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+								.ChallengeEffects.rollBlackMarketItem();
+				if (special != null) itemsToSpawn.add(special);
+			}
+		}
+
 		//==== END(删除·宝石获取途径): 商店不再刷新宝石 ====
 		//文档所有者要求"把宝石删去（只删获取途径，保留类以兼容旧存档）"。
 		//

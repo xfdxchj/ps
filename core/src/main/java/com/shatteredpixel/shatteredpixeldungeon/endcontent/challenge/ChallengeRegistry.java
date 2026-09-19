@@ -235,7 +235,8 @@ public final class ChallengeRegistry {
 				"最终伤害为 9 的倍数时，改为 1 点。");
 		done(all, 78, "烈火焚身",   "immolation",       "战斗", T_MON, 3, T_EASY,   "",
 				"玩家受击时 13% 概率燃烧。");
-		add(all, 103,"弹幕地狱",   "bullet_hell",      "战斗", T_TWO, 2, T_MED,    "s:76");
+		done(all, 103,"弹幕地狱",   "bullet_hell",      "战斗", T_TWO, 2, T_MED,    "s:76",
+				"远程投射物变为 **3 发散射**：主投射物照常，另外 2 发落在相邻格。有间隙可走位。");
 		done(all, 121,"中世纪骑士", "medieval_knight",  "战斗", T_TWO, 2, T_EASY,   "x:110",
 				"玩家护甲值 +60%，移动速度 -50%。");
 		done(all, 135,"亡者之怒",   "wrath_of_dead",    "战斗", T_RISK,2, T_EASY,   "s:68,124,128",
@@ -251,7 +252,8 @@ public final class ChallengeRegistry {
 		//END: 原联动串为 "s:14,30,97"，其中 97 已删除，故移除该引用（保留 14/30）。
 		done(all, 75, "精英地牢",   "elite_dungeon",    "怪物", T_MON, 3, T_MED,    "s:14,30",
 				"13% 的怪物被替换为其稀有变种（白化老鼠、寄居蟹、强盗等）。");
-		add(all, 76, "原始状态",   "primal_state",     "怪物", T_MON, 2, T_MED,    "s:103");
+		done(all, 76, "原始状态",   "primal_state",     "怪物", T_MON, 2, T_MED,    "s:103",
+				"非远程怪物在打不到你的时候会**扔石头**（最多 6 格）。");
 		done(all, 77, "亡灵法师",   "necromancer",      "怪物", T_MON, 3, T_MED,    "s:73,86",
 				"怪物死亡后 **20%** 在原地留下一个幽灵。");
 		done(all, 86, "复仇之魂",   "vengeful_spirit",  "怪物", T_MON, 2, T_MED,    "s:73,77",
@@ -260,12 +262,14 @@ public final class ChallengeRegistry {
 				"怪物攻击命中时 5% 概率偷走 5% 金币；击杀该怪物后双倍返还。");
 		//END(已取消): 97 我的世界 / 122 我的世界II —— 按文档所有者要求删除，不做。
 		//（原效果与"经验药水"相关。）122 对 97 的联动引用一并移除。
-		add(all, 100,"镜像对决",   "mirror_match",     "怪物", T_MON, 3, T_HARD,   "r:77");
+		done(all, 100,"镜像对决",   "mirror_duel",      "怪物", T_MON, 3, T_HARD,   "",
+				"每层 **13%** 概率生成一只**敌对镜像**：外观/攻击/生命跟随玩家，**只能普通攻击**（没有背包，用不了道具与法杖）。击杀后掉落一件**同等级的随机装备**。");
 		done(all, 119,"怪物浪潮",   "monster_wave",     "怪物", T_TWO, 2, T_EASY,   "s:30",
 				"怪物生成数量 ×4；普通怪物的生命与伤害变为原来的 20%（Boss 不削弱）。");
 
 		//---- 经济 ----
-		add(all, 33, "黑市",       "black_market",     "经济", T_TWO, 1, T_MED,    "");
+		done(all, 33, "黑市",       "black_market",     "经济", T_TWO, 1, T_MED,    "",
+				"每家商店额外上架 **1-2 件特殊商品**（神器 / 法杖 / 稀有符石，以及本 MOD 的专属道具）。");
 		done(all, 34, "赏金制度",   "bounty",           "经济", T_BEN, 1, T_EASY,   "",
 				"击杀精英怪额外获得 30 金币，击杀 Boss 额外获得 120 金币。");
 		done(all, 35, "丰饶",       "abundance",        "经济", T_BEN, 1, T_EASY,   "x:36",
@@ -274,12 +278,16 @@ public final class ChallengeRegistry {
 				"资源及物品掉落减少 25%（不会降到 0，保证通关所需的最少资源）。");
 		done(all, 37, "高价回收",   "high_buyback",     "经济", T_BEN, 1, T_EASY,   "x:32",
 				"把物品卖给商店所得 ×1.5。");
-		add(all, 38, "盲盒",       "loot_box",         "经济", T_TWO, 1, T_MED,    "");
-		add(all, 39, "All or Nothing","all_or_nothing", "经济", T_RISK,3, T_MED,   "");
+		done(all, 38, "盲盒",       "loot_box",         "经济", T_TWO, 1, T_MED,    "",
+				"每家商店上架 **2 个盲盒**。打开后：60% 普通消耗品 / 30% 装备 / 10% 稀罕物。");
+		done(all, 39, "All or Nothing","all_or_nothing", "经济", T_RISK,3, T_MED,   "",
+				"开局获得**赌徒之骰**：使用后选择一件可堆叠物品赌博 —— 50% 数量翻倍，50% 数量清零。");
 		done(all, 40, "贷款",       "loan",             "经济", T_TWO, 2, T_EASY,   "",
 				"可在商店贷款金币（100/300/500/1000 自选），1000 回合内偿还本金的 110%。同一时间只能欠一笔。");
-		add(all, 41, "钱是万能",   "money_is_power",   "经济", T_BEN, 2, T_MED,    "");
-		add(all, 42, "等价交换",   "equivalent_exchange","经济",T_TWO,1, T_MED,    "");
+		done(all, 41, "钱是万能",   "money_is_power",   "经济", T_BEN, 2, T_MED,    "",
+				"开局获得**万能钱袋**：用金币直接买任何物品（药水/卷轴/装备/神器/力量药水/升级卷轴）。与 160 不重叠 —— 160 是升级，41 是购买。");
+		done(all, 42, "等价交换",   "equivalent_exchange","经济",T_TWO,1, T_MED,    "",
+				"开局获得 **3 张交换契约**：选择一件物品，随机换成**同类别**的另一件，等级保留。");
 		done(all, 43, "一贫如洗",   "destitute",        "经济", T_RES, 2, T_EASY,   "",
 				"每次进入新区域（每 5 层）时，金币减少 20%。");
 		done(all, 44, "慷慨商人",   "generous_merchant","经济", T_TWO, 1, T_EASY,   "s:32",
@@ -287,7 +295,8 @@ public final class ChallengeRegistry {
 		//END(已取消): 101 全员恶人 —— 按文档所有者要求**彻底删除**，不做。
 		//原效果是"摧毁所有商店"，会连带让十余条商店规则失效，实现与维护成本都不划算。
 		//同时已解除 88 拍卖行对它的互斥引用（此处原为 "x:101"）。
-		add(all, 88, "拍卖行",     "auction_house",    "经济", T_TWO, 2, T_MED,    "");
+		done(all, 88, "拍卖行",     "auction_house",    "经济", T_TWO, 2, T_MED,    "",
+				"商店价格**波动 0.5~1.8 倍**（每件商品首次看到时定格）；每层 **35%** 概率被 NPC 全场抬价 **×1.5**。");
 
 		//---- 药剂 ----
 		done(all, 46, "药剂不稳定", "unstable_potions", "药剂", T_TWO, 2, T_EASY,   "",
@@ -296,7 +305,8 @@ public final class ChallengeRegistry {
 				"消耗品（药水、卷轴、食物、炸弹）生成数量减少 40%。");
 		done(all, 48, "过量补给",   "excess_supplies",  "药剂", T_BEN, 1, T_EASY,   "x:47",
 				"消耗品（药水、卷轴、食物、炸弹）生成数量增加 50%。");
-		add(all, 124,"野生狗奶",   "wild_milk",        "药剂", T_RISK,3, T_MED,    "");
+		done(all, 124,"野生狗奶",   "wild_milk",        "药剂", T_RISK,3, T_MED,    "",
+				"使用后**全属性降低 75%**（攻击/命中/闪避只剩四分之一），但期间**不会死亡**（生命最低保留 1）。**永久生效**。");
 
 		//---- 环境 ----
 		done(all, 49, "切尔诺贝利", "chernobyl",        "环境", T_TWO, 3, T_MED,    "s:111",
@@ -337,12 +347,14 @@ public final class ChallengeRegistry {
 				"每层额外掉落 1 个炸弹。");
 		done(all, 62, "芙莉莲",     "frieren",          "特殊", T_BEN, 1, T_EASY,   "",
 				"宝箱数量提高约 20%。");
-		add(all, 63, "鼠鼠可爱",   "cute_rats",        "特殊", T_NEU, 1, T_HARD,   "");
+		done(all, 63, "鼠鼠可爱",   "cute_rats",        "特殊", T_NEU, 1, T_HARD,   "",
+				"所有怪物的**贴图、名字与攻击按钮图标**都变成小鼠（Boss 除外）。纯外观，属性与 AI 不变。");
 		done(all, 64, "宝物猎人",   "treasure_hunter",  "特殊", T_TWO, 1, T_EASY,   "",
 				"普通怪物掉落减少 30%，每个宝箱额外增加 1 件物品。");
 		done(all, 65, "及时雨",     "timely_rain",      "特殊", T_BEN, 2, T_EASY,   "s:104",
 				"整局第一次致命伤害不会死，保留 1 点生命（触发顺序在命悬一线之前）。");
-		add(all, 67, "宝箱危机",   "chest_crisis",     "特殊", T_RISK,3, T_MED,    "");
+		done(all, 67, "宝箱危机",   "mimic_threat",     "特殊", T_RISK,3, T_HARD,   "",
+				"每层 **20%** 概率生成一只**宝箱怪**（普通 / 黑檀 / 黄金），藏在普通堆或门口。");
 		done(all, 70, "生活部长",   "life_minister",    "特殊", T_NEU, 1, T_MED,    "",
 				"每回合 3% 概率停止行动，说出「首先，我是生活部部长」。");
 		done(all, 71, "喝大了",     "drunk",            "特殊", T_TWO, 2, T_EASY,   "",
@@ -357,7 +369,8 @@ public final class ChallengeRegistry {
 				"生命不显示数值，只显示状态描述；致命伤害时 13% 概率保留 1 点生命。");
 		done(all, 118,"天意侵蚀",   "providence",       "特殊", T_TWO, 1, T_MED,    "",
 				"每回合 13% 概率随机播放一段新三国音效。");
-		add(all, 120,"404",        "error_404",        "特殊", T_RISK,2, T_MED,    "");
+		done(all, 120,"404",        "error_404",        "特殊", T_RISK,2, T_MED,    "",
+				"**每回合 0.5%** 概率被直接送回主界面（期望约 200 回合一次）。");
 		done(all, 123,"大学生",     "college_student",  "特殊", T_TWO, 1, T_EASY,   "",
 				"玩家每回合 3% 概率受到 1 点伤害（不会致死，生命值至少保留 1）。");
 		//END(分类调整): 134 黄金蜂蜜酒归入**格林系列**（原在「特殊」组）。
@@ -400,7 +413,8 @@ public final class ChallengeRegistry {
 
 		//==== 扩展包：139–147（表内有 ID 的新规则）====
 		//等级 / 倾向 / 关系均按清单给定；ID 139–147 经核实为原表空号，可直接使用。
-		add(all, 139,"紊乱法杖",   "chaos_wand",       "装备", T_TWO, 2, T_MED,    "s:60,21");
+		done(all, 139,"紊乱法杖",   "chaos_wand",       "装备", T_TWO, 2, T_MED,    "s:60,21",
+				"任何法杖施法时 **13%** 概率变成**另一种法杖**的效果（不是新物品，是全局规则）。等级沿用当前法杖。");
 		done(all, 140,"枪枪爆头",   "headshot",         "战斗", T_BEN, 2, T_EASY,   "s:103,76",
 				"玩家与目标距离 5 格以上时，远程攻击伤害必定为最大值。");
 		done(all, 141,"禁魔空间",   "anti_magic_zone",  "环境", T_MON, 2, T_EASY,   "x:139,21,60",
@@ -409,7 +423,8 @@ public final class ChallengeRegistry {
 				"怪物受到远程攻击时，13% 概率完全免疫该次伤害。");
 		done(all, 143,"吾为王者",   "i_am_king",        "怪物", T_MON, 3, T_MED,    "s:117,15",
 				"所有 Boss 的命中与闪避提升 20%。");
-		add(all, 144,"破碎权柄",   "broken_authority", "怪物", T_MON, 3, T_MED,    "s:75,143");
+		done(all, 144,"破碎权柄",   "broken_authority", "怪物", T_MON, 3, T_MED,    "s:75,143",
+				"每个 Boss 生命**降至 33%** 后，**每 5 回合召唤 1 只稀有怪**（带随机精英词缀）。");
 		done(all, 145,"神圣附体",   "holy_possession",  "特殊", T_BEN, 1, T_EASY,   "",
 				"经验获取增加 20%。");
 		done(all, 146,"醍醐灌顶",   "enlightenment",    "特殊", T_BEN, 2, T_EASY,   "x:147",
@@ -424,8 +439,10 @@ public final class ChallengeRegistry {
 				"每一层额外刷新 2 只蜜蜂。");
 		done(all, 150,"淹没地牢",   "flooded_dungeon",  "地图", T_MON, 2, T_HARD,   "s:74;x:154",
 				"每一层都是水域生态（整层被水淹没），水中 20% 生成幻影食人鱼。与「废弃地牢」互斥。");
-		add(all, 151,"圣明神明",   "holy_divinity",    "特殊", T_TWO, 3, T_HARD,   "s:145");
-		add(all, 152,"和平地牢",   "peaceful_dungeon", "怪物", T_TWO, 2, T_HARD,   "");
+		done(all, 151,"圣明神明",   "holy_divinity",    "特殊", T_TWO, 3, T_HARD,   "s:145",
+				"玩家**生命 / 命中 / 闪避 +50%**、**攻击 +30%**，但每回合有 **25%** 概率必须停下来祷告（本回合无法行动）。");
+		done(all, 152,"和平地牢",   "peaceful_dungeon", "怪物", T_TWO, 2, T_HARD,   "",
+				"所有怪物**不会主动攻击你**，直到你**主动攻击任何怪物**（违反合约）。违反后本层怪物属性 +50%（Boss 层为 Boss 生命 +50%），**每下一层重置**。");
 		done(all, 153,"恶魔地牢",   "demon_dungeon",    "怪物", T_MON, 2, T_MED,    "s:158",
 				"所有怪物被视为恶魔类（只改属性标记，不改外观与数值）。");
 		done(all, 154,"废弃地牢",   "abandoned_dungeon","地图", T_TWO, 2, T_HARD,   "s:112;x:150",
@@ -440,18 +457,23 @@ public final class ChallengeRegistry {
 				"对恶魔类目标造成的伤害提升 30%。与「恶魔地牢」联动时收益最大化。");
 		done(all, 159,"绵羊地牢",   "sheep_dungeon",    "环境", T_MON, 2, T_MED,    "",
 				"玩家周围 7x7 范围内 13% 概率生成 1~2 只绵羊，触发后有 20 回合冷却。");
-		add(all, 160,"氪金大佬",   "whale",            "经济", T_BEN, 2, T_MED,    "s:41");
-		add(all, 161,"钱就是命",   "money_is_life",    "经济", T_BEN, 2, T_MED,    "s:41");
+		done(all, 160,"氪金大佬",   "whale",            "经济", T_BEN, 2, T_MED,    "s:41",
+				"可以**消耗金币给物品升级**：费用 = 100 × (当前等级 + 1)，上限 +10（与原版升级卷轴一致）。");
+		done(all, 161,"钱就是命",   "money_is_life",    "经济", T_BEN, 2, T_MED,    "s:41",
+				"受到**致命伤**时，用**等量金币**抵消（1 金币抵 1 点伤害），把生命保留在 1。");
 		done(all, 162,"真实地牢",   "realistic_dungeon","环境", T_RES, 2, T_EASY,   "",
 				"空气稀薄：每 50-5x(层数/5) 回合必须停下深呼吸一次（层数越深间隔越短）。");
 		done(all, 163,"古代升级",   "ancient_upgrade",  "特殊", T_BEN, 2, T_MED,    "",
 				"玩家每达到 3 级，伤害的下限与上限各提升 10%。");
-		add(all, 164,"魔法地牢",   "magic_dungeon",    "怪物", T_MON, 2, T_MED,    "s:141");
+		done(all, 164,"魔法地牢",   "magic_dungeon",    "怪物", T_MON, 2, T_MED,    "s:141",
+				"怪物有 **13%** 概率使用**随机一种魔法**（以法杖法术表示）。");
 		done(all, 165,"神圣之光",   "holy_light",       "特殊", T_BEN, 1, T_EASY,   "s:145",
 				"每回合 13% 概率回复 2% 最大生命（满血时不触发）。");
 		//166 神圣天使：前置为 4 条神圣类规则（145 神圣附体 / 158 神圣之力 / 165 神圣之光 / 151 圣明神明）
-		add(all, 166,"神圣天使",   "holy_angel",       "特殊", T_BEN, 3, T_SER,    "p:145,158,165,151");
-		add(all, 167,"黄金地牢",   "golden_dungeon",   "经济", T_TWO, 3, T_HARD,   "p:41");
+		done(all, 166,"神圣天使",   "holy_angel",       "特殊", T_BEN, 3, T_SER,    "p:145,158,165,151",
+				"集齐所有神圣类挑战后**变为天使**：祷告 CD **+4**，每次祷告获得 **2% 护盾 + 2% 回血**。");
+		done(all, 167,"黄金地牢",   "golden_dungeon",   "经济", T_TWO, 3, T_HARD,   "p:41",
+				"怪物**不掉落任何物品**；地面生成的物品**全部换算成金币**。任务/剧情物品除外。");
 		done(all, 168,"怪物地牢",   "monster_dungeon",  "怪物", T_MON, 3, T_MED,    "",
 				"所有与怪物相关的概率规则提升至至少 25%。");
 	}

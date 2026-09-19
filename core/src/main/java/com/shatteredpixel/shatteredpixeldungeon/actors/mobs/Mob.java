@@ -312,6 +312,34 @@ public abstract class Mob extends Char {
 	public CharSprite sprite() {
 		CharSprite s = Reflection.newInstance(spriteClass);
 
+		//==== END(挑战 63 鼠鼠可爱): 所有怪物都变成小鼠 ====
+		//文档所有者说明："怪物贴图、文本、近战后 UI 显示都变成小鼠"。
+		//
+		//与 138 的区别：138 是**随机**换（而且记在 buff 上防闪烁），
+		//63 是**固定**换成小鼠 —— 所以不需要掷色子，也不需要记状态。
+		//
+		//放在 138 之前：两条同时勾选时，63 的"全都是小鼠"优先
+		//（否则 138 的随机会把小鼠又随机掉，那 63 就形同虚设）。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.cuteRatsEnabled(this)) {
+			s = new com.shatteredpixel.shatteredpixeldungeon.sprites.RatSprite();
+			return s;
+		}
+
+		//==== END(诊断·138 贴图): 记录每次创建 sprite 时用了哪个类 ====
+		//用来回答"为什么 UI 里显示的是原怪物贴图"：
+		//如果这里每次都打印**原始类**，说明 mark/spriteClassName 没生效；
+		//如果打印的是随机类，说明 UI 那条路径另有问题。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.ABSURD_SPRITE_DEBUG) {
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ChallengeAbsurdMark mk =
+					buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+							.ChallengeAbsurdMark.class);
+			System.out.println("[荒诞贴图] " + getClass().getSimpleName()
+					+ " 原始=" + spriteClass.getSimpleName()
+					+ " buff=" + (mk == null ? "无" : (mk.spriteClassName == null ? "未掷" : mk.spriteClassName)));
+		}
+
 		//==== END(挑战 138 荒诞世界): 怪物贴图随机变化 ====
 		//**纯外观**：只换贴图类，属性、AI、行为一律不变（原表要求）。
 		//
@@ -517,6 +545,22 @@ public abstract class Mob extends Char {
 	protected boolean intelligentAlly = false;
 	
 	protected Char chooseEnemy() {
+
+		//==== END(挑战 152 和平地牢): 合约未破时怪物不主动攻击 ====
+		//文档所有者说明："所有怪物不会对你有攻击行为，直到你违反了和平合约"。
+		//
+		//做法：返回 null 表示"没有敌人" —— 怪物不会主动接近、不会攻击，
+		//但仍然会正常走动（WANDERING），所以地牢不是空荡荡的。
+		//
+		//"违反合约"由玩家**主动攻击任何怪物**触发（见 Char.attack），
+		//触发后本层恢复原版行为；换层时由 resetPeaceful() 重置。
+		//
+		//只对 ENEMY 阵营生效 —— 玩家的盟友不该被这条规则影响。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.monstersPassive()
+				&& alignment == Alignment.ENEMY) {
+			return null;
+		}
 
 		Dread dread = buff( Dread.class );
 		if (dread != null) {
@@ -903,7 +947,75 @@ public abstract class Mob extends Char {
 	}
 	
 	protected boolean doAttack( Char enemy ) {
-		
+
+		//==== END(挑战 164 魔法地牢): 怪物有 13% 概率施放随机魔法 ====
+		//文档所有者说明："怪物有 13% 的可以使用随机一种魔法"
+		//
+		//做法：在**能打到**的前提下，有 13% 概率改为"放一个法杖法术"
+		//而不是普通攻击。"魔法"用法杖的法术表示 —— 那是本作里
+		//最接近"怪物施法"的现成机制，不必另造一套。
+		//
+		//判据要求相邻或已在射程内：否则怪物会隔着半张地图放法术，
+		//那既不合理也很难躲。
+		if (enemy != null && Dungeon.level != null
+				&& (Dungeon.level.adjacent(pos, enemy.pos)
+						|| Dungeon.level.distance(pos, enemy.pos) <= 4)
+				&& com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+						.ChallengeEffects.rollMagicMob(this)
+				&& Random.Int(100) < 13) {
+			com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand spell =
+					com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+							.ChallengeEffects.rollMobMagic();
+			if (spell != null) {
+				//等级随层数走（否则低层怪物放出高层法术会过于致命）
+				spell.level(Math.max(0, Dungeon.depth / 5));
+
+				//用 CursedWand.cursedZap()：它接受**任意 Char 作为施法者**，
+				//正是"怪物放法术"需要的入口。
+				//
+				//为什么不自己调 wand.fx()/onZap()：
+				//那两个依赖 Item.curUser（**static Hero**），
+				//怪物根本塞不进去。cursedZap 则显式接收 user 参数。
+				com.shatteredpixel.shatteredpixeldungeon.items.wands.CursedWand
+						.cursedZap(spell, this,
+								new com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica(pos, enemy.pos,
+										com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica.MAGIC_BOLT),
+								new com.watabou.utils.Callback() {
+									@Override
+									public void call() {
+										//施法结束，什么都不用做
+									}
+								});
+
+				if (sprite != null) sprite.zap(enemy.pos);
+				Invisibility.dispel(this);
+				spend(attackDelay());
+				return true;
+			}
+		}
+
+		//==== END(挑战 76 原始状态): 非远程怪物扔石头 ====
+		//原表："非远程怪物可扔石头进行远程攻击"
+		//
+		//判据：**不相邻**（相邻就走原本的近战路径）+ **不是远程怪**
+		//（远程怪本来就能打到，不需要扔石头）。
+		//
+		//为什么放在 doAttack 而不是 canAttack：
+		//canAttack 决定"要不要走过去打"，若在那里返回 true，
+		//怪物会站在原地扔石头而不再靠近 —— 那就不是"原始状态"而是"懦夫状态"了。
+		//放在这里的效果是：**怪物该靠近就靠近，实在打不到时才扔石头**。
+		if (enemy != null && Dungeon.level != null
+				&& !Dungeon.level.adjacent(pos, enemy.pos)
+				&& com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+						.ChallengeEffects.canThrowRock(this, enemy)) {
+			if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeRockFall.throwRockAt(this, enemy)) {
+				Invisibility.dispel(this);
+				spend( attackDelay() );
+				return true;
+			}
+		}
+
 		if (sprite != null && (sprite.visible || enemy.sprite.visible)) {
 			sprite.attack( enemy.pos );
 			return false;
@@ -1316,6 +1428,19 @@ public abstract class Mob extends Char {
 	
 	public void rollToDropLoot(){
 		if (Dungeon.hero.lvl > maxLvl + 2) return;
+
+		//==== END(挑战 167 黄金地牢): 怪物不掉落任何物品（只有金币） ====
+		//原表（文档所有者说明）："怪物无法掉落任何物品，只掉金币"。
+		//
+		//做法：跳过"掉落物"与"财富戒指额外掉落"两段，
+		//但**保留**已有的金币掉落（挑战 34 赏金制度那段在下文，不受影响）。
+		//
+		//注意：Boss 的**任务掉落**（天狗面具等）走的是 level.dropToDrop 之外的
+		//路径（Boss 自己的 die() 里直接 drop），所以这里拦住不影响主线。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.goldenNoDrops()) {
+			return;
+		}
 
 		MasterThievesArmband.StolenTracker stolen = buff(MasterThievesArmband.StolenTracker.class);
 		if (stolen == null || !stolen.itemWasStolen()) {
