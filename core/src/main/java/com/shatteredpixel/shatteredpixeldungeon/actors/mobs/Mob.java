@@ -413,11 +413,16 @@ public abstract class Mob extends Char {
 		if (state != SLEEPING
 				&& com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 						.ChallengeEffects.rollAgingSleep(this)) {
-			//用 Drowsy（FlavourBuff，支持 duration）而不是 MagicalSleep ——
-			//后者 extends Buff，没有带时长的 affect 重载。
+			//==== END(修复 18): 改成自己的 AgingSleep ====
+			//原先用 Drowsy，但 Drowsy.act() 会挂 MagicalSleep ——
+			//于是"睡眠 2 回合"变成了"永久魔法睡眠"，玩家实测就是这个现象。
+			//
+			//AgingSleep 是真睡眠（外观 Zzz），但会**自然醒**，且绝不挂 MagicalSleep。
 			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
 					this, com.shatteredpixel.shatteredpixeldungeon.actors.buffs
-							.Drowsy.class, 1f);
+							.AgingSleep.class,
+					com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+							.AgingSleep.DURATION);
 		}
 
 		boolean justAlerted = alerted;

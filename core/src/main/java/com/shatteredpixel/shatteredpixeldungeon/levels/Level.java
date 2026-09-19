@@ -360,6 +360,11 @@ public abstract class Level implements Bundlable {
 		//也是确定性铺设（不掷骰），放在 popGenerator 之后不影响关卡生成。
 		applyChernobyl();
 
+		//END(修复 49): 毒气每回合 -1 点，30 回合就会散光 ——
+		//所以这里额外挂一个维持器，每 3 回合把毒气补回来。
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChernobylKeeper.ensureRunning();
+
 		//==== END(挑战 129 心爱的少女): 童话残片 ====
 		//每 2 层刷一枚，每层最多一枚（文档所有者定稿）。
 		//放在最后：它需要用到已经铺好的地形找落点。

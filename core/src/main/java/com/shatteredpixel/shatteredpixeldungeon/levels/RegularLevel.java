@@ -241,7 +241,20 @@ public abstract class RegularLevel extends Level {
 		ArrayList<Room> stdRooms = new ArrayList<>();
 		for (Room room : rooms) {
 			if (room instanceof StandardRoom) {
-				for (int i = 0; i < ((StandardRoom) room).mobSpawnWeight(); i++) {
+				//==== END(修复 119 怪物浪潮): 每房的权重也要跟着放大 ====
+				//原先只放大了 mobLimit()（总上限），但**每房能放几只**由
+				//mobSpawnWeight 决定 —— 一个普通层只有 8-12 个房间、
+				//每房权重 1-3，于是实际铺出来的怪远少于总上限。
+				//表现就是"勾了 119 还是 1 房 2 怪"。
+				//
+				//这里把权重也乘上同一个倍率，让"总数"与"每房容量"同步放大。
+				int weight = ((StandardRoom) room).mobSpawnWeight();
+				weight = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+						.ChallengeEffects.scaleCount(weight,
+								com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+										.ChallengeEffects.mobCountMultiplier(),
+								true);
+				for (int i = 0; i < weight; i++) {
 					stdRooms.add(room);
 				}
 			}
@@ -297,7 +310,14 @@ public abstract class RegularLevel extends Level {
 				mob = null;
 
 				//chance to add a second mob to this room, except on floor 1
-				if (Dungeon.depth > 1 && mobsToSpawn > 0 && Random.Int(4) == 0){
+				//
+				//END(修复 119 怪物浪潮): 第二只的概率也要受倍率影响。
+				//原版固定 25%（Random.Int(4)==0）。勾选 119 后如果还是 25%，
+				//"成群出现"的感觉就完全出不来 —— 每房依旧是 1 只为主。
+				if (Dungeon.depth > 1 && mobsToSpawn > 0
+						&& Random.Int(4) < com.shatteredpixel.shatteredpixeldungeon
+								.endcontent.challenge.ChallengeEffects
+										.extraMobPerRoomChance()) {
 					mob = createMob();
 
 					tries = 30;

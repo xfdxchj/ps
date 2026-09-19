@@ -77,8 +77,8 @@ public final class ChallengeSfx {
 	private static final int CHANCE_MINISTER    = 3;
 	/** 72 前程似锦：每回合触发概率。 */
 	private static final int CHANCE_FUTURE      = 3;
-	/** 96 奥利给：每回合触发概率。 */
-	private static final int CHANCE_OLIGEI      = 3;
+	/** 96 奥利给：每回合触发概率。 END(修订): 3% -> 1%（文档所有者实测过高）。 */
+	private static final int CHANCE_OLIGEI      = 1;
 	/** 95 耗子尾汁：每回合触发概率（原表原为"闪避成功时3%"，已按文档所有者要求改为每回合判定）。 */
 	private static final int CHANCE_RAT_TAIL    = 3;
 
@@ -311,11 +311,35 @@ public final class ChallengeSfx {
 	 */
 	public static String grimmTrackFor(String original) {
 		if (original == null) return null;
+
+		//==== END(诊断 130): 把每一次曲目请求都打出来 ====
+		//用来区分"没勾选 130"、"勾了但没匹配上"、"匹配了但没播"三种情况。
+		//实测反馈"格林之音没有正常生效"，但代码路径看起来是通的，
+		//所以先拿到真实数据再改。
+		if (GRIMM_MUSIC_DEBUG) {
+			System.out.println("[格林之音] 请求曲目: " + original
+					+ "  130已勾选=" + on(GRIMM_MUSIC));
+		}
+
 		if (!on(GRIMM_MUSIC)) return original;
 
 		//已经是格林曲目就不要再映射（幂等，防止二次替换）
 		if (original.startsWith("music/grimm/")) return original;
 
+		String mapped = mapToGrimm(original);
+
+		if (GRIMM_MUSIC_DEBUG) {
+			System.out.println("[格林之音] " + (mapped.equals(original) ? "未替换" : "替换为")
+					+ ": " + mapped);
+		}
+		return mapped;
+	}
+
+	/** 诊断开关：排查 130 时置 true，定稿后改回 false。 */
+	public static final boolean GRIMM_MUSIC_DEBUG = true;
+
+	/** END(130): 实际的映射表。 */
+	private static String mapToGrimm(String original) {
 		String name = original;
 
 		//---- 最终 Boss（古神 Yog-Dzewa）----
@@ -332,14 +356,25 @@ public final class ChallengeSfx {
 				|| name.equals(Assets.Music.CAVES_BOSS_FINALE)) return Assets.Music.GRIMM_AREA3_BOSS;
 		if (name.equals(Assets.Music.CITY_BOSS)) return Assets.Music.GRIMM_AREA4_BOSS;
 
-		//---- 各区域常规层 ----
+		//---- 通用 boss.ogg（挑战区 Boss 层在用，没有对应的 Assets 常量）----
+		//直接按字面路径匹配：本 fork 的挑战区音乐是硬编码字符串。
+		if (name.equals("music/boss.ogg"))    return Assets.Music.GRIMM_AREA1_BOSS;
+		if (name.equals("music/boss2.ogg"))   return Assets.Music.GRIMM_AREA2_BOSS;
+		if (name.equals("music/boss3.ogg"))   return Assets.Music.GRIMM_AREA3_BOSS;
+		if (name.equals("music/boss4.ogg"))   return Assets.Music.GRIMM_AREA4_BOSS;
+		if (name.equals("music/boss5.ogg"))   return Assets.Music.GRIMM_AREA5;
+
+		//---- 各区域常规层（按路径前缀，覆盖 _1/_2/_3/_tense）----
 		if (name.startsWith("music/sewers")) return Assets.Music.GRIMM_AREA1;
 		if (name.startsWith("music/prison")) return Assets.Music.GRIMM_AREA2;
 		if (name.startsWith("music/caves"))  return Assets.Music.GRIMM_AREA3;
 		if (name.startsWith("music/city"))   return Assets.Music.GRIMM_AREA4;
 		if (name.startsWith("music/halls"))  return Assets.Music.GRIMM_AREA5;
 
-		//---- 标题 / 结局等非区域音乐：统一用 1 区主题兜底 ----
+		//---- 通用 game.ogg / boss.ogg（挑战区与部分主线层在用）----
+		if (name.equals("music/game.ogg"))   return Assets.Music.GRIMM_AREA5;
+
+		//---- 标题 / 结局等非区域音乐：用 1 区主题兜底 ----
 		if (name.equals(Assets.Music.THEME_1)
 				|| name.equals(Assets.Music.THEME_2)
 				|| name.equals(Assets.Music.THEME_FINALE)) {

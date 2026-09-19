@@ -208,6 +208,26 @@ public class RingOfWealth extends Ring {
 	}
 
 	private static Item genLowValueConsumable(){
+
+		//==== END(修复 81 搏杀赌徒): 升级卷轴判定提到 switch 之外 ====
+		//原先判定只写在 case 3 里面，要连过三关才能出升级卷轴：
+		//    掉落分级 48%（+3 戒指）× 子类型 25% × 概率 50%  ≈ 6%
+		//而"财富戒指触发掉落"本身还有一层判定 —— 玩家实测打十几只都不出。
+		//
+		//现在把判定**提到最前面**：只要走了低价值掉落这一档，
+		//就有一次独立的机会出升级卷轴（概率以常量表示，当前 50%）。
+		//这样它与"具体摸到哪个子类型"无关，触发率提升到"掉落分级 × 50%"。
+		//
+		//未勾选 81 时进不来（概率为 0），等价于原版行为。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.gamblerUpgradeScrollChance() > 0
+				&& Random.Float() < com.shatteredpixel.shatteredpixeldungeon
+						.endcontent.challenge.ChallengeEffects
+						.gamblerUpgradeScrollChance()) {
+			return new com.shatteredpixel.shatteredpixeldungeon.items.scrolls
+					.ScrollOfUpgrade();
+		}
+
 		switch (Random.Int(4)){
 			case 0: default:
 				Item i = new Gold().random();
@@ -217,22 +237,6 @@ public class RingOfWealth extends Ring {
 			case 2:
 				return Generator.randomUsingDefaults(Generator.Category.POTION);
 			case 3:
-				//==== END(挑战 81 搏杀赌徒): 财富戒指可产出升级卷轴 ====
-				//升级卷轴在 Category.SCROLL 里的概率是 **0**（见 Generator），
-				//所以原版财富戒指永远摸不到它。勾选 81 后单独给一个小概率，
-				//作为"常规投放被取消"之后唯一的升级来源。
-				//
-				//判定放在原 switch 分支**之内**：Random.Int(4) 已经掷过，
-				//这里额外掷一次不影响前面的序列；未勾选 81 时
-				//gamblerUpgradeScrollChance() 返回 0，等价于原版行为。
-				if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
-						.ChallengeEffects.gamblerUpgradeScrollChance() > 0
-						&& Random.Float() < com.shatteredpixel.shatteredpixeldungeon
-								.endcontent.challenge.ChallengeEffects
-								.gamblerUpgradeScrollChance()) {
-					return new com.shatteredpixel.shatteredpixeldungeon.items.scrolls
-							.ScrollOfUpgrade();
-				}
 				return Generator.randomUsingDefaults(Generator.Category.SCROLL);
 		}
 	}

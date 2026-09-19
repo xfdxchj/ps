@@ -57,11 +57,23 @@ public class HateSword extends MeleeWeapon {
 	@Override public int min(int lvl){ return 4 + lvl; }
 	@Override public int max(int lvl){ return 20 + 5*lvl; }
 
-	@Override public int STRReq(int lvl){ return 16; }
+		/**
+	 * END(修复): 力量需求随等级递减。
+	 *
+	 * <p>原先硬编码返回 18 —— 于是"每升 3 级减力量需求"完全没有，
+	 * 玩家实测就是这个现象。
+	 *
+	 * <p>改用原版 Weapon 的通用公式（三角数递减 +1/+3/+6/+10…），
+	 * 与其它 T5 武器一致。
+	 */
+	@Override public int STRReq(int lvl){ return STRReq(5, lvl); }
 
 	@Override
 	public String info(){
-		return "剑身上刻满了不属于你的怨念。它渴望着持剑者的鲜血。\n\n" +
+		//END(修复): 先取父类文本 —— 那里面才有伤害面板/力量需求/等级。
+		//原先直接 return 自定义文本，于是物品描述里完全看不到数值。
+		return super.info() + "\n\n" +
+				"剑身上刻满了不属于你的怨念。它渴望着持剑者的鲜血。\n\n" +
 				"- 生命越**低**，造成的伤害越高\n" +
 				"- 满血时无加成；血量趋近于零时倍率趋近 **2 倍**\n" +
 				"- 一旦真正只剩 **1 点生命**，倍率**跃升到 3 倍**\n" +

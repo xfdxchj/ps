@@ -40,6 +40,34 @@ public class RabbitRing extends Ring {
 		image = ItemSpriteSheet.GRIMM_RABBIT_RING;
 	}
 
+	/**
+	 * END(修复·闪退): 必须提供一个 RingBuff 实例。
+	 *
+	 * <h3>原来为什么会闪退</h3>
+	 * {@code Ring.activate()} 里是这么写的：
+	 * <pre>
+	 *   buff = buff();
+	 *   buff.attachTo( ch );      // ← buff() 返回 null 就在这里 NPE
+	 * </pre>
+	 * 而基类的 {@code buff()} 默认返回 {@code null}，
+	 * 子类要么设 {@code buffClass = XXX.class}，要么覆写 {@code buff()}。
+	 *
+	 * <p>我两样都没做，所以一装备黑兔戒指就崩。
+	 *
+	 * <h3>为什么用覆写而不是 buffClass</h3>
+	 * 本戒指是**开关型**的（不依赖等级），用不上 {@code buffClass} 那套
+	 * "按等级查询加成"的机制。直接给一个空的 RingBuff 占位即可 ——
+	 * 它的作用只是让 {@code activate()} 不炸。
+	 */
+	@Override
+	protected RingBuff buff() {
+		return new RabbitRingBuff();
+	}
+
+	/** END(修复): 空的效果载体 —— 实际效果由静态方法 {@link #shouldRefundTurn} 提供。 */
+	public class RabbitRingBuff extends RingBuff {
+	}
+
 	@Override public String name(){ return "黑兔戒指"; }
 
 	@Override

@@ -60,6 +60,19 @@ public class SkipTicket extends Item {
 	 */
 	private static final int REWARD_EXP_POTIONS = 4;
 
+	/**
+	 * END(修订): 额外补发的**力量药水**数量。
+	 *
+	 * <p>文档所有者实测反馈"跳级生没有力量药水"——
+	 * 原表正文写的是"+4 升级药水"，我按"升级药水 = 经验药水"处理了，
+	 * 但玩家跳过的那些层里**本来会自然掉落的力量药水**也跟着没了。
+	 *
+	 * <p>所以这里把"跳过的层数"折算成力量药水补给玩家：
+	 * 原版每 5 层一段发 2 瓶，跳一级（5 层）= 少 2 瓶。
+	 * 固定给 {@code REWARD_SKIPPED_STRENGTH} 瓶作为补偿。
+	 */
+	private static final int REWARD_SKIPPED_STRENGTH = 2;
+
 	{
 		stackable = true;
 		unique = false;
@@ -105,6 +118,12 @@ public class SkipTicket extends Item {
 		}
 		//力量：直接加在英雄身上（原表"+2 力量"是永久属性）
 		hero.STR += REWARD_STRENGTH;
+
+		//END(修订): 补发被跳过的层里本该掉落的力量药水
+		for (int i = 0; i < REWARD_SKIPPED_STRENGTH; i++) {
+			new com.shatteredpixel.shatteredpixeldungeon.items.potions
+					.PotionOfStrength().collect();
+		}
 
 		GLog.p(Messages.get(this, "skip", target));
 

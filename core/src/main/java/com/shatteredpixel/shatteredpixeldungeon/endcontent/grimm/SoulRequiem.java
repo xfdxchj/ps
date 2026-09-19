@@ -114,19 +114,19 @@ public class SoulRequiem extends Item {
 		 * <p>**在这里而不是 act() 里判死**：{@code detach()} 是"状态消失"的
 		 * 唯一收口点。放在 act() 里会漏掉"被驱散"的情况。
 		 */
+		/**
+		 * END(修订): 结束**不结算**期间的死亡。
+		 *
+		 * <p>文档所有者定稿："镇魂结束应该是不会结算期间的死亡"。
+		 *
+		 * <p>所以 {@code pendingDeath} 只作为一个统计标记保留，
+		 * **不再触发真正的死亡** —— 镇魂歌就是纯粹的"3 回合无敌"，
+		 * 那 3 回合里挨的致命伤一笔勾销。
+		 */
 		@Override
 		public void detach(){
-			boolean owed = pendingDeath;
 			super.detach();
-
-			//还债：本应死去
-			if (owed && target != null && target.isAlive()
-					&& !(target instanceof Hero && ((Hero) target).isAlive()
-							&& com.shatteredpixel.shatteredpixeldungeon.Statistics
-									.amuletObtained)) {
-				GLog.n("歌声停了。");
-				target.die(this);
-			}
+			//不再调用 target.die() —— 见上方说明
 		}
 
 		private static final String PENDING = "pending_death";

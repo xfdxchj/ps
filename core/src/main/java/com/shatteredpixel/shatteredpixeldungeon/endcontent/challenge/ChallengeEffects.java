@@ -1317,14 +1317,19 @@ public final class ChallengeEffects {
 	 * END(81 搏杀赌徒): 财富戒指产出的卷轴里，升级卷轴应占多大比重。
 	 *
 	 * <p>原表："财富戒指可获得升级卷轴" —— 但没说概率。
-	 * 这里给 **8%**：足够让玩家偶尔摸到，又不能让戒指变成稳定的升级来源
-	 * （否则"不再主动刷新升级卷轴"的代价就不成立了）。
+	 *
+	 * <p><b>END(修复·体感不生效)</b>：原值 8% 实际触发概率只有
+	 * 25%（case 3 在 Random.Int(4) 里被选中）× 8% = 2%，
+	 * 玩家几百次掉落才看到一次，反馈是"财富戒不生效"。
+	 * 提高到 **50%**：case 3 内一半概率出升级卷轴，
+	 * 总概率约 12.5%，既让玩家明显感受到生效，
+	 * 又不至让财富戒成为稳定的升级来源（常规升级卷轴投放仍然停止）。
 	 *
 	 * <p>调用点：{@code RingOfWealth} 生成卷轴处。
 	 *
 	 * @return 概率（0~1）；未勾选 81 时为 0
 	 */
-	public static final float GAMBLER_SOU_CHANCE = 0.08f;
+	public static final float GAMBLER_SOU_CHANCE = 0.50f;
 
 	public static float gamblerUpgradeScrollChance() {
 		return on(GAMBLER) ? GAMBLER_SOU_CHANCE : 0f;
@@ -2101,13 +2106,11 @@ public final class ChallengeEffects {
 					.RabbitRing());
 		}
 
-		//128 格林之术：镇魂歌（给 2 张，玩家可以分两次用）
+		//128 格林之术：镇魂歌
+		//END(修订): 由 2 张改为 **1 张**（文档所有者指定）。
 		if (on(GRIMM_ART)) {
-			com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm.SoulRequiem sr =
-					new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
-							.SoulRequiem();
-			sr.quantity(2);
-			out.add(sr);
+			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+					.SoulRequiem());
 		}
 
 		//126 格林之心：魂之容器（攒魂/献祭的入口）
@@ -2251,8 +2254,8 @@ public final class ChallengeEffects {
 	 * 不是简单相加，而是 {@code 冰冻 + (1-冰冻)×寒冷}：
 	 * 改前 = 2% + 98%×13% ≈ 14.7%，改后 = 2% + 98%×3% ≈ 4.9%。
 	 */
-	private static final int   FROZEN_CHILL_PCT  = 3;
-	private static final int   FROZEN_FREEZE_PCT = 2;
+	private static final int   FROZEN_CHILL_PCT  = 1;   //END(修订): 3% -> 1%（实测过高）
+	private static final int   FROZEN_FREEZE_PCT = 1;   //END(修订): 2% -> 1%
 	/** 90 雷暴：每回合 5% 概率触发。 */
 	private static final int   THUNDER_PCT       = 5;
 	/** 123 大学生：每回合 3% 受 1 点伤害。 */
@@ -3143,7 +3146,7 @@ public final class ChallengeEffects {
 	}
 
 	/** 150 淹没地牢：水中生成幻影食人鱼的概率。 */
-	private static final int FLOODED_PIRANHA_PCT = 20;
+	private static final int FLOODED_PIRANHA_PCT = 3;    //END(修订): 20% -> 3%（实测过多）
 
 	public static int floodedPiranhaChance() {
 		return on(FLOODED_DUNGEON) ? FLOODED_PIRANHA_PCT : 0;
@@ -3231,5 +3234,30 @@ public final class ChallengeEffects {
 	 */
 	public static boolean aliceRealmReady() {
 		return true;
+	}
+	/**
+	 * END(修复 119 怪物浪潮): "同一房间追加第二只怪"的判定阈值（0..4）。
+	 *
+	 * <p>原版写死 {@code Random.Int(4) == 0}，即 25%。
+	 * 勾选 119 后如果仍是 25%，玩家感觉不到"浪潮" ——
+	 * 因为绝大多数房间还是只有 1 只怪。
+	 *
+	 * <p>所以这里返回一个**阈值**，调用方用
+	 * {@code Random.Int(4) < threshold} 判定：
+	 * <ul>
+	 *   <li>未勾选：返回 1（25%，等价原版 {@code == 0}）</li>
+	 *   <li>119：返回 3（75%）</li>
+	 *   <li>30 人口密集：返回 2（50%）</li>
+	 *   <li>两条同开：返回 4（100%，必定 2 只）</li>
+	 * </ul>
+	 *
+	 * <p>为什么用阈值而不是概率：{@code Random.Int(n)} 的调用次数保持固定，
+	 * 不会因为勾选状态而改变关卡生成的随机序列。
+	 */
+	public static int extraMobPerRoomChance() {
+		int threshold = 1;                        //25%
+		if (on(CROWDED))      threshold++;        //50%
+		if (on(MONSTER_WAVE)) threshold += 2;     //75%（单独）/ 100%（叠加）
+		return Math.min(4, threshold);
 	}
 }

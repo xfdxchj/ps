@@ -50,4 +50,28 @@ public class PoisonImmunity extends FlavourBuff {
 	public float iconFadePercent() {
 		return Math.max(0, (DURATION - visualcooldown()) / DURATION);
 	}
+
+	/**
+	 * END(修复 49): 免疫**毒气地块的伤害**。
+	 *
+	 * <h3>原先漏了什么</h3>
+	 * 这个 buff 原本只靠 {@code Poison.attachTo()} 拒绝中毒，
+	 * 但那挡不住**站在毒气格子上每回合直接掉血** ——
+	 * {@code ToxicGas.evolve()} 里是直接 {@code ch.damage(...)}，
+	 * 根本不经过 {@code Poison} 这个 buff。
+	 *
+	 * <p>表现就是玩家用了净化药水，还是一格一格掉血。
+	 *
+	 * <h3>为什么返回 ToxicGas.class 而不是 BlobImmunity</h3>
+	 * {@code Char.isImmune()} 会收集所有 buff 的 {@code immunities()}，
+	 * 所以只要在这里列出 {@code ToxicGas}，那一处判定就会放过玩家。
+	 * 而**不用**原版的 {@code BlobImmunity}（那是全气体免疫）——
+	 * 勾选 49 后全图毒气，一瓶全免疫的药水会让规则形同虚设。
+	 */
+	@Override
+	public java.util.HashSet<Class> immunities() {
+		java.util.HashSet<Class> set = new java.util.HashSet<>();
+		set.add(com.shatteredpixel.shatteredpixeldungeon.actors.blobs.ToxicGas.class);
+		return set;
+	}
 }

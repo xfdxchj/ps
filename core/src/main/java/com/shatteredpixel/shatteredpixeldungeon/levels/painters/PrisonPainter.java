@@ -102,8 +102,25 @@ public class PrisonPainter extends RegularPainter {
 					map[i - w] == Terrain.WALL &&
 					(map[i + w] == Terrain.EMPTY || map[i + w] == Terrain.EMPTY_SP) &&
 					Random.Int( 3 ) == 0) {
-				
+
 				map[i] = Terrain.WALL_DECO;
+			}
+		}
+
+		//==== END(全局移除·监狱牢笼) ====
+		//用户报告"监狱牢笼又回来了"。原 PrisonBossLevel.addCagesToCells() 已被清空，
+		//但**普通监狱层**通过两条路径仍在生成 REGION_DECO 系列地形：
+		//  1) 上文 PrisonPainter.decorate 自身在 Chasm 上写 REGION_DECO_ALT（显示为"悬吊牢笼"）
+		//  2) 各 StandardRoom 子类（RitualRoom / LibraryHallRoom / RingRoom 等）paint 时写 REGION_DECO
+		//最终都被 PrisonLevel.tileName 翻译为"监狱牢笼/悬吊牢笼"。
+		//本 fork 决定监狱层不再出现这类装饰：在 painter 末尾统一扫一遍，把所有 REGION_DECO/ALT
+		//还原为 EMPTY/CHASM，保证玩家在监狱层不会再看到"牢笼"地形。
+		for (int i = 0; i < l; i++) {
+			if (map[i] == Terrain.REGION_DECO) {
+				map[i] = Terrain.EMPTY_DECO;
+			} else if (map[i] == Terrain.REGION_DECO_ALT) {
+				//ALT 原本就建立在 Chasm 之上（见上文 decorate 逻辑），还原为 Chasm
+				map[i] = Terrain.CHASM;
 			}
 		}
 	}

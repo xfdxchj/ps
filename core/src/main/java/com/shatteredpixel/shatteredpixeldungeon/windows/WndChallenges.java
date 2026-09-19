@@ -400,6 +400,10 @@ public class WndChallenges extends Window {
 	 * 若 x 落在条目右侧的"问号"图标区，则打开详情窗口，否则切换勾选。
 	 */
 	private void handleListClick( float x, float y ) {
+		//END(修复·关闭后残留点击·弹介绍): 与 toggleChallenge 同样的守卫。
+		//用户报告：关闭挑战窗口后，在原"问号"按钮位置点击仍能弹出介绍窗口。
+		//根因：handleListClick 没加 isAlive，残留点击事件仍能走到 WndMessage 分支。
+		if (!isAlive()) return;
 		for (int i = 0; i < boxes.size(); i++) {
 			CheckBox cb = boxes.get(i);
 			if (y < cb.top() || y > cb.bottom()) continue;
@@ -584,9 +588,24 @@ public class WndChallenges extends Window {
 	 *
 	 * <p>把逻辑抽出来是为了让"CheckBox 自己的 onClick"与
 	 * "ScrollPane 手动分发"两条路径**行为完全一致**。
+	 *
+	 * <p>END(修复·二次打开闪退): 开头检查窗口是否还活着。
+	 * 实测堆栈：
+	 * <pre>
+	 *   NullPointerException: ... "this.members" is null
+	 *     at Group.add(Group.java:118)
+	 *     at WndChallenges.buildCategoryBar(WndChallenges.java:352)
+	 *     at WndChallenges.rebuildAll(WndChallenges.java:601)
+	 *     at WndChallenges.toggleChallenge(WndChallenges.java:596)
+	 *     at WndChallenges$6.onClick(WndChallenges.java:553)
+	 * </pre>
+	 * 原因是 {@code Group.destroy()} 会把 {@code members} 置为 null，
+	 * 而窗口关闭后**队列里残留的点击事件**仍会触发 CheckBox 的 onClick，
+	 * 于是往一个已销毁的 Group 里 add → 崩。
 	 */
 	private void toggleChallenge( ChallengeDef d ) {
 		if (d == null) return;
+		if (!isAlive()) return;              //窗口已销毁 → 直接忽略
 		if (!editable) return;
 		if (!canToggle( d ) && !mask.has( d.id )) return;
 
@@ -596,8 +615,36 @@ public class WndChallenges extends Window {
 		rebuildAll();
 	}
 
+	/**
+	 * END(修复·二次打开闪退): 本窗口是否还能安全操作。
+	 *
+	 * <p>判据是"往内容区 add 一个控件不会炸"。
+	 *
+	 * <p>为什么不用检查 {@code members == null}：
+	 * {@code Group.members} 是 {@code protected}，本类在 {@code windows} 包、
+	 * 而 {@code Group} 在 {@code com.watabou.noosa} —— 跨包访问不到。
+	 *
+	 * <p>所以改用**试探法**：{@code Group.add()} 在 members 为 null 时会 NPE，
+	 * 那就加一个临时控件并立刻移除。代价是一次无害的分配，
+	 * 换来确定性（比读一个访问不到的字段可靠）。
+	 */
+	private boolean isAlive() {
+		try {
+			if (catContent == null || content == null) return false;
+			com.watabou.noosa.Gizmo probe = new com.watabou.noosa.Gizmo();
+			catContent.add(probe);
+			catContent.remove(probe);
+			return true;
+		} catch (Throwable t) {
+			//members 为 null（窗口已 destroy）→ 这里会抛
+			return false;
+		}
+	}
+
 	/** 选择变化后重建（分类高亮 + 列表 + 通过等级）。 */
 	private void rebuildAll() {
+		if (!isAlive()) return;              //同上：已销毁就不要重建
+
 		buildCategoryBar();
 		content.clear();
 		boxes.clear();

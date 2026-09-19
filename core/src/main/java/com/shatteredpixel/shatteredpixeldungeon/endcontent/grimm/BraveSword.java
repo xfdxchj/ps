@@ -54,11 +54,23 @@ public class BraveSword extends MeleeWeapon {
 	@Override public int min(int lvl){ return 4 + lvl; }
 	@Override public int max(int lvl){ return 18 + 5*lvl; }
 
-	@Override public int STRReq(int lvl){ return 16; }
+		/**
+	 * END(修复): 力量需求随等级递减。
+	 *
+	 * <p>原先硬编码返回 18 —— 于是"每升 3 级减力量需求"完全没有，
+	 * 玩家实测就是这个现象。
+	 *
+	 * <p>改用原版 Weapon 的通用公式（三角数递减 +1/+3/+6/+10…），
+	 * 与其它 T5 武器一致。
+	 */
+	@Override public int STRReq(int lvl){ return STRReq(5, lvl); }
 
 	@Override
 	public String info(){
-		return "剑锋上流转着某种祝福 —— 它奖励敢于挥剑的人。\n\n" +
+		//END(修复): 先取父类文本 —— 那里面才有伤害面板/力量需求/等级。
+		//原先直接 return 自定义文本，于是物品描述里完全看不到数值。
+		return super.info() + "\n\n" +
+				"剑锋上流转着某种祝福 —— 它奖励敢于挥剑的人。\n\n" +
 				"攻击会按**三段循环**推进：\n" +
 				"- 第 1 次：**3 连击**，每击 60% 伤害\n" +
 				"- 第 2 次：单次攻击，但**必定命中**\n" +

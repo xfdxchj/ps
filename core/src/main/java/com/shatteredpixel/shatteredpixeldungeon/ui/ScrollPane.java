@@ -140,6 +140,22 @@ public class ScrollPane extends Component {
 		controller.width = width;
 		controller.height = height;
 
+		//==== END(修复·向上滑被判成点击): 绑定 controller 自己的相机 ====
+		//根因链（文档所有者实测："点击覆盖向上滑，一直保持点击状态"）：
+		//  PointerArea.onSignal 的 hit 判定走
+		//      target.overlapsScreenPoint(...)   →  Visual.overlapsScreenPoint
+		//  而后者用的是 **controller.camera()**（向上查找并**缓存**）。
+		//  如果那个 camera 解析成了别的对象（例如 uiCamera），
+		//  hit 就是 false → curEvent 不被设置 → onDrag 永不执行
+		//  → dragging 永远 false → onPointerUp 不清 curEvent
+		//  → **onClick 被调用**，于是"向上滑"变成了"点击"。
+		//
+		//所以这里把 controller 的相机也显式指向 ScrollPane 自己的相机
+		//（与 content.camera 一样，都由本类的 layout 负责定位）。
+		if (controller.camera != camera) {
+			controller.camera = camera;
+		}
+
 		Point p = camera().cameraToScreen( x, y );
 		Camera cs = content.camera;
 		cs.x = p.x;
