@@ -78,10 +78,10 @@ public class WndChallenges extends Window {
 	 */
 	private static final boolean UI_DEBUG = false;  //诊断开关。排查 UI 问题时改回 true。
 	/** 滚动区期望高度上限（实际还会受屏幕高度约束）。 */
-	private static final int MAX_LIST_H = 150;
 
 	//==== END(随机挑战) ====
-	private static final int RANDOM_BAR_H = 18;
+	/** END(改版): 随机条高度 = 滑块 22 + 按钮 16 + 间距 2。 */
+	private static final int RANDOM_BAR_H = 40;
 
 	private boolean editable;
 
@@ -194,6 +194,9 @@ public class WndChallenges extends Window {
 		if (editable) {
 			buildRandomBar();
 		}
+
+		//翻页栏（END 分页）
+		buildPageBar();
 
 		//==== END(修复·布局统一): 改用 relayout() ====
 		//原先这里手写了一遍布局计算，与 rebuildAll 各算各的 ——
@@ -333,6 +336,9 @@ public class WndChallenges extends Window {
 	/** 切换分类：更新高亮 + 重建列表。 */
 	private void switchGroup( String g ) {
 		currentGroup = g;
+		//END(分页): 换分类后回到第一页 ——
+		//否则从"27 页的战斗"切到"只有 1 页的药剂"会停在不存在的页上。
+		page = 0;
 
 		//刷新按钮高亮
 		for (int i = 0; i < catButtons.size(); i++) {
@@ -345,31 +351,13 @@ public class WndChallenges extends Window {
 		defs.clear();                     //与 boxes 同步清空
 		buildList();
 
-		//列表高度可能变化，重算窗口
-		float top = TTL_HEIGHT + (editable ? RANDOM_BAR_H : 0) + catHeight() + 1;
-		float bottomH = 14;
-		float maxByScreen = com.watabou.noosa.Camera.main.height - top - bottomH - 6;
-		float listH = Math.min( content.height(),
-				Math.min( MAX_LIST_H, Math.max(48, maxByScreen)) );
-		pane.setRect( 0, top, WIDTH, listH );
-		resize( WIDTH, (int)(top + listH + bottomH) );
-		passLevelText.setPos( 4, top + listH + 2 );
+		//==== END(分页·布局统一): 复用 relayout()，不再自己算一遍 ====
+		//原先这里手写了一段布局计算，与构造路径各算各的 ——
+		//两处一旦不同步就会出现空白/错位。
+		//现在列表高度是固定的（PER_PAGE 条），relayout() 一份公式管所有路径。
+		relayout();
 
-		//==== END(修复·切换分类后不回到顶部): 把滚动位置归零 ====
-		//文档所有者报告："一个有 30 条挑战的分类，你划到 30 条，
-		//再切换到一个有 10 条挑战的分类，它就会什么也不显示。
-		//因为它的位置到了 30 条的位置，你必须要移动一下才能回到相应的位置。"
-		//
-		//根因：{@code content.clear()} + {@code buildList()} 换了内容，
-		//但 {@code content.camera.scroll} 还停在旧分类的位置 ——
-		//新分类内容更短时，滚动条仍指在"下面"，于是可视区落在空白上。
-		//
-		//修法：换分类后**把滚动位置归零**（回到顶部）。
-		//ScrollPane.scrollTo() 自带边界裁剪（见其实现），
-		//所以即使新内容更短也只是被夹到合法范围，不会出错。
-		//
-		//注意：要在 resize() **之后**调用 —— scrollTo 的裁剪依赖
-		//pane 的 height()（可视区高度），那是 resize 时定下来的。
+		//END(分页): 换页后回到顶部（列表已不滚动，但保险起见）
 		if (pane != null) {
 			pane.scrollTo(0, 0);
 		}
@@ -386,43 +374,32 @@ public class WndChallenges extends Window {
 	 */
 	private void buildRandomBar() {
 
-		//==== END(修复·随机条与第一行分类重叠): 必须覆写 layout() ====
-		//文档所有者实测："第一行 4 个分类 + 随机条" —— 两者画在同一排。
+		//==== END(改版·照原版做随机): 用 OptionSlider 取代 "- N +" ====
+		//文档所有者反馈："加减号过于大，数字显示不出来，你就按原版那种弄吧"。
 		//
-		//根因：{@code Group.draw()} 遍历子控件时使用的
-		//是**子控件自己的 x/y（绝对坐标）**，不会加上父级偏移：
-		//    for (Gizmo g : members) { g.draw(); }   // ← 没有 x + g.x
+		//原版的 {@code WndRandomize}（HeroSelectScene 内部类）用的是：
+		//   OptionSlider(title, min, max, minVal, maxVal)
+		//滑块自带标题与两端标号，占地小，而且**选中值由拖动决定**，
+		//不需要两个大按钮去挤数字的空间。
 		//
-		//所以我原来写的 {@code minus.setRect(0, 0, ...)} 意味着
-		//"画在窗口左上角 (0,0)" —— 也就是标题那一排。
-		//而 {@code randomBar.setRect(0, 68, ...)} 只改了 randomBar 自己，
-		//子控件纹丝不动。
+		//布局：[ 目标分滑块（占满宽度） ]
+		//      [ 随机 ]（独占一行，避免与滑块挤）
 		//
-		//正确做法（原版 IconTitle / TalentsTab 等 Component 子类都这么做）：
-		//**覆写 layout()**，在里按 {@code x + 相对偏移} 摆放子控件。
-		//这样每次 setRect() 都会重新摆位。
+		//注意：{@code Group.draw()} 用**子控件自己的绝对坐标**，
+		//所以这里的 layout() 必须把 x/y 加上去（这正是之前重叠的根因）。
 		randomBar = new Component() {
 			@Override
 			protected void layout() {
 				super.layout();
 				if (members == null) return;
-				//相对于本 Component 的偏移（与窗口坐标同一套，只是加了 x/y）
-				float ox = x;
-				float oy = y;
+				float ox = x, oy = y;
 
-				float cx = ox;
-				if (randomMinus != null) {
-					randomMinus.setRect(cx, oy, 12, 16);
-					cx += 14;
-				}
-				if (randomPlus != null) {
-					randomPlus.setRect(cx, oy, 12, 16);
-					cx += 14;
+				if (randomSlider != null) {
+					randomSlider.setRect(ox, oy, WIDTH, 22);
 				}
 				if (randomRoll != null) {
-					randomRoll.setRect(cx, oy, WIDTH - cx, 16);
+					randomRoll.setRect(ox, oy + 22, WIDTH, 16);
 				}
-				posTargetText();
 			}
 		};
 		add( randomBar );
@@ -433,30 +410,22 @@ public class WndChallenges extends Window {
 			targetLevel = ChallengeRandomizer.MIN_TARGET;
 		}
 
-		randomMinus = new RedButton( "-", 6 ) {
+		//目标分数滑块 —— 与 HeroSelectScene.WndRandomize 里那个同款
+		randomSlider = new com.shatteredpixel.shatteredpixeldungeon.ui.OptionSlider(
+				Messages.get(this, "target_title"),
+				Integer.toString(ChallengeRandomizer.MIN_TARGET),
+				Integer.toString(maxT),
+				ChallengeRandomizer.MIN_TARGET, maxT) {
 			@Override
-			protected void onClick() {
-				super.onClick();
-				if (targetLevel > ChallengeRandomizer.MIN_TARGET) targetLevel--;
-				updateTargetText();
+			protected void onChange() {
+				//拖动时只更新值，不立刻重roll —— 玩家松手后再点"随机"
+				targetLevel = getSelectedValue();
 			}
 		};
-		randomBar.add( randomMinus );
+		randomSlider.setSelectedValue(targetLevel);
+		randomBar.add(randomSlider);
 
-		targetText = PixelScene.renderTextBlock( "", 7 );
-		targetText.hardlight( 0xFFFF88 );
-		randomBar.add( targetText );
-
-		randomPlus = new RedButton( "+", 6 ) {
-			@Override
-			protected void onClick() {
-				super.onClick();
-				if (targetLevel < ChallengeRandomizer.maxTarget( includePending )) targetLevel++;
-				updateTargetText();
-			}
-		};
-		randomBar.add( randomPlus );
-
+		//"随机"按钮（独占一行）
 		randomRoll = new RedButton( Messages.get( this, "roll" ), 6 ) {
 			@Override
 			protected void onClick() {
@@ -466,31 +435,142 @@ public class WndChallenges extends Window {
 			}
 		};
 		randomBar.add( randomRoll );
-
-		updateTargetText();
 	}
 
-	/** END(修复): 随机条的三个按钮（layout() 里要用）。 */
-	private RedButton randomMinus, randomPlus, randomRoll;
+	/** END(改版): 随机条的控件（layout() 里要用）。 */
+	private RedButton randomRoll;
+	private com.shatteredpixel.shatteredpixeldungeon.ui.OptionSlider randomSlider;
 
-	/** END(修复): 把目标数字放到 "-" 与 "+" 之间。 */
-	private void posTargetText() {
-		if (targetText == null || randomBar == null) return;
-		targetText.setPos(randomBar.top() == 0 ? 15 : randomBar.left() + 15,
-				randomBar.top() + (16 - targetText.height()) / 2);
+	//==================================================================
+	//分页（END 改版）
+	//==================================================================
+
+	/**
+	 * 每页显示的挑战条数。
+	 *
+	 * <p>文档所有者要求："1 页 10 条挑战，用第二页第三页按键切换"。
+	 */
+	private static final int PER_PAGE = 10;
+
+	/** 当前页号（0 基）。切换分类时归零。 */
+	private int page = 0;
+
+	/** 翻页栏的三个按钮（上一页 / 页码 / 下一页）。 */
+	private RedButton pagePrev, pageNext;
+	private RenderedTextBlock pageLabel;
+
+	/**
+	 * END(分页): 构建翻页栏。
+	 *
+	 * <p>布局：[上一页] [ 3 / 27 ] [下一页]
+	 *
+	 * <p>只有一页时整条隐藏 —— 不给玩家无意义的按钮。
+	 */
+	private void buildPageBar() {
+		if (pageBar != null) {
+			pageBar.killAndErase();
+		}
+		pageBar = new Component() {
+			@Override
+			protected void layout() {
+				super.layout();
+				float ox = x, oy = y;
+				float mid = WIDTH / 2f;
+
+				if (pagePrev != null) pagePrev.setRect(ox, oy, 40, 16);
+				if (pageNext != null) pageNext.setRect(ox + WIDTH - 40, oy, 40, 16);
+				if (pageLabel != null) {
+					pageLabel.setPos(ox + (WIDTH - pageLabel.width()) / 2f,
+							oy + (16 - pageLabel.height()) / 2f);
+					PixelScene.align(pageLabel);
+				}
+			}
+		};
+		add(pageBar);
+
+		pagePrev = new RedButton("<", 6) {
+			@Override
+			protected void onClick() {
+				super.onClick();
+				if (page > 0) { page--; rebuildPage(); }
+			}
+		};
+		pageBar.add(pagePrev);
+
+		pageLabel = PixelScene.renderTextBlock("", 6);
+		pageLabel.hardlight(0xFFFF88);
+		pageBar.add(pageLabel);
+
+		pageNext = new RedButton(">", 6) {
+			@Override
+			protected void onClick() {
+				super.onClick();
+				if (page < pageCount() - 1) { page++; rebuildPage(); }
+			}
+		};
+		pageBar.add(pageNext);
 	}
 
+	/** END(分页): 页容器。 */
+	private Component pageBar;
+
+	/** END(分页): 是否需要显示翻页栏（只有一页时不显示）。 */
+	private boolean pageBarVisible() {
+		return pageCount() > 1;
+	}
+
+	/** END(分页): 当前分类的页数。 */
+	private int pageCount() {
+		if (currentGroup == null) return 1;
+		int n = ChallengeRegistry.inGroup(currentGroup).size();
+		return Math.max(1, (n + PER_PAGE - 1) / PER_PAGE);
+	}
+
+	/**
+	 * END(分页): 刷新当前页（只重建列表，不重整布局）。
+	 *
+	 * <p>与 {@code rebuildAll()} 的区别：那个会连分类栏一起重建
+	 * （因为勾选变化会影响其它条目的置灰），而翻页只需要换列表内容。
+	 */
+	private void rebuildPage() {
+		if (!isAlive()) return;
+		content.clear();
+		boxes.clear();
+		defs.clear();
+		buildList();
+		updatePageLabel();
+	}
+
+	/** END(分页): 更新页码文字与按钮可用状态。 */
+	private void updatePageLabel() {
+		if (pageLabel == null) return;
+		int total = pageCount();
+		//只有一页 → 整条隐藏
+		boolean show = total > 1;
+		if (pageBar != null) pageBar.visible = show;
+		if (!show) return;
+
+		pageLabel.text((page + 1) + " / " + total);
+		if (pagePrev != null) pagePrev.enable(page > 0);
+		if (pageNext != null) pageNext.enable(page < total - 1);
+
+		//文字长度会变，让 layout 重新摆一次居中
+		if (pageBar != null) pageBar.setRect(pageBar.left(), pageBar.top(),
+				WIDTH, RANDOM_BAR_H - 2);
+	}
+
+	/**
+	 * END(改版): 目标分数由 OptionSlider 自己显示，不需要额外文字。
+	 *
+	 * <p>保留这个方法名是为了不打断历史调用点（构造/切分类时都会调一次）。
+	 */
 	private void updateTargetText() {
-		if (targetText == null) return;
-		targetText.text( Messages.get( this, "target", targetLevel ) );
-		//END(修复): 用 posTargetText() 统一摆位 —— 那里会加上 randomBar 的绝对偏移。
-		posTargetText();
-		PixelScene.align( targetText );
+		//空实现 —— 滑块自带标题与数值显示。
 	}
 
 	//==== 列表 ====
 
-	/** 构建**当前分类**下的挑战列表。 */
+	/** 构建**当前分类**下的挑战列表（只建当前页）。 */
 	private void buildList() {
 
 		float pos = 0;
@@ -507,9 +587,27 @@ public class WndChallenges extends Window {
 			return;
 		}
 
-		for (ChallengeDef def : inGroup) {
+		//==== END(改版·分页): 只渲染当前页的条目 ====
+		//文档所有者要求："改成分页，比如 1 页 10 条挑战，用第二页第三页按键切换，
+		//这样就不需要拖动，也不会产生 bug。"
+		//
+		//所以这里不再把所有条目都塞进 ScrollPane，而是只建
+		// [page*PER_PAGE, (page+1)*PER_PAGE) 这一段。
+		//列表区高度固定 = PER_PAGE × 每行高，不再随内容变化 ——
+		//这正是"界面忽大忽小"的根源。
+		int from = Math.max(0, page * PER_PAGE);
+		int to   = Math.min(inGroup.size(), from + PER_PAGE);
 
-			final ChallengeDef d = def;
+		//页号越界（切换分类后条目数变了）→ 夹到最后一页
+		if (from >= inGroup.size()) {
+			page = Math.max(0, (inGroup.size() - 1) / PER_PAGE);
+			from = page * PER_PAGE;
+			to   = Math.min(inGroup.size(), from + PER_PAGE);
+		}
+
+		for (int idx = from; idx < to; idx++) {
+
+			final ChallengeDef d = inGroup.get(idx);
 
 			String label = d.name;
 			if (!d.isImplemented()) {
@@ -724,16 +822,44 @@ public class WndChallenges extends Window {
 		}
 
 		//列表
+		//
+		//==== END(分页): 高度**固定**，不再随内容变化 ====
+		//文档所有者报告："界面会随着内容变大或变小"。
+		//
+		//根因：原实现用 {@code min(content.height(), ...)} ——
+		//分类从 28 条切到 5 条时，列表高度跟着缩，整个窗口重排一次。
+		//
+		//分页后每页最多 PER_PAGE 条，高度可以写死：
+		//  PER_PAGE × (BTN_HEIGHT + GAP)
+		//翻页只换内容，窗口尺寸纹丝不动。
+		float listH = PER_PAGE * (BTN_HEIGHT + GAP);
+
+		//屏幕装不下时按屏幕收缩（小屏设备保底 5 条）
 		float bottomH = 14;
-		float maxByScreen = com.watabou.noosa.Camera.main.height - top - bottomH - 6;
-		float listH = Math.min(content.height(),
-				Math.min(MAX_LIST_H, Math.max(48, maxByScreen)));
+		float pageH = (pageBarVisible() ? 18 : 0);
+		float maxByScreen = com.watabou.noosa.Camera.main.height
+				- top - pageH - bottomH - 6;
+		if (maxByScreen < listH) {
+			listH = Math.max(5 * (BTN_HEIGHT + GAP), maxByScreen);
+		}
+
 		pane.setRect(0, top, WIDTH, listH);
-		resize(WIDTH, (int) (top + listH + bottomH));
+		top += listH;
+
+		//翻页栏（列表下方）
+		if (pageBarVisible()) {
+			if (pageBar != null) pageBar.setRect(0, top, WIDTH, 18);
+			top += 18;
+		}
+
+		resize(WIDTH, (int) (top + bottomH));
 
 		if (passLevelText != null) {
-			passLevelText.setPos(4, top + listH + 2);
+			passLevelText.setPos(4, top + 2);
 		}
+
+		//END(分页): 页码文字与按钮可用状态（页数变化后要刷新）
+		updatePageLabel();
 
 		//==== END(诊断·布局数值): 打印每一段控件的实际 y 范围 ====
 		//文档所有者报告"第三行的分类与列表第一条之间有空白" ——
