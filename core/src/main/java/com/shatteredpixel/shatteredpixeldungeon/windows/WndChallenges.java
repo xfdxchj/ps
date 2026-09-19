@@ -72,6 +72,10 @@ public class WndChallenges extends Window {
 	private static final int CAT_H      = 16;
 
 	/** END: UI 布局诊断开关。定稿后关闭，避免刷屏。 */
+	/**
+	 * END(诊断): UI 布局/偏移诊断开关。
+	 * 排查偏移问题时置 true；定稿后必须为 false（否则每帧刷屏）。
+	 */
 	private static final boolean UI_DEBUG = false;
 	/** 滚动区期望高度上限（实际还会受屏幕高度约束）。 */
 	private static final int MAX_LIST_H = 150;
@@ -187,131 +191,21 @@ public class WndChallenges extends Window {
 		bindScrollPaneCamera( pane );
 
 		//随机条（仅开局可选时）
-		float top = TTL_HEIGHT;
 		if (editable) {
 			buildRandomBar();
-			randomBar.setRect( 0, TTL_HEIGHT, WIDTH, RANDOM_BAR_H );
-			top = TTL_HEIGHT + RANDOM_BAR_H;
 		}
 
-		//布局
-		//分类栏：两排网格，直接用普通 Component 铺在窗口上（不再滚动）
-		catContent.setPos( 0, top );
-		top += catHeight() + 1;
-
+		//==== END(修复·布局统一): 改用 relayout() ====
+		//原先这里手写了一遍布局计算，与 rebuildAll 各算各的 ——
+		//两处一旦不同步就会出空白/重叠（这正是文档所有者遇到的两个现象）。
+		//现在两条路径共用 relayout()，只有一份公式。
 		buildList();
+		relayout();
 
-		//END(修复·UI 越界): 列表高度必须受**屏幕**约束。
-		//原版只有 12 条、高度自然适配；扩到 100+ 条后若写死，
-		//窗口底部会跑到屏幕外，表现为"下半截点不到"。
-		float bottomH = 14;
-		float maxByScreen = com.watabou.noosa.Camera.main.height - top - bottomH - 6;
-		float listH = Math.min( content.height(),
-				Math.min( MAX_LIST_H, Math.max(48, maxByScreen)) );
-		pane.setRect( 0, top, WIDTH, listH );
-		resize( WIDTH, (int)(top + listH + bottomH) );
-
-		passLevelText.setPos( 4, top + listH + 2 );
+		passLevelText.setPos( 4, pane.top() + pane.height() + 2 );
 		updatePassLevel();
-
-		//==== END(临时诊断·UI 偏移): 打印真实尺寸，用于定位偏移 300~700 像素的原因 ====
-		//定稿后应删除。运行一次打开挑战窗口即可在控制台看到这些数字。
-		try {
-			com.watabou.noosa.Camera uiCam = PixelScene.uiCamera;
-			com.watabou.noosa.Camera mainCam = com.watabou.noosa.Camera.main;
-			System.out.println("=== WndChallenges 布局诊断 ===");
-			System.out.println("  Game.width/height (物理) = "
-					+ com.watabou.noosa.Game.width + " x " + com.watabou.noosa.Game.height);
-			System.out.println("  本窗口 width/height (虚拟) = " + WIDTH + " x " + (int)(top + listH + bottomH));
-			System.out.println("  本窗口 camera: x=" + camera.x + " y=" + camera.y
-					+ " w=" + camera.width + " h=" + camera.height
-					+ " zoom=" + camera.zoom
-					+ " screenW=" + camera.screenWidth() + " screenH=" + camera.screenHeight());
-			if (uiCam != null) {
-				System.out.println("  uiCamera: x=" + uiCam.x + " y=" + uiCam.y
-						+ " w=" + uiCam.width + " h=" + uiCam.height
-						+ " zoom=" + uiCam.zoom
-						+ " screenW=" + uiCam.screenWidth() + " screenH=" + uiCam.screenHeight()
-						+ " visible=" + uiCam.visible);
-			}
-			if (mainCam != null) {
-				System.out.println("  mainCamera: w=" + mainCam.width + " h=" + mainCam.height
-						+ " zoom=" + mainCam.zoom
-						+ " screenW=" + mainCam.screenWidth() + " screenH=" + mainCam.screenHeight());
-			}
-			System.out.println("  计算用 maxByScreen = " + maxByScreen);
-			System.out.println("  最终 listH = " + listH);
-
-			//---- 对比：内容坐标 vs 内容实际落到的屏幕位置 ----
-			//若窗口 camera 居中而内容偏，差值会在这里暴露出来。
-			System.out.println("  --- 内容定位对比 ---");
-			dumpChild("列表 pane", pane);
-			dumpChild("底部 passLevelText", passLevelText);
-			System.out.println("  camera.scroll = (" + camera.scroll.x + ", " + camera.scroll.y + ")");
-			System.out.println("  camera 尺寸 = " + camera.width + " x " + camera.height
-					+ "  屏幕尺寸 = " + camera.screenWidth() + " x " + camera.screenHeight()
-					+ "  x=" + camera.x + " y=" + camera.y + " zoom=" + camera.zoom);
-			System.out.println("  uiCamera 尺寸 = " + com.shatteredpixel.shatteredpixeldungeon
-					.scenes.PixelScene.uiCamera.width + " x "
-					+ com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene.uiCamera.height
-					+ "  物理 = " + com.shatteredpixel.shatteredpixeldungeon.scenes
-							.PixelScene.uiCamera.screenWidth() + " x "
-					+ com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene.uiCamera
-							.screenHeight());
-
-			//---- 滚动容器内部 camera：这才是"内容实际渲染到哪"的权威数据 ----
-			//ScrollPane 给 content 单独分配了一个 Camera（用于 GL 裁剪），
-			//它的 x/y/scroll 决定了列表真正画在屏幕的什么位置。
-			System.out.println("  --- ScrollPane 内部 ---");
-			dumpScrollPane("列表", pane, content);
-		} catch (Throwable t) {
-			System.out.println("  诊断失败: " + t);
-		}
 	}
 
-	/** 打印 ScrollPane 及其 content 的 camera 状态（诊断用）。 */
-	private void dumpScrollPane(String label, ScrollPane sp, Component inner) {
-		if (sp == null) { System.out.println("    " + label + " ScrollPane=null"); return; }
-		com.watabou.noosa.Camera c = inner == null ? null : inner.camera;
-		System.out.println("    [" + label + "] ScrollPane left=" + sp.left() + " top=" + sp.top()
-				+ " w=" + sp.width() + " h=" + sp.height());
-		if (inner != null) {
-			System.out.println("         content 尺寸 = " + inner.width() + " x " + inner.height());
-		}
-		if (c != null) {
-			System.out.println("         content.camera x=" + c.x + " y=" + c.y
-					+ " w=" + c.width + " h=" + c.height
-					+ " scroll=(" + c.scroll.x + "," + c.scroll.y + ")"
-					+ " zoom=" + c.zoom
-					+ " screen=" + c.screenWidth() + "x" + c.screenHeight());
-			System.out.println("         => 内容左上角落屏幕 ("
-					+ ((0 - c.scroll.x) * c.zoom + c.x) + ", "
-					+ ((0 - c.scroll.y) * c.zoom + c.y) + ")"
-					+ "  可视区高 " + c.screenHeight() + " 物理像素");
-			//期望值：窗口坐标系里的位置
-			float wantX = (sp.left() - camera.scroll.x) * camera.zoom + camera.x;
-			float wantY = (sp.top()  - camera.scroll.y) * camera.zoom + camera.y;
-			System.out.println("         期望 x=" + (int) wantX + " y=" + (int) wantY
-					+ (Math.abs(c.x - wantX) < 2 && Math.abs(c.y - wantY) < 2
-						? "   [OK]" : "   [!! 不匹配]"));
-		} else {
-			System.out.println("         content.camera = null（未被 ScrollPane 接管）");
-		}
-	}
-
-	/** 打印一个子组件的坐标（诊断用）。 */
-	private void dumpChild(String label, com.watabou.noosa.ui.Component c) {
-		if (c == null) {
-			System.out.println("    " + label + " = null");
-			return;
-		}
-		System.out.println("    " + label
-				+ " 内容坐标 left=" + c.left() + " top=" + c.top()
-				+ " w=" + c.width() + " h=" + c.height()
-				+ "  camera=" + (c.camera == null ? "null"
-						: ("x=" + c.camera.x + " y=" + c.camera.y
-						   + " scroll=(" + c.camera.scroll.x + "," + c.camera.scroll.y + ")")));
-	}
 
 	//==== 分类按钮行 ====
 
@@ -357,7 +251,15 @@ public class WndChallenges extends Window {
 		}
 
 		catContent.setSize( WIDTH, rows * (CAT_H + 1) );
-		catContent.setPos( 0, 0 );
+
+		//==== END(修复·随机按钮与分类栏重叠): 不要在这里设置位置 ====
+		//原先这里是 {@code catContent.setPos(0, 0)} —— 那是**错的**：
+		//本方法会被 {@code rebuildAll()} 反复调用（勾选任一条规则时），
+		//而每次调用都会把分类栏拉回 y=0，也就是**盖到标题与随机条上**。
+		//玩家看到的就是"随机按钮和第一排分类重叠"。
+		//
+		//位置应该由布局代码**唯一负责**（构造时设一次即可，见下方的
+		//{@code catContent.setPos(0, top)}）。这里只负责内容与尺寸。
 		this.catRows = rows;
 	}
 
@@ -451,6 +353,25 @@ public class WndChallenges extends Window {
 		pane.setRect( 0, top, WIDTH, listH );
 		resize( WIDTH, (int)(top + listH + bottomH) );
 		passLevelText.setPos( 4, top + listH + 2 );
+
+		//==== END(修复·切换分类后不回到顶部): 把滚动位置归零 ====
+		//文档所有者报告："一个有 30 条挑战的分类，你划到 30 条，
+		//再切换到一个有 10 条挑战的分类，它就会什么也不显示。
+		//因为它的位置到了 30 条的位置，你必须要移动一下才能回到相应的位置。"
+		//
+		//根因：{@code content.clear()} + {@code buildList()} 换了内容，
+		//但 {@code content.camera.scroll} 还停在旧分类的位置 ——
+		//新分类内容更短时，滚动条仍指在"下面"，于是可视区落在空白上。
+		//
+		//修法：换分类后**把滚动位置归零**（回到顶部）。
+		//ScrollPane.scrollTo() 自带边界裁剪（见其实现），
+		//所以即使新内容更短也只是被夹到合法范围，不会出错。
+		//
+		//注意：要在 resize() **之后**调用 —— scrollTo 的裁剪依赖
+		//pane 的 height()（可视区高度），那是 resize 时定下来的。
+		if (pane != null) {
+			pane.scrollTo(0, 0);
+		}
 	}
 
 	//==== 随机条 ====
@@ -619,21 +540,37 @@ public class WndChallenges extends Window {
 	}
 
 	/**
-	 * END(修复·二次打开闪退): 本窗口是否还能安全操作。
+	 * END(修复·二次打开闪退 / 关闭后仍能点击): 本窗口是否还能安全操作。
 	 *
-	 * <p>判据是"往内容区 add 一个控件不会炸"。
+	 * <h3>为什么不能只探测 Group.members</h3>
+	 * 上一版用"往 catContent 里 add 一个临时控件"来判断 ——
+	 * 那只能发现 {@code Group.destroy()} 已经把 {@code members} 置 null 的情况。
 	 *
-	 * <p>为什么不用检查 {@code members == null}：
-	 * {@code Group.members} 是 {@code protected}，本类在 {@code windows} 包、
-	 * 而 {@code Group} 在 {@code com.watabou.noosa} —— 跨包访问不到。
+	 * <p>但 {@code Window.hide()} 的路径是：
+	 * <pre>
+	 *   parent.erase(this);   // 先从场景树摘掉
+	 *   destroy();            // 再销毁
+	 * </pre>
+	 * 在 {@code erase()} 之后、{@code destroy()} 之前的那个瞬间，
+	 * 窗口已经**不可见、不该响应任何输入**了，但 members 还在 ——
+	 * 于是残留的点击事件照样能走到这里。
 	 *
-	 * <p>所以改用**试探法**：{@code Group.add()} 在 members 为 null 时会 NPE，
-	 * 那就加一个临时控件并立刻移除。代价是一次无害的分配，
-	 * 换来确定性（比读一个访问不到的字段可靠）。
+	 * <h3>可靠判据</h3>
+	 * <ul>
+	 *   <li>{@code parent == null} → 已经从场景树摘掉，不再响应</li>
+	 *   <li>{@code visible == false} → 已隐藏</li>
+	 *   <li>两者都不满足时，再做一次 members 探测兜底</li>
+	 * </ul>
 	 */
 	private boolean isAlive() {
 		try {
+			//① 已从场景树摘掉 / 已隐藏 → 一定不能操作
+			if (parent == null) return false;
+			if (!visible) return false;
+
 			if (catContent == null || content == null) return false;
+
+			//② 兜底：members 已被销毁的探测
 			com.watabou.noosa.Gizmo probe = new com.watabou.noosa.Gizmo();
 			catContent.add(probe);
 			catContent.remove(probe);
@@ -654,6 +591,50 @@ public class WndChallenges extends Window {
 		defs.clear();                     //必须同步清空，否则会与 boxes 错位
 		buildList();
 		updatePassLevel();
+
+		//==== END(修复·挑战区后方的空白): 重建后必须重算整体布局 ====
+		//文档所有者报告："挑战区后面和正式挑战中间有一块空白。"
+		//
+		//根因：本方法只重建了"分类栏 + 列表内容"，但**没有重算各控件的
+		//y 位置**。分类栏的排数由分组数决定（{@code catRows}），
+		//如果这个值变了（或列表高度变了），下方控件仍停在旧位置，
+		//中间就留出一段没有任何控件的空白。
+		//
+		//所以这里复刻一次构造时的布局计算 —— 与构造路径保持**同一套公式**，
+		//避免两处不一致（那正是这类 bug 的温床）。
+		relayout();
+	}
+
+	/**
+	 * END(修复): 按当前 {@code catRows} / 内容高度重算所有控件的 y 位置。
+	 *
+	 * <p>与构造时的布局逻辑保持一致。抽成方法是为了让
+	 * "构造"与"重建"两条路径用**同一份代码**，不会各自漂移。
+	 */
+	private void relayout() {
+		float top = TTL_HEIGHT;
+		if (editable && randomBar != null) {
+			randomBar.setRect(0, TTL_HEIGHT, WIDTH, RANDOM_BAR_H);
+			top = TTL_HEIGHT + RANDOM_BAR_H;
+		}
+
+		//分类栏：位置在这里**唯一**确定
+		if (catContent != null) {
+			catContent.setPos(0, top);
+		}
+		top += catHeight() + 1;
+
+		//列表
+		float bottomH = 14;
+		float maxByScreen = com.watabou.noosa.Camera.main.height - top - bottomH - 6;
+		float listH = Math.min(content.height(),
+				Math.min(MAX_LIST_H, Math.max(48, maxByScreen)));
+		pane.setRect(0, top, WIDTH, listH);
+		resize(WIDTH, (int) (top + listH + bottomH));
+
+		if (passLevelText != null) {
+			passLevelText.setPos(4, top + listH + 2);
+		}
 	}
 
 	/**
@@ -779,7 +760,41 @@ public class WndChallenges extends Window {
 		//这是唯一能对抗 layout() 覆盖的做法，且开销只是两次赋值。
 		bindScrollPaneCamera( pane );
 		placeContentCamera( pane, pane == null ? 0 : pane.height() );
+
+		//==== END(诊断·偏移): 在 update() 之后验证 content.camera 的真实位置 ====
+		//之前的诊断打在**构造时**（layout 之后），那时 update() 还没跑过 ——
+		//所以它显示的 (1280, xxx) 只代表"刚建好时"，不代表稳定状态。
+		//这里在每帧纠正**之后**再检查一次，才能真正判断修复有没有生效。
+		//
+		//只打印前 3 帧，避免刷屏。
+		if (UI_DEBUG && pane != null && pane.content() != null
+				&& pane.content().camera != null && uiDebugFrames < 3) {
+			uiDebugFrames++;
+			com.watabou.noosa.Camera inner = pane.content().camera;
+			com.watabou.noosa.Camera resolved = pane.camera();
+			float wantX = (pane.left() - camera.scroll.x) * camera.zoom + camera.x;
+			float wantY = (pane.top()  - camera.scroll.y) * camera.zoom + camera.y;
+
+			System.out.println("[偏移诊断·第" + uiDebugFrames + "帧]");
+			System.out.println("  窗口 camera 字段 = " + (camera == null ? "null" : 
+					("x=" + camera.x + " y=" + camera.y + " zoom=" + camera.zoom
+							+ " scroll=" + camera.scroll.x + "," + camera.scroll.y)));
+			System.out.println("  pane.camera() 解析到 = " + (resolved == null ? "null" :
+					("x=" + resolved.x + " y=" + resolved.y + " zoom=" + resolved.zoom
+							+ " scroll=" + resolved.scroll.x + "," + resolved.scroll.y
+							+ (resolved == camera ? "  [=窗口 camera]"
+								: (resolved == com.shatteredpixel.shatteredpixeldungeon
+										.scenes.PixelScene.uiCamera ? "  [=uiCamera!]"
+										: "  [=其它]")))));
+			System.out.println("  content.camera = (" + inner.x + "," + inner.y
+					+ ")  期望=(" + (int) wantX + "," + (int) wantY + ")"
+					+ (Math.abs(inner.x - wantX) < 2 && Math.abs(inner.y - wantY) < 2
+							? "  [OK]" : "  [!! 仍不匹配]"));
+		}
 	}
+
+	/** END(诊断): 已打印的帧数，避免刷屏。 */
+	private int uiDebugFrames = 0;
 
 	/**
 	 * END(修复·列表偏移): 把 ScrollPane 的内部裁剪相机摆到窗口里的正确位置。

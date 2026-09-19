@@ -4795,4 +4795,59 @@ public final class ChallengeEffects {
 	public static int[] cuteRatName(Char ch) {
 		return cuteRatsEnabled(ch) ? RAT_NAME_FLAG : null;
 	}
+	//==================================================================
+	//贴图查询（无副作用）—— 供 UI 使用
+	//==================================================================
+
+	/**
+	 * END(63/138): 查询某只怪物"当前应该用哪个贴图类"。
+	 *
+	 * <h3>为什么需要这个"无副作用"的版本</h3>
+	 * UI（{@code AttackIndicator}、{@code WndInfoMob}）需要画怪物的图标。
+	 * 最直接的做法是调 {@code mob.sprite()} —— 但那会：
+	 * <ol>
+	 *   <li>挂上 138 的 {@code ChallengeAbsurdMark} buff</li>
+	 *   <li>触碰 {@code ch.sprite} 相关状态</li>
+	 * </ol>
+	 * 在 UI 的 {@code update()} 里做这些会**打断正在进行的渲染** ——
+	 * 实测表现为 {@code CharHealthIndicator} 的
+	 * {@code target.sprite.visible} NPE 闪退。
+	 *
+	 * <p>所以这里只**读**状态，不写：判断该用哪个类，由调用方自己 new。
+	 *
+	 * @return 应该使用的 sprite 类；无特殊规则时返回 null（调用方用原 spriteClass）
+	 */
+	public static Class<? extends com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite>
+			spriteClassFor(Mob mob) {
+		if (mob == null) return null;
+
+		//63 优先：全部变成小鼠
+		if (cuteRatsEnabled(mob)) {
+			return com.shatteredpixel.shatteredpixeldungeon.sprites.RatSprite.class;
+		}
+
+		//138：读已经记下来的那个类名（**不新掷、不挂 buff**）
+		if (on(ABSURD_WORLD)) {
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ChallengeAbsurdMark mark =
+					mob.buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+							.ChallengeAbsurdMark.class);
+			if (mark != null && mark.spriteClassName != null) {
+				try {
+					Class<?> c = Class.forName(mark.spriteClassName);
+					if (com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite.class
+							.isAssignableFrom(c)) {
+						@SuppressWarnings("unchecked")
+						Class<? extends com.shatteredpixel.shatteredpixeldungeon.sprites
+								.CharSprite> sc =
+								(Class<? extends com.shatteredpixel.shatteredpixeldungeon
+										.sprites.CharSprite>) c;
+						return sc;
+					}
+				} catch (Throwable ignored) {
+					//类名失效就用原贴图
+				}
+			}
+		}
+		return null;
+	}
 }

@@ -149,28 +149,30 @@ public class AttackIndicator extends Tag {
 			sprite = null;
 		}
 		
-		//==== END(挑战 63 鼠鼠可爱): 攻击按钮的图标也要变成小鼠 ====
+		//==== END(挑战 63 鼠鼠可爱 / 138 荒诞世界): 攻击按钮图标要跟随场上贴图 ====
 		//文档所有者报告："近战时它显示贴图还是怪物本身，没有变化。"
 		//
-		//根因就在这里：本方法**直接用 lastTarget.spriteClass**，
-		//绕过了 Mob.sprite() —— 所以 138 的随机贴图与 63 的小鼠
-		//在场上生效了，但这个按钮显示的还是原怪物。
+		//根因：本方法原先**直接用 lastTarget.spriteClass**，
+		//绕过了 Mob.sprite() —— 所以 63/138 的换贴图在场上有，
+		//但这个按钮显示的还是原怪物。
 		//
-		//修法：优先问 mob.sprite()（它会应用 63/138 的换贴图逻辑），
-		//拿不到再退回原始类。
-		CharSprite made = null;
+		//修法（END 修订）：**不能直接调 mob.sprite()** —— 那有副作用
+		//（挂 buff、触碰 ch.sprite），在 UI 的 update 路径里会与正在进行的
+		//渲染打架，实测导致 CharHealthIndicator 的 target.sprite NPE 闪退。
+		//
+		//所以改用**只读**的 spriteClassFor()：它只判断"该用哪个类"，
+		//由我们自己在安全的位置 new 出来。
+		Class<? extends CharSprite> want = null;
 		if (lastTarget instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs
 				.Mob) {
-			try {
-				made = ((com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob)
-						lastTarget).sprite();
-			} catch (Throwable t) {
-				made = null;
-			}
+			want = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.spriteClassFor(
+							(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob)
+									lastTarget);
 		}
 
-		if (made != null) {
-			sprite = made;
+		if (want != null) {
+			sprite = Reflection.newInstance(want);
 		} else {
 			sprite = Reflection.newInstance(lastTarget.spriteClass);
 		}

@@ -53,23 +53,26 @@ public class WndInfoMob extends WndTitledMessage {
 			name.hardlight( TITLE_COLOR );
 			add( name );
 			
-			//==== END(修复·挑战 138 荒诞世界): UI 里的贴图要与场上一致 ====
-			//原先这里是 {@code image = mob.sprite();} —— 直接新建一个 sprite 实例。
+			//==== END(修复·挑战 63/138): 窗口里的贴图要与场上一致 ====
+			//原先这里是 {@code image = mob.sprite();} —— 直接新建一个实例。
 			//
-			//问题：{@code Mob.sprite()} 每次调用都会
-			//  1) 重新走一遍"随机换贴图"的流程（好在结果是记在 buff 上的，不会变）
-			//  2) **但新建的实例从未 link() 过** —— 它的动画状态是初始值，
-			//     没有 place()、没有 updateSpriteState()。
+			//问题：{@code Mob.sprite()} 会走"随机换贴图"的流程并**挂 buff**，
+			//而且新建的实例从未 link() 过（没有 place()、没有 updateSpriteState()），
 			//表现出来就是：场上已经是小鼠了，点开窗口看到的却还是原怪物。
 			//
-			//修法：**优先复用场上那个已经 link 好的 sprite**（那才是玩家看到的东西），
-			//只有拿不到时才退回新建。
-			CharSprite picked = mob.sprite;
-			if (picked == null) {
-				//场上的 sprite 还没建（理论上不会，但保底）
-				picked = mob.sprite();
+			//修法（END 修订）：不用 {@code mob.sprite()}（有副作用），
+			//改用**只读**的 {@code spriteClassFor()} 自己 new ——
+			//既拿到与场上一致的贴图，又不会打断正在进行的渲染
+			//（直接调 mob.sprite() 实测会导致 CharHealthIndicator NPE 闪退）。
+			CharSprite imageSprite = null;
+			Class<? extends CharSprite> want = com.shatteredpixel.shatteredpixeldungeon
+					.endcontent.challenge.ChallengeEffects.spriteClassFor(mob);
+			if (want != null) {
+				imageSprite = com.watabou.utils.Reflection.newInstance(want);
+			} else {
+				imageSprite = mob.sprite();
 			}
-			image = picked;
+			image = imageSprite;
 			add( image );
 
 			health = new HealthBar();
