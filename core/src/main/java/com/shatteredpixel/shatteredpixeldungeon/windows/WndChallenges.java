@@ -319,7 +319,7 @@ public class WndChallenges extends Window {
 
 			//右侧是"问号"详情区（宽度 16）
 			if (x >= cb.right()) {
-				ShatteredPixelDungeon.scene().add( new WndMessage( describe( d ) ) );
+				showDetail( d );
 				return;
 			}
 
@@ -495,7 +495,7 @@ public class WndChallenges extends Window {
 				@Override
 				protected void onClick() {
 					super.onClick();
-					ShatteredPixelDungeon.scene().add( new WndMessage( describe( d ) ) );
+					showDetail( d );
 				}
 			};
 			info.setRect( cb.right(), pos, 16, BTN_HEIGHT );
@@ -506,6 +506,48 @@ public class WndChallenges extends Window {
 
 		content.setSize( WIDTH, pos );
 		content.setPos( 0, 0 );
+	}
+
+	/**
+	 * END(修复·关闭挑战窗口后仍能点到详细介绍): 打开某条规则的详情窗口。
+	 *
+	 * <h3>原先的问题</h3>
+	 * 两处调用都写成：
+	 * <pre>
+	 *   ShatteredPixelDungeon.scene().add( new WndMessage( describe( d ) ) );
+	 * </pre>
+	 * 两个毛病：
+	 * <ol>
+	 *   <li>用 {@code scene().add()} 而不是 {@code GameScene.show()} ——
+	 *       前者只把窗口挂到场景上，**不经过 GameScene 的窗口栈管理**，
+	 *       所以挑战窗口关闭时它不会被一起清理</li>
+	 *   <li><b>没有生命周期守卫</b> —— 挑战窗口已经销毁后，队列里残留的
+	 *       点击事件仍会走到这里，于是"关了窗口还能弹出介绍"</li>
+	 * </ol>
+	 *
+	 * <h3>现在的做法</h3>
+	 * <ul>
+	 *   <li>先检查 {@link #isAlive()} —— 窗口已关闭就直接忽略</li>
+	 *   <li>用 {@code GameScene.show()} 打开详情（那是"在最前面显示一个窗口"
+	 *       的规范入口，会自动处理层级与关闭）</li>
+	 * </ul>
+	 */
+	private void showDetail( ChallengeDef d ) {
+		if (d == null) return;
+
+		//END(诊断): 打印"谁在什么时候要求打开详情" ——
+		//用来定位"关掉挑战窗口后还能弹出介绍"的真实来源。
+		if (UI_DEBUG) {
+			System.out.println("[详情诊断] 请求打开: " + d.id + " " + d.name
+					+ "  isAlive=" + isAlive()
+					+ "  parent=" + (parent == null ? "null" : parent.getClass().getSimpleName())
+					+ "  visible=" + visible);
+		}
+
+		if (!isAlive()) return;                 //窗口已销毁 → 忽略残留点击
+
+		com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.show(
+				new WndMessage( describe( d ) ));
 	}
 
 	/**
@@ -800,6 +842,20 @@ public class WndChallenges extends Window {
 		bindScrollPaneCamera( pane );
 		placeContentCamera( pane, pane == null ? 0 : pane.height() );
 
+		//==== END(诊断·随机条位置): 每帧打印随机条与分类栏的实际 y ====
+		//文档所有者描述："第一行 4 个分类 + 随机条" —— 两者同一排。
+		//但布局日志说 randomBar.y = 68、分类栏 16..67，两者不重叠。
+		//所以要么 relayout() 没被调用，要么 y 被别处覆盖了 ——
+		//这条日志在**每帧**打印实际值，能直接定位。
+		if (UI_DEBUG && uiPosFrames < 5) {
+			uiPosFrames++;
+			System.out.println("[位置诊断·第" + uiPosFrames + "帧]"
+					+ "  randomBar.y=" + (randomBar == null ? "null" : ("" + randomBar.top()))
+					+ "  catContent.y=" + (catContent == null ? "null" : ("" + catContent.top()))
+					+ "  catContent.h=" + (catContent == null ? "null" : ("" + catContent.height()))
+					+ "  pane.y=" + (pane == null ? "null" : ("" + pane.top())));
+		}
+
 		//==== END(诊断·偏移): 在 update() 之后验证 content.camera 的真实位置 ====
 		//之前的诊断打在**构造时**（layout 之后），那时 update() 还没跑过 ——
 		//所以它显示的 (1280, xxx) 只代表"刚建好时"，不代表稳定状态。
@@ -834,6 +890,9 @@ public class WndChallenges extends Window {
 
 	/** END(诊断): 已打印的帧数，避免刷屏。 */
 	private int uiDebugFrames = 0;
+
+	/** END(诊断): 位置诊断已打印的帧数。 */
+	private int uiPosFrames = 0;
 
 	/**
 	 * END(修复·列表偏移): 把 ScrollPane 的内部裁剪相机摆到窗口里的正确位置。
@@ -893,6 +952,14 @@ public class WndChallenges extends Window {
 		//END(重构): 同上，委托给工具类。
 		com.shatteredpixel.shatteredpixeldungeon.ui.ScrollPaneCamera
 				.bindCamera(sp, this);
+	}
+
+	@Override
+	public void hide() {
+		if (UI_DEBUG) {
+			System.out.println("[详情诊断] 挑战窗口 hide() 被调用");
+		}
+		super.hide();
 	}
 
 	@Override

@@ -4157,25 +4157,29 @@ public final class ChallengeEffects {
 	 * <p>用**回合计数器**实现交替，而不是概率 —— 概率会产生
 	 * "连续麻痹三次"这种玩家无法预期的结果。
 	 */
-	private static int deityTurnCounter = 0;
+	private static float deityLastPrayAt = Float.NEGATIVE_INFINITY;
 
 	/** END(151/166): 本回合是否要"停下来祷告"。 */
 	public static boolean rollDeityPray() {
 		if (!on(HOLY_DEITY)) return false;
 
-		//==== END(修订): 每 5 回合触发 1 回合 ====
-		//文档所有者最终定稿："祷告改为每 5 回合触发 1 回合"。
+		//==== END(修复·祷告每回合都触发): 改用**游戏时钟**计数 ====
+		//文档所有者实测："每回合都停下来祷告" —— 日志显示每 5 次判定都命中。
 		//
-		//与之前的区别：
-		//  · 之前是"每 2 回合交替"（行动 1 / 祷告 1）
-		//  · 现在是**每 5 回合里有 1 回合**要祷告 —— 宽松得多
+		//根因：本方法在 {@code Hero.act()} 里调用，而那个方法
+		//**一回合会跑很多次**（移动、攻击、受击都会重新排队）。
+		//用"调用次数 % 5"当回合数，实际变成"每 5 次内部调用" ——
+		//玩家感觉就是每回合都在祷告。
 		//
-		//天使形态（166）**不再改变节律**：它的奖励改为
-		//"祷告不消耗回合"（见 prayCostsTurn），那本身就等于取消了限制。
-		boolean pray = (deityTurnCounter % 5) == 0;
-		deityTurnCounter++;
+		//改用 {@code Actor.now()}（全局游戏时钟）：只有**真正流逝的回合**
+		//才会推进它。距上次祷告不足 5 个时间单位就不允许再祷告。
+		//
+		//天使形态（166）不再改变节律 —— 它的奖励是"祷告不消耗回合"。
+		float now = com.shatteredpixel.shatteredpixeldungeon.actors.Actor.now();
+		if (now - deityLastPrayAt < 5f) return false;
 
-		return pray;
+		deityLastPrayAt = now;
+		return true;
 	}
 
 	/** END(166): 祷告是否消耗回合（天使形态不消耗）。 */
@@ -4183,9 +4187,9 @@ public final class ChallengeEffects {
 		return !angelForm();
 	}
 
-	/** END(151): 换局时重置节律计数。 */
+	/** END(151): 换局时重置节律。 */
 	public static void resetDeityPrays() {
-		deityTurnCounter = 0;
+		deityLastPrayAt = Float.NEGATIVE_INFINITY;
 	}
 
 	//---- 164 魔法地牢 ----

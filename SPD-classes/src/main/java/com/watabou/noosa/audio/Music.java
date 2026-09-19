@@ -289,6 +289,26 @@ public enum Music {
 
 	private synchronized void play(String track, com.badlogic.gdx.audio.Music.OnCompletionListener listener){
 		try {
+			//==== END(修复·挑战 130 格林之音没生效): 这里也必须替换！ ====
+			//本类是 private 重载，而 {@code playTracks()} 第 215 行
+			//**直接调的就是它** —— 绕过了 public play() 里的 trackMapper。
+			//
+			//于是：Boss 层（走 public play）能换 BGM，
+			//但常规层（走 playTracks → 本方法）**永远换不了**。
+			//文档所有者实测"格林之音没有触发"就是这个原因。
+			//
+			//放在 Gdx.audio.newMusic 之前 —— 必须拿到替换后的路径再加载。
+			String mapped = track;
+			if (trackMapper != null && mapped != null) {
+				String m = trackMapper.map(mapped);
+				if (m != null) mapped = m;
+			}
+			if (Music.DEBUG_MUSIC) {
+				System.out.println("[Music.play(内部)] " + track
+						+ (mapped.equals(track) ? "  （未替换）" : ("  → " + mapped)));
+			}
+			track = mapped;
+
 			fadeTime = fadeTotal = -1;
 
 			player = Gdx.audio.newMusic(Gdx.files.internal(track));
