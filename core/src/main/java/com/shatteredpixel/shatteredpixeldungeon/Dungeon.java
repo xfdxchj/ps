@@ -1007,6 +1007,17 @@ public class Dungeon {
 		Actor.init();
 
 		level.addRespawner();
+
+		//==== END(修复·49 切尔诺贝利毒气消失): 在这里挂毒气维持器 ====
+		//文档所有者反馈"毒气几回合就消失" —— 维持器**挂载点错了**：
+		//  ① 原来挂在 Level.create() 里，那时 Dungeon.level 还是 null
+		//     （第 998 行才赋值），ensureRunning() 直接 return 了
+		//  ② 即使挂上，紧随其后的 Actor.init() 也会清空所有 Actor
+		//
+		//现在放在 Actor.init() 与 addRespawner() **之后** ——
+		//此时 Actor 系统已就绪，且不会再被清空。
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChernobylKeeper.ensureRunning();
 		
 		for(Mob m : level.mobs){
 			if (m.pos == hero.pos && !Char.hasProp(m, Char.Property.IMMOVABLE)){

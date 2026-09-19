@@ -76,7 +76,7 @@ public class WndChallenges extends Window {
 	 * END(诊断): UI 布局/偏移诊断开关。
 	 * 排查偏移问题时置 true；定稿后必须为 false（否则每帧刷屏）。
 	 */
-	private static final boolean UI_DEBUG = true;   //END(诊断): 实测布局期间临时开启
+	private static final boolean UI_DEBUG = false;  //诊断开关。排查 UI 问题时改回 true。
 	/** 滚动区期望高度上限（实际还会受屏幕高度约束）。 */
 	private static final int MAX_LIST_H = 150;
 
@@ -386,7 +386,45 @@ public class WndChallenges extends Window {
 	 */
 	private void buildRandomBar() {
 
-		randomBar = new Component();
+		//==== END(修复·随机条与第一行分类重叠): 必须覆写 layout() ====
+		//文档所有者实测："第一行 4 个分类 + 随机条" —— 两者画在同一排。
+		//
+		//根因：{@code Group.draw()} 遍历子控件时使用的
+		//是**子控件自己的 x/y（绝对坐标）**，不会加上父级偏移：
+		//    for (Gizmo g : members) { g.draw(); }   // ← 没有 x + g.x
+		//
+		//所以我原来写的 {@code minus.setRect(0, 0, ...)} 意味着
+		//"画在窗口左上角 (0,0)" —— 也就是标题那一排。
+		//而 {@code randomBar.setRect(0, 68, ...)} 只改了 randomBar 自己，
+		//子控件纹丝不动。
+		//
+		//正确做法（原版 IconTitle / TalentsTab 等 Component 子类都这么做）：
+		//**覆写 layout()**，在里按 {@code x + 相对偏移} 摆放子控件。
+		//这样每次 setRect() 都会重新摆位。
+		randomBar = new Component() {
+			@Override
+			protected void layout() {
+				super.layout();
+				if (members == null) return;
+				//相对于本 Component 的偏移（与窗口坐标同一套，只是加了 x/y）
+				float ox = x;
+				float oy = y;
+
+				float cx = ox;
+				if (randomMinus != null) {
+					randomMinus.setRect(cx, oy, 12, 16);
+					cx += 14;
+				}
+				if (randomPlus != null) {
+					randomPlus.setRect(cx, oy, 12, 16);
+					cx += 14;
+				}
+				if (randomRoll != null) {
+					randomRoll.setRect(cx, oy, WIDTH - cx, 16);
+				}
+				posTargetText();
+			}
+		};
 		add( randomBar );
 
 		final int maxT = ChallengeRandomizer.maxTarget( includePending );
@@ -395,7 +433,7 @@ public class WndChallenges extends Window {
 			targetLevel = ChallengeRandomizer.MIN_TARGET;
 		}
 
-		RedButton minus = new RedButton( "-", 6 ) {
+		randomMinus = new RedButton( "-", 6 ) {
 			@Override
 			protected void onClick() {
 				super.onClick();
@@ -403,14 +441,13 @@ public class WndChallenges extends Window {
 				updateTargetText();
 			}
 		};
-		minus.setRect( 0, 0, 12, 16 );
-		randomBar.add( minus );
+		randomBar.add( randomMinus );
 
 		targetText = PixelScene.renderTextBlock( "", 7 );
 		targetText.hardlight( 0xFFFF88 );
 		randomBar.add( targetText );
 
-		RedButton plus = new RedButton( "+", 6 ) {
+		randomPlus = new RedButton( "+", 6 ) {
 			@Override
 			protected void onClick() {
 				super.onClick();
@@ -418,10 +455,9 @@ public class WndChallenges extends Window {
 				updateTargetText();
 			}
 		};
-		plus.setRect( 14, 0, 12, 16 );
-		randomBar.add( plus );
+		randomBar.add( randomPlus );
 
-		RedButton roll = new RedButton( Messages.get( this, "roll" ), 6 ) {
+		randomRoll = new RedButton( Messages.get( this, "roll" ), 6 ) {
 			@Override
 			protected void onClick() {
 				super.onClick();
@@ -429,16 +465,26 @@ public class WndChallenges extends Window {
 				rebuildAll();
 			}
 		};
-		roll.setRect( 28, 0, WIDTH - 28, 16 );
-		randomBar.add( roll );
+		randomBar.add( randomRoll );
 
 		updateTargetText();
+	}
+
+	/** END(修复): 随机条的三个按钮（layout() 里要用）。 */
+	private RedButton randomMinus, randomPlus, randomRoll;
+
+	/** END(修复): 把目标数字放到 "-" 与 "+" 之间。 */
+	private void posTargetText() {
+		if (targetText == null || randomBar == null) return;
+		targetText.setPos(randomBar.top() == 0 ? 15 : randomBar.left() + 15,
+				randomBar.top() + (16 - targetText.height()) / 2);
 	}
 
 	private void updateTargetText() {
 		if (targetText == null) return;
 		targetText.text( Messages.get( this, "target", targetLevel ) );
-		targetText.setPos( 15 + (12 - targetText.width())/2, (16 - targetText.height())/2 );
+		//END(修复): 用 posTargetText() 统一摆位 —— 那里会加上 randomBar 的绝对偏移。
+		posTargetText();
 		PixelScene.align( targetText );
 	}
 

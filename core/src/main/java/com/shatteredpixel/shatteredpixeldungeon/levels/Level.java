@@ -360,10 +360,10 @@ public abstract class Level implements Bundlable {
 		//也是确定性铺设（不掷骰），放在 popGenerator 之后不影响关卡生成。
 		applyChernobyl();
 
-		//END(修复 49): 毒气每回合 -1 点，30 回合就会散光 ——
-		//所以这里额外挂一个维持器，每 3 回合把毒气补回来。
-		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
-				.ChernobylKeeper.ensureRunning();
+		//（挑战 49 的毒气维持器不在这里挂 —— 见下方说明）
+		//原因：本方法跑的时候 Dungeon.level 还没赋值（在第 998 行才赋），
+		//而且之后 Actor.init() 会清空全部 Actor。
+		//所以挂载点移到了 Dungeon.newLevel() 的 Actor.init() 之后。
 
 		//==== END(挑战 86 复仇之魂): 生成上一层的"复仇幽灵" ====
 		//原表："被击杀怪物 10% 概率在下一层以幽灵形式复仇"

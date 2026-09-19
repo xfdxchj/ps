@@ -892,7 +892,7 @@ public final class ChallengeEffects {
 	/** 54 我爱花花：草 13% 替换成随机花。 */
 	public static final int FLOWER_LOVER      = 54;
 	/** END(诊断): 138 贴图诊断开关。定稿后改回 false。 */
-	public static final boolean ABSURD_SPRITE_DEBUG = true;
+	public static final boolean ABSURD_SPRITE_DEBUG = false;
 
 	/** 138 荒诞世界：怪物贴图随机变化。 */
 	public static final int ABSURD_WORLD      = 138;
