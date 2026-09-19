@@ -39,6 +39,9 @@ public enum Music {
 	private String lastPlayed;
 	private boolean looping;
 	
+	/** END(诊断 130): 音乐播放诊断开关。定稿后改回 false。 */
+	public static boolean DEBUG_MUSIC = true;
+
 	private boolean enabled = true;
 	private float volume = 1f;
 
@@ -80,6 +83,22 @@ public enum Music {
 
 	public synchronized void play( String assetName, boolean looping ) {
 
+		//==== END(诊断 130): 确认 play() 到底有没有被调用 ====
+		//文档所有者反馈"格林之音还是没生效"，但连一条 [格林之音] 日志都没有 ——
+		//那说明 **play() 根本没被走到**（而不是映射表的问题）。
+		//
+		//这条日志回答三个问题：
+		//  1) play() 有没有被调用
+		//  2) 音乐开关是不是关的（enabled=false 会在下面直接 return）
+		//  3) 收到的原始曲目名是什么
+		if (DEBUG_MUSIC) {
+			System.out.println("[Music.play] 收到=" + assetName
+					+ "  enabled=" + enabled
+					+ "  mapper=" + (trackMapper == null ? "未注册" : "已注册")
+					+ "  isPlaying=" + isPlaying()
+					+ "  lastPlayed=" + lastPlayed);
+		}
+
 		//END(挑战 130): 在**所有**处理之前替换曲目名 ——
 		//这样 lastPlayed 比较、iOS 的 .mp3 替换、play(assetName,null) 全都拿到替换后的路径，
 		//不会出现"已经换成格林 BGM 了但 lastPlayed 记的是原曲"导致的重复播放。
@@ -116,6 +135,12 @@ public enum Music {
 	}
 
 	public synchronized void playTracks( String[] tracks, float[] chances, boolean shuffle){
+
+		if (DEBUG_MUSIC) {
+			System.out.println("[Music.playTracks] 曲目数=" + (tracks == null ? -1 : tracks.length)
+					+ "  enabled=" + enabled
+					+ "  第一首=" + (tracks != null && tracks.length > 0 ? tracks[0] : "无"));
+		}
 
 		if (tracks == null || tracks.length == 0 || tracks.length != chances.length){
 			stop();

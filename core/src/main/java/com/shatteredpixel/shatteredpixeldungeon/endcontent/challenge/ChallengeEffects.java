@@ -3917,7 +3917,12 @@ public final class ChallengeEffects {
 			.Item item) {
 		if (!on(WHALE) || item == null) return false;
 		if (!item.isUpgradable()) return false;
-		if (item.level() >= 10) return false;   //与原版升级卷轴同样的上限
+		//END(修订): **没有等级上限** —— 文档所有者明确"可以无限升级"。
+		//
+		//我原先照搬了原版升级卷轴的 +10 上限，那是多余的：
+		//这条规则的设计意图就是"钱够就能一直堆"，
+		//真正的限制是**费用随等级线性增长**（100 × (等级+1)），
+		//升到 +20 已经要两万一，再往后玩家自己会算不过来。
 		return Dungeon.gold >= whaleUpgradeCost(item);
 	}
 

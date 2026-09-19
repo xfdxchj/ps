@@ -76,7 +76,7 @@ public class WndChallenges extends Window {
 	 * END(诊断): UI 布局/偏移诊断开关。
 	 * 排查偏移问题时置 true；定稿后必须为 false（否则每帧刷屏）。
 	 */
-	private static final boolean UI_DEBUG = false;
+	private static final boolean UI_DEBUG = true;   //END(诊断): 实测布局期间临时开启
 	/** 滚动区期望高度上限（实际还会受屏幕高度约束）。 */
 	private static final int MAX_LIST_H = 150;
 
@@ -634,6 +634,34 @@ public class WndChallenges extends Window {
 
 		if (passLevelText != null) {
 			passLevelText.setPos(4, top + listH + 2);
+		}
+
+		//==== END(诊断·布局数值): 打印每一段控件的实际 y 范围 ====
+		//文档所有者报告"第三行的分类与列表第一条之间有空白" ——
+		//这条日志把每段的**起止 y** 列出来，一眼就能看出空白落在哪一段。
+		if (UI_DEBUG) {
+			System.out.println("=== [布局] 分段 y 范围（窗口高 " + (camera == null ? -1 : camera.height) + "）===");
+			System.out.println("  标题      0 .. " + TTL_HEIGHT);
+			if (editable && randomBar != null) {
+				System.out.println("  随机条    " + randomBar.top() + " .. "
+						+ randomBar.bottom() + "   (高 " + RANDOM_BAR_H + ")");
+			}
+			System.out.println("  分类栏    " + catContent.top() + " .. "
+					+ (catContent.top() + catContent.height())
+					+ "   (catRows=" + catRows + ", catHeight=" + catHeight()
+					+ ", 按钮数=" + catButtons.size() + ")");
+			System.out.println("  列表      " + pane.top() + " .. "
+					+ (pane.top() + pane.height())
+					+ "   (listH=" + listH + ", 内容高=" + content.height() + ")");
+			System.out.println("  底部文字  " + (top + listH + 2));
+
+			//逐排打印分类按钮的实际屏幕 y
+			for (int i = 0; i < catButtons.size(); i++) {
+				System.out.println("    分类[" + i + "] "
+						+ catContent.top() + "+" + catButtons.get(i).top()
+						+ " => " + (catContent.top() + catButtons.get(i).top())
+						+ " .. " + (catContent.top() + catButtons.get(i).bottom()));
+			}
 		}
 	}
 

@@ -103,9 +103,22 @@ public class WndMoneyIsPower extends Window {
 
 		content.setSize(WIDTH - 12, cPos);
 
+		//==== END(修复·闪退): 必须先 add() 再 setRect() ====
+		//文档所有者实测闪退：
+		//  NullPointerException: ScrollPane.camera() is null
+		//    at ScrollPane.layout(ScrollPane.java:159)
+		//    at Component.setRect(Component.java:59)
+		//
+		//根因：{@code Component.setRect()} 会**立刻**触发一次 layout()，
+		//而 {@code ScrollPane.layout()} 里要用 {@code camera().cameraToScreen()} ——
+		//{@code camera()} 是"向上查找父级"的，此时本控件还没 add 到窗口上，
+		//父链是空的，于是返回 null → NPE。
+		//
+		//所以顺序必须是：先 add（接上父链），再 setRect（此时才有相机）。
+		//原版 WndChallenges 也是这个顺序。
 		ScrollPane pane = new ScrollPane(content);
-		pane.setRect(0, pos, WIDTH, Math.min(150, cPos));
 		add(pane);
+		pane.setRect(0, pos, WIDTH, Math.min(150, cPos));
 
 		pos = pane.bottom() + 2;
 
