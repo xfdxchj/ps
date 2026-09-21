@@ -402,17 +402,56 @@ public abstract class Level implements Bundlable {
 			return;
 		}
 
+		//==== END(诊断·心爱的少女第二层崩溃) ====
+		//文档所有者反馈："心爱的少女在进入第二层崩溃。"
+		//
+		//本方法每一层都会跑，而它在 Level.create() 的**末尾** ——
+		//那时场景可能还没准备好（sprite 为 null）。把每一步都打出来，
+		//崩在哪一步一目了然。
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.log(
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.CHALLENGE,
+				"129 残片检查：层=" + Dungeon.depth
+						+ "  分支=" + Dungeon.branch
+						+ "  应刷=" + true);
+
 		//找一块可以放东西的空地
 		int cell = com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
 				.FairyFragment.pickDropCell(this);
-		if (cell < 0) return;
+		if (cell < 0) {
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.log(
+					com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.CHALLENGE,
+					"129 残片：找不到落点，跳过");
+			return;
+		}
 
 		com.shatteredpixel.shatteredpixeldungeon.items.Item f =
 				com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
 						.FairyFragment.rollMissingKind();
-		if (f == null) return;                        //已集齐
+		if (f == null) {
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.log(
+					com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.CHALLENGE,
+					"129 残片：已集齐，不再刷");
+			return;
+		}
 
-		drop(f, cell).sprite.drop(cell);
+		//==== END(修复·可能的 NPE): drop() 之后 heap/sprite 都要判空 ====
+		//原来直接写 {@code drop(f, cell).sprite.drop(cell)} ——
+		//如果 drop 返回的 Heap 还没接上 sprite（场景未就绪），这里就 NPE。
+		try {
+			com.shatteredpixel.shatteredpixeldungeon.items.Heap h = drop(f, cell);
+			if (h != null && h.sprite != null) {
+				h.sprite.drop(cell);
+			}
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.log(
+					com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.CHALLENGE,
+					"129 残片：已放到格 " + cell
+							+ "  heap=" + (h != null)
+							+ "  sprite=" + (h != null && h.sprite != null));
+		} catch (Throwable t) {
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.err(
+					com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.CHALLENGE,
+					"129 残片放置失败（已吞掉，不让它拖崩整层生成）", t);
+		}
 	}
 
 	/**
@@ -449,14 +488,38 @@ public abstract class Level implements Bundlable {
 					this);
 		}
 
-		//---- 怪物免疫（原表："玩家受影响，怪物免疫"）----
-		for (com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob m : mobs) {
+		//==== END(修订 49): 怪物**不再免疫**毒气，玩家获得永久解毒祝福 ====
+		//文档所有者定稿："切尔诺贝利怪物不会免疫毒气，可以上一个永久的解毒祝福。"
+		//
+		//原实现给所有怪物挂了 BlobImmunity（永久免疫气体）——
+		//那让整条规则只惩罚玩家，怪物在毒气里若无其事。
+		//
+		//现在改为：**怪物照常中毒**（删掉那段循环），
+		//而**玩家**获得一个永久的解毒祝福 —— 这样毒气对双方都是威胁，
+		//但玩家有一个能活下来的手段，符合"高辐射区"的设定。
+		giveChernobylBlessing();
+	}
+
+	/**
+	 * END(修订 49 切尔诺贝利): 给玩家一个永久的解毒祝福。
+	 *
+	 * <p>原版解毒靠净化药水，但那是**消耗品**（20 回合）——
+	 * 在整局都铺满毒气的地牢里 20 回合远远不够，
+	 * 玩家会在每层开头就把药用光，然后被毒死。
+	 *
+	 * <p>所以这里给一个**永久**的毒气免疫。
+	 * 只给玩家、只在这一条规则勾选时生效。
+	 */
+	private void giveChernobylBlessing() {
+		if (com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero == null) return;
+		try {
 			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
-					m,
+					com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero,
 					com.shatteredpixel.shatteredpixeldungeon.actors.buffs
 							.BlobImmunity.class,
-					com.shatteredpixel.shatteredpixeldungeon.actors.buffs
-							.BlobImmunity.DURATION);
+					99999f);          //"永久"：整局都不可能烧完
+		} catch (Throwable t) {
+			//给不上祝福不能把游戏拖崩
 		}
 	}
 

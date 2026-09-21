@@ -50,11 +50,11 @@ public class SpiritBowCoreRecipe extends Recipe {
 			if (it.getClass() == StoneOfAugmentation.class && stones > 0){
 				int take = Math.min(stones, it.quantity());
 				stones -= take;
-				it.quantity(it.quantity() - take);
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.ItemConsume.consume(it, take);
 			} else if (it.getClass() == ScrollOfRemoveCurse.class && scrolls > 0){
 				int take = Math.min(scrolls, it.quantity());
 				scrolls -= take;
-				it.quantity(it.quantity() - take);
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.ItemConsume.consume(it, take);
 			}
 		}
 		return sampleOutput(ingredients);

@@ -28,6 +28,9 @@ public class DaggerExecution extends EmbedDagger {
 		hitSound = com.shatteredpixel.shatteredpixeldungeon.Assets.Sounds.HIT_STAB;
 		hitSoundPitch = 0.95f;
 		tier = 2;
+		//END(修复·产出 3 个): 覆盖父类构造块设下的 defaultQuantity()（=3）
+		stackable = false;
+		quantity = 1;
 		baseUses = 5;
 	}
 

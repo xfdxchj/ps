@@ -213,6 +213,26 @@ public class WndChallenges extends Window {
 		};
 		add( confirmBtn );
 
+		//==== END(新增·归零键) ====
+		//文档所有者要求："加一个归零"。
+		//
+		//作用：一键取消**当前所有已勾选**的挑战（清空掩码）。
+		//不做二次确认 —— 这是"反悔"操作，点错了再勾回来即可；
+		//每次都要确认反而很烦（尤其在反复试搭配时）。
+		resetBtn = new RedButton( Messages.get( this, "reset" ) ) {
+			@Override
+			protected void onClick() {
+				super.onClick();
+				if (!editable || !isAlive()) return;
+
+				mask = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+						.ChallengeMask.empty();
+				page = 0;
+				rebuildAll();
+			}
+		};
+		add( resetBtn );
+
 		//==== END(修复·布局统一): 改用 relayout() ====
 		//原先这里手写了一遍布局计算，与 rebuildAll 各算各的 ——
 		//两处一旦不同步就会出空白/重叠（这正是文档所有者遇到的两个现象）。
@@ -325,9 +345,20 @@ public class WndChallenges extends Window {
 	 */
 	private void handleListClick( float x, float y ) {
 		//END(修复·关闭后残留点击·弹介绍): 与 toggleChallenge 同样的守卫。
-		//用户报告：关闭挑战窗口后，在原"问号"按钮位置点击仍能弹出介绍窗口。
-		//根因：handleListClick 没加 isAlive，残留点击事件仍能走到 WndMessage 分支。
 		if (!isAlive()) return;
+
+		//==== END(加强·翻页后误点): 用"内容坐标 + 边界校验"双重判定 ====
+		//文档所有者反馈："在切换页时，如果有点位置没有内容，点击会点到上一页的挑战。"
+		//
+		//除了在 rebuildPage() 里重置滚动（那是根因），这里再加一道保险：
+		//把 y **夹到当前内容的合法范围内** —— 超出范围说明这一击落在
+		//列表下方的空白（或偏移后的无效区），直接忽略。
+		//
+		//这样即使滚动偏移因为某些边界情况没归零，也不会误命中别的条目。
+		if (content == null) return;
+		float contentH = content.height();
+		if (y < 0 || y > contentH) return;
+
 		for (int i = 0; i < boxes.size(); i++) {
 			CheckBox cb = boxes.get(i);
 			if (y < cb.top() || y > cb.bottom()) continue;
@@ -341,7 +372,10 @@ public class WndChallenges extends Window {
 				return;
 			}
 
-			if (!cb.active) return;         //不可选（未实装/互斥/前置未满足）
+			//END(修复·前置弹窗): 缺前置的条目也是 active 的（见 buildList），
+			//所以这里不再区分 —— 交给 toggleChallenge 判断
+			//"直接勾选"还是"弹窗询问补前置"。
+			if (!cb.active) return;         //不可选（未实装/互斥）
 
 			toggleChallenge( d );
 			return;
@@ -473,6 +507,9 @@ public class WndChallenges extends Window {
 	/** END(新增·确定键): 底部的确定按钮。 */
 	private RedButton confirmBtn;
 
+	/** END(新增·归零键): 底部的一键清空按钮。 */
+	private RedButton resetBtn;
+
 	/** 当前页号（0 基）。切换分类时归零。 */
 	private int page = 0;
 
@@ -560,6 +597,26 @@ public class WndChallenges extends Window {
 		defs.clear();
 		buildList();
 		updatePageLabel();
+
+		//==== END(修复·翻页后点到"上一页"的条目) ====
+		//文档所有者反馈："在切换页时，如果有点位置没有内容，点击会点到上一页的挑战。"
+		//
+		//根因：ScrollPane.onClick 传给我们的坐标是
+		//    content.camera.screenToCamera(屏幕坐标)
+		// 而 screenToCamera 会**加上 content.camera.scroll**（内容滚动偏移）。
+		//
+		//翻页时我们换了内容（content.clear + buildList），但**没重置滚动** ——
+		//上一页留下的 scroll 会让换算出来的 y 整体偏移，
+		//于是点空白处会命中"偏移后"的那一条，看起来就像点到了上一页的东西。
+		//
+		//修法：翻页后把滚动归零（回到顶部），并把相机重新摆正。
+		if (pane != null) {
+			pane.scrollTo(0, 0);
+		}
+		if (pane != null && pane.content() != null && pane.content().camera != null) {
+			pane.content().camera.scroll.set(0, 0);
+		}
+		bindScrollPaneCamera(pane);
 	}
 
 	/** END(分页): 更新页码文字与按钮可用状态。 */
@@ -649,7 +706,17 @@ public class WndChallenges extends Window {
 			};
 			cb.setRect( 0, pos, WIDTH - 16, BTN_HEIGHT );
 			cb.checked( mask.has( d.id ) );
-			cb.active = editable && canToggle( d );
+			//==== END(修复·前置弹窗没出现): 缺前置的条目要保持可点 ====
+			//文档所有者反馈："询问前置的窗口没有出现。"
+			//
+			//第二道关卡在这里：canToggle() 因为"前置未满足"返回 false，
+			//于是 cb.active = false —— 而 RedButton 在 inactive 时
+			//**连 onClick 都不会触发**，玩家点了完全没反应。
+			//
+			//修法：若这条规则**只是缺前置**（其它条件都满足），
+			//就让它保持 active —— 点下去会走 toggleChallenge 里的
+			//"是否补齐前置"弹窗分支。
+			cb.active = editable && (canToggle( d ) || canAskPrereq( d ));
 
 			content.add( cb );
 			boxes.add( cb );
@@ -743,20 +810,31 @@ public class WndChallenges extends Window {
 		if (d == null) return;
 		if (!isAlive()) return;              //窗口已销毁 → 直接忽略
 		if (!editable) return;
-		if (!canToggle( d ) && !mask.has( d.id )) return;
 
 		boolean on = !mask.has( d.id );
 
-		//==== END(新增·前置自动补齐): 勾选有前置的规则时先问一句 ====
-		//文档所有者要求："在选需要有前置的挑战时弹出一个窗口，
-		//问是否优选前置，是后直接全部选。"
+		//==== END(修复·前置弹窗没出现) ====
+		//文档所有者反馈："询问前置的窗口没有出现。"
 		//
-		//只在**勾选**（而不是取消）且**前置未满足**时才问 ——
-		//取消勾选不需要问，前置已满足时也不必打扰。
+		//根因：原来的顺序是
+		//    if (!canToggle(d) && !mask.has(d.id)) return;     // ← 第一道关卡
+		//    ...  然后才判断是不是缺前置并弹窗
+		//而 canToggle() 里**已经**因为"前置未满足"返回 false，
+		//所以第一行就直接 return 了 —— 弹窗那段代码永远走不到。
+		//
+		//修法：把"勾选一条缺前置的规则"这个情况**提前**处理，
+		//放在 canToggle 判定之前。这样它就不会被那道关卡拦掉。
 		if (on && d.hasPrerequisite() && !d.prerequisitesMet(mask)) {
+			//只有"已实装"的规则才谈得上补前置（未实装的点了也没用）
+			if (!d.isImplemented()) return;
+			//互斥检查仍然要做：前置能补，但互斥补不了
+			if (!d.conflictingWith(mask).isEmpty()) return;
+
 			askFillPrerequisites(d);
 			return;
 		}
+
+		if (!canToggle( d ) && !mask.has( d.id )) return;
 
 		mask = on ? mask.with( d.id ) : mask.without( d.id );
 		//互斥/前置会随选择变化，重建整表以刷新置灰
@@ -961,15 +1039,20 @@ public class WndChallenges extends Window {
 			top += 18;
 		}
 
-		//==== END(新增·确定键): 底部加一个确定的关闭按钮 ====
-		//文档所有者反馈："挑战界面没有确定键，导致难以返回。"
+		//==== END(新增·确定键 + 归零键): 底部两个按钮 ====
+		//文档所有者反馈：
+		//  · "挑战界面没有确定键，导致难以返回"
+		//  · "加一个归零"
 		//
-		//原版窗口的惯例是底部放 RedButton(Messages.get(this, "close"))，
-		//这里照做 —— 放在**通过等级那一行的右侧**，不额外占垂直空间
-		//（UI 已经很高了，文档所有者要求过别占满屏）。
+		//布局：[通过等级...]              [归零] [确定]
+		//两个按钮并排放在右侧，不额外占垂直空间。
+		float btnW = 40f;
+		float gap = 3f;
 		if (confirmBtn != null) {
-			float btnW = 46f;
 			confirmBtn.setRect(WIDTH - btnW, top + 1, btnW, CONFIRM_H);
+		}
+		if (resetBtn != null) {
+			resetBtn.setRect(WIDTH - btnW * 2 - gap, top + 1, btnW, CONFIRM_H);
 		}
 
 		resize(WIDTH, (int) (top + bottomH));
@@ -1016,6 +1099,25 @@ public class WndChallenges extends Window {
 	 * <p>不允许的情况：未实装 / 互斥冲突 / 前置未满足。
 	 * <p>**已勾选的项永远允许取消**，否则玩家会被卡死。
 	 */
+	/**
+	 * END(修复·前置弹窗没出现): 这条规则是否"可以点开前置弹窗"。
+	 *
+	 * <p>判据：它**只差前置**（其它条件都满足），且当前还没被勾选。
+	 *
+	 * <p>为什么要单独一个方法：{@code canToggle()} 是"能不能直接勾选"，
+	 * 它把"缺前置"也判成 false；而玩家点这一类条目时我们要**弹窗询问**，
+	 * 所以需要一条独立的、更宽松的判据。
+	 */
+	private boolean canAskPrereq( ChallengeDef d ) {
+		if (d == null) return false;
+		if (mask.has( d.id )) return false;          //已勾选 → 不是"缺前置"
+		if (!d.isImplemented()) return false;        //未实装 → 点了也没用
+		if (!d.hasPrerequisite()) return false;      //压根没有前置
+		if (d.prerequisitesMet( mask )) return false;//前置已满足 → 正常勾选路径
+		if (!d.conflictingWith( mask ).isEmpty()) return false;  //互斥 → 补不了
+		return true;
+	}
+
 	private boolean canToggle( ChallengeDef d ) {
 		if (mask.has( d.id )) return true;
 		if (!d.isImplemented()) return false;
@@ -1063,8 +1165,13 @@ public class WndChallenges extends Window {
 			sb.append( Messages.get( this, "not_implemented" ) );
 		}
 		sb.append( "\n\n" );
-		sb.append( d.group ).append( "   " ).append( d.tendencyName() )
-				.append( "   Lv" ).append( d.level );
+		//==== END(修订·详情里不显示挑战等级) ====
+		//文档所有者要求："不需要在选挑战界面加挑战等级。"
+		//
+		//所以这里只显示分类与倾向，不再显示 Lv。
+		//（等级仍然存在 ChallengeDef 里，用于计算"通过等级"，
+		//  只是不再暴露给玩家 —— 那是个内部配平用的数值。）
+		sb.append( d.group ).append( "   " ).append( d.tendencyName() );
 		if (!d.effect.isEmpty()) {
 			sb.append( "\n\n" ).append( effectTextOf( d ) );
 		}

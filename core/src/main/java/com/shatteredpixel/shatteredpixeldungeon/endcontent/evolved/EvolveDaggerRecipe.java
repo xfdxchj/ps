@@ -27,23 +27,29 @@ public class EvolveDaggerRecipe extends Recipe {
 	/**
 	 * 方向料 → 对应进阶匕首成品。
 	 *
-	 * <p>END(修订): 按文档所有者要求，**只保留一种成品**（刺杀·三叉戟），
-	 * 去掉原来的"传送"与"处决"两个方向。
+	 * <h3>END(修订·恢复三方向)</h3>
+	 * 文档所有者定稿："刺杀匕首的进阶全部成了三叉戟，还是一个刺杀匕首变 3 个进阶"
+	 * —— 要的是**三个方向各自产出各自的成品**：
+	 * <pre>
+	 *   加速药水   → 刺杀·三叉戟（DaggerTrident）
+	 *   漂浮药水   → 刺杀·传送（DaggerTeleport）
+	 *   报应卷轴   → 刺杀·处决（DaggerExecution）
+	 * </pre>
 	 *
-	 * <p>原因：三方向料的设计让一件基础匕首能锻成三种不同成品，
-	 * 实际玩起来是"三选一"，而需求是**只有一种**。
-	 *
-	 * <p>注意：{@code DaggerTeleport} / {@code DaggerExecution} 两个**类仍然保留**
-	 * （图鉴、存档里的旧物品还要能反序列化），只是不再能通过配方产出。
-	 *
-	 * <p>现在任意一种"方向料"都可以触发锻造，统一产出三叉戟。
+	 * <p>先前那版把它们统一成三叉戟，是早期的一次误改，现已恢复。
 	 */
 	private Class<? extends MissileWeapon> pickClass( Item special ){
-		//只要是可用的方向料，一律产出三叉戟
-		if (special instanceof com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHaste
-				|| special instanceof com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfLevitation
-				|| special instanceof com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfRetribution) {
+		if (special instanceof com.shatteredpixel.shatteredpixeldungeon.items.potions
+				.PotionOfHaste) {
 			return DaggerTrident.class;
+		}
+		if (special instanceof com.shatteredpixel.shatteredpixeldungeon.items.potions
+				.PotionOfLevitation) {
+			return DaggerTeleport.class;
+		}
+		if (special instanceof com.shatteredpixel.shatteredpixeldungeon.items.scrolls
+				.ScrollOfRetribution) {
+			return DaggerExecution.class;
 		}
 		return null;
 	}
@@ -111,12 +117,24 @@ public class EvolveDaggerRecipe extends Recipe {
 					|| it instanceof com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHaste
 					|| it instanceof com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfLevitation
 					|| it instanceof com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfRetribution){
-				it.quantity(it.quantity() - 1);
+				//END(修复): 减到 0 时要真的移除 ——
+				//quantity(0) 只改数字，物品还留在背包里。
+				int left = it.quantity() - 1;
+				if (left <= 0) {
+					it.detachAll(com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero
+							.belongings.backpack);
+				} else {
+					it.quantity(left);
+				}
 			} else if (it instanceof AssassinDagger){
-				it.quantity(0); //基础匕首归零 → 移走，避免与成品共存
+				//END(修复): 基础匕首必须**真正移除** ——
+				//原来是 quantity(0)，只把数量设成 0，物品对象还留在背包里，
+				//于是"基础匕首 + 成品"两把共存。
+				it.detachAll(com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero
+						.belongings.backpack);
 			}
 		}
-		GLog.i("炼成刺杀匕首·成品: " + out.title() + " 已记入图鉴/日志。");
+		GLog.i("炼成：" + out.title());
 		return out;
 	}
 }

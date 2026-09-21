@@ -28,8 +28,18 @@ package com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge;
  */
 public final class ChallengeMask {
 
-	/** 需要的 long 数量：表 ID 最大 138 → 139 位 → ceil(139/64) = 3。 */
-	private static final int WORDS = 3;
+	/**
+	 * 需要的 long 数量。
+	 *
+	 * <h3>END(修复·新条目无法勾选): 从 3 扩到 4</h3>
+	 * 原来写的是 3（支持 id 0~191）。但第二批新增的 188-201 与第三批的
+	 * 202-208 都超过了 191 —— 而 {@link #with(int)} 对超范围 id 是
+	 * **静默忽略**（防御性写法），于是"点了没反应"。
+	 *
+	 * <p>现在 4 个 long = 256 位，足够覆盖到 id 255。
+	 * 后续如果还要加规则，记得同步扩大这个数。
+	 */
+	private static final int WORDS = 4;
 
 	/** 全零。 */
 	public static final ChallengeMask NONE = new ChallengeMask(new long[WORDS]);

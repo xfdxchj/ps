@@ -104,7 +104,7 @@ public class RabbitWatch extends Item {
 		if (reset) {
 			GLog.i("银色短铳的冷却被归零了。");
 		} else {
-			GLog.i("怀表的指针轻轻一跳 —— 铳本来就是冷的。");
+			GLog.i("铳本来就还没热。");
 		}
 
 		hero.spendAndNext(1f);

@@ -272,14 +272,23 @@ public class Hero extends Char {
 			HT += EndGemProfile.of(EndGem.MAX_HP).bonusAt( belongings.armor().buffedLvl() );
 		}
 
-		//==== END(挑战 12 玻璃大炮): 生命上限 ×0.87 ====
+		//==== END(挑战 12 玻璃大炮 + 68 极端状态 + 205 为何无忌) ====
 		//放在所有 HT 加成之后，作用于**最终上限**。
 		//下方 HP = Math.min(HP, HT) 会自动把当前血量一并压下来，
-		//符合"玩家攻击提高 20%，生命降低 13%"的语义。HT 不低于 1。
+		//符合"攻击提高、生命降低"的语义。
+		//
+		//==== END(修复·68 每级要重乘): 下限改用 EXTREME_MIN_HP ====
+		//文档所有者定稿："极端状态每升一级要重新乘"，
+		//而它的下限是 **10**（原表："生命上限降到 10%，最低 10 点"）。
+		//
+		//所以不能统一用 max(1, ...) —— 那会让 1 级的 HT 掉到 2。
+		//这里按"是否勾选 68"选择下限：勾了就保底 10，没勾就保底 1。
 		float challengeHt = com.shatteredpixel.shatteredpixeldungeon.endcontent
 				.challenge.ChallengeEffects.heroHtMultiplier();
 		if (challengeHt != 1f) {
-			HT = Math.max(1, Math.round(HT * challengeHt));
+			int floor = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.heroHtFloor();
+			HT = Math.max(floor, Math.round(HT * challengeHt));
 		}
 
 		if (boostHP){
@@ -1021,6 +1030,12 @@ public class Hero extends Char {
 			return true;
 		}
 
+		//==== END(顶级装备·虚空不灭之甲): 每 50 回合回 50% 生命 ====
+		//文档所有者定稿："每 50 回合回复 50% 生命"。
+		//没穿那件甲时 equippedOn 返回 null，零开销。
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons.VoidArmor
+				.tickRegen(this, 1f);
+
 		//==== END(挑战 191 时间之神): 每 10 回合给 2 回合时间气泡 ====
 		//用原版现成的 Swiftthistle.TimeBubble（文档所有者确认"是 buff，也是已有的"）。
 		//未勾选 191 时 grantTimeGodBubble 直接返回 false，零开销。
@@ -1063,8 +1078,8 @@ public class Hero extends Char {
 						buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs
 								.DeityPray.class);
 				if (dp != null) dp.detach();     //立刻解除，不占本回合
-				com.shatteredpixel.shatteredpixeldungeon.utils.GLog
-						.i("你默祷了一句。（天使形态：不消耗回合）");
+				//END(定稿): 不再打印"（天使形态：不消耗回合）"这类提示 ——
+				//文档所有者反馈"太繁琐"。行为不变，只是不再刷日志。
 			}
 		}
 
@@ -2328,7 +2343,14 @@ public class Hero extends Char {
 				buff(Talent.WandPreservationCounter.class).detach();
 			}
 
-			if (lvl < MAX_LEVEL) {
+			//==== END(挑战 209 无尽贪婪): 等级上限可被解除 ====
+			//文档所有者定稿："唯有贪婪之人，才可登阶成神。解除等级上限。"
+			//
+			//原版这里写死比较 MAX_LEVEL（=30）。改成查 ChallengeEffects ——
+			//勾选 209 时返回 Integer.MAX_VALUE，等于没有上限。
+			int levelCap = com.shatteredpixel.shatteredpixeldungeon.endcontent
+					.challenge.ChallengeEffects.heroLevelCap();
+			if (lvl < levelCap) {
 				lvl++;
 				levelUp = true;
 				

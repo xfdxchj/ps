@@ -357,7 +357,32 @@ public final class ChallengeEffects {
 		//与 12 玻璃大炮**可叠加**（相乘）。
 		mult *= whyMaxHpMult();
 
+		//==== END(修复·68 极端状态每级要重乘) ====
+		//文档所有者反馈："极端状态每升一级要重新乘，现在是直接加了，
+		//1 级 10，2 级 15，应该为 25×0.1=2.5 变为 10"。
+		//
+		//根因：{@code applyExtremeState()} 只在开局调一次，
+		//而 {@code Hero.updateHT()} 每次升级都会把 HT 重算成
+		//{@code 20 + 5*(lvl-1) + HTBoost} —— 那一步会把开局的 10% 覆盖掉，
+		//于是 2 级时 HT 变成 25（而不是 25×0.1 = 2.5 → 取下限 10）。
+		//
+		//所以把 68 也挂到这个"每次重算 HT 都会经过"的钩子上。
+		//下限 10 由 updateHT 里的 EXTREME_MIN_HP 处理。
+		if (on(EXTREME_STATE)) {
+			mult *= EXTREME_HP_MULT;
+		}
+
 		return mult;
+	}
+
+	/**
+	 * END(68 极端状态): 玩家生命上限的**下限**。
+	 *
+	 * <p>文档所有者定稿："生命上限降到 10%（最低 10 点）"。
+	 * 所以勾选 68 时下限是 10，否则是 1（让 12 玻璃大炮等其它规则照旧）。
+	 */
+	public static int heroHtFloor() {
+		return on(EXTREME_STATE) ? EXTREME_MIN_HP : 1;
 	}
 
 	/** END(14 精英强化): 精英怪属性倍率（"谁是精英"由 4/75 决定）。 */
@@ -1901,8 +1926,6 @@ public final class ChallengeEffects {
 	public static final int OVERKILL_REVERSE = 22;
 	/** 69 九九归一：最终伤害为 9 的倍数时变为 1。 */
 	public static final int NINE_TO_ONE      = 69;
-	/** 103 弹幕地狱：远程投射物变 3 发散射。 */
-	public static final int BULLET_HELL      = 103;
 	/** 121 中世纪骑士：护甲值 +60%，移动速度 -50%。 */
 	public static final int MEDIEVAL_KNIGHT  = 121;
 	/** 140 枪枪爆头：距离 >=5 格时远程伤害必为最大值。 */
@@ -1910,8 +1933,6 @@ public final class ChallengeEffects {
 
 	/** 18 老龄化：每回合触发概率。 */
 	private static final int   AGING_PCT        = 13;
-	/** 103 弹幕地狱：投射物数量。 */
-	public static final int    BULLET_HELL_COUNT = 3;
 	/** 121 中世纪骑士：护甲与移速倍率。 */
 	private static final float KNIGHT_ARMOR_MULT = 1.60f;
 	private static final float KNIGHT_SPEED_MULT = 0.50f;
@@ -2060,6 +2081,18 @@ public final class ChallengeEffects {
 					.AlmightyPurse());
 		}
 
+		//==== END(蕴生之剑): 开局发放 ====
+		//文档所有者定稿："增加武器，可以随着升级数提升阶数（基础伤害与成长），
+		//开局可获得。"
+		//
+		//它不是挑战奖励，而是**无条件**的开局装备 —— 与家传法杖/神射戒指
+		//那几条"勾了才给"的规则不同，所以这里不看任何掩码。
+		//
+		//一把 1 阶的蕴生之剑起手很弱（1-11 伤害），要靠强化才能长起来 ——
+		//这正是它的定位："力量是养出来的"。
+		out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons
+				.NurturedSword());
+
 		//==== END(188 时间之力): 开局发放时间沙漏 ====
 		//文档所有者指出："188 的物品是原版已有的" ——
 		//就是 {@code TimekeepersHourglass}（时空沙漏），
@@ -2082,6 +2115,20 @@ public final class ChallengeEffects {
 		if (on(ALL_OR_NOTHING)) {
 			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
 					.GamblersDice());
+		}
+
+		//==== END(修复·野生狗奶开局没物品) ====
+		//文档所有者反馈："野生狗奶开局没有狗奶物品。"
+		//
+		//根因：124 的道具 WildDogMilk **只登记在盲盒奖池里**（见 pickMysteryReward），
+		//开局发放列表漏了它 —— 于是勾了 124 之后，玩家既没有这瓶奶，
+		//规则本身也就永远不会生效（它只在"喝下"时才起作用）。
+		//
+		//它的定位是"永久降低全属性、但不会死"，是个值得权衡的道具，
+		//应该开局就在手里 —— 玩家可以自己决定什么时候喝。
+		if (on(WILD_MILK)) {
+			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+					.WildDogMilk());
 		}
 
 		//126 格林之心：魂之容器（攒魂/献祭的入口）
@@ -2358,13 +2405,18 @@ public final class ChallengeEffects {
 		if (hero == null || !hero.isAlive()) return;
 
 		//---- 80 冰天雪地：13% 寒冷、2% 冰冻（只对玩家生效，已定稿）----
+		//END(修订·加冷却): 用 ChallengeSfx.roll() 统一处理
+		//"先查冷却、再掷骰"，避免小概率连续触发。
+		//文档所有者要求："所有概率触发加触发 CD，避免小概率的连续触发。"
 		if (on(FROZEN_WORLD)) {
-			if (Random.Int(100) < FROZEN_FREEZE_PCT) {
+			if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeSfx.roll(FROZEN_WORLD, FROZEN_FREEZE_PCT)) {
 				com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
 						hero,
 						com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Frost.class,
 						2f);
-			} else if (Random.Int(100) < FROZEN_CHILL_PCT) {
+			} else if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeSfx.roll(FROZEN_WORLD + 1000, FROZEN_CHILL_PCT)) {
 				com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
 						hero,
 						com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Chill.class,
@@ -2373,12 +2425,16 @@ public final class ChallengeEffects {
 		}
 
 		//---- 90 雷暴：5% 闪电随机劈中一个角色（玩家或怪物）----
-		if (on(THUNDERSTORM) && Random.Int(100) < THUNDER_PCT) {
+		//END(修订·加冷却)
+		if (on(THUNDERSTORM) && com.shatteredpixel.shatteredpixeldungeon.endcontent
+				.challenge.ChallengeSfx.roll(THUNDERSTORM, THUNDER_PCT)) {
 			strikeLightning(hero);
 		}
 
 		//---- 123 大学生：3% 受 1 点伤害（**不致死**，已定稿）----
-		if (on(COLLEGE_STUDENT) && Random.Int(100) < STUDENT_PCT) {
+		//END(修订·加冷却)
+		if (on(COLLEGE_STUDENT) && com.shatteredpixel.shatteredpixeldungeon.endcontent
+				.challenge.ChallengeSfx.roll(COLLEGE_STUDENT, STUDENT_PCT)) {
 			//HP <= 1 时本次伤害不生效，避免 3% 概率暴毙
 			if (hero.HP > 1) {
 				hero.damage(1, hero);
@@ -2388,7 +2444,9 @@ public final class ChallengeEffects {
 		//---- 71 喝大了：每回合 3% 触发眩晕 3 回合 ----
 		//原表："每回合3%触发眩晕3回合"。用 Paralysis 实现 ——
 		//它是本 fork 既有的"不能行动"状态，图标与回合递减都已处理好。
-		if (on(DRUNK) && Random.Int(100) < DRUNK_PCT) {
+		//END(修订·加冷却)
+		if (on(DRUNK) && com.shatteredpixel.shatteredpixeldungeon.endcontent
+				.challenge.ChallengeSfx.roll(DRUNK, DRUNK_PCT)) {
 			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
 					hero,
 					com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Paralysis.class,
@@ -2418,6 +2476,19 @@ public final class ChallengeEffects {
 		if (targets.isEmpty()) return;
 
 		Char victim = targets.get(Random.Int(targets.size()));
+
+		//==== END(诊断·雷暴没有特效) ====
+		//文档所有者反馈："雷暴没有 ui 与特效，游戏里显示为突然就着火。"
+		//
+		//这条日志确认"雷击本身有没有触发"，从而区分：
+		//  · 日志完全没有   → 是**触发条件**没满足（概率/冷却/勾选）
+		//  · 日志有但画面没反应 → 是**表现层**缺特效（那要补 sprite/粒子）
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.log(
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.CHALLENGE,
+				"雷暴：劈中 " + victim.getClass().getSimpleName()
+						+ "  位置=" + victim.pos
+						+ "  伤害=" + dmg
+						+ "  候选目标=" + targets.size());
 
 		//视觉与音效（沿用雷击类效果的既有资源）
 		if (victim.sprite != null) {
@@ -2555,18 +2626,6 @@ public final class ChallengeEffects {
 		if (!on(MEDIEVAL_KNIGHT) || ch == null) return 1f;
 		if (!(ch instanceof Hero)) return 1f;
 		return KNIGHT_SPEED_MULT;
-	}
-
-	/**
-	 * END(103 弹幕地狱): 远程投射物数量。
-	 *
-	 * <p>原本 1 发，改为 3 发散射（有间隙可走位）。
-	 * 与 19 风驰电掣联动时，**投射物速度单独计算**（不受 19 影响）。
-	 *
-	 * @return 投射物数量（无该挑战时为 1）
-	 */
-	public static int projectileCount() {
-		return on(BULLET_HELL) ? BULLET_HELL_COUNT : 1;
 	}
 
 	/**
@@ -2910,18 +2969,42 @@ public final class ChallengeEffects {
 	/** 5 怪物入侵：每层混入的外区域怪物数量。 */
 	private static final int INVASION_COUNT = 2;
 
-	/** END(5 怪物入侵): 本层应混入几只外区域怪物。 */
+	/**
+	 * END(修订 5 怪物入侵): 本层实际混入几只外区域怪物。
+	 *
+	 * <p>文档所有者定稿："怪物入侵要下一区域的怪，20% 概率。"
+	 *
+	 * <p>所以每只入侵者都**独立掷一次 20%** ——
+	 * 而不是像之前那样"固定 2 只、每只随便来自哪个区域"。
+	 * 这样有的层一只没有，有的层来两只，更像"入侵"而不是"常驻"。
+	 */
 	public static int invasionCount(int depth) {
-		return on(MONSTER_INVASION) ? INVASION_COUNT : 0;
+		if (!on(MONSTER_INVASION)) return 0;
+
+		int n = 0;
+		for (int i = 0; i < INVASION_COUNT; i++) {
+			if (Random.Int(100) < INVASION_CHANCE_PCT) n++;
+		}
+		return n;
 	}
 
+	/** END(修订 5): 每只入侵者独立触发的概率（%）。 */
+	public static final int INVASION_CHANCE_PCT = 20;
+
 	/**
-	 * END(5 怪物入侵): 从**其它区域**的普通怪里随机抽一只。
+	 * END(修订 5 怪物入侵): 从**下一个区域**的普通怪里随机抽一只。
 	 *
-	 * <p>做法：随机挑一个不属于当前区域、且在主线 1-25 范围内的层号，
-	 * 取那一层的普通怪轮换表，再随机抽一只。
+	 * <h3>文档所有者定稿</h3>
+	 * "怪物入侵要下一区域的怪，20% 概率。"
 	 *
-	 * @param currentDepth 当前层（用于判断"哪些区域是别的区域"）
+	 * <p>原实现是"任意其它区域"（可能从第 5 区抽到第 1 区的老鼠），
+	 * 现在改为**只取下一个区域** —— 玩家能感觉到"更深的东西正在往上爬"，
+	 * 难度递进也更合理。
+	 *
+	 * <p>第 5 区没有"下一个"，此时回退到"上一个区域"（4 区），
+	 * 免得末期完全没有入侵者。
+	 *
+	 * @param currentDepth 当前层
 	 * @return 怪物类；取不到时返回 null（调用方跳过）
 	 */
 	public static Class<? extends com.shatteredpixel.shatteredpixeldungeon.actors.mobs
@@ -2931,12 +3014,14 @@ public final class ChallengeEffects {
 
 		int curRegion = (currentDepth - 1) / 5;        //0..4
 
+		//END(修订): 只取下一个区域；第 5 区（curRegion=4）取上一个
+		int nextRegion = curRegion + 1;
+		if (nextRegion > 4) nextRegion = curRegion - 1;
+		if (nextRegion < 0 || nextRegion > 4) return null;
+
 		//最多试 10 次，避免某些层取不到表时死循环
 		for (int tries = 0; tries < 10; tries++) {
-			int r = Random.Int(5);
-			if (r == curRegion) continue;              //必须来自**别的**区域
-
-			int probeDepth = r * 5 + 1 + Random.Int(4); //该区域的某个普通层
+			int probeDepth = nextRegion * 5 + 1 + Random.Int(4); //该区域的某个普通层
 			try {
 				java.util.ArrayList<Class<? extends com.shatteredpixel.shatteredpixeldungeon
 						.actors.mobs.Mob>> pool =
@@ -2946,7 +3031,7 @@ public final class ChallengeEffects {
 					return pool.get(Random.Int(pool.size()));
 				}
 			} catch (Throwable ignored) {
-				//取不到就换一个区域再试
+				//取不到就换个层再试
 			}
 		}
 		return null;
@@ -3089,10 +3174,14 @@ public final class ChallengeEffects {
 	/**
 	 * 154 废弃地牢：踩到植物时被缠绕的概率与回合数。
 	 *
-	 * <p>END(修订): 概率由 20% 下调为 **3%**（文档所有者要求）。
-	 * 整层都是植被，踩到的机会极多，20% 会让玩家几乎寸步难行。
+	 * <h3>END(定稿): 缠绕效果已取消</h3>
+	 * 文档所有者定稿："废弃地牢不会缠绕玩家。"
+	 *
+	 * <p>所以概率恒为 0 —— 保留了方法与常量（而不是整段删掉），
+	 * 这样旧存档里已经挂着 Paralysis 的玩家不会出问题，
+	 * 将来若要恢复也只改这一个数字。
 	 */
-	private static final int ABANDONED_TANGLE_PCT = 3;
+	private static final int ABANDONED_TANGLE_PCT = 0;   //END(定稿): 3 -> 0（取消缠绕）
 	private static final float ABANDONED_TANGLE_TURNS = 3f;
 
 	public static int abandonedTangleChance() {
@@ -3240,7 +3329,16 @@ public final class ChallengeEffects {
 		else if (stacks == 2) mult = 0.50f;   //第二次
 		else                  mult = 1.10f;   //第三次及以后
 
-		return Math.max(1f, dmg * mult);
+		//==== END(修订·乘算而不是卡死) ====
+		//文档所有者反馈："等我启动是乘算不是加算"。
+		//
+		//原来的写法是 {@code Math.max(1f, dmg * mult)} ——
+		//那个 {@code Math.max(1f, ...)} 在倍率 < 1 时会把伤害**卡死在 1**：
+		//第一击无论面板多高都只打出 1 点，看起来就像"没生效"。
+		//
+		//现在改成纯乘算：倍率直接乘上去，下限交给伤害管线最后一步统一处理。
+		//这样"第一次 20%、第二次 50%、第三次 110%"才是字面意思。
+		return dmg * mult;
 	}
 
 	/**
@@ -3366,7 +3464,6 @@ public final class ChallengeEffects {
 	public static final int SPELL_COMBO     = 21;
 	/** 68 极端状态：生命 10%、攻击与命中翻倍。 */
 	public static final int EXTREME_STATE   = 68;
-	//（103 弹幕地狱的常量定义在文件上方，本批未重复添加）
 
 	//---- 68 极端状态 ----
 
@@ -3693,6 +3790,9 @@ public final class ChallengeEffects {
 	public static final int WHALE             = 160;
 	/** 161 钱就是命：致命伤用金币抵消。 */
 	public static final int MONEY_IS_LIFE     = 161;
+
+	/** 124 野生狗奶：开局给一瓶，使用后永久降低属性但不会死。 */
+	public static final int WILD_MILK         = 124;
 	/** 167 黄金地牢：只掉金币、可用钱买一切。 */
 	public static final int GOLDEN_DUNGEON    = 167;
 	/** 39 All or Nothing：赌徒之骰。 */
@@ -3703,10 +3803,34 @@ public final class ChallengeEffects {
 	//---- 161 钱就是命 ----
 
 	/**
+	 * END(161 钱就是命): 每抵挡 1 点伤害要花多少金币。
+	 *
+	 * <h3>文档所有者定稿</h3>
+	 * "每抵挡 1 点伤害，消耗金币 = 12 - 2 × 当前区域"
+	 *
+	 * <p><b>区域从 1 开始编号</b>（不是 0）：
+	 * <pre>
+	 *   1 区（1-5 层）   → 12 - 2×1 = 10 金币/点
+	 *   2 区（6-10 层）  → 12 - 2×2 =  8
+	 *   3 区（11-15 层） → 12 - 2×3 =  6
+	 *   4 区（16-20 层） → 12 - 2×4 =  4
+	 *   5 区（21-25 层） → 12 - 2×5 =  2
+	 * </pre>
+	 * 越往深处走，金币越值钱 —— 这样后期钱多时也不至于完全无敌。
+	 *
+	 * <p>下限取 1：挑战区（26F+）会算出 6 区、7 区…，
+	 * 那时公式会给出 0 或负数，取 1 兜底。
+	 */
+	public static int moneyIsLifeCostPerHp() {
+		int region = Math.max(1, (Dungeon.depth - 1) / 5 + 1);   //1 基编号
+		return Math.max(1, 12 - 2 * region);
+	}
+
+	/**
 	 * END(161 钱就是命): 致命伤是否可以用金币抵消。
 	 *
-	 * <p>按文档所有者说明："在受到致命伤时，用**等量金币**抵消"。
-	 * 即：需要多少金币取决于伤害超出多少 —— 1 金币抵 1 点伤害。
+	 * <p>文档所有者定稿："每抵挡 1 点伤害，消耗金币 = 12 - 2 × 当前区域"
+	 * —— 不是原来的 1 金币抵 1 点伤害。
 	 *
 	 * <p>调用点：{@code Char.damage()} 的致命伤拦截处（与 65/104/128/124 并列）。
 	 *
@@ -3721,9 +3845,14 @@ public final class ChallengeEffects {
 		}
 		if (dmg < ch.HP) return false;         //不是致命伤
 
-		//需要"刚好够活下来"的金币：伤害 - (当前生命 - 1)
-		int needed = dmg - (ch.HP - 1);
-		if (needed <= 0) return false;
+		//需要"刚好够活下来"的伤害量：伤害 - (当前生命 - 1)
+		int hpToBlock = dmg - (ch.HP - 1);
+		if (hpToBlock <= 0) return false;
+
+		//END(定稿): 每点伤害花 12 - 2×区域 金币
+		int perHp = moneyIsLifeCostPerHp();
+		int needed = hpToBlock * perHp;
+
 		if (Dungeon.gold < needed) return false;
 
 		Dungeon.gold -= needed;
@@ -4348,72 +4477,6 @@ public final class ChallengeEffects {
 			safeLogW("权柄碎裂 —— 又一只怪物从裂缝中爬了出来。");
 		} catch (Throwable t) {
 			//召唤失败不影响 Boss 战
-		}
-	}
-	//==================================================================
-	//103 弹幕地狱：3 发散射
-	//==================================================================
-
-	/**
-	 * END(103 弹幕地狱): 在主投射物落点周围补若干发散射。
-	 *
-	 * <p>原表："远程投射物数量变 3 发散射，有间隙可走位"
-	 *
-	 * <h3>"有间隙可走位"怎么体现</h3>
-	 * 额外 2 发落在落点的**相邻格**（8 方向里随机挑，且互不重复）。
-	 * 所以 3 发的覆盖是 1 + 2 个点，而不是一整片 ——
-	 * 站在格与格之间、或者落点侧面，都能躲开。
-	 *
-	 * <h3>为什么不复用原物品实例</h3>
-	 * 主投射物在 {@code onThrow} 里已经结算过（可能已被消耗、掉落或碎裂），
-	 * 复用会让数量与耐久错乱。所以这里**新建同类型实例**，
-	 * 并把它标记为 {@code spawnedForEffect}（不参与掉落/消耗）。
-	 *
-	 * @param origin 主投射物（用来取类型与等级）
-	 * @param user   投掷者
-	 * @param cell   主落点
-	 * @param count  要补的散射数量（通常是 2）
-	 */
-	public static void spawnScatterShots(
-			com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.MissileWeapon
-					origin,
-			Char user, int cell, int count) {
-		if (origin == null || user == null || Dungeon.level == null) return;
-		if (count <= 0) return;
-
-		int[] n = com.watabou.utils.PathFinder.NEIGHBOURS8;
-
-		//先把候选格收集起来并打乱，避免两发落在同一格
-		java.util.ArrayList<Integer> cand = new java.util.ArrayList<>();
-		for (int d : n) {
-			int c = cell + d;
-			if (c < 0 || c >= Dungeon.level.length()) continue;
-			if (Dungeon.level.solid[c]) continue;
-			cand.add(c);
-		}
-		if (cand.isEmpty()) return;
-		java.util.Collections.shuffle(cand, new java.util.Random(
-				com.watabou.utils.Random.Long()));
-
-		int made = 0;
-		int dmgMin = Math.max(1, origin.damageRoll(user) / 2);   //散射伤害减半
-		for (int c : cand) {
-			if (made >= count) break;
-			try {
-				Char victim = com.shatteredpixel.shatteredpixeldungeon.actors.Actor
-						.findChar(c);
-				if (victim == null || victim == user) continue;
-
-				//散射不掷命中骰 —— 否则 3 发的命中期望反而低于 1 发，
-				//那这条规则就变成纯惩罚了。直接按半额伤害结算。
-				victim.damage(dmgMin, origin);
-				if (victim.sprite != null) {
-					victim.sprite.flash();
-				}
-				made++;
-			} catch (Throwable t) {
-				//补射失败就少一发，不影响主投射物
-			}
 		}
 	}
 	//==================================================================
@@ -5269,5 +5332,39 @@ public final class ChallengeEffects {
 	public static float whyEvasionMult() {
 		if (!on(WHY_NO_ESCAPE)) return 1f;
 		return 1f - whyRatio();
+	}
+	//==================================================================
+	//209 无尽贪婪：解除人物等级上限
+	//==================================================================
+
+	public static final int INFINITE_GREED = 209;
+
+	/** 210 永无止境：开启无尽轮回。 */
+	public static final int ENDLESS = 210;
+
+	/**
+	 * END(210 永无止境): 无尽轮回是否启用。
+	 *
+	 * <p>文档所有者定稿："**开启靠永无止境挑战**"。
+	 *
+	 * <p>没勾选时，轮回系统（九种诅咒 + 区域倍率 + 26 层循环）
+	 * **完全不生效** —— 26 层照原版结局走。
+	 */
+	public static boolean endlessEnabled() {
+		return on(ENDLESS);
+	}
+
+	/**
+	 * END(209 无尽贪婪): 人物等级上限。
+	 *
+	 * <p>文档所有者定稿："唯有贪婪之人，才可登阶成神。解除等级上限。"
+	 *
+	 * <p>原版上限是 {@code Hero.MAX_LEVEL = 30}。勾选本条后返回一个
+	 * 足够大的值（{@code Integer.MAX_VALUE}），等于"没有上限"。
+	 *
+	 * <p>调用点：{@code Hero} 的升级循环 —— 那里原本写死比较 {@code MAX_LEVEL}。
+	 */
+	public static int heroLevelCap() {
+		return on(INFINITE_GREED) ? Integer.MAX_VALUE : 30;
 	}
 }

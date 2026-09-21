@@ -62,11 +62,11 @@ public class EvolveWandRecipe extends Recipe {
 		//END: 产物标记已鉴定并登记进图鉴(法杖组)，方便日志记录本次配方
 		evolved.identify();
 		Catalog.setSeen(evolved.getClass());
-		GLog.i("炼成进化法杖: " + evolved.title() + " 已记入图鉴/日志。");
+		GLog.i("炼成：" + evolved.title());
 
 		//消耗材料：源法杖与一颗强化符石清零（AlchemyScene 会按 quantity 移除）
 		for (Item it : ingredients){
-			it.quantity( it.quantity() - 1 );
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.ItemConsume.consumeOne(it);
 		}
 		return evolved;
 	}

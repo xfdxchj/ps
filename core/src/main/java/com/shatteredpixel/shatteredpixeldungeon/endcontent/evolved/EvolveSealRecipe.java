@@ -89,16 +89,36 @@ public class EvolveSealRecipe extends Recipe {
 
 		for (Item it : ingredients){
 			if (it instanceof MetalShard){
-				it.quantity(it.quantity() - 1);
+				//END(修复): 减到 0 时要真的移除 —— quantity(0) 只改数字
+				consumeOne(it);
 			} else if (it instanceof com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHaste
 					|| it instanceof com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfLevitation
 					|| it instanceof com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfRetribution){
-				it.quantity(it.quantity() - 1);
+				consumeOne(it);
 			} else if (it instanceof BrokenSeal){
-				it.quantity(0); //原版破印归零 → 炉内当空气移走，避免同包混两把
+				//END(修复): 原版破印必须**真正移除** ——
+				//原来是 quantity(0)，只把数量设成 0，物品对象还留在背包里。
+				it.detachAll(com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero
+						.belongings.backpack);
 			}
 		}
-		GLog.i("炼成破印·进阶: " + out.title() + " 已记入图鉴/日志。");
+		GLog.i("炼成：" + out.title());
 		return out;
+	}
+
+	/**
+	 * END(修复): 消耗一件材料。
+	 *
+	 * <p>{@code Item.quantity(0)} 只改数字、不移除物品，
+	 * 所以数量减到 0 时必须显式 detach，否则会留下"数量 0 但占着格子"的幽灵物品。
+	 */
+	private static void consumeOne(Item it) {
+		int left = it.quantity() - 1;
+		if (left <= 0) {
+			it.detachAll(com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero
+					.belongings.backpack);
+		} else {
+			it.quantity(left);
+		}
 	}
 }

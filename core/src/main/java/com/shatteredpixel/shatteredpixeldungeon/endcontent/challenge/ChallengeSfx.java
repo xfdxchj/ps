@@ -87,6 +87,76 @@ public final class ChallengeSfx {
 	/** 96 奥利给给的狂暴持续回合数。 */
 	private static final float OLIGEI_RAGE_TURNS = 1f;
 
+	//==================================================================
+	//END(新增·音效冷却): 避免小概率连续触发
+	//==================================================================
+	//
+	//文档所有者要求："音效要有内置 CD，20 回合之后再继续概率触发。"
+	//以及"就是多选音效，不同音效也是 20 回合 cd"。
+	//
+	//**关键：这是全局共享的 CD** —— 不是"每条规则各自 20 回合"。
+	//只要**任意一条**音效规则响过，接下来 20 回合内
+	//**所有**音效规则都不再触发。
+	//
+	//为什么这样更对：同时勾选 70/72/95/96/118/137 时，
+	//若各自独立冷却，一回合可能连响好几条（噪音轰炸）；
+	//共享冷却则保证"任意时刻最多一个音效在响"。
+	//
+	//计时用 Actor.now()（全局游戏时钟）—— 只有真正流逝的回合才会推进它。
+	//不能用调用次数：Hero.act() 一回合会跑很多次（见挑战 151 的教训）。
+
+	/** 触发后的冷却回合数。 */
+	public static final int SFX_COOLDOWN = 20;
+
+	/** 全局上次触发时间（所有音效共用这一份）。 */
+	private static float lastAnyTriggerAt = Float.NEGATIVE_INFINITY;
+
+	/** END: 现在是否已过冷却（任意音效都不在冷却中）。 */
+	public static boolean ready() {
+		float now = com.shatteredpixel.shatteredpixeldungeon.actors.Actor.now();
+		return (now - lastAnyTriggerAt) >= SFX_COOLDOWN;
+	}
+
+	/** END: 兼容旧签名 —— 冷却全局共享，与 ruleId 无关。 */
+	public static boolean ready(int ruleId) {
+		return ready();
+	}
+
+	/** END: 记录一次触发（开始全局冷却）。 */
+	public static void markTriggered() {
+		lastAnyTriggerAt = com.shatteredpixel.shatteredpixeldungeon.actors.Actor.now();
+	}
+
+	/** END: 兼容旧签名。 */
+	public static void markTriggered(int ruleId) {
+		markTriggered();
+	}
+
+	/** END: 换局时清空冷却。 */
+	public static void resetCooldowns() {
+		lastAnyTriggerAt = Float.NEGATIVE_INFINITY;
+	}
+
+	/**
+	 * END: 「掷概率 + 查冷却」的合体写法。
+	 *
+	 * <p>顺序很重要：**先查冷却，再掷骰** ——
+	 * 冷却中就直接跳过（连骰都不掷），既省事也符合直觉。
+	 *
+	 * <p>冷却全局共享，所以同一个回合里最多只有一条音效会响：
+	 * 第一条命中并 markTriggered() 之后，同回合后续几条的 ready() 都是 false。
+	 *
+	 * @param ruleId 规则 ID（仅用于调试，不影响冷却）
+	 * @param pct    触发概率（%）
+	 * @return true 表示本次触发（并已自动记入冷却）
+	 */
+	public static boolean roll(int ruleId, int pct) {
+		if (!ready()) return false;
+		if (Random.Int(100) >= pct) return false;
+		markTriggered();
+		return true;
+	}
+
 	//==== 已加载记录 ====
 
 	private static final HashSet<String> loaded = new HashSet<>();
@@ -233,14 +303,14 @@ public final class ChallengeSfx {
 		//END(修订): 按文档所有者要求，去掉"麻痹/停止回合"。
 		//原来用 Paralysis 实现"停止行动"，但那条规则的本意只是**搞笑音效 + 台词**，
 		//不该真的让玩家损失一个回合。
-		if (on(LIFE_MINISTER) && Random.Int(100) < CHANCE_MINISTER) {
+		if (on(LIFE_MINISTER) && roll(LIFE_MINISTER, CHANCE_MINISTER)) {
 			play(Assets.Sounds.CH_Minister, "70 生活部长");
 			say(hero, "minister_line");
 			//不 return true —— 继续往下判断其它规则，本回合照常行动
 		}
 
 		//---- 72 前程似锦：3% 停止行动 + 台词 ----
-		if (on(BRIGHT_FUTURE) && Random.Int(100) < CHANCE_FUTURE) {
+		if (on(BRIGHT_FUTURE) && roll(BRIGHT_FUTURE, CHANCE_FUTURE)) {
 			play(Assets.Sounds.CH_Future, "72 前程似锦");
 			say(hero, "future_line");
 			stopHero(hero, STOP_TURNS);
@@ -248,7 +318,7 @@ public final class ChallengeSfx {
 		}
 
 		//---- 96 奥利给：3% 停止行动 + 喊话 + 1 回合狂暴 ----
-		if (on(OLIGEI) && Random.Int(100) < CHANCE_OLIGEI) {
+		if (on(OLIGEI) && roll(OLIGEI, CHANCE_OLIGEI)) {
 			play(Assets.Sounds.CH_Oligei, "96 奥利给");
 			say(hero, "oligei_line");
 			//用 EndRageAttack（FlavourBuff，命中伤害 ×2）而不是 Fury：
@@ -266,20 +336,20 @@ public final class ChallengeSfx {
 		//---- 95 耗子尾汁：3% 播音效 + 显示"耗子尾汁"（**不**停止行动）----
 		//END(修订): 原表写的是"闪避成功时3%概率反击"，按文档所有者要求
 		//改为**每回合无条件判定**，与 70/72/96/137 一致的回合制触发。
-		if (on(RAT_TAIL_SOUP) && Random.Int(100) < CHANCE_RAT_TAIL) {
+		if (on(RAT_TAIL_SOUP) && roll(RAT_TAIL_SOUP, CHANCE_RAT_TAIL)) {
 			play(Assets.Sounds.CH_HAOZIHAO[Random.Int(Assets.Sounds.CH_HAOZIHAO.length)], "95 耗子尾汁");
 			say(hero, "haozihao_line");
 		}
 
 		//---- 137 奶龙大笑：3% 播音效 + 台词（**不**停止行动）----
-		if (on(MILK_DRAGON) && Random.Int(100) < CHANCE_MILK_DRAGON) {
+		if (on(MILK_DRAGON) && roll(MILK_DRAGON, CHANCE_MILK_DRAGON)) {
 			play(Assets.Sounds.CH_Nailong, "137 奶龙大笑");
 			say(hero, "nailong_line");
 			//不停止行动，继续往下判断 118
 		}
 
 		//---- 118 天意侵蚀：13% 随机播一段音效（**不**停止行动）----
-		if (on(PROVIDENCE) && Random.Int(100) < CHANCE_PROVIDENCE) {
+		if (on(PROVIDENCE) && roll(PROVIDENCE, CHANCE_PROVIDENCE)) {
 			play(Assets.Sounds.CH_PROVIDENCE[Random.Int(Assets.Sounds.CH_PROVIDENCE.length)], "118 天意侵蚀");
 		}
 
@@ -360,9 +430,20 @@ public final class ChallengeSfx {
 		if (name.equals("music/boss5.ogg"))   return Assets.Music.GRIMM_AREA5;
 
 		//---- 各区域常规层（按路径前缀，覆盖 _1/_2/_3/_tense）----
-		if (name.startsWith("music/sewers")) return Assets.Music.GRIMM_AREA1;
-		if (name.startsWith("music/prison")) return Assets.Music.GRIMM_AREA2;
-		if (name.startsWith("music/caves"))  return Assets.Music.GRIMM_AREA3;
+		//==== END(修订·前三区用原版 BGM) ====
+		//文档所有者定稿："格林之音前三区常规层音乐改成原版的。"
+		//
+		//也就是：1 区（下水道）、2 区（监狱）、3 区（洞穴）的**常规层**
+		//保持原版 BGM，格林主题从 4 区才开始。
+		//
+		//原因：前三区是"还在正常地牢里"的部分，过早换成黑魂主题会
+		//冲淡节奏；从 4 区（矮人都市）开始才是真正的"步入黑暗"。
+		//
+		//注意：**Boss 层不受此限** —— 上面的 Boss 映射照常生效，
+		//所以 1/2/3 区的 Boss 战仍然是格林主题。
+		//if (name.startsWith("music/sewers")) return Assets.Music.GRIMM_AREA1;   //1区：保留原版
+		//if (name.startsWith("music/prison")) return Assets.Music.GRIMM_AREA2;   //2区：保留原版
+		//if (name.startsWith("music/caves"))  return Assets.Music.GRIMM_AREA3;   //3区：保留原版
 		if (name.startsWith("music/city"))   return Assets.Music.GRIMM_AREA4;
 		if (name.startsWith("music/halls"))  return Assets.Music.GRIMM_AREA5;
 

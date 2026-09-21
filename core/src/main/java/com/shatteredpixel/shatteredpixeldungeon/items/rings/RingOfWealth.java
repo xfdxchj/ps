@@ -171,10 +171,58 @@ public class RingOfWealth extends Ring {
 				drops.add(i);
 				dropsToEquip.countDown(1);
 			}
-			triesToDrop.countUp( Random.NormalIntRange(0, 20) );
+			//==== END(新增·幸运度溢出转额外掉落) ====
+			//文档所有者问："财富戒指的幸运度到达 1000 多以后会提升什么？"
+			//
+			//原实现下答案是"什么都不提升" ——
+			//幸运度提升的是 `dropChanceMultiplier`（怪物掉率），
+			//而那个值超过约 1000% 之后掉率已接近必掉，再加就是浪费。
+			//（财富戒 +13 级的幸运度就是 1.20^13 - 1 ≈ 1000%。）
+			//
+			//现在把**溢出的部分**转成"这一次多掉一件"：
+			//  幸运度 ≤ 1000%  → 不额外掉（原版行为）
+			//  每超 500%       → 多掉 1 件
+			//
+			//为什么用"每 500% 一件"而不是线性：
+			//幸运度是按 1.20^等级 指数增长的，+13→1000%、+18→2500%、+23→6200%，
+			//若按 100% 一件，后期一次击杀会掉几十件 —— 背包瞬间爆满。
+			//500% 一档意味着 +13 时 0 件、+18 时 3 件、+23 时 10 件，节奏合理。
+			//
+			//实现方式：额外多补几次 triesToDrop —— 补满之后立刻又能触发下一件。
+			int extra = luckyOverflowDrops(target);
+			for (int e = 0; e < extra; e++) {
+				triesToDrop.countUp( Random.NormalIntRange(0, 20) );
+			}
 		}
 		
 		return drops;
+	}
+
+	/** END(新增): 幸运度超过 1000% 后，每 500% 折算一次额外掉落。 */
+	public static final float LUCKY_BASE_PCT = 1000f;
+	public static final float LUCKY_PER_EXTRA = 500f;
+
+	/**
+	 * END(新增·幸运度溢出): 本次应额外掉几件。
+	 *
+	 * <p>幸运度 = {@code 1.20^财富等级 - 1}（百分比）。
+	 * 超过 {@link #LUCKY_BASE_PCT} 的部分，每 {@link #LUCKY_PER_EXTRA} 换一件。
+	 *
+	 * @param target 戴着财富戒的角色
+	 * @return 额外件数；幸运度不足 1000% 时返回 0
+	 */
+	public static int luckyOverflowDrops(Char target) {
+		if (target == null) return 0;
+
+		float mult = dropChanceMultiplier(target);      // = 1.20^等级
+		float pct = 100f * (mult - 1f);                 // 幸运度（百分比）
+
+		if (pct <= LUCKY_BASE_PCT) return 0;
+
+		int extra = (int) ((pct - LUCKY_BASE_PCT) / LUCKY_PER_EXTRA);
+
+		//上限 10 件 —— 再多会让一次击杀刷出几十件，背包与性能都受不了
+		return Math.min(10, extra);
 	}
 
 	//used for visuals

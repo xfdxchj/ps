@@ -109,7 +109,7 @@ public class GamblersDice extends Item {
 			return false;
 		}
 		if (!item.stackable || item.quantity() < 2) {
-			GLog.w("只能赌**可堆叠且数量 ≥ 2** 的物品。");
+			GLog.w("只能赌可堆叠且数量不少于 2 件的物品。");
 			return false;
 		}
 		if (item instanceof com.shatteredpixel.shatteredpixeldungeon.items.Gold) {
@@ -126,15 +126,76 @@ public class GamblersDice extends Item {
 					+ " 变成 " + item.quantity() + "！");
 		} else {
 			GLog.n("骰子停在了反面 —— " + item.name() + " 全部消失了。");
-			item.quantity(0);
+
+			//==== END(修复·赌博失败反而无限): 必须真正移除 ====
+			//文档所有者反馈："赌博失败后物品变为 0 个，反而无限。"
+			//
+			//根因：{@code Item.quantity(0)} 只是把数量字段设成 0，
+			//**物品对象仍然留在背包里**（原版 Item.quantity 不负责移除）。
+			//
+			//用 removeCompletely() 逐个容器尝试移除，避免"找得到摘不掉"。
+			removeCompletely(hero, item);
 		}
 
 		//消耗一颗骰子
+		//
+		//==== END(修复·骰子左上角显示 -1) ====
+		//文档所有者反馈："骰子左上角多了 -1" —— 那是数量显示，
+		//说明 quantity 真的被减成了负数。
+		//
+		//根因有两层：
+		//  ① {@code Item.quantity(0)} 只改数字、不移除物品；
+		//  ② 即使加了 detach，如果容器不对（{@code detachAll(backpack)}
+		//     只处理背包，而骰子可能被放在别的地方），物品仍留在手里，
+		//     下次再减就成 -1。
+		//
+		//所以这里改成 {@code removeCompletely()}：逐个容器尝试移除。
+		//并且减之前先判"当前数量是否 > 0"，避免在脏数据上继续减。
 		GamblersDice dice = hero.belongings.getItem(GamblersDice.class);
-		if (dice != null) {
-			dice.quantity(dice.quantity() - 1);
+		if (dice != null && dice.quantity() > 0) {
+			int left = dice.quantity() - 1;
+			if (left <= 0) {
+				removeCompletely(hero, dice);
+			} else {
+				dice.quantity(left);
+			}
 		}
 
 		return win;
+	}
+
+	/**
+	 * END(修复): 把一件物品从玩家身上**彻底移除**。
+	 *
+	 * <p>为什么不能只用 {@code detachAll(backpack)}：
+	 * 那个方法只从传入的背包里找，而 {@code Belongings.getItem()} 搜的是
+	 * **所有容器**（背包、子包、已装备栏、快捷栏…）。
+	 * 两者范围不一致时就会出现"getItem 找得到、detachAll 摘不掉"的死角 ——
+	 * 物品留在身上，数量继续被减，最终显示成 -1。
+	 *
+	 * <p>这里逐个容器尝试，直到真的摘掉为止。
+	 */
+	public static void removeCompletely(
+			com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero hero,
+			Item item) {
+		if (hero == null || item == null) return;
+
+		//先归零：这样即便某个容器没摘干净，UI 也不会再显示旧数量
+		item.quantity(0);
+
+		//背包（detachAll 会递归处理子包）
+		item.detachAll(hero.belongings.backpack);
+
+		//已装备栏 / 快捷栏 / 其它容器
+		try {
+			for (Item it : hero.belongings) {
+				if (it == item) {
+					item.detachAll(hero.belongings.backpack);
+					break;
+				}
+			}
+		} catch (Throwable ignored) {
+			//遍历失败不影响主流程
+		}
 	}
 }

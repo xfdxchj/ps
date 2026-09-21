@@ -387,7 +387,12 @@ public class ItemSpriteSheet {
 		assignItemRect(ARMOR_CLOTH,     15, 12);
 		assignItemRect(ARMOR_LEATHER,   14, 13);
 		assignItemRect(ARMOR_MAIL,      14, 12);
-		assignItemRect(ARMOR_SCALE,     14, 11);
+		//END(修复·鳞甲图标看起来"歪"): 高度 11 -> 12
+		//它比同排的其它护甲矮 1 像素（布甲/锁甲/板甲/盗贼甲都是 12），
+		//而 ItemSlot 是按裁切框尺寸居中的 —— 矮 1 像素就会被抬高 0.5 像素，
+		//在物品栏里与旁边的护甲对不齐。
+		//补成 12 之后与同类一致（多出来的那一行是透明像素，不影响画面）。
+		assignItemRect(ARMOR_SCALE,     14, 12);
 		assignItemRect(ARMOR_PLATE,     12, 12);
 		assignItemRect(ARMOR_WARRIOR,   12, 12);
 		assignItemRect(ARMOR_MAGE,      15, 15);
@@ -1269,4 +1274,140 @@ public class ItemSpriteSheet {
 	 */
 	public static final int GRIMM_BELOVED_GIRL = xy(9, 41);
 	static { assignItemRect(GRIMM_BELOVED_GIRL, 16, 16); }
+
+	//==================================================================
+	//END(新增内容·贴图): 第三批
+	//==================================================================
+	//
+	//图集位置（items.png，16×16 网格，左上角为 xy(1,1)）：
+	//   列1 行42-50  寰宇支配之剑      9 帧动画
+	//   列2 行42-50  虚空不灭之甲      9 帧动画
+	//   列3 行42-50  天堂陨落长弓      9 帧动画
+	//   列4 行42-  （保留）
+	//   列5 行42-50  无尽核心          9 帧动画
+	//   列6 行42-50  无尽淀            9 帧动画
+	//   列7 行42     幸运药水          单帧
+	//   列7 行43-47  轮回噬灭之戒      5 帧动画
+	//   列8 行42     千机万象          单帧
+	//   列9 行42     爆裂魔法          单帧
+	//   列10 行42    银色宽剑          单帧
+	//
+	//为什么"动画"要单列一张帧表：
+	//  图集是 16 列宽，同一列的**相邻行**在 xy() 编号上相差 16
+	//  （xy(x,y) = (x-1) + 16*(y-1)）。
+	//  所以 9 帧是一组**步长 16** 的索引，而不是连续 9 个号码。
+	//  下面给每个动画物品记一组帧索引，供 AnimatedItemSprite 逐帧播放。
+
+	/** END: 寰宇支配之剑（动画首帧 + 帧序列）。 */
+	public static final int GRIMM_INFINITY_SWORD = xy(1, 42);
+	static { assignItemRect(GRIMM_INFINITY_SWORD, 16, 16); }
+	public static final int[] GRIMM_INFINITY_SWORD_FRAMES = frameColumn(1, 42, 9);
+
+	/** END: 虚空不灭之甲。 */
+	public static final int GRIMM_INFINITY_ARMOR = xy(2, 42);
+	static { assignItemRect(GRIMM_INFINITY_ARMOR, 16, 16); }
+	public static final int[] GRIMM_INFINITY_ARMOR_FRAMES = frameColumn(2, 42, 9);
+
+	/** END: 天堂陨落长弓。 */
+	public static final int GRIMM_INFINITY_BOW = xy(3, 42);
+	static { assignItemRect(GRIMM_INFINITY_BOW, 16, 16); }
+	public static final int[] GRIMM_INFINITY_BOW_FRAMES = frameColumn(3, 42, 9);
+
+	/** END: 无尽核心（炼金材料）。 */
+	public static final int GRIMM_INFINITY_CATALYST = xy(5, 42);
+	static { assignItemRect(GRIMM_INFINITY_CATALYST, 16, 16); }
+	public static final int[] GRIMM_INFINITY_CATALYST_FRAMES = frameColumn(5, 42, 9);
+
+	/** END: 无尽淀（炼金材料）。 */
+	public static final int GRIMM_INFINITY_INGOT = xy(6, 42);
+	static { assignItemRect(GRIMM_INFINITY_INGOT, 16, 16); }
+	public static final int[] GRIMM_INFINITY_INGOT_FRAMES = frameColumn(6, 42, 9);
+
+	/** END: 轮回噬灭之戒（5 帧）。 */
+	public static final int GRIMM_INFINITY_RING = xy(7, 43);
+	static { assignItemRect(GRIMM_INFINITY_RING, 16, 16); }
+	public static final int[] GRIMM_INFINITY_RING_FRAMES = frameColumn(7, 43, 5);
+
+	/** END: 幸运药水（单帧）。 */
+	public static final int GRIMM_LUCK_POTION = xy(7, 42);
+	static { assignItemRect(GRIMM_LUCK_POTION, 16, 16); }
+
+	/** END: 千机万象（单帧）。 */
+	public static final int GRIMM_MYRIAD = xy(8, 42);
+	static { assignItemRect(GRIMM_MYRIAD, 16, 16); }
+
+	/** END: 爆裂魔法·法杖（单帧）。 */
+	public static final int GRIMM_METEOR_STAFF = xy(9, 42);
+	static { assignItemRect(GRIMM_METEOR_STAFF, 16, 16); }
+
+	//==== END(顶级装备体系·四种核心): 用颜色区分 ====
+	//来源：singularity.png（奇点）第 0 帧，按四种颜色分别染色后贴上。
+	//红=剑 / 紫=甲 / 金=戒 / 青=弓 —— 与成品装备一一对应。
+	//每种核心都是 **6 帧动画**（来源：singularity.png 的 6 帧，
+	//只把白色高光染成对应颜色，灰与黑保留原样）。
+	public static final int GRIMM_CORE_SWORD = xy(8, 44);
+	static { assignItemRect(GRIMM_CORE_SWORD, 16, 16); }
+	/** END: 核心·剑（红）的 6 帧。 */
+	public static final int[] GRIMM_CORE_SWORD_FRAMES = frameColumn(8, 44, 6);
+
+	public static final int GRIMM_CORE_ARMOR = xy(9, 44);
+	static { assignItemRect(GRIMM_CORE_ARMOR, 16, 16); }
+	/** END: 核心·甲（紫）的 6 帧。 */
+	public static final int[] GRIMM_CORE_ARMOR_FRAMES = frameColumn(9, 44, 6);
+
+	public static final int GRIMM_CORE_RING  = xy(10, 44);
+	static { assignItemRect(GRIMM_CORE_RING, 16, 16); }
+	/** END: 核心·戒（金）的 6 帧。 */
+	public static final int[] GRIMM_CORE_RING_FRAMES  = frameColumn(10, 44, 6);
+
+	public static final int GRIMM_CORE_BOW   = xy(11, 44);
+	static { assignItemRect(GRIMM_CORE_BOW, 16, 16); }
+	/** END: 核心·弓（青）的 6 帧。 */
+	public static final int[] GRIMM_CORE_BOW_FRAMES   = frameColumn(11, 44, 6);
+
+	/** END: 银色宽剑（单帧）。 */
+	public static final int GRIMM_SILVER_BROADSWORD = xy(10, 42);
+	static { assignItemRect(GRIMM_SILVER_BROADSWORD, 16, 16); }
+
+	/**
+	 * END: 取"某一列上连续若干行"的帧索引。
+	 *
+	 * <p>图集是 16 列宽，所以同一列的相邻行在编号上相差 {@code WIDTH}（=16）。
+	 * 这个方法把 {@code (列, 起始行)} 展开成一组索引，供动画逐帧播放。
+	 *
+	 * @param col    列（1 基，与 xy() 一致）
+	 * @param row    起始行（1 基）
+	 * @param count  帧数
+	 * @return 帧索引数组
+	 */
+	private static int[] frameColumn(int col, int row, int count) {
+		int[] out = new int[count];
+		for (int i = 0; i < count; i++) {
+			out[i] = xy(col, row + i);
+		}
+		return out;
+	}
+
+	/**
+	 * END: 某个图标是否是多帧动画。
+	 *
+	 * @param image 物品的 image 索引
+	 * @return 帧序列；不是动画物品时返回 null
+	 */
+	public static int[] animationFrames(int image) {
+		if (image == GRIMM_INFINITY_SWORD)   return GRIMM_INFINITY_SWORD_FRAMES;
+		if (image == GRIMM_INFINITY_ARMOR)   return GRIMM_INFINITY_ARMOR_FRAMES;
+		if (image == GRIMM_INFINITY_BOW)     return GRIMM_INFINITY_BOW_FRAMES;
+		if (image == GRIMM_INFINITY_CATALYST)return GRIMM_INFINITY_CATALYST_FRAMES;
+		if (image == GRIMM_INFINITY_INGOT)   return GRIMM_INFINITY_INGOT_FRAMES;
+		if (image == GRIMM_INFINITY_RING)    return GRIMM_INFINITY_RING_FRAMES;
+
+		//END(顶级装备体系): 四种核心也是动画
+		if (image == GRIMM_CORE_SWORD) return GRIMM_CORE_SWORD_FRAMES;
+		if (image == GRIMM_CORE_ARMOR) return GRIMM_CORE_ARMOR_FRAMES;
+		if (image == GRIMM_CORE_RING)  return GRIMM_CORE_RING_FRAMES;
+		if (image == GRIMM_CORE_BOW)   return GRIMM_CORE_BOW_FRAMES;
+
+		return null;
+	}
 }

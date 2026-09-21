@@ -115,13 +115,13 @@ public class EvolveSpiritBowRecipe extends Recipe {
 
 		for (Item it : ingredients){
 			if (it instanceof SpiritBowCore){
-				it.quantity( it.quantity() - 1 );
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.ItemConsume.consumeOne(it);
 			} else if (it instanceof ScrollOfUpgrade
 					|| it instanceof ShockingBrew
 					|| it instanceof SummonElemental){
-				it.quantity( it.quantity() - 1 );
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.ItemConsume.consumeOne(it);
 			} else if (it instanceof SpiritBow){
-				it.quantity( 0 ); //源弓归零 → 炼金炉自动当空气并移除，避免同背包混出两把成品
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.ItemConsume.remove(it);   //END(修复): 真正移除源弓
 			}
 		}
 		return out;

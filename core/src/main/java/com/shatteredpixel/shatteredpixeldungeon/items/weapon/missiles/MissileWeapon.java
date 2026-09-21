@@ -288,26 +288,48 @@ abstract public class MissileWeapon extends Weapon {
 				
 				rangedHit( enemy, cell );
 
+				//==== END(顶级装备·连射): 追加后续几发 ====
+				//文档所有者定稿（天堂陨落长弓）："改为 3 连射"。
+				//
+				//做成**通用机制**而不是写死在那把弓里：
+				//任何 MissileWeapon 覆写 burstCount() 返回 >1 就能连射。
+				//这样以后要加别的连射武器不用再动这里。
+				//
+				//第一发是上面 already 结算的主箭，所以这里补 (burst - 1) 发。
+				int burst = burstCount();
+				for (int i = 1; i < burst; i++) {
+					try {
+						//连射不掷命中（否则 3 发的期望反而低于 1 发），
+						//按主箭的 2/3 伤害直接结算。
+						int extra = Math.max(1, Math.round(
+								damageRoll(curUser) * 2f / 3f));
+						enemy.damage(extra, curUser);
+						if (enemy.sprite != null) {
+							enemy.sprite.flash();
+						}
+						//目标死了就不用继续追打
+						if (!enemy.isAlive()) break;
+					} catch (Throwable t) {
+						break;
+					}
+				}
+
 			}
 		}
 
-		//==== END(挑战 103 弹幕地狱): 远程投射物变 3 发散射 ====
-		//原表："远程投射物数量变 3 发散射，有间隙可走位"
-		//
-		//做法：主投射物照常结算（上面那段），这里再补 2 发到**相邻格** ——
-		//"有间隙可走位"就是这个意思：3 发的覆盖不是无缝的，
-		//站在格与格之间能躲开。
-		//
-		//为什么要新建实例而不是复用 this：
-		//this 已经结算过（可能已被消耗/掉落），复用会导致数量错乱。
-		//
-		//未勾选 103 时 scatterCount 返回 1，本段完全不执行。
-		int scatter = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
-				.ChallengeEffects.projectileCount();
-		if (scatter > 1 && curUser != null) {
-			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
-					.ChallengeEffects.spawnScatterShots(this, curUser, cell, scatter - 1);
-		}
+		//（103 弹幕地狱已删除，此处不再做散射。）
+	}
+
+	/**
+	 * END(顶级装备·连射): 本武器一次攻击打几发。
+	 *
+	 * <p>默认 1（原版行为）。覆写它就能做连射武器 ——
+	 * 见 {@code HeavenFallBow}（天堂陨落长弓 = 3 连射）。
+	 *
+	 * @return 连射次数，至少 1
+	 */
+	public int burstCount(){
+		return 1;
 	}
 
 	@Override

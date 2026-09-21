@@ -16,6 +16,10 @@ public class DaggerTrident extends MissileWeapon {
 		hitSound = Assets.Sounds.HIT_CRUSH;
 		hitSoundPitch = 1f;
 		stackable = false;
+		//END(修复·产出 3 个): MissileWeapon 的构造块会把 quantity 设成
+		//defaultQuantity()（原版投掷武器 = 3）。DaggerTrident 只改了 stackable，
+		//没改 quantity，于是炼金一次产出 3 个。这里显式设成 1。
+		quantity = 1;
 		bones = false;
 		tier = 3;
 		baseUses = 5;

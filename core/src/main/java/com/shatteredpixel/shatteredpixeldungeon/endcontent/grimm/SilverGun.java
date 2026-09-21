@@ -69,6 +69,12 @@ public class SilverGun extends Weapon {
 		bones = false;
 		defaultAction = AC_SHOOT;
 		usesTargeting = true;
+
+		//==== END(修复·数量 3) ====
+		//MissileWeapon 的构造块会把 quantity 设成 defaultQuantity()（=3）。
+		//短铳是 unique（唯一）物品，应该只有 1 把 —— 否则开局会拿到三把。
+		stackable = false;
+		quantity = 1;
 	}
 
 	@Override

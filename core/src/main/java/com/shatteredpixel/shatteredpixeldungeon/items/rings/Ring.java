@@ -382,7 +382,60 @@ public class Ring extends KindofMisc {
 				&& target.buff(SpiritForm.SpiritFormBuff.class).ring().buffClass == type){
 			bonus += target.buff(SpiritForm.SpiritFormBuff.class).ring().soloBuffedBonus();
 		}
+
+		//==== END(顶级装备·轮回噬灭之戒): 提供所有戒指的效果 ====
+		//文档所有者定稿："拥有所有戒指的效果，同时效果提升 100%，
+		//升级效果提升 50%"。
+		//
+		//**为什么改在这一处**：这是所有戒指效果的**公共入口** ——
+		//12 种戒指的 15 个查询方法（accuracyMultiplier / evasionMultiplier /
+		//strengthBonus / attackSpeedMultiplier…）最终都调这里。
+		//改这一处就等于"同时戴上所有戒指"，不必去动那 12 个文件。
+		int reincarnation = reincarnationBonus(target);
+		if (reincarnation > 0) {
+			bonus += reincarnation;
+		}
+
 		return bonus;
+	}
+
+	/**
+	 * END(轮回噬灭之戒): 这枚戒指为**任意一种**戒指效果提供多少等级。
+	 *
+	 * <p>公式：
+	 * <pre>
+	 *   基础份 = (等级 + 1) × 2      //"效果提升 100%"：按 2 倍计入
+	 *   升级份 = 等级 × 0.5          //"升级效果提升 50%"
+	 *   合计   = round(基础份 + 升级份)
+	 * </pre>
+	 *
+	 * <p>举例：
+	 * <pre>
+	 *   +0  → (0+1)×2  + 0    =  2
+	 *   +3  → (3+1)×2  + 1.5  = 10    （原版 +3 戒指只给 4 级效果）
+	 *   +10 → (10+1)×2 + 5    = 27
+	 * </pre>
+	 *
+	 * @return 提供的等级；没戴轮回戒时返回 0
+	 */
+	private static int reincarnationBonus(Char target) {
+		if (target == null) return 0;
+		if (target.buff(MagicImmune.class) != null) return 0;
+		if (!(target instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero)) {
+			return 0;                       //只有玩家能戴
+		}
+
+		com.shatteredpixel.shatteredpixeldungeon.items.Item it =
+				((com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) target)
+						.belongings.getItem(
+								com.shatteredpixel.shatteredpixeldungeon.endcontent.items
+										.ReincarnationRing.class);
+		if (it == null) return 0;
+
+		int lvl = Math.max(0, it.buffedLvl());
+		float base = (lvl + 1) * 2f;        //效果 +100%
+		float upgrade = lvl * 0.5f;         //升级效果 +50%
+		return Math.max(1, Math.round(base + upgrade));
 	}
 
 	//just used for ring descriptions

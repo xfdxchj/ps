@@ -328,6 +328,9 @@ public class Dungeon {
 		Statistics.reset();
 		Notes.reset();
 
+		//END(无尽轮回): 新的一局从"尚未轮回"开始
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.Reincarnation.reset();
+
 		quickslot.reset();
 		QuickSlotButton.reset();
 		Toolbar.swappedQuickslots = false;
@@ -768,7 +771,24 @@ public class Dungeon {
 					int[] plan = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeArea
 							.areaAtDepth(depth);
 					if (plan == null) {
-						level = new LastLevel();      //没选任何挑战区 → 正常主线结局
+						//==== END(无尽轮回): 没选挑战区 → 进入新一轮，而不是结局 ====
+						//文档所有者定稿："没有原版的 26 层，26 层直接变成原版一层的，
+						//计入一次轮回，施加一个全局 buff，每次一个，可以叠加。"
+						//
+						//所以 26 层不再是"结局层"，而是**新一轮的第 1 层**：
+						//  · 地图用原版第 1 层（下水道）
+						//  · 楼层号**仍然显示 26**（玩家看到的是"第 26 层"）
+						//  · 每进一个新循环，轮回 +1 层
+						//
+						//**前提**：勾选了挑战 210「永无止境」。
+						//文档所有者定稿："开启靠永无止境挑战" ——
+						//没勾选时整个轮回系统等于不存在，26 层走原版结局。
+						if (com.shatteredpixel.shatteredpixeldungeon.endcontent
+								.Reincarnation.enabled()){
+							level = createReincarnatedLevel(depth);
+						} else {
+							level = new LastLevel();      //没开 210 → 原版结局
+						}
 					} else {
 						level = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeArea
 								.createAreaLevel(plan[0], plan[1], depth);
@@ -783,7 +803,22 @@ public class Dungeon {
 						level = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeArea
 								.createAreaLevel(plan2[0], plan2[1], depth);
 					} else {
-						level = new DeadEndLevel();
+						//==== END(无尽轮回): 26+ 之后继续循环，直到九轮走完 ====
+						//文档所有者定稿："9 次后到达原版 26 层，结束。"
+						//
+						//分三种：
+						//  · 没勾选 210「永无止境」 → 原版死路（轮回系统不存在）
+						//  · 还在九轮之内           → 生成循环层（怪物吃对应诅咒）
+						//  · 九轮走完               → 交给原版结局（LastLevel）
+						if (!com.shatteredpixel.shatteredpixeldungeon.endcontent
+								.Reincarnation.enabled()){
+							level = new DeadEndLevel();        //没开 210 → 原版死路
+						} else if (com.shatteredpixel.shatteredpixeldungeon.endcontent
+								.Reincarnation.shouldEnd(depth)){
+							level = new LastLevel();           //九轮走完 → 正常结局
+						} else {
+							level = createReincarnatedLevel(depth);
+						}
 					}
 			}
 		} else if (branch == 1) {
@@ -886,7 +921,102 @@ public class Dungeon {
 		
 		return level;
 	}
-	
+
+	//==================================================================
+	//END(无尽轮回): 26 层起的循环层
+	//==================================================================
+
+	/**
+	 * END(无尽轮回): 生成"循环层"。
+	 *
+	 * <h3>文档所有者定稿</h3>
+	 * "没有原版的 26 层，26 层直接变成原版一层的，计入一次轮回，
+	 *  施加一个全局 buff，每次一个，可以叠加"、"最大 9 次轮回"。
+	 *
+	 * <h3>做法</h3>
+	 * <ol>
+	 *   <li>把实际楼层映射回原版的 1..25（见 {@code Reincarnation.mappedDepth}）</li>
+	 *   <li>用映射后的楼层**生成关卡** —— 第 26 层 = 原版第 1 层的地图与怪物</li>
+	 *   <li>但 {@code Dungeon.depth} **保持原值** —— 玩家看到的是"第 26 层"</li>
+	 *   <li>每进入一个新循环（mappedDepth == 1 且 depth > 25），轮回 +1</li>
+	 * </ol>
+	 *
+	 * <h3>为什么用映射值生成、而不是改 Dungeon.depth</h3>
+	 * 改 {@code depth} 会让 HUD、存档、以及各处"第 N 层"的判定全部错乱。
+	 * 只把映射值**传给生成器**，显示层号就不受影响。
+	 */
+	private static Level createReincarnatedLevel(int depth){
+		int mapped = com.shatteredpixel.shatteredpixeldungeon.endcontent
+				.Reincarnation.mappedDepth(depth);
+
+		//每进入一个新循环的第一个层 → 轮回 +1
+		int cycle = com.shatteredpixel.shatteredpixeldungeon.endcontent
+				.Reincarnation.cycleOf(depth);
+		if (cycle > com.shatteredpixel.shatteredpixeldungeon.endcontent
+				.Reincarnation.cycles()){
+			com.shatteredpixel.shatteredpixeldungeon.endcontent
+					.Reincarnation.setCycles(cycle);
+
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.ReincarnationCurse cz =
+					com.shatteredpixel.shatteredpixeldungeon.endcontent
+							.ReincarnationCurse.forCycle(cycle - 1);
+			if (cz != null){
+				com.shatteredpixel.shatteredpixeldungeon.utils.GLog.newLine();
+				com.shatteredpixel.shatteredpixeldungeon.utils.GLog
+						.w("【轮回 " + cycle + "·" + cz.title + "】" + cz.flavor);
+				com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w("  " + cz.effect);
+			}
+		}
+
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.log(
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.LEVEL,
+				"轮回层：显示=" + depth + "  映射=" + mapped
+						+ "  轮回=" + com.shatteredpixel.shatteredpixeldungeon.endcontent
+								.Reincarnation.cycles()
+						+ "  " + com.shatteredpixel.shatteredpixeldungeon.endcontent
+								.Reincarnation.summary());
+
+		return createLevelByMappedDepth(mapped);
+	}
+
+	/**
+	 * END(无尽轮回): 按**原版楼层号**创建关卡。
+	 *
+	 * <p>这里复刻了 {@code newLevel()} 里 branch==0 那套 1..25 的选择逻辑，
+	 * 但用映射后的楼层号 —— 于是第 26/27/28 层就有了原版
+	 * 第 1/2/3 层的地图、房间布局与怪物表。
+	 */
+	private static Level createLevelByMappedDepth(int depth){
+		switch (depth){
+			case 1:
+			case 2:
+			case 3:
+			case 4:  return new com.shatteredpixel.shatteredpixeldungeon.levels.SewerLevel();
+			case 5:  return new com.shatteredpixel.shatteredpixeldungeon.levels.SewerBossLevel();
+			case 6:
+			case 7:
+			case 8:
+			case 9:  return new com.shatteredpixel.shatteredpixeldungeon.levels.PrisonLevel();
+			case 10: return new com.shatteredpixel.shatteredpixeldungeon.levels.PrisonBossLevel();
+			case 11:
+			case 12:
+			case 13:
+			case 14: return new com.shatteredpixel.shatteredpixeldungeon.levels.CavesLevel();
+			case 15: return new com.shatteredpixel.shatteredpixeldungeon.levels.CavesBossLevel();
+			case 16:
+			case 17:
+			case 18:
+			case 19: return new com.shatteredpixel.shatteredpixeldungeon.levels.CityLevel();
+			case 20: return new com.shatteredpixel.shatteredpixeldungeon.levels.CityBossLevel();
+			case 21:
+			case 22:
+			case 23:
+			case 24: return new com.shatteredpixel.shatteredpixeldungeon.levels.HallsLevel();
+			case 25: return new com.shatteredpixel.shatteredpixeldungeon.levels.HallsBossLevel();
+			default: return new com.shatteredpixel.shatteredpixeldungeon.levels.SewerLevel();
+		}
+	}
+
 	public static void resetLevel() {
 		
 		Actor.clear();
@@ -1235,6 +1365,10 @@ public class Dungeon {
 			Notes.storeInBundle( bundle );
 			Generator.storeInBundle( bundle );
 
+			//END(无尽轮回): 轮回次数也要存 —— 否则读档后九种诅咒全没了
+			com.shatteredpixel.shatteredpixeldungeon.endcontent
+					.Reincarnation.storeInBundle( bundle );
+
 			int[] bundleArr = new int[generatedLevels.size()];
 			for (int i = 0; i < generatedLevels.size(); i++){
 				bundleArr[i] = generatedLevels.get(i);
@@ -1398,6 +1532,10 @@ public class Dungeon {
 
 		Statistics.restoreFromBundle( bundle );
 		Generator.restoreFromBundle( bundle );
+
+		//END(无尽轮回): 读回轮回次数
+		com.shatteredpixel.shatteredpixeldungeon.endcontent
+				.Reincarnation.restoreFromBundle( bundle );
 
 	}
 	

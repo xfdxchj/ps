@@ -72,13 +72,18 @@ public class GoldenMead extends Item {
 		super.execute(hero, action);
 		if (!action.equals(AC_DRINK) || hero == null) return;
 
-		//永久：给一个很长的时长，实际上会一直持续到玩家死亡
-		Buff.affect(hero, Madness.class, 99999f);
+		//==== END(定稿 134): 发狂 10 回合 ====
+		//文档所有者定稿："蜂蜜酒是发狂 10 回合"。
+		//原来给的是 99999f（近似永久），改成固定的 10 回合。
+		Buff.affect(hero, Madness.class, MEAD_DURATION);
 		GLog.w("蜂蜜酒烧过喉咙。你开始发狂。");
 
 		detach(hero.belongings.backpack);
 		hero.spendAndNext(1f);
 	}
+
+	/** END(定稿 134): 发狂持续回合数。 */
+	public static final float MEAD_DURATION = 10f;
 
 	@Override
 	public int value(){ return 0; }
@@ -116,12 +121,17 @@ public class GoldenMead extends Item {
 				int newHp = Math.max(1, target.HP - drain);
 
 				if (newHp < target.HP){
+					//END(修复): 原来这里的算式写成 (HP - newHp + drain - drain)，
+					//"drain - drain" 恒为 0，等于只显示了 (HP - newHp)；
+					//而赋值在显示之前，HP 已经被改成 newHp，差值恒为 0 ——
+					//所以状态文字永远显示 "-0"。现在先算差值再赋值。
+					int lost = target.HP - newHp;
 					target.HP = newHp;
 					if (target.sprite != null){
 						target.sprite.showStatus(
 								com.shatteredpixel.shatteredpixeldungeon.sprites
 										.CharSprite.NEGATIVE,
-								"-" + (target.HP - newHp + drain - drain));  //显示扣血量
+								"-" + lost);
 					}
 				}
 			}

@@ -97,7 +97,7 @@ public class FairyFragmentRecipe extends Recipe {
 		//消耗掉投入的残片：每个槽减 1 枚
 		for (Item it : ingredients){
 			if (it instanceof FairyFragment){
-				it.quantity(it.quantity() - 1);
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.ItemConsume.consumeOne(it);
 			}
 		}
 
@@ -141,7 +141,7 @@ public class FairyFragmentRecipe extends Recipe {
 
 			for (Item it : ingredients){
 				if (it instanceof FairyNote){
-					it.quantity(it.quantity() - 1);
+					com.shatteredpixel.shatteredpixeldungeon.endcontent.ItemConsume.consumeOne(it);
 				}
 			}
 

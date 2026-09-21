@@ -396,8 +396,31 @@ public abstract class RegularLevel extends Level {
 		int bees = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 				.ChallengeEffects.honeyBeeCount();
 		for (int i = 0; i < bees; i++) {
-			Mob bee = new com.shatteredpixel.shatteredpixeldungeon.actors.mobs
-					.Bee();
+			com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Bee bee =
+					new com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Bee();
+
+			//==== END(修复·黏糊蜂蜜的蜜蜂不能打/不行动) ====
+			//文档所有者反馈："黏糊地牢的蜜蜂不能打，也不会打别人，什么效果也没有。"
+			//
+			//根因：我原来只写了
+			//    Mob bee = new Bee();  bee.pos = ...;  mobs.add(bee);
+			//漏了原版 Honeypot 创建蜜蜂时的三个关键步骤（见 Honeypot.potShatter）：
+			//
+			//  ① bee.spawn(depth)        —— 初始化 HP/HT/伤害等数值。
+			//     不调它，属性的初值是 0：既打不动别人，也一碰就碎。
+			//  ② bee.setPotInfo(pos, -1) —— 设置"蜜罐归属"。
+			//     Bee 的 AI 靠 potPos/potHolder 判断行为分支；
+			//     两者默认都是 0（非法值），AI 会走进错误分支 → 站着不动。
+			//  ③ GameScene.add(bee)      —— 加进**场景**（Actor 系统）。
+			//     只塞进 level.mobs 列表是不够的：那种"怪物"不会进入回合调度，
+			//     不能行动、也不会被攻击判定选中 —— 表现就是"什么效果也没有"。
+			//
+			//这里用 spawn() 初始化数值，setPotInfo(pos, -1) 表示"无主的野蜂"
+			//（-1 = 没有持有者，见 Bee 的字段注释），最后 GameScene.add()。
+			bee.spawn(Dungeon.depth);
+			bee.HP = bee.HT;
+			bee.setPotInfo(-1, null);     //无主野蜂：potPos=-1，potHolder=null（=没有持有者）
+
 			boolean placed = false;
 			for (int tries = 30; tries >= 0; tries--) {
 				if (stdRooms.isEmpty()) break;
@@ -414,7 +437,11 @@ public abstract class RegularLevel extends Level {
 					break;
 				}
 			}
-			if (placed) mobs.add(bee);
+
+			if (placed) {
+				//进 Actor 系统 —— 少了这一步蜜蜂就是"死"的
+				com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.add(bee);
+			}
 		}
 
 		//==== END(挑战 74 热带雨林 / 150 淹没地牢): 水中生成食人鱼 ====
@@ -422,19 +449,31 @@ public abstract class RegularLevel extends Level {
 		//食人鱼只在水里活动，所以必须落在 Terrain.WATER 上，
 		//否则它们会卡在岸上不动。
 		//
-		//150 淹没地牢会整层都是水，所以它给的概率（20%）会让食人鱼数量很多 ——
-		//这是设计意图：淹没的地牢里到处是鱼。
+		//==== END(修订·一层最多 1 只) ====
+		//文档所有者定稿："幻影食人鱼改为一层最多 1 个。"
+		//
+		//原实现是"每格独立掷概率" —— 150 淹没地牢整层都是水，
+		//于是会铺出十几只，玩家寸步难行。
+		//现在改成：**整层只掷一次**，命中就放 1 只，然后停止。
+		//
 		//两条规则取**较大**的概率，而不是相加（相加会超过 100%）。
 		int piranhaChance = Math.max(
 				com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 						.ChallengeEffects.rainforestPiranhaChance(),
 				com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 						.ChallengeEffects.floodedPiranhaChance());
-		if (piranhaChance > 0) {
+		if (piranhaChance > 0 && Random.Int(100) < piranhaChance) {
+
+			//随机挑一个合法水域格 —— 而不是从 0 遍历（那样鱼总在左上角）
+			java.util.ArrayList<Integer> waterCells = new java.util.ArrayList<>();
 			for (int cell = 0; cell < length(); cell++) {
 				if (map[cell] != Terrain.WATER) continue;
 				if (findMob(cell) != null) continue;
-				if (Random.Int(100) >= piranhaChance) continue;
+				waterCells.add(cell);
+			}
+
+			if (!waterCells.isEmpty()) {
+				int cell = waterCells.get(Random.Int(waterCells.size()));
 
 				//150 用"幻影食人鱼"（PhantomPiranha），74 用普通食人鱼
 				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob p;

@@ -75,8 +75,7 @@ public class EndGemItem extends Item {
 		boolean picked = super.doPickUp( hero, pos );
 		//END: 首次获得宝石时即时日志提示(登记已由 Item.collect→Catalog.setSeen 完成)
 		if (picked && !wasSeen){
-			GLog.i( "图鉴新增: " + name() );
-		}
+			}
 		return picked;
 	}
 

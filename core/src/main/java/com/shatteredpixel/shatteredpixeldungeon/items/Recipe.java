@@ -195,7 +195,10 @@ public abstract class Recipe {
 			new com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolveSpiritBowRecipe(),
 			//END 装备进化族：破印进阶与刺杀匕首进阶(3 料,任意槽数判定)
 			new com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolveSealRecipe(),
-			new com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolveDaggerRecipe()
+			new com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolveDaggerRecipe(),
+			//END(顶级装备体系): 2 无尽锭 + 对应核心 + 样品装备 → 顶级装备
+			new com.shatteredpixel.shatteredpixeldungeon.endcontent.items
+					.InfinityRecipes.ToEquipment()
 	};
 	
 	private static Recipe[] oneIngredientRecipes = new Recipe[]{
@@ -207,6 +210,13 @@ public abstract class Recipe {
 		new BlizzardBrew.Recipe(),
 		new InfernalBrew.Recipe(),
 		new AquaBrew.Recipe(),
+		//END(顶级装备体系): 分解装备得碎片 / 15级以上装备得核心 / 100碎片得锭
+		new com.shatteredpixel.shatteredpixeldungeon.endcontent.items
+				.InfinityRecipes.Decompose(),
+		new com.shatteredpixel.shatteredpixeldungeon.endcontent.items
+				.InfinityRecipes.ToCore(),
+		new com.shatteredpixel.shatteredpixeldungeon.endcontent.items
+				.InfinityRecipes.ShardToIngot(),
 		new ShockingBrew.Recipe(),
 		new ElixirOfDragonsBlood.Recipe(),
 		new ElixirOfIcyTouch.Recipe(),

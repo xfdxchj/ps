@@ -116,7 +116,7 @@ public class ExchangeContract extends Item {
 
 		//消耗一张契约
 		ExchangeContract c = hero.belongings.getItem(ExchangeContract.class);
-		if (c != null) c.quantity(c.quantity() - 1);
+		if (c != null) com.shatteredpixel.shatteredpixeldungeon.endcontent.ItemConsume.consumeOne(c);
 
 		return replacement;
 	}

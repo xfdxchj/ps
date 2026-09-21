@@ -377,6 +377,27 @@ public abstract class Char extends Actor {
 	}
 
 	final public boolean attack( Char enemy ){
+		//==== END(诊断·突然无法近战) ====
+		//文档所有者反馈："有的时候突然就无法近战打怪了。"
+		//
+		//把**每一次近战尝试**打出来。日志能区分几种情况：
+		//  · 完全没有这条日志        → 点击根本没走到 attack（UI/输入层问题）
+		//  · 有日志、但 ok=false     → 命中判定失败（距离/看不见/闪避）
+		//  · 有日志、enemy=null      → 目标丢失
+		//
+		//用 Dbg.COMBAT 分类，可以和"伤害结算"的日志对着看。
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.log(
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.COMBAT,
+				"近战尝试 " + getClass().getSimpleName()
+						+ (enemy == null ? " → null（目标丢失！）"
+								: (" → " + enemy.getClass().getSimpleName()
+										+ "  位置=" + pos + "→" + enemy.pos
+										+ "  距离=" + (com.shatteredpixel.shatteredpixeldungeon
+												.Dungeon.level == null ? -1
+												: com.shatteredpixel.shatteredpixeldungeon
+														.Dungeon.level.distance(pos, enemy.pos))
+										+ "  存活=" + enemy.isAlive())));
+
 		return attack(enemy, 1f, 0f, 1f);
 	}
 
@@ -545,6 +566,20 @@ public abstract class Char extends Actor {
 			//drRoll() 同样是方法，子类各自覆写，只能在这里按表覆盖。
 			dr = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 					.ChallengeEffects.crumblingArmor(enemy, dr);
+
+			//==== END(轮回诅咒⑨ 铁鳞): 怪物护甲 +50% ====
+			//文档所有者定稿："护甲提升 50%"，主语是怪物。
+			//
+			//放在这里而不是逐个改 100 个 mob 的 drRoll()：
+			//本处是**全游戏唯一的护甲结算点**，改这一处就不会漏。
+			//只对怪物生效（玩家有自己的护甲来源，不吃这条诅咒）。
+			if (enemy instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob) {
+				float reincArmor = com.shatteredpixel.shatteredpixeldungeon.endcontent
+						.Reincarnation.mobArmorMultiplier();
+				if (reincArmor != 1f) {
+					dr = Math.round(dr * reincArmor);
+				}
+			}
 			
 			if (this instanceof Hero){
 				Hero h = (Hero)this;
@@ -555,6 +590,16 @@ public abstract class Char extends Actor {
 				}
 
 				if (h.buff(MonkEnergy.MonkAbility.UnarmedAbilityTracker.class) != null){
+					dr = 0;
+				}
+
+				//==== END(顶级装备·天堂陨落长弓): 无视护甲 ====
+				//文档所有者定稿："无视护甲"。
+				//
+				//照上面"狙击手无视护甲"的既有写法 —— 直接把这个目标的
+				//护甲值清零，后面的伤害计算自然就不减了。
+				if (com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons
+						.HeavenFallBow.isIgnoringArmor()) {
 					dr = 0;
 				}
 			}
@@ -1293,11 +1338,41 @@ public abstract class Char extends Actor {
 							.ChallengeEffects.KING_DAMAGE_REDUCTION)));
 		}
 
+		//==== END(轮回诅咒⑤ 顽抗): 怪物受到的伤害 -10% ====
+		//文档所有者定稿："减伤 10%"，主语是怪物。
+		//与 194 怪物之王是同一个位置，两者**可叠加**（都是减伤）。
+		if (this instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob) {
+			float reincDr = com.shatteredpixel.shatteredpixeldungeon.endcontent
+					.Reincarnation.mobDamageReduction();
+			if (reincDr > 0f) {
+				dmg = Math.max(1, Math.round(dmg * (1f - reincDr)));
+			}
+		}
+
 		//==== END(202 为何无泪): 玩家受到的伤害 +33%（集齐全部"为何无X"后 +50%）====
 		//与 194 是同一个位置（最终伤害、扣血之前），两者对**不同对象**生效
 		//（194 作用于怪物，202 作用于玩家），不会互相干扰。
 		dmg = Math.round(dmg * com.shatteredpixel.shatteredpixeldungeon.endcontent
 				.challenge.ChallengeEffects.whyDamageTakenMult(this));
+
+		//==== END(顶级装备·虚空不灭之甲): 免伤 + 概率完全免疫 ====
+		//文档所有者定稿："免伤 15+升级等级%，最大 50；15+升级等级% 概率免疫伤害"。
+		//
+		//放在这里（最终伤害、扣血之前）—— 与 194/202 是同一个"最后一道关卡"，
+		//顺序上排在挑战之后，所以虚空甲是**最后生效**的一层保护。
+		//
+		//absorb() 返回 -1 表示"这次完全免疫"，直接 return 不扣血。
+		int voidResult = com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons
+				.VoidArmor.absorb(this, dmg);
+		if (voidResult == -1) {
+			if (sprite != null) {
+				sprite.showStatus(
+						com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite
+								.POSITIVE, "免疫");
+			}
+			return;
+		}
+		dmg = voidResult;
 
 		//we ceil these specifically to favor the player vs. champ dmg reduction
 		// most important vs. giant champions in the earlygame
@@ -1404,11 +1479,26 @@ public abstract class Char extends Actor {
 		//放在 65/104 之后：那两条是"挑战自带的保命"，
 		//镇魂歌是**玩家主动使用的道具**，优先级排在它们之后。
 		//
-		//与它们的区别：镇魂歌只是**推迟**死亡 —— buff 结束时若欠了命，仍然要还。
+		//==== END(挑战 128 镇魂歌): 期间免疫死亡，结束后**不结算** ====
+		//文档所有者定稿："镇魂是期间免疫死亡，不会结束后结算死亡。"
+		//
+		//所以它与 65/104 一样是**纯粹的保命**，不是"推迟死亡"。
+		//（早先的实现会在 buff 结束时补算死亡，那是旧理解，已废弃。）
 		if (dmg >= HP
 				&& com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
 						.SoulRequiem.surviveFatal(this, dmg)) {
 			return;                             //HP 已在方法内压到 1，不再扣血
+		}
+
+		//==== END(顶级装备·虚空不灭之甲): 致命伤触发祝福十字架 ====
+		//文档所有者定稿："受到致命伤触发祝福十字架效果，cd 50 回合"。
+		//
+		//放在 128/124 之前 —— 虚空甲是**装备自带**的保命，
+		//优先级高于"靠道具/状态临时获得的保命"。
+		if (dmg >= HP
+				&& com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons
+						.VoidArmor.secondLife(this, dmg)) {
+			return;                             //HP 已在方法内压到 1
 		}
 
 		//==== END(挑战 124 野生狗奶): 状态期间不会死 ====
@@ -1427,6 +1517,40 @@ public abstract class Char extends Actor {
 		if (dmg >= HP
 				&& com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 						.ChallengeEffects.payToSurvive(this, dmg)) {
+			return;
+		}
+
+		//==== END(轮回诅咒① 不灭): 怪物致命伤时触发一次无敌 ====
+		//文档所有者定稿："受到致命伤触发一次无敌"，主语是怪物。
+		//
+		//与 192 不死之身的区别（两者可以同时存在）：
+		//  · 192 不死之身 → 生命归零时改为**麻痹 50 回合**（永远打不死）
+		//  · ① 不灭       → 只挡**一次**，之后就正常死亡
+		//
+		//所以它排在 192 **之前**：先消耗"不灭"的那一次，用掉之后
+		//再轮到 192 的麻痹逻辑。
+		//用 buff 记录"这次无敌是否已用过"，所以一只怪只能挡一次。
+		if (dmg >= HP
+				&& this instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob
+				&& com.shatteredpixel.shatteredpixeldungeon.endcontent
+						.Reincarnation.mobCanSurviveFatal()
+				&& buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+						.ReincarnationUndying.class) == null) {
+			//挂上标记：这只怪的"不灭"已经用掉了
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(
+					this,
+					com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+							.ReincarnationUndying.class);
+
+			HP = 1;
+			if (sprite != null) {
+				sprite.showStatus(
+						com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite
+								.POSITIVE, "不灭");
+			}
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.log(
+					com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.COMBAT,
+					"【轮回·不灭】" + getClass().getSimpleName() + " 挡下了致命伤");
 			return;
 		}
 
@@ -1457,6 +1581,23 @@ public abstract class Char extends Actor {
 			}
 			return;
 		}
+
+		//==== END(诊断·伤害为 0): 在真正扣血前打印最终值 ====
+		//文档所有者反馈："有的时候伤害为 0，没有九九归一这种挑战的时候触发的。"
+		//
+		//把**扣血前的最终伤害**打出来。如果日志里出现 dmg=0，
+		//回溯同一行的"来源/目标/各自的上限"就能定位是哪一步吃掉的：
+		//  · 目标生命 5、伤害 0        → 是伤害管线里被减没的
+		//  · 来源是某法杖/某武器      → 定位到具体道具
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.log(
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.COMBAT,
+				"伤害结算 " + (src == null ? "?" : src.getClass().getSimpleName())
+						+ " → " + getClass().getSimpleName()
+						+ "  dmg=" + dmg
+						+ "  HP前=" + HP + "/" + HT
+						+ "  dr=" + drRoll()
+						+ (this instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero
+								? "  [玩家]" : ""));
 
 		HP -= dmg;
 

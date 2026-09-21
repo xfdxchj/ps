@@ -65,6 +65,28 @@ public class ItemSprite extends MovieClip {
 	
 	private float dropInterval;
 
+	//==== END(新增·物品图标动画) ====
+	//文档所有者提供了一批"发光"风格的贴图（16×144 = 9 帧竖排，
+	//或 16×80 = 5 帧），希望物品在**物品栏里也会动**。
+	//
+	//原版物品图标是静态的（ItemSprite.frame(int) 只设一帧），
+	//但 ItemSprite 继承 MovieClip —— 本身就有逐帧播放的能力。
+	//这里加一组字段，在 update() 里按固定间隔推进帧。
+	//
+	//未设动画的物品（frames == null）完全不受影响，等于原版行为。
+
+	/** 该图标的帧序列；null 表示静态图标。 */
+	private int[] animFrames = null;
+
+	/** 当前播到第几帧。 */
+	private int animIndex = 0;
+
+	/** 距下一帧还有多少秒。 */
+	private float animTimer = 0f;
+
+	/** END: 每帧持续时间（秒）。约 8 帧/秒，接近原版的节奏。 */
+	public static final float ANIM_FRAME_TIME = 0.125f;
+
 	//the amount the sprite is raised from flat when viewed in a raised perspective
 	protected float perspectiveRaise    = 5 / 16f; //5 pixels
 
@@ -254,6 +276,34 @@ public class ItemSprite extends MovieClip {
 		if (height < 8f){
 			perspectiveRaise =  (5 + 8 - height) / 16f;
 		}
+
+		//==== END(新增·物品图标动画): 记下这个图标是不是多帧动画 ====
+		//ItemSpriteSheet.animationFrames() 会为"有动画的图标"返回帧序列，
+		//其余返回 null。这里只记录，实际播放交给 update()。
+		animFrames = ItemSpriteSheet.animationFrames( image );
+		animIndex = 0;
+		animTimer = 0f;
+	}
+
+	/**
+	 * END(新增·物品图标动画): 逐帧推进（由 update() 调用）。
+	 *
+	 * <p>文档所有者提供了一批发光风格的贴图（9 帧 / 5 帧竖排），
+	 * 希望物品在物品栏与地面上都会缓缓发光。
+	 *
+	 * <p>实现很轻：每 {@link #ANIM_FRAME_TIME} 秒切一帧，
+	 * 只是换一次贴图矩形，不动位置与缩放。
+	 * 静态图标（{@code animFrames == null}）直接跳过 —— 零开销。
+	 */
+	private void advanceAnimation() {
+		if (animFrames == null || animFrames.length <= 1) return;
+
+		animTimer += Game.elapsed;
+		while (animTimer >= ANIM_FRAME_TIME) {
+			animTimer -= ANIM_FRAME_TIME;
+			animIndex = (animIndex + 1) % animFrames.length;
+			super.frame( ItemSpriteSheet.film.get( animFrames[animIndex] ) );
+		}
 	}
 	
 	public synchronized void glow( Glowing glowing ){
@@ -322,6 +372,9 @@ public class ItemSprite extends MovieClip {
 	@Override
 	public synchronized void update() {
 		super.update();
+
+		//END(新增·物品图标动画): 多帧图标在这里推进
+		advanceAnimation();
 
 		visible = (heap == null || heap.seen);
 

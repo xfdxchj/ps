@@ -234,6 +234,39 @@ public abstract class Mob extends Char {
 					.ChallengeEffects.rollFlyingThiefInvisible(this)) {
 				invisible = 1;
 			}
+
+			//==== END(轮回诅咒⑧ 厚躯): 怪物生命上限 +20% ====
+			//文档所有者定稿："生命上限提升 20%"。
+			//
+			//放在 onAdd 的**最后**：它是"最终数值"，必须跑在前面所有
+			//HP 覆写（牢地碎破配置表、29 童工、119 浪潮…）之后。
+			//
+			//Boss 也吃这条 —— 文档所有者没排除，而"轮回让地牢变难"
+			//本来就该包括 Boss。
+			float reincHp = com.shatteredpixel.shatteredpixeldungeon.endcontent
+					.Reincarnation.mobMaxHpMultiplier();
+			if (reincHp != 1f) {
+				float pct = HP / (float) HT;
+				HT = Math.max(1, Math.round(HT * reincHp));
+				HP = Math.max(1, Math.round(HT * pct));
+			}
+
+			//==== END(永无止境): 按区域的怪物数值倍率 ====
+			//文档所有者定稿："提升比例，1区 1200%，2/3/4/5 区 600%/200%/200%/200%，
+			//后续每次 200% 提升"，且"后续每次"是**乘法递增**（每轮 ×2）。
+			//
+			//与上面的⑧厚躯是**两个独立**的层：
+			//  · 永无止境 —— 基础倍率（1区 ×12 起），每轮翻倍
+			//  · ⑧厚躯     —— 第九次轮回解锁的 +20%
+			//
+			//放在 onAdd 的最末尾，与其它 HP 覆写保持同一套顺序。
+			int ratioHt = com.shatteredpixel.shatteredpixeldungeon.endcontent
+					.Reincarnation.applyStatRatio(HT, Dungeon.depth);
+			if (ratioHt > 0) {
+				float pct = HP / (float) HT;
+				HT = ratioHt;
+				HP = Math.max(1, Math.round(HT * pct));
+			}
 		}
 	}
 
@@ -504,6 +537,42 @@ public abstract class Mob extends Char {
 		
 		if (justAlerted){
 			sprite.showAlert();
+
+			//==== END(轮回诅咒④ 呼号): 怪物呼喊附近的同伴 ====
+			//文档所有者定稿："怪物呼喊敌人（原版）"。
+			//
+			//"原版行为"指的是原版怪物发现玩家时会互相通知的那套机制 ——
+			//本版本里它体现为 {@code beckon()}（把远处的同伴叫过来）
+			//与 {@code alerted} 标记（让同伴立刻进入警戒）。
+			//
+			//所以这条诅咒就是：**这只怪一发现玩家，就把周围的怪都叫醒并叫过来**。
+			//半径取 8 —— 与原版"搜寻范围内同伴"的量级一致，
+			//不至于一声喊叫把整层都招来。
+			if (alignment == Alignment.ENEMY
+					&& com.shatteredpixel.shatteredpixeldungeon.endcontent
+							.Reincarnation.mobCanHowl()
+					&& Dungeon.level != null) {
+				int howled = 0;
+				for (Mob m : Dungeon.level.mobs.toArray(new Mob[0])) {
+					if (m == this || !m.isAlive()) continue;
+					if (m.alignment != Alignment.ENEMY) continue;
+					if (Dungeon.level.distance(pos, m.pos) > 8) continue;
+
+					//叫醒它
+					m.alerted = true;
+					//叫它过来
+					if (m.state != m.HUNTING) {
+						m.beckon(pos);
+					}
+					howled++;
+				}
+				if (howled > 0) {
+					com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.log(
+							com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.MOB,
+							"【轮回·呼号】" + getClass().getSimpleName()
+									+ " 召唤了 " + howled + " 只同伴");
+				}
+			}
 		} else {
 			sprite.hideAlert();
 			sprite.hideLost();
@@ -944,6 +1013,10 @@ public abstract class Mob extends Char {
 	public float attackDelay() {
 		float delay = 1f;
 		if ( buff(Adrenaline.class) != null) delay /= 1.5f;
+		//==== END(轮回诅咒③ 狂乱): 怪物攻速 +20% ====
+		//攻速高 → 出手间隔短，所以是**除**倍率。
+		delay /= com.shatteredpixel.shatteredpixeldungeon.endcontent
+				.Reincarnation.mobAttackSpeedMultiplier();
 		return delay;
 	}
 	
@@ -1031,10 +1104,74 @@ public abstract class Mob extends Char {
 	
 	@Override
 	public void onAttackComplete() {
-		attack( enemy );
+		boolean hit = attack( enemy );
+
+		//==== END(轮回诅咒⑥ 侵蚀): 命中时附带一个随机负面效果 ====
+		//文档所有者定稿："附带随机 debuff"。
+		//
+		//只在**真正命中**时触发（miss 不该附带负面）——
+		//所以用 attack() 的返回值判断。
+		//
+		//候选取本作里几种"经典负面"：中毒、燃烧、虚弱、缓慢、失明。
+		//不含"麻痹"（那太强，一回合不能动会让玩家很挫败）。
+		if (hit && enemy != null && enemy.isAlive()
+				&& alignment == Alignment.ENEMY
+				&& com.shatteredpixel.shatteredpixeldungeon.endcontent
+						.Reincarnation.mobCanErode()) {
+			applyErosion(enemy);
+		}
+
 		Invisibility.dispel(this);
 		spend( attackDelay() );
 		super.onAttackComplete();
+	}
+
+	/**
+	 * END(轮回诅咒⑥ 侵蚀): 给被命中的目标挂一个随机负面。
+	 *
+	 * <p>取五种"经典负面"，各 20% 概率：
+	 * 中毒 / 燃烧 / 虚弱 / 缓慢 / 失明。
+	 */
+	private void applyErosion(Char target) {
+		try {
+			int pick = com.watabou.utils.Random.Int(5);
+			switch (pick){
+				case 0:
+					com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff
+							.affect(target, com.shatteredpixel.shatteredpixeldungeon
+									.actors.buffs.Poison.class)
+							.set(3f + Dungeon.depth / 5f);
+					break;
+				case 1:
+					//注意：Burning 是 Buff（不是 FlavourBuff），
+					//只能用无时长的 affect 重载 —— 那会新建一个燃烧状态。
+					com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff
+							.affect(target, com.shatteredpixel.shatteredpixeldungeon
+									.actors.buffs.Burning.class);
+					break;
+				case 2:
+					com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff
+							.prolong(target, com.shatteredpixel.shatteredpixeldungeon
+									.actors.buffs.Weakness.class, 5f);
+					break;
+				case 3:
+					com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff
+							.prolong(target, com.shatteredpixel.shatteredpixeldungeon
+									.actors.buffs.Slow.class, 5f);
+					break;
+				default:
+					com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff
+							.prolong(target, com.shatteredpixel.shatteredpixeldungeon
+									.actors.buffs.Blindness.class, 5f);
+					break;
+			}
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.log(
+					com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.MOB,
+					"【轮回·侵蚀】" + getClass().getSimpleName()
+							+ " 给 " + target.getClass().getSimpleName() + " 附上了负面 #" + pick);
+		} catch (Throwable t) {
+			//挂不上就算了，不该因此中断攻击流程
+		}
 	}
 	
 	@Override
@@ -1122,7 +1259,12 @@ public abstract class Mob extends Char {
 
 	@Override
 	public float speed() {
-		return super.speed() * AscensionChallenge.enemySpeedModifier(this);
+		//==== END(轮回诅咒② 疾行): 怪物移速 +100% ====
+		//照上面 AscensionChallenge 的既有写法 —— 它是原版同类机制的范本。
+		return super.speed()
+				* AscensionChallenge.enemySpeedModifier(this)
+				* com.shatteredpixel.shatteredpixeldungeon.endcontent
+						.Reincarnation.mobSpeedMultiplier();
 	}
 
 	public final boolean surprisedBy( Char enemy ){
@@ -1233,7 +1375,18 @@ public abstract class Mob extends Char {
 
 				AscensionChallenge.processEnemyKill(this);
 				
-				int exp = Dungeon.hero.lvl <= maxLvl ? EXP : 0;
+				//==== END(挑战 209 无尽贪婪): "超过怪物等级不给经验"的关卡也要放开 ====
+				//原版 maxLvl = Hero.MAX_LEVEL - 1 = 29，
+				//玩家 30 级之后打任何怪都是 0 经验 —— 即使解除了等级上限也升不动。
+				//
+				//所以勾选 209 时，把这条关卡一并解除（给一个足够大的 maxLvl）。
+				//玩家等级超过怪物时按原版照常给经验（不再判 0）。
+				int effectiveMaxLvl = maxLvl;
+				if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+						.ChallengeEffects.heroLevelCap() > Hero.MAX_LEVEL) {
+					effectiveMaxLvl = Integer.MAX_VALUE;
+				}
+				int exp = Dungeon.hero.lvl <= effectiveMaxLvl ? EXP : 0;
 
 				//during ascent, under-levelled enemies grant 10 xp each until level 30
 				// after this enemy kills which reduce the amulet curse still grant 10 effective xp
@@ -1290,8 +1443,72 @@ public abstract class Mob extends Char {
 		}
 	}
 
+	/**
+	 * END(轮回诅咒⑦ 爆裂): 死亡时爆炸。
+	 *
+	 * <p>文档所有者定稿："死亡后爆炸"。
+	 *
+	 * <h3>做法</h3>
+	 * 以尸体为中心，3×3 范围内：
+	 * <ul>
+	 *   <li>**其它怪物**也吃伤害（那才是"爆炸"该有的样子）</li>
+	 *   <li>**玩家**照常吃伤害</li>
+	 * </ul>
+	 *
+	 * <p>伤害 = 这只怪最大生命的 25%（最低 3 点）。
+	 * 按比例算而不是固定值 —— 越强的怪炸得越狠，符合直觉。
+	 */
+	private void detonateOnDeath() {
+		int blastDmg = Math.max(3, Math.round(HT * 0.25f));
+
+		//范围：自身 + 相邻 8 格
+		int[] cells = com.watabou.utils.PathFinder.NEIGHBOURS9;
+
+		//视觉：复用原版爆炸粒子。
+		//照 Explosive 诅咒与 DM300Sprite 的既有写法 —— sprite.emitter() 是
+		//CharSprite 自带的粒子发射器，不必自己 new Emitter。
+		if (sprite != null) {
+			sprite.emitter().burst(
+					com.shatteredpixel.shatteredpixeldungeon.effects.particles
+							.BlastParticle.FACTORY,
+					20);
+			com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter
+					.get(pos).burst(
+							com.shatteredpixel.shatteredpixeldungeon.effects.particles
+									.SmokeParticle.FACTORY,
+							8);
+			com.watabou.noosa.audio.Sample.INSTANCE.play(
+					com.shatteredpixel.shatteredpixeldungeon.Assets.Sounds.BLAST);
+		}
+
+		int hit = 0;
+		for (int d : cells) {
+			int c = pos + d;
+			if (c < 0 || c >= Dungeon.level.length()) continue;
+
+			Char ch = Actor.findChar(c);
+			if (ch == null || ch == this || !ch.isAlive()) continue;
+
+			try {
+				ch.damage(blastDmg, this);
+				hit++;
+			} catch (Throwable t) {
+				//单个目标出错不影响其余
+			}
+		}
+
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.log(
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.MOB,
+				"【轮回·爆裂】" + getClass().getSimpleName()
+						+ " 爆炸 伤害=" + blastDmg + "  命中=" + hit);
+	}
+
 	@Override
 	public void die( Object cause ) {
+
+		//==== END(轮回诅咒⑦ 爆裂): 死亡时爆炸 ====
+		//放在 die() 的最开头 —— 见下文的调用点说明。
+		//（真正的实现在 detonateOnDeath()，这里只是入口）
 
 		if (cause == Chasm.class){
 			//50% chance to round up, 50% to round down
@@ -1303,6 +1520,21 @@ public abstract class Mob extends Char {
 			if (buff(Trap.HazardAssistTracker.class) != null){
 				Statistics.hazardAssistedKills++;
 				Badges.validateHazardAssists();
+			}
+
+			//==== END(轮回诅咒⑦ 爆裂): 怪物死亡时爆炸 ====
+			//文档所有者定稿："死亡后爆炸"。
+			//
+			//放在 die() 的**最前面**：爆炸要在尸体处理之前发生，
+			//这样范围里的其它怪（与玩家）都会吃到伤害。
+			//
+			//伤害按"这只怪的最大生命的一定比例"算 —— 越强的怪炸得越狠，
+			//比给一个固定值更符合直觉。
+			//也会炸到别的怪（那才是"爆炸"该有的样子）。
+			if (com.shatteredpixel.shatteredpixeldungeon.endcontent
+					.Reincarnation.mobCanDetonate()
+					&& Dungeon.level != null) {
+				detonateOnDeath();
 			}
 
 			//==== END(挑战 87 盗贼鼠群): 击杀带赃款的怪 → 双倍返还 ====
