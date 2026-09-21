@@ -281,15 +281,40 @@ public abstract class RegularLevel extends Level {
 
 		PathFinder.buildDistanceMap(entrance(), entranceWalkable, 8);
 
+		int waveWanted = mobsToSpawn;          //END(诊断 119)
+		int waveRooms = stdRooms.size();       //END(诊断 119)
+
 		Mob mob = null;
+
+		//==== END(修复 119 怪物浪潮·数量上不去): 摆放失败要换房间 ====
+		//文档所有者反馈："怪物浪潮还是没有生成 x4，初始状态怪物数量没变。"
+		//
+		//根因：stdRooms 是"按每房权重重复"的列表（见上面那段），
+		//一个 5×5 房间（权重 2）在勾选 119 后会被**连续放 8 项**。
+		//而迭代器是按顺序取的 —— 于是它会给同一个房间连续 8 次机会，
+		//可那个房间只放得下 1~2 只，剩下 6~7 次都因 tries 用尽而空转，
+		//**却不会推进到下一个房间**。
+		//结果：实际怪物数 ≈ 房间数 × 每房容量，与 mobLimit() 无关。
+		//
+		//修法：把"连续取同一个房间"改成**先打乱**，让同一房间的 8 项分散开。
+		//这样失败一次之后，下一次会落到别的房间，数量才能真正上去。
+		Random.shuffle(stdRooms);
+		Iterator<Room> stdRoomIter2 = stdRooms.iterator();
+
+		int failedStreak = 0;      //连续失败计数，用来判断"是不是真的放不下了"
+
 		while (mobsToSpawn > 0) {
 			if (mob == null) mob = createMob();
 			Room roomToSpawn;
-			
-			if (!stdRoomIter.hasNext()) {
-				stdRoomIter = stdRooms.iterator();
+
+			if (!stdRoomIter2.hasNext()) {
+				stdRoomIter2 = stdRooms.iterator();
+				//一整轮都没成功 → 说明这张图已经塞满了，别再空转
+				if (failedStreak >= stdRooms.size()) {
+					break;
+				}
 			}
-			roomToSpawn = stdRoomIter.next();
+			roomToSpawn = stdRoomIter2.next();
 
 			int tries = 30;
 			do {
@@ -308,6 +333,7 @@ public abstract class RegularLevel extends Level {
 				mobsToSpawn--;
 				mobs.add(mob);
 				mob = null;
+				failedStreak = 0;          //END(修复 119): 成功一次就重置连续失败计数
 
 				//chance to add a second mob to this room, except on floor 1
 				//
@@ -339,7 +365,28 @@ public abstract class RegularLevel extends Level {
 						mob = null;
 					}
 				}
+			} else {
+				//END(修复 119): 这一次没放成 → 记一次连续失败。
+				//连续失败达到"候选房间数"就说明整张图真的塞满了，
+				//此时外层会 break，不再空转。
+				failedStreak++;
 			}
+		}
+
+		//==== END(诊断 119 怪物浪潮): 打印"要多少 / 房间多少 / 实际多少" ====
+		//文档所有者反馈"怪物浪潮还是没有生成 x4，初始状态怪物数量没变"。
+		//这三个数字能直接区分三种可能：
+		//  · 要 40 / 房间 12 / 实际 12  → 房间容量不够（每房塞满了）
+		//  · 要 40 / 房间 12 / 实际 8   → 摆放失败（tries 用尽）
+		//  · 要 10 / 房间 12 / 实际 10  → 倍率根本没生效
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.mobCountMultiplier() != 1f) {
+			System.out.println("[119 诊断] 层=" + Dungeon.depth
+					+ "  要生成=" + waveWanted
+					+ "  候选房间=" + waveRooms
+					+ "  实际加入=" + mobs.size()
+					+ "  倍率=" + com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+							.ChallengeEffects.mobCountMultiplier());
 		}
 
 		//==== END(挑战 149 黏糊蜂蜜): 每层额外刷新 2 只蜜蜂 ====

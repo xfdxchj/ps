@@ -82,6 +82,18 @@ public class Regeneration extends Buff {
 					delay /= SaltCube.healthRegenMultiplier();
 				}
 
+				//==== END(204 为何无悔): 生命回复速度 -33% ====
+				//文档所有者定稿："生命回复速度降低 33%"（集齐全部"为何无X"后 -50%）。
+				//
+				//做法：把这个速度倍率的**倒数**乘到 delay 上 ——
+				//回复速度 ×0.67 等价于间隔 ÷0.67（即 ×1.49）。
+				//这样只动一处，不用改回复量的计算。
+				float whyRegen = com.shatteredpixel.shatteredpixeldungeon.endcontent
+						.challenge.ChallengeEffects.whyRegenMult();
+				if (whyRegen > 0f && whyRegen < 1f) {
+					delay /= whyRegen;
+				}
+
 				partialRegen += 1f / delay;
 
 				if (partialRegen >= 1) {

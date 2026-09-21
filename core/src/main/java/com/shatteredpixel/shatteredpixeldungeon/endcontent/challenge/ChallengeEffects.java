@@ -351,7 +351,13 @@ public final class ChallengeEffects {
 
 	/** END(12 玻璃大炮): 玩家生命上限倍率（HT 降低后不低于 1）。 */
 	public static float heroHtMultiplier() {
-		return on(GLASS_CANNON) ? GLASS_HT : 1f;
+		float mult = on(GLASS_CANNON) ? GLASS_HT : 1f;
+
+		//END(205 为何无忌): 生命上限 -33%（集齐全部"为何无X"后为 -50%）
+		//与 12 玻璃大炮**可叠加**（相乘）。
+		mult *= whyMaxHpMult();
+
+		return mult;
 	}
 
 	/** END(14 精英强化): 精英怪属性倍率（"谁是精英"由 4/75 决定）。 */
@@ -445,7 +451,6 @@ public final class ChallengeEffects {
 	/** 119 怪物浪潮：刷怪数量 ×4（原文"生成率提升 300%"）。 */
 	private static final float WAVE_MOBS_MULT      = 4.00f;
 	/** 119 怪物浪潮：怪物数值 ×0.2。 */
-	private static final float WAVE_STAT_MULT      = 0.20f;
 	/** 47 稀缺补给：消耗品 ×0.6。 */
 	private static final float SCARCE_ITEM_MULT    = 0.60f;
 	/** 48 过量补给：消耗品 ×1.5。 */
@@ -487,16 +492,18 @@ public final class ChallengeEffects {
 	 * @param m 刚创建的怪物
 	 */
 	public static float mobStatMultiplier(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob m) {
-		if (!on(MONSTER_WAVE)) return 1f;
-		if (m == null) return 1f;
-
-		//Boss / 小 Boss 不削弱
-		//用 Char.hasProp 而不是 m.properties —— 后者是 protected，包外访问不到。
-		if (Char.hasProp(m, Char.Property.BOSS)
-				|| Char.hasProp(m, Char.Property.MINIBOSS)) {
-			return 1f;
-		}
-		return WAVE_STAT_MULT;
+		//==== END(修订 119·不要降低伤害) ====
+		//文档所有者要求："怪物浪潮还是没有生成 x4，同时改为不要降低伤害。"
+		//
+		//所以这里不再返回削弱倍率 —— 恒为 1。
+		//
+		//保留方法本身（而不是删掉）是为了不动调用点：
+		//Mob.onAdd() 里那句 {@code HT = ... mobStatMultiplier()} 仍然能跑，
+		//只是乘 1，等于原版数值。
+		//
+		//结果：数量 ×4，但每只怪**保持原本的生命与伤害** ——
+		//那才是"浪潮"该有的压迫感。
+		return 1f;
 	}
 
 	/**
@@ -3778,10 +3785,36 @@ public final class ChallengeEffects {
 			case "GuidePage":
 				return true;
 			default:
+				//==== END(修复·钥匙被换成金币): 钥匙不参与转换 ====
+				//文档所有者反馈："黄金地牢会把钥匙也变成金币。"
+				//
+				//钥匙是**通关必需**的：变成金币会让玩家被锁在门外，
+				//整局直接卡死。所以这里连同"疑似钥匙"一起豁免。
+				//
+				//判据用类名：原版钥匙都是 Key 的子类
+				//（IronKey / GoldenKey / CrystalKey / SkeletonKey …），
+				//另外锁、符文石也一并保留（它们同样是开门用的）。
+				if (n.contains("Key") || n.contains("Lock")
+						|| n.contains("Runestone") || n.contains("Stylus")) {
+					return true;
+				}
 				//类名里带 Quest 的一律算任务相关
 				return n.contains("Quest");
 		}
 	}
+
+	/**
+	 * END(修复·黄金地牢金币太少): 物品换成金币时的价值倍率。
+	 *
+	 * <p>文档所有者反馈："金币数量太少，该为替代物品生成，变成一个金币堆。"
+	 *
+	 * <p>原实现只给 40%（{@code value * 2 / 5}），那是照"卖店价格"折算的 ——
+	 * 但黄金地牢里**没有别的获取途径**，40% 会让玩家穷得买不起任何东西。
+	 *
+	 * <p>现在改为 **100% 物品价值**，并且额外乘一个 1.5 倍补偿
+	 * （因为整层的掉落都变成了金币，数量感受要跟得上）。
+	 */
+	public static final float GOLDEN_VALUE_MULT = 1.5f;
 
 	//---- 160 氪金大佬 ----
 
@@ -5163,5 +5196,78 @@ public final class ChallengeEffects {
 	 */
 	public static float luckyPotionDropChance() {
 		return on(LUCKY_POTION) ? LUCKY_POTION_DROP : 0f;
+	}
+	//==================================================================
+	//第三批：为何无X（202-208）
+	//==================================================================
+
+	public static final int WHY_NO_TEARS    = 202;   //为何无泪（受伤+）
+	public static final int WHY_NO_STRENGTH = 203;   //为何无力（伤害-）
+	public static final int WHY_NO_REGRET   = 204;   //为何无悔（回血-）
+	public static final int WHY_NO_FEAR     = 205;   //为何无忌（生命上限-）
+	public static final int WHY_NO_SIGHT    = 206;   //为何无视（命中-）
+	public static final int WHY_NO_ESCAPE   = 207;   //为何无避（闪避-）
+	public static final int WHY_INVINCIBLE  = 208;   //为何无敌（放大到 50%）
+
+	/** 单条时的比例。 */
+	public static final float WHY_BASE = 0.33f;
+	/** 集齐全部后的比例。 */
+	public static final float WHY_MAX  = 0.50f;
+
+	/**
+	 * END(202-208): 当前生效的"为何无X"比例。
+	 *
+	 * <p>文档所有者定稿："选择全部为何触发，所有为何的百分比由 33% 变为 50%。"
+	 *
+	 * <p>所以只需要判断 {@link #WHY_INVINCIBLE} 是否勾选 ——
+	 * 而它的注册关系里写了 {@code p:202,...,207}，
+	 * 也就是"必须前面六条全勾"才允许勾选它。
+	 *
+	 * <p>这样百分比的计算只有一处，六条规则各自读同一个值。
+	 */
+	public static float whyRatio() {
+		return on(WHY_INVINCIBLE) ? WHY_MAX : WHY_BASE;
+	}
+
+	/** END(202 为何无泪): 玩家受到的伤害倍率。 */
+	public static float whyDamageTakenMult(Char ch) {
+		if (!on(WHY_NO_TEARS) || ch == null) return 1f;
+		if (!(ch instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero)) {
+			return 1f;                       //只影响玩家
+		}
+		return 1f + whyRatio();
+	}
+
+	/** END(203 为何无力): 玩家造成的伤害倍率。 */
+	public static float whyDamageDealtMult(Char ch) {
+		if (!on(WHY_NO_STRENGTH) || ch == null) return 1f;
+		if (!(ch instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero)) {
+			return 1f;
+		}
+		return 1f - whyRatio();
+	}
+
+	/** END(205 为何无忌): 玩家生命上限倍率。 */
+	public static float whyMaxHpMult() {
+		if (!on(WHY_NO_FEAR)) return 1f;
+		return 1f - whyRatio();
+	}
+
+	/** END(204 为何无悔): 玩家回血速率倍率。 */
+	public static float whyRegenMult() {
+		if (!on(WHY_NO_REGRET)) return 1f;
+		return 1f - whyRatio();
+	}
+
+	/** END(206 为何无视): 玩家命中倍率。 */
+	public static float whyAccuracyMult() {
+		if (!on(WHY_NO_SIGHT)) return 1f;
+		return 1f - whyRatio();
+	}
+
+	/** END(207 为何无避): 玩家闪避倍率。 */
+	public static float whyEvasionMult() {
+		if (!on(WHY_NO_ESCAPE)) return 1f;
+		return 1f - whyRatio();
 	}
 }

@@ -1293,6 +1293,12 @@ public abstract class Char extends Actor {
 							.ChallengeEffects.KING_DAMAGE_REDUCTION)));
 		}
 
+		//==== END(202 为何无泪): 玩家受到的伤害 +33%（集齐全部"为何无X"后 +50%）====
+		//与 194 是同一个位置（最终伤害、扣血之前），两者对**不同对象**生效
+		//（194 作用于怪物，202 作用于玩家），不会互相干扰。
+		dmg = Math.round(dmg * com.shatteredpixel.shatteredpixeldungeon.endcontent
+				.challenge.ChallengeEffects.whyDamageTakenMult(this));
+
 		//we ceil these specifically to favor the player vs. champ dmg reduction
 		// most important vs. giant champions in the earlygame
 		for (ChampionEnemy buff : buffs(ChampionEnemy.class)){

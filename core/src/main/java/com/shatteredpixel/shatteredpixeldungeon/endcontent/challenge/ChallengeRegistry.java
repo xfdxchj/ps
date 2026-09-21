@@ -112,6 +112,9 @@ public final class ChallengeRegistry {
 		//数据来源：docs/CHALLENGE_RULES_AUTHORITATIVE.md 的「三、权威规则全表」。
 		//登记顺序 = 展示顺序（按分组：地图/战斗/怪物/经济/药剂/环境/装备/特殊/格林）。
 		//这些条目在 UI 中置灰显示（见 WndChallenges），勾选无效，直到各自实装。
+		//==== END(新增·第三批): 202+ ====
+		registerBatch3(all);
+
 		registerPending(all);
 
 		//==== END(改造·挑战区并入挑战列表): 6 个挑战区 ====
@@ -640,6 +643,37 @@ public final class ChallengeRegistry {
 	 *
 	 * <p>新增「时间」分组（原来没有）。
 	 */
+	/**
+	 * END(新增·第三批): 202 起的规则。
+	 *
+	 * <p>ID 分配（避开第二批占用的 188-201）：
+	 * <pre>
+	 *   202 为何无泪  203 为何无力  204 为何无悔  205 为何无忌
+	 *   206 为何无视  207 为何无避  208 为何无敌
+	 * </pre>
+	 */
+	private static void registerBatch3(List<ChallengeDef> all) {
+
+		//==================== 为何无X（七宗"无"）====================
+		//文档所有者定稿：每条 -33%，集齐全部后变为 -50%。
+		//所以这里用 p: 前置把它们串成一条链 —— 最后一条（为何无敌）
+		//要求前面六条全部勾选，它才生效。
+		done(all, 202, "为何无泪",   "why_no_tears",    "特殊", T_TWO, 2, T_MED,  "s:203,204,205,206,207",
+				"受到的伤害增加 33%。");
+		done(all, 203, "为何无力",   "why_no_strength", "特殊", T_TWO, 2, T_MED,  "s:202,204,205,206,207",
+				"造成的伤害降低 33%。");
+		done(all, 204, "为何无悔",   "why_no_regret",   "特殊", T_TWO, 2, T_MED,  "s:202,203,205,206,207",
+				"生命回复速度降低 33%。");
+		done(all, 205, "为何无忌",   "why_no_fear",     "特殊", T_TWO, 2, T_MED,  "s:202,203,204,206,207",
+				"生命上限降低 33%。");
+		done(all, 206, "为何无视",   "why_no_sight",    "特殊", T_TWO, 2, T_MED,  "s:202,203,204,205,207",
+				"命中降低 33%。");
+		done(all, 207, "为何无避",   "why_no_escape",   "特殊", T_TWO, 2, T_MED,  "s:202,203,204,205,206",
+				"闪避降低 33%。");
+		done(all, 208, "为何无敌",   "why_invincible",  "特殊", T_TWO, 3, T_SER,  "p:202,203,204,205,206,207",
+				"集齐前面六条「为何无X」后生效：所有百分比由 33% 变为 50%。");
+	}
+
 	private static void registerBatch2(List<ChallengeDef> all) {
 
 		//==================== 时间类 ====================

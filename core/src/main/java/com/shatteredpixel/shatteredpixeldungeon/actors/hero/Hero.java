@@ -644,15 +644,21 @@ public class Hero extends Char {
 			accuracy *= 1.50f;
 		}
 		
+		//==== END(206 为何无视): 玩家命中 -33%（集齐全部"为何无X"后 -50%）====
+		//放在**最终值**上 —— 这样它与戒指、天赋、宝石的加成都是乘算关系，
+		//不会因为先减后加而被稀释。
+		float whyAcc = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.whyAccuracyMult();
+
 		//END gem(命中): 若正在挥击的武器上镶嵌了 ACCURACY 宝石,则在最终命中值上追加其成长量
 		if (!RingOfForce.fightingUnarmed(this)) {
-			int acc = Math.round(attackSkill * accuracy * wep.accuracyFactor( this, target ));
+			int acc = Math.round(attackSkill * accuracy * wep.accuracyFactor( this, target ) * whyAcc);
 			if (wep instanceof Weapon && ((Weapon) wep).gemType() == EndGem.ACCURACY){
 				acc += EndGemProfile.of(EndGem.ACCURACY).bonusAt( ((Weapon) wep).buffedLvl() );
 			}
 			return Math.max(1, acc);
 		} else {
-			return Math.max(1, Math.round(attackSkill * accuracy));
+			return Math.max(1, Math.round(attackSkill * accuracy * whyAcc));
 		}
 	}
 	
@@ -703,6 +709,11 @@ public class Hero extends Char {
 		if (belongings.armor() != null && belongings.armor().gemType() == EndGem.EVASION){
 			evasion += EndGemProfile.of(EndGem.EVASION).bonusAt( belongings.armor().buffedLvl() );
 		}
+
+		//==== END(207 为何无避): 玩家闪避 -33%（集齐全部"为何无X"后 -50%）====
+		//同样放在最终值上，与宝石、护甲、戒指的加成都是乘算。
+		evasion *= com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.whyEvasionMult();
 
 		return Math.max(1, Math.round(evasion));
 	}
@@ -802,6 +813,11 @@ public class Hero extends Char {
 				&& (buff(Recharging.class) != null || buff(ArtifactRecharge.class) != null)){
 			dmg = Math.round(dmg * 1.025f + (.025f*pointsInTalent(Talent.WEAPON_RECHARGING)));
 		}
+
+		//==== END(203 为何无力): 玩家造成的伤害 -33%（集齐全部"为何无X"后 -50%）====
+		//放在最末 —— 作用于**最终伤害**，与所有加成/天赋都是乘算关系。
+		dmg = Math.round(dmg * com.shatteredpixel.shatteredpixeldungeon.endcontent
+				.challenge.ChallengeEffects.whyDamageDealtMult(this));
 
 		if (dmg < 0) dmg = 0;
 		return dmg;

@@ -1291,12 +1291,26 @@ public abstract class Level implements Bundlable {
 		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 				.ChallengeEffects.shouldConvertDropToGold(item)) {
 			int value = Math.max(1, item.value() * Math.max(1, item.quantity()));
-			//金币的价值换算：原版 1 金币 ≈ 1 价值单位，
-			//但直接按原价会太慷慨（物品原价通常远高于玩家实际能卖到的钱），
-			//所以打 4 折 —— 与"卖店"的手感接近。
-			value = Math.max(1, value * 2 / 5);
-			item = new com.shatteredpixel.shatteredpixeldungeon.items.Gold().random();
-			((com.shatteredpixel.shatteredpixeldungeon.items.Gold) item).quantity(value);
+
+			//==== END(修复·黄金地牢金币太少): 提高折算比例 ====
+			//文档所有者反馈："黄金地牢金币数量太少，该为替代物品生成，
+			//变成一个金币堆。"
+			//
+			//原实现打 4 折（value * 2 / 5），那是照"卖店价格"折算的 ——
+			//但黄金地牢里**没有别的获取途径**，40% 会让玩家穷得买不起东西。
+			//
+			//现在按**全额物品价值 × 1.5 倍补偿**折算。
+			value = Math.max(1, Math.round(value
+					* com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+							.ChallengeEffects.GOLDEN_VALUE_MULT));
+
+			//END(修复): 不要用 Gold().random() —— 它会先随机一个数量，
+			//再被 quantity() 覆盖，白白消耗一次随机数（影响种子一致性）。
+			//直接 new Gold() 然后设数量即可。
+			com.shatteredpixel.shatteredpixeldungeon.items.Gold gold =
+					new com.shatteredpixel.shatteredpixeldungeon.items.Gold();
+			gold.quantity(value);
+			item = gold;
 		}
 
 		//==== END(挑战 47/48/35/36): 掉落增减 ====
