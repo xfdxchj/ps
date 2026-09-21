@@ -158,6 +158,35 @@ public class Messages {
 		return null;
 	}
 
+	/**
+	 * END(文案走 properties): 某个消息键是否存在。
+	 *
+	 * <h3>为什么需要它</h3>
+	 * 挑战描述有两处来源：注册表里的 Java 字符串，与 properties 里的
+	 * {@code challenges.xxx_desc}。文档所有者要求"文案改在 properties 里"
+	 * （改起来不用编译），所以 {@code describe()} 要**优先读 properties**、
+	 * 读不到再退回 Java。
+	 *
+	 * <p>问题是 {@code Messages.get()} 找不到键时会返回
+	 * {@code "!!!key!!!"} 这样的占位串，光看返回值分不清
+	 * "真没有"和"文案恰好长这样"。所以这里提供一个明确的探测方法。
+	 *
+	 * @param o  取键前缀的对象（与 {@code Messages.get(o, k)} 同一套规则）
+	 * @param k  键名
+	 * @return true 表示该键在任一语言包里存在
+	 */
+	public static boolean exists(Object o, String k){
+		String key;
+		if (o != null){
+			key = o.getClass().getName()
+					.replace("com.shatteredpixel.shatteredpixeldungeon.", "");
+			key += "." + k;
+		} else {
+			key = k;
+		}
+		return getFromBundle(key.toLowerCase(Locale.ENGLISH)) != null;
+	}
+
 
 
 	/**

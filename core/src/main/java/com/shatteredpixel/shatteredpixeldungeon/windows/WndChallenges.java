@@ -198,6 +198,21 @@ public class WndChallenges extends Window {
 		//翻页栏（END 分页）
 		buildPageBar();
 
+		//==== END(新增·确定键): 底部确定按钮 ====
+		//文档所有者反馈："挑战界面没有确定键，导致难以返回。"
+		//
+		//行为与原版其它窗口一致：点它就关闭本窗口。
+		//在开局选择场景里，onBackPressed() 会顺手把勾选写回设置 ——
+		//所以"确定"与"返回"是同一个语义，不存在"没保存"的问题。
+		confirmBtn = new RedButton( Messages.get( this, "confirm" ) ) {
+			@Override
+			protected void onClick() {
+				super.onClick();
+				onBackPressed();
+			}
+		};
+		add( confirmBtn );
+
 		//==== END(修复·布局统一): 改用 relayout() ====
 		//原先这里手写了一遍布局计算，与 rebuildAll 各算各的 ——
 		//两处一旦不同步就会出空白/重叠（这正是文档所有者遇到的两个现象）。
@@ -450,7 +465,13 @@ public class WndChallenges extends Window {
 	 *
 	 * <p>文档所有者要求："1 页 10 条挑战，用第二页第三页按键切换"。
 	 */
-	private static final int PER_PAGE = 10;
+	private static final int PER_PAGE = 7;   //END(修订): 10 -> 7（文档所有者：UI 占了全屏）
+
+	/** END(新增·确定键): 底部按钮高度。 */
+	private static final int CONFIRM_H = 16;
+
+	/** END(新增·确定键): 底部的确定按钮。 */
+	private RedButton confirmBtn;
 
 	/** 当前页号（0 基）。切换分类时归零。 */
 	private int page = 0;
@@ -678,20 +699,24 @@ public class WndChallenges extends Window {
 	 */
 	private void showDetail( ChallengeDef d ) {
 		if (d == null) return;
-
-		//END(诊断): 打印"谁在什么时候要求打开详情" ——
-		//用来定位"关掉挑战窗口后还能弹出介绍"的真实来源。
-		if (UI_DEBUG) {
-			System.out.println("[详情诊断] 请求打开: " + d.id + " " + d.name
-					+ "  isAlive=" + isAlive()
-					+ "  parent=" + (parent == null ? "null" : parent.getClass().getSimpleName())
-					+ "  visible=" + visible);
-		}
-
 		if (!isAlive()) return;                 //窗口已销毁 → 忽略残留点击
 
-		com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.show(
-				new WndMessage( describe( d ) ));
+		//==== END(修复·点详情卡死): 必须用 addToFront，不能用 GameScene.show ====
+		//文档所有者报告："在挑战界面选择时，点击挑战详细会卡死。"
+		//
+		//根因：{@code GameScene.show()} 的第一句是 {@code cancel()} ——
+		//它会**关掉当前窗口**。而本方法正是被那个窗口的点击事件调用的，
+		//于是在自身回调里把自己销毁了，紧接着的 addToFront 操作了
+		//一个已 destroy() 的对象 → 卡死。
+		//
+		//另外 {@code GameScene.show()} 还依赖 GameScene.scene 非空，
+		//而挑战窗口也能在开局选择场景（HeroSelectScene）里打开 ——
+		//那种情况下同样会出问题。
+		//
+		//正确做法（原版 WndKeyBindings / WndSettings 都是这么写的）：
+		//直接往场景最前面加，**不动**当前窗口。
+		com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon.scene()
+				.addToFront( new WndMessage( describe( d ) ) );
 	}
 
 	/**
@@ -721,9 +746,92 @@ public class WndChallenges extends Window {
 		if (!canToggle( d ) && !mask.has( d.id )) return;
 
 		boolean on = !mask.has( d.id );
+
+		//==== END(新增·前置自动补齐): 勾选有前置的规则时先问一句 ====
+		//文档所有者要求："在选需要有前置的挑战时弹出一个窗口，
+		//问是否优选前置，是后直接全部选。"
+		//
+		//只在**勾选**（而不是取消）且**前置未满足**时才问 ——
+		//取消勾选不需要问，前置已满足时也不必打扰。
+		if (on && d.hasPrerequisite() && !d.prerequisitesMet(mask)) {
+			askFillPrerequisites(d);
+			return;
+		}
+
 		mask = on ? mask.with( d.id ) : mask.without( d.id );
 		//互斥/前置会随选择变化，重建整表以刷新置灰
 		rebuildAll();
+	}
+
+	/**
+	 * END(新增·前置自动补齐): 询问是否把前置一并勾上。
+	 *
+	 * <h3>为什么用 WndOptions 而不是自己画</h3>
+	 * 那是原版标准的"是/否"对话框（见 {@code WndOptions}），
+	 * 行为、外观、按键响应都与游戏其它地方一致。
+	 *
+	 * <p>选"是" → 把本条与它的**全部前置**（含前置的前置，递归）一起勾上；
+	 * 选"否" → 什么都不做（不给勾选，因为前置不满足时它是置灰的）。
+	 */
+	private void askFillPrerequisites( final ChallengeDef d ) {
+		if (d == null || !isAlive()) return;
+
+		//收集缺失的前置（递归展开），用来在提示里列出名字
+		final List<Integer> missing = new ArrayList<>();
+		collectMissingPrereqs(d, missing, new ArrayList<Integer>());
+
+		StringBuilder names = new StringBuilder();
+		for (int id : missing) {
+			ChallengeDef o = ChallengeRegistry.byId(id);
+			if (names.length() > 0) names.append("、");
+			names.append(o != null ? o.name : ("#" + id));
+		}
+
+		com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon.scene()
+				.addToFront(new com.shatteredpixel.shatteredpixeldungeon.windows
+						.WndOptions(
+						Messages.get(this, "prereq_title", d.name),
+						Messages.get(this, "prereq_body", names.toString()),
+						Messages.get(this, "prereq_yes"),
+						Messages.get(this, "prereq_no")) {
+					@Override
+					protected void onSelect(int index) {
+						if (index != 0) return;               //"否" → 什么都不做
+						if (!isAlive()) return;               //窗口可能已被关掉
+
+						for (int id : missing) {
+							mask = mask.with(id);
+						}
+						rebuildAll();
+					}
+				});
+	}
+
+	/**
+	 * END(新增): 递归收集"缺失的前置"。
+	 *
+	 * <p>为什么要递归：前置链可能是多层的
+	 * （例如 191 需要 188+189，而 188 又可能需要别的）。
+	 * 只查一层的话，玩家点"是"之后仍会有未满足的前置。
+	 *
+	 * @param out    收集结果（避免重复）
+	 * @param visited 已访问的 id（防止关系表里出现环时死循环）
+	 */
+	private void collectMissingPrereqs( ChallengeDef d, List<Integer> out,
+			List<Integer> visited ) {
+		if (d == null) return;
+		if (visited.contains(d.id)) return;      //防环
+		visited.add(d.id);
+
+		for (ChallengeRelation r : d.relationsOf(ChallengeRelation.Type.PREREQUISITE)) {
+			for (int id : r.targets) {
+				if (mask.has(id)) continue;      //已经有了，跳过
+				if (out.contains(id)) continue;  //已收集
+				out.add(id);
+				ChallengeDef o = ChallengeRegistry.byId(id);
+				if (o != null) collectMissingPrereqs(o, out, visited);
+			}
+		}
 	}
 
 	/**
@@ -835,7 +943,8 @@ public class WndChallenges extends Window {
 		float listH = PER_PAGE * (BTN_HEIGHT + GAP);
 
 		//屏幕装不下时按屏幕收缩（小屏设备保底 5 条）
-		float bottomH = 14;
+		//END(确定键): 底部高度改成"确定键那一行"的高度。
+		float bottomH = CONFIRM_H + 2;
 		float pageH = (pageBarVisible() ? 18 : 0);
 		float maxByScreen = com.watabou.noosa.Camera.main.height
 				- top - pageH - bottomH - 6;
@@ -852,10 +961,21 @@ public class WndChallenges extends Window {
 			top += 18;
 		}
 
+		//==== END(新增·确定键): 底部加一个确定的关闭按钮 ====
+		//文档所有者反馈："挑战界面没有确定键，导致难以返回。"
+		//
+		//原版窗口的惯例是底部放 RedButton(Messages.get(this, "close"))，
+		//这里照做 —— 放在**通过等级那一行的右侧**，不额外占垂直空间
+		//（UI 已经很高了，文档所有者要求过别占满屏）。
+		if (confirmBtn != null) {
+			float btnW = 46f;
+			confirmBtn.setRect(WIDTH - btnW, top + 1, btnW, CONFIRM_H);
+		}
+
 		resize(WIDTH, (int) (top + bottomH));
 
 		if (passLevelText != null) {
-			passLevelText.setPos(4, top + 2);
+			passLevelText.setPos(4, top + 3);
 		}
 
 		//END(分页): 页码文字与按钮可用状态（页数变化后要刷新）
@@ -912,6 +1032,29 @@ public class WndChallenges extends Window {
 
 	//==== 详情 ====
 
+	/**
+	 * END(文案走 properties): 取一条挑战的效果说明。
+	 *
+	 * <h3>两处来源，优先用 properties</h3>
+	 * <ol>
+	 *   <li>{@code challenges.<key>_desc} —— properties 里的版本</li>
+	 *   <li>{@code d.effect} —— 注册表里写死的 Java 字符串</li>
+	 * </ol>
+	 *
+	 * <p>文档所有者要求文案改在 properties 里（**不用重新编译**），
+	 * 所以这里先查 key；查不到才退回注册表。
+	 *
+	 * <p>这样新写的文案放 properties 就生效，而还没改写的条目
+	 * 仍然显示注册表里那份 —— 可以**逐条迁移**，不会出现空白。
+	 */
+	private String effectTextOf( ChallengeDef d ) {
+		String key = "challenges." + d.key + "_desc";
+		if ( Messages.exists( null, key ) ) {
+			return Messages.get( key );
+		}
+		return d.effect;
+	}
+
 	private String describe( ChallengeDef d ) {
 		StringBuilder sb = new StringBuilder();
 
@@ -923,7 +1066,7 @@ public class WndChallenges extends Window {
 		sb.append( d.group ).append( "   " ).append( d.tendencyName() )
 				.append( "   Lv" ).append( d.level );
 		if (!d.effect.isEmpty()) {
-			sb.append( "\n\n" ).append( d.effect );
+			sb.append( "\n\n" ).append( effectTextOf( d ) );
 		}
 
 		appendRelations( sb, d, ChallengeRelation.Type.EXCLUSIVE,
