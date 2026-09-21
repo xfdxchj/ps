@@ -668,6 +668,12 @@ public abstract class Char extends Actor {
 						.WildDogMilk.STAT_MULT;
 			}
 
+			//==== END(无尽戒): 伤害 +20% ====
+			//佩戴轮回噬灭之戒时，所有伤害提升 20%。
+			//只对佩戴者生效（mob 不会携带戒指），未佩戴返回 1.0。
+			dmg *= com.shatteredpixel.shatteredpixeldungeon.endcontent.items
+					.ReincarnationRing.damageMultiplier(this);
+
 			//==== END(挑战 20 等我启动): 对同一目标的连击递增 ====
 			//原表："对同一目标伤害：第一次 20%，第二次 50%，第三次及以后 110%"
 			//

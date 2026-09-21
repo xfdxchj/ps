@@ -411,11 +411,14 @@ public class Armor extends EquipableItem {
 
 	public final int DRMax(){
 		//==== END(挑战 121 中世纪骑士): 护甲值 +60% ====
+		//==== END(无尽戒): 护甲值 +20% ====
 		//只加在**无参重载**上：DRMin(lvl) 内部会调 DRMax(lvl)，
 		//若改带参版本会导致护甲值被重复乘两次。
 		int base = DRMax(buffedLvl());
 		float mult = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 				.ChallengeEffects.knightArmorMultiplier(Dungeon.hero);
+		mult *= com.shatteredpixel.shatteredpixeldungeon.endcontent.items
+				.ReincarnationRing.armorMultiplier(Dungeon.hero);
 		return (mult == 1f) ? base : Math.max(1, Math.round(base * mult));
 	}
 
@@ -434,10 +437,13 @@ public class Armor extends EquipableItem {
 
 	public final int DRMin(){
 		//==== END(挑战 121 中世纪骑士): 护甲值 +60% ====
+		//==== END(无尽戒): 护甲值 +20% ====
 		//同上：只加在无参重载，避免与 DRMax 内部调用叠加。
 		int base = DRMin(buffedLvl());
 		float mult = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 				.ChallengeEffects.knightArmorMultiplier(Dungeon.hero);
+		mult *= com.shatteredpixel.shatteredpixeldungeon.endcontent.items
+				.ReincarnationRing.armorMultiplier(Dungeon.hero);
 		return (mult == 1f) ? base : Math.round(base * mult);
 	}
 
