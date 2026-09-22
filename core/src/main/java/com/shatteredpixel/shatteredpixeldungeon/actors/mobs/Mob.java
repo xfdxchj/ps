@@ -1388,6 +1388,23 @@ public abstract class Mob extends Char {
 				}
 				int exp = Dungeon.hero.lvl <= effectiveMaxLvl ? EXP : 0;
 
+				//==== END(修复·牢地碎破经验没对调) ====
+				//文档所有者反馈："牢地碎破的怪物经验没有对调。"
+				//
+				//含义：既然 1 区的怪是"原 5 区的怪"，经验也该按原区域算。
+				//原来这条挑战只改了生命/伤害/护甲/命中/闪避，漏了经验 ——
+				//于是玩家在最凶的 1 区拿最少的经验，难度涨了收益没涨。
+				//
+				//放在这里（"该给多少经验"刚算出来、还没发给玩家之前）：
+				//这样它走得是同一套"经验上限判定"之后的最终值。
+				if (exp > 0) {
+					int crumbling = com.shatteredpixel.shatteredpixeldungeon
+							.endcontent.challenge.ChallengeEffects.crumblingExp(this);
+					if (crumbling > 0) {
+						exp = crumbling;
+					}
+				}
+
 				//during ascent, under-levelled enemies grant 10 xp each until level 30
 				// after this enemy kills which reduce the amulet curse still grant 10 effective xp
 				// for the purposes of on-exp effects, see AscensionChallenge.processEnemyKill

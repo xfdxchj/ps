@@ -452,7 +452,16 @@ abstract public class MissileWeapon extends Weapon {
 					return;
 				}
 			}
-			Dungeon.level.drop( this, cell ).sprite.drop();
+			//==== END(修复·丰饶刷投掷物) ====
+			//投掷武器落地也走 Level.drop —— 若不禁用，勾了 35 丰饶后
+			//扔一把飞刀能在地上捡回两把，同样是无中生有的刷法。
+			//它和"玩家主动丢弃"是同一性质（自己把东西丢出去），所以一并抑制。
+			try {
+				com.shatteredpixel.shatteredpixeldungeon.levels.Level.suppressDropBonus = true;
+				Dungeon.level.drop( this, cell ).sprite.drop();
+			} finally {
+				com.shatteredpixel.shatteredpixeldungeon.levels.Level.suppressDropBonus = false;
+			}
 		}
 	}
 	

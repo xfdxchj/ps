@@ -64,15 +64,70 @@ public class FairyFragment extends Item {
 
 	@Override
 	public String name(){
-		//END(修订): 显示名改为「童话残片 1..9」而不是角色名 ——
-		//文档所有者要求不要在名字里暴露角色身份，
-		//角色名与设定保留在 desc() 里，翻开时才看到。
-		return "童话残片 " + (kind + 1);
+		//==== END(修订·残片名加上角色名) ====
+		//文档所有者定稿："把每个童话加上对应人物的名字。"
+		//
+		//原来只显示「童话残片 1..9」—— 那看不出这枚是谁的。
+		//现在改成「童话残片·角色名」，一眼能认出收集进度。
+		//
+		//角色对照（《BLACK SOULS》1 代，文档所有者提供）：
+		//  1 贞德（圣女贞德）          2 多萝西（绿野仙踪）
+		//  3 艾露玛（卖火柴的小女孩）   4 古兹（黄金鹅）
+		//  5 卡塔丽娜（山德利亚的圣女） 6 伊丽莎白（女王伊丽莎白）
+		//  7 蕾克（小红帽）            8 爱丽丝（爱丽丝梦游仙境）
+		//  9 仙度瑞拉（灰姑娘）
+		return "童话残片·" + characterName(kind);
+	}
+
+	/**
+	 * END(129): 这枚残片对应的角色名。
+	 *
+	 * <p>《BLACK SOULS》的角色对照（文档所有者提供）。
+	 */
+	public static String characterName(int kind){
+		switch (kind){
+			case 0: return "贞德";
+			case 1: return "多萝西";
+			case 2: return "艾露玛";
+			case 3: return "古兹";
+			case 4: return "卡塔丽娜";
+			case 5: return "伊丽莎白";
+			case 6: return "蕾克";
+			case 7: return "爱丽丝";
+			case 8: return "仙度瑞拉";
+			default: return String.valueOf(kind + 1);
+		}
+	}
+
+	/**
+	 * END(129): 这枚残片对应的**童话名**。
+	 *
+	 * <p>用于描述里那句"——出自《XXX》"。
+	 */
+	public static String fairyTaleName(int kind){
+		switch (kind){
+			case 0: return "圣女贞德";
+			case 1: return "绿野仙踪";
+			case 2: return "卖火柴的小女孩";
+			case 3: return "黄金鹅";
+			case 4: return "山德利亚的圣女";
+			case 5: return "女王伊丽莎白";
+			case 6: return "小红帽";
+			case 7: return "爱丽丝梦游仙境";
+			case 8: return "灰姑娘";
+			default: return "";
+		}
 	}
 
 	@Override
 	public String desc(){
-		return characterLore(kind);
+		//==== END(修订): 描述末尾加上"出自《童话名》" ====
+		//文档所有者要求把童话与人物对上 —— 名字里已经有角色，
+		//描述里补出对应的童话出处，两边一致。
+		String tale = fairyTaleName(kind);
+		String lore = characterLore(kind);
+		if (tale.isEmpty()) return lore;
+		return lore + "\n\n——出自《" + tale + "》";
 	}
 
 	@Override
@@ -88,6 +143,67 @@ public class FairyFragment extends Item {
 
 	@Override
 	public int value(){ return 0; }
+
+	/**
+	 * END(129 未知的童话书): 捡起残片时给书补一页，**残片本身不进背包**。
+	 *
+	 * <p>文档所有者定稿："（残片 → 残页 → 少女的炼金路径）去掉，
+	 * 因为如果已有碎片 1 捡到 2 回变 2 个 1，即使修复，占 9 个格子不好。"
+	 *
+	 * <h3>做法</h3>
+	 * 覆写 {@code doPickUp}：
+	 * <ol>
+	 *   <li>先把这一页记进《未知的童话书》</li>
+	 *   <li>**不调用 super** —— 于是残片不会进背包</li>
+	 *   <li>返回 true，让调用方把地上的那一堆销毁</li>
+	 * </ol>
+	 *
+	 * <h3>为什么这样就解决了"占 9 个格子"</h3>
+	 * 残片从"物品"变成了"事件" —— 捡起的一瞬间就转化成了书里的一页，
+	 * 背包里只剩那一本书。重复捡到同一枚也不会叠出第二个（书里只记 true）。
+	 *
+	 * <p>**注意**：这条只对**玩家主动捡取**生效。
+	 * 如果残片是通过其它途径获得的（炼金、代码发放），
+	 * 走的不是这个方法，那时它仍会作为物品存在 ——
+	 * 但配方已经取消，正常玩法里不会出现那种情况。
+	 */
+	@Override
+	public boolean doPickUp(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero hero,
+			int pos){
+		if (hero == null) return false;
+
+		//记进书里（书不在身上时也要提示，否则玩家不知道为什么没拿到）
+		UnknownFairyTale book = UnknownFairyTale.of(hero);
+		if (book == null) {
+			//没有书 → 退回原版行为（留在背包里），总比凭空消失好
+			return super.doPickUp(hero, pos);
+		}
+
+		boolean isNew = book.learn(kind);
+
+		if (isNew) {
+			com.shatteredpixel.shatteredpixeldungeon.utils.GLog.i(
+					"《未知的童话书》补上了一页 —— "
+							+ characterName(kind)
+							+ "（" + book.pageCount() + " / " + UnknownFairyTale.PAGES + "）。");
+			if (book.isComplete()) {
+				com.shatteredpixel.shatteredpixeldungeon.utils.GLog.p(
+						"书页已经写满了。最后一页上，写着一个你不认识的名字。");
+			}
+		} else {
+			com.shatteredpixel.shatteredpixeldungeon.utils.GLog.i(
+					"这一页你已经读过了（" + characterName(kind) + "）。");
+		}
+
+		//音效：与拾取金币同一套，给一点正反馈
+		try {
+			com.watabou.noosa.audio.Sample.INSTANCE.play(
+					com.shatteredpixel.shatteredpixeldungeon.Assets.Sounds.ITEM);
+		} catch (Throwable ignored) { }
+
+		//**不调用 super** —— 残片不进背包，直接销毁
+		return true;
+	}
 
 	/**
 	 * END(129): 角色的设定文本。

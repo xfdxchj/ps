@@ -42,7 +42,25 @@ public final class CrumblingStats {
 	public static final class Stats {
 		public final int hp, dmgMin, dmgMax, drMin, drMax, acc, eva;
 
+		/**
+		 * END(修复·经验没对调): 击杀这只怪给的经验。
+		 *
+		 * <p>文档所有者反馈："牢地碎破的怪物经验没有对调。"
+		 *
+		 * <p>含义：既然 1 区的怪是"原 5 区的怪"（换成 Succubus/Eye/Scorpio
+		 * 这些深层怪），那**经验也该按原区域算** —— 否则玩家在最危险的
+		 * 1 区拿 1 区的经验，等于难度涨了收益没涨。
+		 *
+		 * <p>{@code -1} 表示"不在表里，用原版经验"。
+		 */
+		public final int exp;
+
 		public Stats(int hp, int dmgMin, int dmgMax, int drMin, int drMax, int acc, int eva) {
+			this(hp, dmgMin, dmgMax, drMin, drMax, acc, eva, -1);
+		}
+
+		public Stats(int hp, int dmgMin, int dmgMax, int drMin, int drMax,
+					 int acc, int eva, int exp) {
 			this.hp = hp;
 			this.dmgMin = dmgMin;
 			this.dmgMax = dmgMax;
@@ -50,6 +68,7 @@ public final class CrumblingStats {
 			this.drMax = drMax;
 			this.acc = acc;
 			this.eva = eva;
+			this.exp = exp;
 		}
 	}
 
@@ -60,6 +79,34 @@ public final class CrumblingStats {
 							int drMin, int drMax, int acc, int eva) {
 		BY_REGION.computeIfAbsent(region, k -> new HashMap<>())
 				.put(mob, new Stats(hp, dmgMin, dmgMax, drMin, drMax, acc, eva));
+	}
+
+	/** END(修复·经验没对调): 带经验的版本。 */
+	private static void putExp(int region, String mob, int hp, int dmgMin, int dmgMax,
+							   int drMin, int drMax, int acc, int eva, int exp) {
+		BY_REGION.computeIfAbsent(region, k -> new HashMap<>())
+				.put(mob, new Stats(hp, dmgMin, dmgMax, drMin, drMax, acc, eva, exp));
+	}
+
+	/**
+	 * END(修复·经验没对调): 这只怪在当前区域应给的经验。
+	 *
+	 * <p>表里没写就用原版经验（返回 -1，调用方保持原值）。
+	 *
+	 * <p>经验不是逐只填的 —— 而是按**区域**给一个统一值：
+	 * 因为"1 区的怪来自原 5 区"，所以它们的经验就是原 5 区怪的经验量级。
+	 * 原版各区域的典型经验是 1/2/3/4/5 区 → 1/3/5/8/12 左右，
+	 * 这里按**每区域统一**给出，比逐只标更不容易出错。
+	 */
+	public static int expForRegion(int region) {
+		switch (region) {
+			case 1:  return 12;    //1 区用原 5 区的怪 → 给 5 区经验
+			case 2:  return 8;     //2 区用原 4 区
+			case 3:  return 5;     //3 区用原 3 区（不变）
+			case 4:  return 3;     //4 区用原 2 区
+			case 5:  return 1;     //5 区用原 1 区
+			default: return -1;
+		}
 	}
 
 	static {

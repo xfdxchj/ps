@@ -70,6 +70,39 @@ public class RabbitRing extends Ring {
 
 	@Override public String name(){ return "黑兔戒指"; }
 
+	//==================================================================
+	//END(修复·黑兔戒指的贴图会被 reset() 冲掉)
+	//==================================================================
+	//
+	//文档所有者反馈："正常戒指也变成黑兔戒指。"（现象上是黑兔戒指
+	//显示成了普通戒指的样子 —— 两者共用同一套"戒指"贴图槽位）
+	//
+	//根因：{@code Ring.reset()} 里是这么写的：
+	//    if (handler != null && handler.contains(this)){
+	//        image = handler.image(this);          // 在表里 → 用它自己的宝石图
+	//    } else {
+	//        image = ItemSpriteSheet.RING_GARNET;  // 不在表里 → 石榴石
+	//        gem = "garnet";
+	//    }
+	//而 {@code handler} 的键是 {@code Generator.Category.RING.classes}
+	//（原版那 13 种戒指）—— **黑兔戒指不在其中**，于是每次 reset() 都会
+	//把它改成石榴石贴图，看起来就"变成普通戒指"了。
+	//
+	//什么时候会被 reset()：{@code Bones.java} 在玩家死亡留下骨骸时
+	//会对遗物逐个调用 {@code item.reset()}（还有若干其它"跨局一致性"路径）。
+	//
+	//修法：覆写 reset()，先让基类做它的事（处理 levelsToID 等状态），
+	//然后把自己的贴图与宝石名重新按正确值设回去。
+	@Override
+	public void reset() {
+		super.reset();
+		image = ItemSpriteSheet.GRIMM_RABBIT_RING;
+		//gem 是 Ring 的 private 字段，子类改不了 —— 但那是**未鉴定戒指**才需要的
+		//（用来在鉴定前保留"宝石种类"的记忆）。黑兔戒指永远已鉴定，
+		//所以 gem 的值对玩家不可见，保持基类设的 "garnet" 也无妨。
+		levelKnown = true;
+	}
+
 	@Override
 	public String info(){
 		return "一圈几乎看不见的黑铁。它让时间对佩戴者格外宽容。\n\n" +

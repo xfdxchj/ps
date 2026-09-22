@@ -56,6 +56,9 @@ public final class InfinityRecipes {
 
 		@Override
 		public boolean testIngredients(ArrayList<Item> ingredients) {
+			//END(214 无尽碎片): 勾了这条挑战才有这套配方
+			if (!com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.infinityShardEnabled()) return false;
 			if (ingredients.size() != 1) return false;
 			Item it = ingredients.get(0);
 			if (it == null) return false;
@@ -118,6 +121,9 @@ public final class InfinityRecipes {
 
 		@Override
 		public boolean testIngredients(ArrayList<Item> ingredients) {
+			//END(214 无尽碎片)
+			if (!com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.infinityShardEnabled()) return false;
 			if (ingredients.size() != 1) return false;
 			Item it = ingredients.get(0);
 			if (it == null) return false;
@@ -200,6 +206,9 @@ public final class InfinityRecipes {
 
 		@Override
 		public boolean testIngredients(ArrayList<Item> ingredients) {
+			//END(214 无尽碎片): 勾了这条挑战才有这套配方
+			if (!com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.infinityShardEnabled()) return false;
 			if (ingredients.size() != 1) return false;
 			Item it = ingredients.get(0);
 			if (!(it instanceof InfinityMaterials.InfinityShard)) return false;
@@ -263,6 +272,9 @@ public final class InfinityRecipes {
 
 		@Override
 		public boolean testIngredients(ArrayList<Item> ingredients) {
+			//END(214 无尽碎片): 勾了这条挑战才有这套配方
+			if (!com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.infinityShardEnabled()) return false;
 			if (ingredients.size() < 2 || ingredients.size() > 3) return false;
 
 			InfinityMaterials.InfinityCore.Kind needKind = null;

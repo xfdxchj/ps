@@ -48,6 +48,11 @@ public final class EndWandEvolution {
         REGISTRY.put(WandOfRegrowth.class,       EvolvedWandOfRegrowth.class);
         REGISTRY.put(WandOfTransfusion.class,    EvolvedWandOfTransfusion.class);
         REGISTRY.put(WandOfWarding.class,        EvolvedWandOfWarding.class);
+        //END(挑战 217 爆裂魔法): 它的进化版「焚天法杖」
+        REGISTRY.put(com.shatteredpixel.shatteredpixeldungeon.endcontent.wands
+                .WandOfMeteor.class,
+                com.shatteredpixel.shatteredpixeldungeon.endcontent.wands
+                        .EvolvedWandOfMeteor.class);
     }
 
     public static boolean hasEvolution( Wand wand ){

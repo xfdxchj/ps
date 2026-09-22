@@ -18,7 +18,14 @@ import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 public class DaggerTeleport extends EmbedDagger {
 
 	//冷却(回合)：两次“回收传送”之间需隔这么久
-	private static final float TELEPORT_COOLDOWN = 100f;
+	/**
+	 * END(修订·文档所有者定稿): 100 → **30**。
+	 *
+	 * <p>原文："刺杀匕首传送 cd 为 30 回合。"
+	 * 原来是 100 回合 —— 那意味着一整场 Boss 战基本只能用一次，
+	 * 传送的价值被压得太低。30 回合是"每场战斗能用一两次"的量级。
+	 */
+	private static final float TELEPORT_COOLDOWN = 30f;
 	//传送成功后给英雄的隐匿回合
 	private static final float TELEPORT_GUARD = 1f;
 

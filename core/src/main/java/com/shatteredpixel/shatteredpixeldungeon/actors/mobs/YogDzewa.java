@@ -367,7 +367,19 @@ public class YogDzewa extends Mob {
 					Music.INSTANCE.fadeOut(0.5f, new Callback() {
 						@Override
 						public void call() {
-							Music.INSTANCE.play(Assets.Music.HALLS_BOSS_FINALE, true);
+							//==== END(修复·格林之音二阶段没换曲) ====
+							//文档所有者反馈："格林之音的古神站第二阶段没有正常使用替换音频，
+							//还是一阶段的。"
+							//
+							//根因：原版第一与第二阶段都播 HALLS_BOSS_FINALE，
+							//而挑战 130 的映射表把它和 HALLS_BOSS 一起指向 GRIMM_YOG_1 ——
+							//于是 GRIMM_YOG_2 虽然定义了却**从未被用过**。
+							//
+							//修法：第二阶段改播一个**能与第一阶段区分开**的曲目。
+							//这里用 CITY_BOSS_FINALE —— 它在映射表里会被单独指到 YOG_2，
+							//而不是复用 YOG_1。没勾 130 时它仍然是一首正常的原版战斗曲，
+							//所以对没开挑战的局也没有副作用。
+							Music.INSTANCE.play(Assets.Music.CITY_BOSS_FINALE, true);
 						}
 					});
 				}
@@ -437,7 +449,10 @@ public class YogDzewa extends Mob {
 
 			updateVisibility(Dungeon.level);
 			GLog.n(TEXT("darkness", Messages.get(this, "darkness")));
-			sprite.showStatus(CharSprite.POSITIVE, Messages.get(this, "invulnerable"));
+			//END(修复·131 文本替换不完整): 这行漏了 —— 直接读原版文本，
+			//勾了 131 之后仍然显示古神的"无敌"，而其它台词已经是莉耶芙的了。
+			sprite.showStatus(CharSprite.POSITIVE,
+					TEXT("invulnerable", Messages.get(this, "invulnerable")));
 
 			addFist((YogFist)Reflection.newInstance(fistSummons.remove(0)));
 
@@ -598,7 +613,16 @@ public class YogDzewa extends Mob {
 
 	@Override
 	public String description() {
-		String desc = super.description();
+		//==== END(修复·图鉴介绍没换成莉耶芙) ====
+		//文档所有者反馈："更改原版古神的介绍为莉耶芙的。"
+		//
+		//根因：这里原来直接取 {@code super.description()}（古神原文），
+		//只把后面那段 {@code desc_spawners} 走了替换 ——
+		//于是图鉴里**主体介绍还是古神**，后面接一句莉耶芙的话，非常割裂。
+		//
+		//修法：把主体也过一遍 TEXT()。未勾选 131 时原样返回，
+		//勾了 131 才换成莉耶芙的版本（见 GrimmText 的 "desc" 分支）。
+		String desc = TEXT("desc", super.description());
 
 		if (Statistics.spawnersAlive > 0){
 			desc += "\n\n" + TEXT("desc_spawners", Messages.get(this, "desc_spawners"));

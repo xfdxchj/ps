@@ -85,22 +85,56 @@ public class Alice extends Mob {
 	/** END(129): 爱丽丝的对话。 */
 	public static void talk(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero hero) {
 		if (hero == null) return;
+		//逐句播放（文档所有者定稿）
+		speakLine(0);
+	}
 
-		GameScene.show(new WndOptions(
+	//==================================================================
+	//END(129 心爱的少女): 逐句对话
+	//==================================================================
+	//
+	//文档所有者给定 8 句正式台词，要求**逐句**显示。
+	//
+	//做法：每句一个 WndOptions（"继续"按钮），点完自动弹下一句，
+	//最后一句点完才给戒指并送回原位。
+	//
+	//为什么用 WndOptions 而不是 WndMessage：
+	//WndOptions 的按钮回调是**确定的**（onSelect），
+	//而 WndMessage 关闭时只能靠覆写 onBackPressed ——
+	//如果玩家用返回键关，链就断了。这里必须保证"点一下就走下一步"。
+
+	/** 正式台词（文档所有者逐字提供）。 */
+	private static final String[] LINES = {
+		"……贵安。",
+		"又见面了，格林大人。",
+		"我是爱丽丝。",
+		"拿着这个，对你会有帮助的。",
+		"最深处的，是你认识的「她」。\n是时候拉开帷幕了。",
+		"所以，请千万不要在中途迷失了自己的心。",
+		"我的任务，到此为止了。",
+		"那么，再会了。",
+	};
+
+	/** END: 播第 n 句；说完最后一句才给戒指。 */
+	private static void speakLine(final int index) {
+		if (index < 0 || index >= LINES.length) {
+			//台词说完 → 给戒指并送回原位
+			giveRingAndReturn();
+			return;
+		}
+
+		boolean last = (index == LINES.length - 1);
+
+		GameScene.show(new com.shatteredpixel.shatteredpixeldungeon.windows.WndOptions(
 				"爱丽丝",
-				"爱丽丝终于发觉了。\n" +
-				"这个不可思议的世界是伪造出来的。\n\n" +
-				"一切都不过是被谁所创造出来的妄想罢了……\n" +
-				"自己也是如此。\n\n" +
-				"「你也发现了吧？那本书里的字，是别人写的。」",
-				"「……是的。」",
-				"「我不知道你在说什么。」"
+				LINES[index],
+				last ? "「再会。」" : "「……」"
 		) {
 			@Override
-			protected void onSelect(int index) {
-				//两个选项都给戒指 —— 承认与否不影响结局，
-				//这本身就是"世界是伪造的"这个设定的体现。
-				giveRingAndReturn();
+			protected void onSelect(int choice) {
+				//无论选哪个都继续 —— 这里只是"下一句"的按钮，
+				//不是分支（原表没给分支，台词本身也没有分岔）
+				speakLine(index + 1);
 			}
 		});
 	}

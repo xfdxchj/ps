@@ -868,8 +868,19 @@ public class WndChallenges extends Window {
 		com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon.scene()
 				.addToFront(new com.shatteredpixel.shatteredpixeldungeon.windows
 						.WndOptions(
-						Messages.get(this, "prereq_title", d.name),
-						Messages.get(this, "prereq_body", names.toString()),
+						Messages.get(this, "prereq_title"),
+						//==== END(修复·前置弹窗显示 %2Ss) ====
+						//文档所有者反馈："需要前置规则 「%1$s」需要先启用以下规则：%2Ss
+						//是否把它们一并勾选？"
+						//
+						//根因：文案里有 **两个** 占位符（%1$s 规则名、%2$s 前置列表），
+						//而这里只传了**一个**参数（前置列表）。
+						//String.format 遇到缺少的参数会抛异常，
+						//被 Messages.format 的 catch 吞掉后**返回原始模板** ——
+						//于是玩家看到的就是带 %1$s / %2$s 的原文。
+						//
+						//修法：按顺序把两个都传进去。
+						Messages.get(this, "prereq_body", d.name, names.toString()),
 						Messages.get(this, "prereq_yes"),
 						Messages.get(this, "prereq_no")) {
 					@Override
@@ -1000,7 +1011,22 @@ public class WndChallenges extends Window {
 		if (catContent != null) {
 			catContent.setPos(0, top);
 		}
-		top += catHeight() + 1;
+		//==== END(改版·通过等级挪到分类区第 4 行) ====
+		//文档所有者要求："删除挑战界面的通过等级的文字，
+		//或者放在分类区第 4 行的位置。"
+		//
+		//分类栏是 3 排（4+4+3），所以"第 4 行"就是分类栏正下方那一条。
+		//放在这里的好处：
+		//  · 不占额外垂直空间（那一行本来就空着）
+		//  · 与"当前选了哪些分类"贴在一起，读起来连贯
+		//  · 底部的确定/归零键不再和它挤在同一行
+		float catBottom = top + catHeight();
+		top = catBottom + 1;
+
+		if (passLevelText != null) {
+			//紧贴分类栏底部（第 4 行的位置）
+			passLevelText.setPos(4, catBottom + 1);
+		}
 
 		if (editable && randomBar != null) {
 			randomBar.setRect(0, top, WIDTH, RANDOM_BAR_H);
@@ -1057,9 +1083,8 @@ public class WndChallenges extends Window {
 
 		resize(WIDTH, (int) (top + bottomH));
 
-		if (passLevelText != null) {
-			passLevelText.setPos(4, top + 3);
-		}
+		//END(改版·通过等级): 位置已在分类栏下方设好（见上面那处），
+		//这里不再重复设置 —— 否则会把它又拽回底部的按钮那一行。
 
 		//END(分页): 页码文字与按钮可用状态（页数变化后要刷新）
 		updatePageLabel();

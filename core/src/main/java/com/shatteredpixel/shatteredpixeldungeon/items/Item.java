@@ -120,10 +120,29 @@ public class Item implements Bundlable {
 			return actions;      //空列表：玩家在背包里对它没有任何操作
 		}
 
+		//==== END(修复·160 氪金大佬没有入口) ====
+		//文档所有者反馈："氪金大佬没有效果，无法升级。"
+		//
+		//根因：ChallengeEffects 里的 whaleUpgrade()/whaleCanUpgrade()
+		//逻辑全都写好了，但**没有任何 UI 入口**去调用它 ——
+		//玩家在背包里对物品只有"丢弃/投掷"两个选项，自然点了没反应。
+		//
+		//修法：这里给可升级的物品加一个"金币强化"动作。
+		//只有勾选了 160 且金币够时才出现 —— 没勾这条规则时列表与原来完全一致。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.whaleCanUpgrade(this)) {
+			actions.add( AC_WHALE );
+		}
+
 		actions.add( AC_DROP );
 		actions.add( AC_THROW );
 		return actions;
 	}
+
+	//==== END(160 氪金大佬): 用金币强化的动作名 ====
+
+	/** 背包动作：花金币强化（见 ChallengeEffects.whaleUpgrade）。 */
+	public static final String AC_WHALE = "WHALE_UPGRADE";
 
 	//==== END(挑战 56 装备绑定) ====
 
@@ -192,7 +211,22 @@ public class Item implements Bundlable {
 	public void doDrop( Hero hero ) {
 		hero.spendAndNext(TIME_TO_DROP);
 		int pos = hero.pos;
-		Dungeon.level.drop(detachAll(hero.belongings.backpack), pos).sprite.drop(pos);
+
+		//==== END(修复·丰饶刷物品) ====
+		//文档所有者反馈："丰饶可以刷物品，原理扔地上有概率翻倍。"
+		//
+		//根因：Level.drop() 是所有掉落的公共入口，勾了 35 丰饶之后
+		//连**玩家主动丢弃**的东西也会被追加一份 —— 丢 1 瓶捡回 2 瓶，无限刷。
+		//
+		//修法：走这条"玩家丢弃"路径时把抑制标记置位，
+		//让 Level.drop() 跳过额外掉落那一段。用 try/finally 保证一定复位
+		//（否则一次异常就会让后续所有掉落都不再吃丰饶）。
+		try {
+			com.shatteredpixel.shatteredpixeldungeon.levels.Level.suppressDropBonus = true;
+			Dungeon.level.drop(detachAll(hero.belongings.backpack), pos).sprite.drop(pos);
+		} finally {
+			com.shatteredpixel.shatteredpixeldungeon.levels.Level.suppressDropBonus = false;
+		}
 	}
 
 	//resets an item's properties, to ensure consistency between runs
@@ -226,6 +260,26 @@ public class Item implements Bundlable {
 				doThrow(hero);
 			}
 			
+		} else if (action.equals( AC_WHALE )) {
+			
+			//==== END(修复·160 氪金大佬没有入口) ====
+			//花金币强化。真正的扣钱与 upgrade() 在 whaleUpgrade() 里，
+			//这里只负责"从背包动作触发它"以及给玩家反馈。
+			//
+			//用 RedButton 那种二次确认？—— 不必：
+			//动作列表里这一项本来就写着费用（见下方的 name()），
+			//玩家点它就是要花这个钱；而且升级是**不可逆的正向操作**，
+			//没有"点错了亏了"的风险（顶多是花钱花早了）。
+			if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.whaleUpgrade(this)) {
+				hero.spend( 1f );
+				hero.busy();
+				com.shatteredpixel.shatteredpixeldungeon.utils.GLog
+						.p("金币化作了力量。");
+			} else {
+				com.shatteredpixel.shatteredpixeldungeon.utils.GLog
+						.w("金币不够。");
+			}
 		}
 	}
 

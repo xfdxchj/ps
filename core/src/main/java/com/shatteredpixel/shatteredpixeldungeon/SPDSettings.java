@@ -261,15 +261,26 @@ public class SPDSettings extends GameSettings {
 	public static final String KEY_CHALLENGE_MASK_1 = "challenge_mask_1";
 	/** 完整掩码第 3 段（位号 128–191）。 */
 	public static final String KEY_CHALLENGE_MASK_2 = "challenge_mask_2";
+	/** 完整掩码第 4 段（位号 192–255）。 */
+	public static final String KEY_CHALLENGE_MASK_3 = "challenge_mask_3";
 
 	public static void challengeMask(
 			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeMask mask ) {
 		long[] words = (mask == null)
-				? new long[3]
+				? new long[4]
 				: mask.toLongArray();
+		//==== END(修复·新规则勾选存不进去) ====
+		//文档所有者反馈："选择为何系列等后返回还是未选择。"
+		//
+		//根因：这里原来只写到 KEY_CHALLENGE_MASK_2（位号 128–191），
+		//而 ChallengeMask.WORDS 在修复"192 位不够"那个 bug 时已经改成了 4 ——
+		//于是 **words[3]（位号 192–255）被直接丢弃**。
+		//202 为何无X / 209-216 无尽系列全落在这一段，勾了保存不上，
+		//返回后自然显示"未选择"。
 		put( KEY_CHALLENGE_MASK_0, words.length > 0 ? words[0] : 0L );
 		put( KEY_CHALLENGE_MASK_1, words.length > 1 ? words[1] : 0L );
 		put( KEY_CHALLENGE_MASK_2, words.length > 2 ? words[2] : 0L );
+		put( KEY_CHALLENGE_MASK_3, words.length > 3 ? words[3] : 0L );
 
 		//同步写回旧 int 键，保证老代码路径（和老版本回退）仍能读到已实装的那 12 条
 		put( KEY_CHALLENGES, com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
@@ -281,7 +292,8 @@ public class SPDSettings extends GameSettings {
 		long[] words = new long[]{
 				getLong( KEY_CHALLENGE_MASK_0, 0L ),
 				getLong( KEY_CHALLENGE_MASK_1, 0L ),
-				getLong( KEY_CHALLENGE_MASK_2, 0L )
+				getLong( KEY_CHALLENGE_MASK_2, 0L ),
+				getLong( KEY_CHALLENGE_MASK_3, 0L )
 		};
 
 		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeMask fromWords =

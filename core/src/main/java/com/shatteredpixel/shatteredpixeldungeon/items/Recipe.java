@@ -257,12 +257,26 @@ public abstract class Recipe {
 	};
 	
 	//END 法杖蜕变：+8 法杖 ＋ 强化符石 → 对应进化法杖（由一条动态配方覆盖全部 13 把）
-	//END 129 心爱的少女：3 枚不同残片 → 1 张残页；3 张残页 → 「心爱的少女」
 	private static Recipe[] endVariantRecipes = new Recipe[]{
 		new com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolveWandRecipe(),
-		new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm.FairyFragmentRecipe(),
-		new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
-				.FairyFragmentRecipe.GirlRecipe()
+		//==== END(删除·童话残片的炼金路径) ====
+		//文档所有者定稿："（残片 → 3 残页 → 炼金 → 少女 → 去 999 层）
+		//这个方法去掉，因为如果已有碎片 1 捡到 2 回变 2 个 1，
+		//即使修复，占 9 个格子不好。"
+		//
+		//原因：9 种残片各占一格（还得再加残页、少女），
+		//背包里光这一套就吃掉十几个格子 —— 而玩家真正需要的
+		//只是"我集齐了没有"这一个信息。
+		//
+		//现在改走《未知的童话书》：开局给一本书，捡到残片时
+		//书自动记一页（残片本身不留背包），集齐 9 页后直接用书去 999 层。
+		//见 UnknownFairyTale。
+		//
+		//两条配方（FairyFragmentRecipe / GirlRecipe）保留在代码里不删 ——
+		//万一以后要恢复，取消下面两行的注释即可。
+		//new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm.FairyFragmentRecipe(),
+		//new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+		//		.FairyFragmentRecipe.GirlRecipe()
 	};
 	
 	public static ArrayList<Recipe> endVariantRecipeList(){

@@ -72,6 +72,14 @@ public enum Music {
 	/** 曲目转换器：输入原曲目路径，返回实际要播放的路径。 */
 	public interface TrackMapper {
 		String map(String original);
+
+		/**
+		 * END(修复·取消勾选 130 后音乐没换回): 告知"当前实际在播的曲目"。
+		 *
+		 * <p>映射之后才知道到底播了哪首 —— 取消勾选时那一侧要靠它
+		 * 找到该换回的原版曲。默认空实现，不影响既有实现类。
+		 */
+		default void notePlaying(String playing) {}
 	}
 
 	private static TrackMapper trackMapper;
@@ -107,6 +115,14 @@ public enum Music {
 			if (mapped != null) {
 				assetName = mapped;
 			}
+		}
+
+		//==== END(修复·取消勾选 130 后音乐没换回) ====
+		//映射**之后**的 assetName 才是"实际在播的曲目" ——
+		//把它告诉 trackMapper 那一侧，取消勾选时才知道该把哪首换回原版
+		//（见 ChallengeSfx.reconcileGrimmMusic）。
+		if (trackMapper != null) {
+			trackMapper.notePlaying(assetName);
 		}
 
 		//iOS cannot play ogg, so we use an mp3 alternative instead

@@ -231,11 +231,25 @@ public abstract class Level implements Bundlable {
 
 			addItemToSpawn(Generator.random(Generator.Category.FOOD));
 
-			if (Dungeon.posNeeded()) {
+			//==== END(挑战 126 格林之心): 取消力量药水与升级卷轴的生成 ====
+			//文档所有者定稿："取消力量药水与升级卷轴的生成。"
+			//
+			//原因：这条挑战**关闭了等级系统**（见 Hero.earnExp），
+			//成长完全走"黑之魂"那条线 —— 六项属性用魂加。
+			//再刷力量药水/升级卷轴会让两条成长线打架
+			//（而且升级卷轴在没有等级的情况下毫无意义）。
+			//
+			//拦在这里而不是 Generator：那是"所有随机生成"的公共入口，
+			//拦在那里会连带影响商店、宝箱、怪物掉落 ——
+			//而文档所有者说的是"生成"（关卡刷新），所以拦这一处最准确。
+			boolean grimmHeart = com.shatteredpixel.shatteredpixeldungeon.endcontent
+					.grimm.BlackSoul.enabled();
+
+			if (!grimmHeart && Dungeon.posNeeded()) {
 				Dungeon.LimitedDrops.STRENGTH_POTIONS.count++;
 				addItemToSpawn( new PotionOfStrength() );
 			}
-			if (Dungeon.souNeeded()) {
+			if (!grimmHeart && Dungeon.souNeeded()) {
 				Dungeon.LimitedDrops.UPGRADE_SCROLLS.count++;
 				//every 2nd scroll of upgrade is removed with forbidden runes challenge on
 				//TODO while this does significantly reduce this challenge's levelgen impact, it doesn't quite remove it
@@ -1389,8 +1403,17 @@ public abstract class Level implements Bundlable {
 			return heap;
 		}
 		//倍率 > 1 时追加一份（不会递归调用本方法，避免死循环）
-		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
-				.ChallengeEffects.extraDropCopy(item)) {
+		//==== END(修复·丰饶刷物品) ====
+		//文档所有者反馈："丰饶可以刷物品，原理扔地上有概率翻倍。"
+		//
+		//根因：{@code Level.drop()} 是**所有掉落**的公共入口 —— 既包括
+		//关卡生成的战利品，也包括**玩家主动丢弃**的东西（Item.doDrop 走这里）。
+		//于是勾了 35 丰饶之后，丢 1 瓶药水能在地上捡回 2 瓶，无限刷。
+		//
+		//修法：只在"不是玩家主动丢弃"时才追加。
+		//用一个显式标记区分 —— 玩家丢弃的路径会把它置位（见 Item.doDrop）。
+		if (!suppressDropBonus && com.shatteredpixel.shatteredpixeldungeon
+				.endcontent.challenge.ChallengeEffects.extraDropCopy(item)) {
 			Item extra = item.duplicate();
 			if (extra != null && extra != item) {
 				//把追加的那份放到同一格（稍后 heap.drop 会合并数量）
@@ -1401,7 +1424,17 @@ public abstract class Level implements Bundlable {
 		return dropNoChallenge(item, cell);
 	}
 
-	/** END(挑战): 实际的掉落逻辑 —— 与原本的 drop() 完全一致，只是不再经过挑战过滤。 */
+	/**
+	 * END(修复·丰饶刷物品): 是否抑制"额外掉落"。
+	 *
+	 * <p>玩家**主动丢弃**物品时会置位 —— 那一路不该吃丰饶的翻倍，
+	 * 否则丢一瓶药水能捡回两瓶，变成无限刷物品。
+	 *
+	 * <p>关卡生成战利品时保持 false（那才是丰饶该生效的地方）。
+	 */
+	public static boolean suppressDropBonus = false;
+
+	/** END(修复·丰饶刷物品): 实际的掉落逻辑 —— 与原本的 drop() 完全一致，只是不再经过挑战过滤。 */
 	private Heap dropNoChallenge( Item item, int cell ) {
 
 		Heap heap = heaps.get( cell );

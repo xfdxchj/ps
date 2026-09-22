@@ -1693,6 +1693,30 @@ public final class ChallengeEffects {
 	 * <p>配置表说明："原1区来源的怪物（出现在5区）已追加移速×2，永久祝福"。
 	 * 这些怪物的表项在 5 区，所以判据是"当前区域为 5 且该怪在表中有 5 区项"。
 	 */
+	/**
+	 * END(修复·牢地碎破经验没对调): 击杀这只怪应给的经验。
+	 *
+	 * <p>文档所有者反馈："牢地碎破的怪物经验没有对调。"
+	 *
+	 * <p>既然 1 区的怪是"原 5 区的怪"（Succubus/Eye/Scorpio 这些深层怪），
+	 * 那**经验也该按原区域算** —— 否则玩家在最危险的 1 区拿 1 区的经验，
+	 * 等于难度涨了收益没涨。原表把这条挑战定位成"怪物强化"，
+	 * 但倍率重写本来就该同时覆盖 生命/伤害/护甲/命中/闪避/**经验**。
+	 *
+	 * @param mob 被击杀的怪
+	 * @return 应给的经验；-1 表示用原版值
+	 */
+	public static int crumblingExp(Char mob) {
+		if (!on(CRUMBLING_DUNGEON) || mob == null) return -1;
+		if (!(mob instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob)) {
+			return -1;
+		}
+		//只对"在表里的怪"生效 —— 表外的怪保持原版经验
+		if (crumblingRow(mob) == null) return -1;
+		return com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.CrumblingStats.expForRegion(crumblingRegion());
+	}
+
 	public static boolean crumblingSwiftBlessed(Char mob) {
 		if (!on(CRUMBLING_DUNGEON) || mob == null) return false;
 		return crumblingRegion() == 5 && crumblingRow(mob) != null;
@@ -2055,12 +2079,29 @@ public final class ChallengeEffects {
 		//==== END(改版·格林之器不给开局武器) ====
 		//文档所有者要求："格林之器不要开局给武器，获得方式为和 5 阶武器一样刷新。"
 		//
-		//所以这里**不再发放** 125/133/136 的三件武器（银色短铳、神天使双剑、
-		//怨恨之剑、勇剑沃柏尔）—— 它们改由 {@link #grimmWeaponDropChance()}
+		//所以这里**不再发放** 133/136 的两件近战武器（神天使双剑、
+		//怨恨之剑+勇剑沃柏尔）—— 它们改由 {@link #grimmWeaponDropChance()}
 		//在关卡掉落时按 5 阶武器的概率出现。
 		//
 		//仍然发放的是"道具类"（怀表、戒指、镇魂歌…）—— 那些不是武器，
 		//原表也没说它们要改成掉落。
+
+		//==== END(修订·格林之器1 改回开局携带) ====
+		//文档所有者定稿："**格林之器1 改为开局携带**"。
+		//
+		//也就是把 125 从"掉落"改回"开局直接给"：
+		//  · 银色短铳（主武器）
+		//  · 兔子的怀表（配套道具）
+		//
+		//133/136 维持掉落 —— 只有 1 改回开局。
+		//这样格林之器1 是一个"起手就有专武"的流派，
+		//而 2/3 仍然是"打到才有"的目标。
+		if (on(GRIMM_WEAPON)) {
+			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+					.SilverGun());
+			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+					.RabbitWatch());
+		}
 
 		//127 格林之戒：黑兔戒指
 		if (on(GRIMM_RING)) {
@@ -2081,17 +2122,39 @@ public final class ChallengeEffects {
 					.AlmightyPurse());
 		}
 
-		//==== END(蕴生之剑): 开局发放 ====
+		//==== END(129 未知的童话书): 开局发放 ====
+		//文档所有者定稿："心爱的少女增加物品，未知的童话书，
+		//每获得童话就补齐一部分，完整后去往 999 层。"
+		//
+		//所以勾选 129 时开局就给一本空书 —— 它既是收集进度，
+		//也是集齐之后的"传送钥匙"（见 UnknownFairyTale.execute）。
+		if (on(BELOVED_GIRL)) {
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+					.UnknownFairyTale.grant();
+		}
+
+		//==== END(216 蕴生之剑): 开局发放 ====
 		//文档所有者定稿："增加武器，可以随着升级数提升阶数（基础伤害与成长），
 		//开局可获得。"
 		//
-		//它不是挑战奖励，而是**无条件**的开局装备 —— 与家传法杖/神射戒指
-		//那几条"勾了才给"的规则不同，所以这里不看任何掩码。
+		//==== END(修订·改由挑战 216 控制) ====
+		//文档所有者定稿："不是，是独立挑战" —— 216 是一条独立规则，勾了才给。
+		//原来做成"无条件发放"，那是错的。
 		//
 		//一把 1 阶的蕴生之剑起手很弱（1-11 伤害），要靠强化才能长起来 ——
 		//这正是它的定位："力量是养出来的"。
-		out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons
-				.NurturedSword());
+		if (on(NURTURED_SWORD)) {
+			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons
+					.NurturedSword());
+		}
+
+		//==== END(217 爆裂魔法): 开局发放法杖 ====
+		//文档所有者定稿："爆裂法杖也是挑战"。
+		//与其它"无尽"系列一样：勾了才给。
+		if (on(METEOR_WAND)) {
+			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.wands
+					.WandOfMeteor());
+		}
 
 		//==== END(188 时间之力): 开局发放时间沙漏 ====
 		//文档所有者指出："188 的物品是原版已有的" ——
@@ -5136,8 +5199,11 @@ public final class ChallengeEffects {
 
 	public static com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee
 			.MeleeWeapon rollGrimmWeaponDrop() {
-		//三条武器规则都没勾 → 直接跳过（零开销）
-		boolean any = on(GRIMM_WEAPON) || on(GRIMM_WEAPON_2) || on(GRIMM_WEAPON_3);
+		//==== END(修订·格林之器1 改为开局携带) ====
+		//125（格林之器1）已经改回开局发放，它的武器**不进掉落池**。
+		//所以这里只看 2/3 —— 否则只勾 125 时会白白走一遍掉落判定
+		//（池子是空的，浪费一次随机数）。
+		boolean any = on(GRIMM_WEAPON_2) || on(GRIMM_WEAPON_3);
 		if (!any) return null;
 
 		//楼层门槛：只有第 5 区（21 层起）才有机会
@@ -5338,6 +5404,41 @@ public final class ChallengeEffects {
 	//==================================================================
 
 	public static final int INFINITE_GREED = 209;
+
+	//==== END(无尽系列·六条独立挑战) ====
+	//文档所有者定稿：这六条各自独立，各自控制自己的内容。
+	/** 211 寰宇支配之剑。 */
+	public static final int UNIVERSE_SWORD    = 211;
+	/** 212 虚空不灭之甲。 */
+	public static final int VOID_ARMOR        = 212;
+	/** 213 轮回噬灭之戒。 */
+	public static final int REINCARNATION_RING= 213;
+	/** 214 无尽碎片（炼金体系）。 */
+	public static final int INFINITY_SHARD    = 214;
+	/** 215 天堂陨落长弓。 */
+	public static final int HEAVEN_FALL_BOW   = 215;
+	/** 216 蕴生之剑。 */
+	public static final int NURTURED_SWORD    = 216;
+	/** 217 爆裂魔法（法杖）。 */
+	public static final int METEOR_WAND       = 217;
+
+	//---- 各条的开关查询 ----
+
+	/** END(217): 是否开局发放爆裂魔法法杖。 */
+	public static boolean meteorWandEnabled() { return on(METEOR_WAND); }
+
+	/** END(211): 是否解锁寰宇支配之剑。 */
+	public static boolean universeSwordEnabled() { return on(UNIVERSE_SWORD); }
+	/** END(212): 是否解锁虚空不灭之甲。 */
+	public static boolean voidArmorEnabled()     { return on(VOID_ARMOR); }
+	/** END(213): 是否解锁轮回噬灭之戒。 */
+	public static boolean reincarnationRingEnabled(){ return on(REINCARNATION_RING); }
+	/** END(214): 是否解锁无尽炼金体系。 */
+	public static boolean infinityShardEnabled() { return on(INFINITY_SHARD); }
+	/** END(215): 是否解锁天堂陨落长弓。 */
+	public static boolean heavenFallBowEnabled() { return on(HEAVEN_FALL_BOW); }
+	/** END(216): 是否开局发放蕴生之剑。 */
+	public static boolean nurturedSwordEnabled(){ return on(NURTURED_SWORD); }
 
 	/** 210 永无止境：开启无尽轮回。 */
 	public static final int ENDLESS = 210;

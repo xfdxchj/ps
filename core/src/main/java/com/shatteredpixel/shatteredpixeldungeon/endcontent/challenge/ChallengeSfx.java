@@ -383,8 +383,22 @@ public final class ChallengeSfx {
 		//所以先拿到真实数据再改。
 		if (GRIMM_MUSIC_DEBUG) {
 			System.out.println("[格林之音] 请求曲目: " + original
-					+ "  130已勾选=" + on(GRIMM_MUSIC));
+					+ "  本局勾选=" + on(GRIMM_MUSIC));
 		}
+
+		//==== END(修复·取消勾选无效) ====
+		//文档所有者反馈："应该是你取消勾选音乐就变回去了。但现在不是。"
+		//
+		//也就是：**取消勾选后音乐没有变回原版**。
+		//
+		//原因：替换只发生在"请求曲目"的那一刻（见下面的映射）。
+		//取消勾选只是改了掩码 —— 而当前那首格林曲**已经在播了**，
+		//没有任何地方会去"重新请求一次"，自然就一直响下去。
+		//
+		//修法：在这里加一个"开关状态变化"的检测 —— 一旦发现掩码里
+		//不再有 130，就把当前正在播的格林曲换成它对应的原版曲。
+		//见 reconcileGrimmMusic()（由 Music.play 的入口每帧调用一次）。
+		reconcileGrimmMusic();
 
 		if (!on(GRIMM_MUSIC)) return original;
 
@@ -403,15 +417,104 @@ public final class ChallengeSfx {
 	/** 诊断开关：排查 130 时置 true，定稿后改回 false。 */
 	public static final boolean GRIMM_MUSIC_DEBUG = true;
 
+	//==================================================================
+	//END(修复·取消勾选无效): 把"取消勾选"反映到正在播的音乐上
+	//==================================================================
+
+	/**
+	 * END(130 格林之音): 反向映射 —— 从格林曲找回它对应的原版曲。
+	 *
+	 * <p>为什么需要它：替换只发生在"请求曲目"的那一刻。取消勾选 130 时，
+	 * 当前那首格林曲**已经在播了** —— 没有任何地方会重新请求一次，
+	 * 于是它会一直响到换层。这张反向表就是用来把它换回去的。
+	 */
+	private static final java.util.HashMap<String, String> GRIMM_TO_ORIGINAL =
+			new java.util.HashMap<>();
+	static {
+		GRIMM_TO_ORIGINAL.put(Assets.Music.GRIMM_YOG_1, Assets.Music.HALLS_BOSS);
+		GRIMM_TO_ORIGINAL.put(Assets.Music.GRIMM_YOG_2,
+				Assets.Music.HALLS_BOSS_FINALE);
+		GRIMM_TO_ORIGINAL.put(Assets.Music.GRIMM_AREA1_BOSS, Assets.Music.SEWERS_BOSS);
+		GRIMM_TO_ORIGINAL.put(Assets.Music.GRIMM_AREA2_BOSS, Assets.Music.PRISON_BOSS);
+		GRIMM_TO_ORIGINAL.put(Assets.Music.GRIMM_AREA3_BOSS, Assets.Music.CAVES_BOSS);
+		GRIMM_TO_ORIGINAL.put(Assets.Music.GRIMM_AREA4_BOSS, Assets.Music.CITY_BOSS);
+		GRIMM_TO_ORIGINAL.put(Assets.Music.GRIMM_AREA1, Assets.Music.THEME_1);
+		GRIMM_TO_ORIGINAL.put(Assets.Music.GRIMM_AREA2, Assets.Music.THEME_2);
+		GRIMM_TO_ORIGINAL.put(Assets.Music.GRIMM_AREA3, Assets.Music.THEME_FINALE);
+		GRIMM_TO_ORIGINAL.put(Assets.Music.GRIMM_AREA4, Assets.Music.THEME_1);
+		GRIMM_TO_ORIGINAL.put(Assets.Music.GRIMM_AREA5, Assets.Music.THEME_2);
+	}
+
+	/** 上次已知的"是否启用格林之音"，用来检测勾选状态的**变化**。 */
+	private static Boolean lastGrimmEnabled = null;
+
+	/** 上一次真正播出去的曲目（用来判断当前在播的是哪首）。 */
+	private static String nowPlaying = null;
+
+	/** END: 记下当前正在播的曲目（由 Music.play 调用）。 */
+	public static void notePlaying(String track) {
+		nowPlaying = track;
+	}
+
+	/**
+	 * END(130): 检测勾选状态变化，并把当前音乐调整到正确的一侧。
+	 *
+	 * <p>由 {@link #grimmTrackFor(String)} 顺带调用 —— 那个方法每次换曲
+	 * 都会走到，所以它天然是一个"每层都会经过"的钩子。
+	 *
+	 * <p>只有**状态发生变化**时才动作：
+	 * <ul>
+	 *   <li>从"开"变"关" → 把正在播的格林曲换成原版</li>
+	 *   <li>从"关"变"开" → 下次请求曲目时自然会被映射（这里不必做事）</li>
+	 * </ul>
+	 */
+	private static void reconcileGrimmMusic() {
+		boolean nowEnabled = on(GRIMM_MUSIC);
+
+		if (lastGrimmEnabled == null) {
+			lastGrimmEnabled = nowEnabled;      //首次调用只记录
+			return;
+		}
+		if (lastGrimmEnabled == nowEnabled) return;   //没变化
+
+		boolean turnedOff = lastGrimmEnabled && !nowEnabled;
+		lastGrimmEnabled = nowEnabled;
+
+		if (!turnedOff) return;
+
+		//从"开"变"关"：把正在播的格林曲换回原版
+		if (nowPlaying == null) return;
+		String original = GRIMM_TO_ORIGINAL.get(nowPlaying);
+		if (original == null) return;           //当前不是格林曲，不用管
+
+		if (GRIMM_MUSIC_DEBUG) {
+			System.out.println("[格林之音] 已取消勾选 → 换回原版曲: " + original);
+		}
+		com.watabou.noosa.audio.Music.INSTANCE.play(original, true);
+	}
+
 	/** END(130): 实际的映射表。 */
 	private static String mapToGrimm(String original) {
 		String name = original;
 
 		//---- 最终 Boss（古神 Yog-Dzewa）----
+		//==== END(修复·二阶段没换曲) ====
+		//文档所有者反馈："格林之音的古神站第二阶段没有正常使用替换音频，
+		//还是一阶段的。"
+		//
+		//根因：古神站两个阶段原来都播 HALLS_BOSS_FINALE，
+		//而这里把它和 HALLS_BOSS 一起指向 GRIMM_YOG_1 ——
+		//GRIMM_YOG_2 虽然定义了却从未被用到。
+		//
+		//现在分开映射：
+		//  · 第一阶段（HALLS_BOSS / HALLS_BOSS_FINALE）→ YOG_1
+		//  · 第二阶段（YogDzewa 改播 CITY_BOSS_FINALE）→ YOG_2
+		if (name.equals(Assets.Music.CITY_BOSS_FINALE)) {
+			return Assets.Music.GRIMM_YOG_2;      //二阶段
+		}
 		if (name.equals(Assets.Music.HALLS_BOSS)
-				|| name.equals(Assets.Music.HALLS_BOSS_FINALE)
-				|| name.equals(Assets.Music.CITY_BOSS_FINALE)) {
-			return Assets.Music.GRIMM_YOG_1;
+				|| name.equals(Assets.Music.HALLS_BOSS_FINALE)) {
+			return Assets.Music.GRIMM_YOG_1;      //一阶段
 		}
 
 		//---- 各区域 Boss ----
