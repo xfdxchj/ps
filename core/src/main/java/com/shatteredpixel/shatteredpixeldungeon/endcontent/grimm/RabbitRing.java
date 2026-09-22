@@ -157,9 +157,29 @@ public class RabbitRing extends Ring {
 	public static boolean shouldRefundTurn(Hero hero){
 		if (!equipped(hero)) return false;
 
+		//==== END(修复·黑兔戒指整局只触发一次) ====
+		//文档所有者反馈："为什么不是每次都触发？"
+		//
+		//**根因**：这里原来写的是 Buff.affect(hero, RabbitRingTracker.class, 9999f)。
+		//带 duration 的重载 = 挂上 buff 之后 buff.spend(9999) ——
+		//它把 Actor.time **直接推到 9999 个 tick 之后**，
+		//也就是"这个 buff 的下一次 act() 要等 9999 回合后才会被调用"。
+		//
+		//而 tracker 的"每回合把 usedThisTurn 清掉"恰恰写在 act() 里，
+		//于是 act() 几乎永远不会执行，usedThisTurn 置 true 后再也没人清，
+		//表现就是：**从装备到游戏结束，只有第一次命中能拿到免费出手**。
+		//（日志里正好能看到：第一只老鼠有【127 标记免费出手】，第二只就没有。）
+		//
+		//**修法**：不带 duration 地挂 —— 新 buff 的 time = now，
+		//之后靠它自己的 act() 每回合 spend(TICK) 自我续期，
+		//这是原版 Regeneration 那类"常驻、每回合 act()"buff 的标准写法。
+		//
+		//安全性：同一 tick 里英雄(actPriority=HERO_PRIO=0)先于 buff(BUFF_PRIO=-30)行动，
+		//"免费那一击 → 再动一次"期间 tracker 不会抢先 act() 重置计数，
+		//不会出现一回合无限免费的情况。
 		RabbitRingTracker t = hero.buff(RabbitRingTracker.class);
 		if (t == null) {
-			t = Buff.affect(hero, RabbitRingTracker.class, 9999f);
+			t = Buff.affect(hero, RabbitRingTracker.class);
 			t.usedThisTurn = false;
 		}
 		if (t.usedThisTurn) return false;          //每回合最多一次
@@ -188,7 +208,8 @@ public class RabbitRing extends Ring {
 		if (hero == null) return;
 		RabbitRingTracker t = hero.buff(RabbitRingTracker.class);
 		if (t == null) {
-			t = Buff.affect(hero, RabbitRingTracker.class, 9999f);
+			//不带 duration —— 理由见 shouldRefundTurn() 里的"修复·整局只触发一次"
+			t = Buff.affect(hero, RabbitRingTracker.class);
 		}
 		t.freeAttack = true;
 		com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.log(
@@ -213,7 +234,14 @@ public class RabbitRing extends Ring {
 		return true;
 	}
 
-	/** END(127): 本回合的触发计数（不显示图标）。 */
+	/**
+	 * END(127): 本回合的触发计数（不显示图标）。
+	 *
+	 * <p>**必须用"不带 duration"的方式挂载**（见 {@link #shouldRefundTurn}）：
+	 * 本类靠 {@code act()} 每回合把 {@code usedThisTurn} 清掉，
+	 * 而带 duration 的 {@code Buff.affect(…, duration)} 会把第一次 act()
+	 * 推迟到 duration 之后 —— 那就成了"整局只生效一次"。
+	 */
 	public static class RabbitRingTracker extends FlavourBuff {
 		{
 			type = buffType.NEUTRAL;
