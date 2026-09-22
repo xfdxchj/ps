@@ -104,7 +104,7 @@ public class DaggerTrident extends EmbedDagger {
 			enemy.damage( Math.max( 1, damageRoll( hero ) ), this );
 		}
 
-		Buff.affect( hero, TeleportCooldown.class, TELEPORT_COOLDOWN );
+		Buff.prolong( hero, TeleportCooldown.class, TELEPORT_COOLDOWN );
 		clean( hero );
 	}
 

@@ -96,7 +96,7 @@ public class DaggerExecution extends EmbedDagger {
 		Char enemy = stuckEnemy;
 		if (enemy == null || !enemy.isAlive()){
 			//没有可斩的目标 → 只完成传送
-			Buff.affect( hero, ExecutionCooldown.class, EXECUTION_COOLDOWN );
+			Buff.prolong( hero, ExecutionCooldown.class, EXECUTION_COOLDOWN );
 			clean( hero );
 			return;
 		}
@@ -132,7 +132,7 @@ public class DaggerExecution extends EmbedDagger {
 		}
 
 		//写冷却, 收口连续处决
-		Buff.affect( hero, ExecutionCooldown.class, EXECUTION_COOLDOWN );
+		Buff.prolong( hero, ExecutionCooldown.class, EXECUTION_COOLDOWN );
 
 		clean( hero );
 	}

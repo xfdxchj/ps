@@ -102,7 +102,7 @@ public class DaggerTeleport extends EmbedDagger {
 		}
 
 		//无论是否成行都记一次冷却，防止靠"反复回收"绕开 CD 连续闪身
-		Buff.affect( hero, TeleportCooldown.class, TELEPORT_COOLDOWN );
+		Buff.prolong( hero, TeleportCooldown.class, TELEPORT_COOLDOWN );
 
 		clean( hero );
 	}

@@ -276,20 +276,21 @@ public class SilverGun extends Weapon {
 	/**
 	 * END(125): 银色短铳的冷却。
 	 *
-	 * <h3>修复记录：冷却没生效（可以一直射击）</h3>
-	 * 文档所有者反馈："银色短铳…同时冷却没生效，可以一直射击。"
+	 * <h3>为什么不需要覆写 act()</h3>
+	 * 我一度以为 {@code FlavourBuff.act()} 的 {@code detach()} 会让冷却
+	 * 只撑 1 回合 —— **那是我看错了**。
 	 *
-	 * <p>原来的注释写着"用 FlavourBuff 的时长字段当冷却计时器 ——
-	 * 它每回合自动递减" —— **那是错的**：
+	 * <p>实际机制：{@code Buff.affect(target, cls, duration)} 内部调
+	 * {@code spend(duration)}，而 {@code Actor.spend} 是
 	 * <pre>
-	 *   // FlavourBuff.act()
-	 *   public boolean act() { detach(); return true; }   // 第一个 tick 就消失
+	 *   this.time += time;      // time = "下次该被调度的绝对时刻"
 	 * </pre>
-	 * 它完全不递减 {@code cooldown}，所以 {@code affect(hero, ..., FREE_CD)}
-	 * 设的回合数只撑了 **1 个 tick** —— 冷却形同虚设，玩家自然可以连射。
+	 * 也就是说 **{@code act()} 本来就会在 duration 之后才被调用** ——
+	 * 到那时 {@code FlavourBuff.act()} 的 {@code detach()} 正是"到期消失"。
 	 *
-	 * <p>修法照原版 {@code AdrenalineSurge} 那类计时 buff：
-	 * 每 tick {@code spend(TICK)} 续命，直到 {@code cooldown()} 归零才 detach。
+	 * <p>所以原版行为是正确的。我后来加的
+	 * {@code if (cooldown() > 1f) spend(TICK);} 反而**每 tick 都续命**，
+	 * 让它永不到期（界面上显示成 "再等 59 回合"）。已撤销。
 	 */
 	public static class SilverGunCooldown extends FlavourBuff {
 		{
@@ -298,17 +299,6 @@ public class SilverGun extends Weapon {
 		}
 
 		@Override public int icon(){ return BuffIndicator.NONE; }
-
-		/** END(修复): 真正的倒计时 —— 见类注释。 */
-		@Override
-		public boolean act(){
-			if (cooldown() > 1f){
-				spend( TICK );
-			} else {
-				detach();
-			}
-			return true;
-		}
 
 		/** 剩余回合数（用于界面提示）。 */
 		public int turnsLeft(){

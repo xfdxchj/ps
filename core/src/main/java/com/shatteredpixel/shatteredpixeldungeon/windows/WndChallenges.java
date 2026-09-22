@@ -147,10 +147,15 @@ public class WndChallenges extends Window {
 		PixelScene.align(title);
 		add( title );
 
-		//底部：通过等级
-		passLevelText = PixelScene.renderTextBlock( "", 7 );
-		passLevelText.hardlight( 0xCCCCCC );
-		add( passLevelText );
+		//==== END(删除·通过等级的文字) ====
+		//文档所有者要求："删除挑战选择时挑战等级的 ui。"
+		//
+		//原来这里会实时显示"通过等级 N / 已选 M 条"。
+		//那条信息对玩家的实际决策帮助不大（它只是个内部配平值），
+		//而且在分类栏下方多占一行。
+		//
+		//现在整个控件不再创建。相关引用处都做了判空，所以不必改别的地方。
+		//（{@code passLevelText} 字段保留，值为 null —— 见 updatePassLevel()。）
 
 		//分类按钮行
 		//==== END(改版·分类排两排，不滚动): 不再用 ScrollPane ====
@@ -240,7 +245,11 @@ public class WndChallenges extends Window {
 		buildList();
 		relayout();
 
-		passLevelText.setPos( 4, pane.top() + pane.height() + 2 );
+		//END(删除·通过等级): 控件已不再创建 —— 判空后才设置位置，
+		//否则这里会 NPE（首次打开挑战窗口就崩）。
+		if (passLevelText != null) {
+			passLevelText.setPos( 4, pane.top() + pane.height() + 2 );
+		}
 		updatePassLevel();
 	}
 
@@ -1152,6 +1161,12 @@ public class WndChallenges extends Window {
 	}
 
 	private void updatePassLevel() {
+		//==== END(删除·通过等级的文字) ====
+		//文档所有者要求删除这条 UI，所以控件不再创建（见构造处）。
+		//这里保留方法但直接返回 —— 调用点有 4 处，删方法要一并改那些地方，
+		//而判空返回同样干净、改动面最小。
+		if (passLevelText == null) return;
+
 		int level = mask.passLevel();
 		int count = mask.activeCount();
 		passLevelText.text( Messages.get( this, "pass_level", level, count ) );

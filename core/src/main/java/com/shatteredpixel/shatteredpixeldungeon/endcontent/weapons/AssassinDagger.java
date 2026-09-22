@@ -32,7 +32,18 @@ public class AssassinDagger extends MissileWeapon {
 		baseUses = 5;
 	}
 
-	private static final float TELE_COOLDOWN = 100f;
+	/**
+	 * END(修订·文档所有者定稿): 100 → **30**。
+	 *
+	 * <p>四个地方共用同一个 {@link TeleportCooldown}：
+	 * <pre>
+	 *   基础刺杀匕首   30 回合（本类）
+	 *   刺杀·传送      10 回合
+	 *   刺杀·三叉戟    20 回合
+	 *   刺杀·处决      20 回合
+	 * </pre>
+	 */
+	private static final float TELE_COOLDOWN = 30f;
 	private static final float TELE_STEALTH = 1f;
 
 	@Override public String name(){ return "刺杀匕首"; }
@@ -72,7 +83,7 @@ public class AssassinDagger extends MissileWeapon {
 					GameScene.updateFog();
 				}
 			}
-			Buff.affect(attacker, TeleportCooldown.class, TELE_COOLDOWN);
+			Buff.prolong(attacker, TeleportCooldown.class, TELE_COOLDOWN);
 			if (attacker == Dungeon.hero) BuffIndicator.refreshHero();
 		}
 		return out;
