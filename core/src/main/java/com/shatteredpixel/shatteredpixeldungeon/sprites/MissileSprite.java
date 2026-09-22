@@ -113,6 +113,26 @@ public class MissileSprite extends ItemSprite implements Tweener.Listener {
 		
 		ANGULAR_SPEEDS.put(Shuriken.class,                  2160);
 		ANGULAR_SPEEDS.put(TenguSprite.TenguShuriken.class, 2160);
+
+		//==== END(修复·新投掷物的动画是"扔普通物品") ====
+		//文档所有者反馈："新加入的投掷物的动画不是投掷物的，是扔出普通物品的。"
+		//
+		//**根因**：{@code ANGULAR_SPEEDS} 是**按类注册**的旋转速度表。
+		//没注册的类会落到默认值 {@code DEFAULT_ANGULAR_SPEED = 720} ——
+		//那是"翻滚着飞出去"的动画，也就是**扔石头/扔普通物品**的样子。
+		//
+		//而匕首、飞镖、子弹这类**投掷武器**应该是 **0**（笔直飞向目标，
+		//只按弹道角度倾斜，不翻滚）。
+		//
+		//本 fork 新增的投掷物原来一个都没注册，所以全都用了翻滚动画。
+		ANGULAR_SPEEDS.put(com.shatteredpixel.shatteredpixeldungeon.endcontent
+				.weapons.EmbedDagger.class,        0);   //刺杀匕首三兄弟的基类
+		ANGULAR_SPEEDS.put(com.shatteredpixel.shatteredpixeldungeon.endcontent
+				.weapons.AssassinDagger.class,     0);
+		ANGULAR_SPEEDS.put(com.shatteredpixel.shatteredpixeldungeon.endcontent
+				.weapons.AssassinateDagger.class,  0);
+		ANGULAR_SPEEDS.put(com.shatteredpixel.shatteredpixeldungeon.endcontent
+				.grimm.SilverGun.SilverBullet.class, 0); //银色子弹
 	}
 
 	//TODO it might be nice to have a source and destination angle, to improve thrown weapon visuals

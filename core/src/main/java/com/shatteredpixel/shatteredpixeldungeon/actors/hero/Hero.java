@@ -2663,7 +2663,25 @@ public class Hero extends Char {
 		boolean hit = attack(attackTarget);
 		
 		Invisibility.dispel();
-		spend( attackDelay() );
+
+		//==== END(修复·黑兔戒指不生效) ====
+		//文档所有者反馈（第二次）："没效果。"
+		//
+		//**根因在这里**：{@code attack()} 里返还的 1 个 tick，
+		//被**紧接着的这一行** {@code spend(attackDelay())} 又花掉了 ——
+		//两相抵消，玩家完全感觉不到。
+		//
+		//修法：{@code attack()} 改成只挂"免费出手"标记（见 RabbitRing.markFreeAttack），
+		//这里看到标记就**跳过这次 spend** —— 于是这一击不消耗回合，
+		//玩家能在同一回合内再出手一次（正是"一回合攻击两次"）。
+		if (hit && com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+				.RabbitRing.consumeFreeAttack(this)) {
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.log(
+					com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.COMBAT,
+					"【127 黑兔戒指】本次出手不消耗回合");
+		} else {
+			spend( attackDelay() );
+		}
 
 		if (hit && subClass == HeroSubClass.GLADIATOR && wasEnemy){
 			Buff.affect( this, Combo.class ).hit(attackTarget);

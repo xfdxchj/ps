@@ -74,6 +74,41 @@ public class WandOfMeteor extends DamageWand {
 		return PathFinder.NEIGHBOURS9;
 	}
 
+	//==================================================================
+	//END(修订·改用冲击波特效)
+	//==================================================================
+	//
+	//文档所有者定稿："爆裂拿冲击波的贴图特效，而不是魔弹。"
+	//
+	//原来没覆写 {@code fx()}，于是走了 {@code DamageWand} 的默认实现 ——
+	//那是**魔弹**（一发紫色小弹丸飞出去）。而本杖的定位是"落点炸开"，
+	//用冲击波那套更贴切：
+	//  · 弹道用 {@code MagicMissile.FORCE}（原版冲击波法杖用的就是这个）
+	//  · 落点再放一次爆裂粒子
+	//  · 音效用 ZAP + BLAST 两层
+
+	@Override
+	public void fx(Ballistica bolt, com.watabou.utils.Callback callback) {
+		com.shatteredpixel.shatteredpixeldungeon.effects.MagicMissile.boltFromChar(
+				curUser.sprite.parent,
+				com.shatteredpixel.shatteredpixeldungeon.effects.MagicMissile.FORCE,
+				curUser.sprite,
+				bolt.collisionPos,
+				callback);
+		Sample.INSTANCE.play(Assets.Sounds.ZAP);
+	}
+
+	@Override
+	public void staffFx(MagesStaff.StaffParticle particle) {
+		//杖身粒子：橙红（与爆裂主题一致）
+		particle.color( 0xCC4400 ); particle.am = 0.6f;
+		particle.setLifespan(3f);
+		particle.speed.polar(com.watabou.utils.Random.Float(com.watabou.utils.PointF.PI2),
+				0.3f);
+		particle.setSize( 1f, 2f);
+		particle.radiateXY(2.5f);
+	}
+
 	/** END: 3×3 内（内圈）的伤害。基础版即全额。 */
 	protected int innerDamage(){
 		return damageRoll();

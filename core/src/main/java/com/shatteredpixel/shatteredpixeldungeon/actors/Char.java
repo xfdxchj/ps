@@ -941,25 +941,30 @@ public abstract class Char extends Actor {
 			//放在最后：其余触发类效果都结算完了再决定"要不要把回合还给玩家"。
 			//只对玩家生效；每回合最多一次（计数在 RabbitRing 内部管理）。
 			//
-			//==== END(修复·黑兔戒指不生效) ====
-			//文档所有者反馈："黑兔戒指不生效。"
+			//==== END(修复·黑兔戒指不生效·第二版) ====
+			//文档所有者反馈（第二次）："没效果。"
 			//
-			//根因：原来调用的是 **Actor.next()** —— 那是"把时间片让出去"的
-			//调度方法，跟"返还一个回合"完全无关，所以装备了也感觉不到任何效果。
+			//**上一版为什么还是没用**：
+			//我原来在这里直接 {@code spend(-Actor.TICK)} —— 但攻击的调用方是
+			//{@code Hero.onAttackComplete()}：
+			//<pre>
+			//  boolean hit = attack(attackTarget);   // ← 我在这里 spend(-TICK)
+			//  Invisibility.dispel();
+			//  spend( attackDelay() );               // ← 紧接着又花掉一整回合
+			//</pre>
+			//返还的 1 与紧接着花掉的 1 **正好抵消** —— 完全没效果。
 			//
-			//正确做法是 {@code spend(-Actor.TICK)}：**把已经花掉的时间还回去**。
-			//这是原版自己的写法（见 Hero.pickUpGold 那句
-			//`spend(-Actor.TICK); //picking up the gold doesn't spend a turn here`）。
-			//
-			//效果上等价于"这一击不消耗回合"，于是玩家能在同一回合内再出手一次。
+			//**正确做法**：不在这里改时间，而是**挂一个标记**，
+			//让 {@code Hero.onAttackComplete()} 知道"这一击是免费的"，
+			//于是它跳过那次 {@code spend(attackDelay())}。
+			//这才是"一回合攻击两次"的真正含义 —— 第二次出手不消耗回合。
 			if (this instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero
 					&& com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
 							.RabbitRing.shouldRefundTurn(
 									(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) this)) {
-				spend(-Actor.TICK);
-				com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.log(
-						com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.COMBAT,
-						"【127 黑兔戒指】返还一个回合");
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+						.RabbitRing.markFreeAttack(
+								(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) this);
 			}
 
 			return true;

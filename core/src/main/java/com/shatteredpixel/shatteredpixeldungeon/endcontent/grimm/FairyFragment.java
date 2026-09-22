@@ -188,7 +188,7 @@ public class FairyFragment extends Item {
 							+ "（" + book.pageCount() + " / " + UnknownFairyTale.PAGES + "）。");
 			if (book.isComplete()) {
 				com.shatteredpixel.shatteredpixeldungeon.utils.GLog.p(
-						"书页已经写满了。最后一页上，写着一个你不认识的名字。");
+						"书页已经写满了。最后一页上，写着一个不认识的的名字。");
 			}
 		} else {
 			com.shatteredpixel.shatteredpixeldungeon.utils.GLog.i(
@@ -201,7 +201,22 @@ public class FairyFragment extends Item {
 					com.shatteredpixel.shatteredpixeldungeon.Assets.Sounds.ITEM);
 		} catch (Throwable ignored) { }
 
-		//**不调用 super** —— 残片不进背包，直接销毁
+		//==== END(修复·捡完一直消耗回合无法行动) ====
+		//文档所有者反馈："补上图画书后，会一直消耗回合，无法行动。"
+		//
+		//根因：原版 {@code Item.doPickUp()} 在**成功时自己会调**
+		//    hero.spendAndNext( pickupDelay() );      // 花掉这一回合
+		//而这里**没有调用 super**（那是故意的 —— 残片不该进背包），
+		//于是**没有任何地方推进时间轴**。
+		//
+		//调用方（Hero.pickUp）看到返回 true 就认为"拾取成功、时间已花"，
+		//于是回合推进的逻辑与实际状态对不上 —— 表现就是"一直消耗回合、
+		//角色无法行动"（每一步都卡在同一个拾取上）。
+		//
+		//修法：不调 super，但**自己把这一回合花掉** ——
+		//与 super 里那行的语义完全一致。
+		hero.spendAndNext( pickupDelay() );
+
 		return true;
 	}
 

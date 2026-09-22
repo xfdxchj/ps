@@ -8,25 +8,39 @@ import com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons.buffs.Telepor
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 
 /**
- * 刺杀·传送（成品，嵌入→回收 model）。
- * <p>投掷后匕首嵌在敌人身上或落在格上。通过物品的“回收(DAG_REC)”动作拔出时:
- * <ul><li>若能换到位, 将英雄传送到底被嵌敌人的背后(或当其已离场, 传至嵌着它的方格);</li>
- *     <li>传送成功后奖励一段隐匿;</li>
- *     <li>随即写入长的 TeleportCooldown, 并清空嵌住状态。</li></ul>
- * 数值如普通投掷匕首：非堆叠、非骨、力量 10、无限耐久。
+ * END(刺杀匕首·传送分支): 刺杀·传送。
+ *
+ * <h3>文档所有者定稿</h3>
+ * <ul>
+ *   <li>**一直有传送**（不是"命中才触发"）</li>
+ *   <li>**可以扔到平地也传送** —— 落点是空地时同样把你送过去</li>
+ *   <li>冷却 **10 回合**</li>
+ * </ul>
+ *
+ * <h3>"可以扔到平地也传送"是怎么做的</h3>
+ * {@link EmbedDagger#onThrow(int)} 已经把落点记进 {@code stuckCell}
+ * （命中敌人时记敌人格，落在空地时记空地格）。所以回收时：
+ * <pre>
+ *   有活着的被嵌敌人 → 传到他**背后**
+ *   否则             → 传到**匕首落点那一格**（平地也生效）
+ * </pre>
+ * 这正是文档所有者要的行为。
+ *
+ * <h3>冷却 10 回合</h3>
+ * 比刺杀分支（20）短一半 —— 传送是这个分支的核心玩法，
+ * CD 太长就变成"摆设"。10 回合约等于"每场小战斗能用一次"。
  */
 public class DaggerTeleport extends EmbedDagger {
 
-	//冷却(回合)：两次“回收传送”之间需隔这么久
 	/**
-	 * END(修订·文档所有者定稿): 100 → **30**。
+	 * END(修订·文档所有者定稿): 冷却 **10 回合**。
 	 *
-	 * <p>原文："刺杀匕首传送 cd 为 30 回合。"
-	 * 原来是 100 回合 —— 那意味着一整场 Boss 战基本只能用一次，
-	 * 传送的价值被压得太低。30 回合是"每场战斗能用一两次"的量级。
+	 * <p>沿革：100（初版）→ 30（第一次修订）→ **10**（现在）。
+	 * 这个分支的定位就是"高频位移"，CD 越短手感越好。
 	 */
-	private static final float TELEPORT_COOLDOWN = 30f;
-	//传送成功后给英雄的隐匿回合
+	private static final float TELEPORT_COOLDOWN = 10f;
+
+	/** 传送成功后给英雄的隐匿回合。 */
 	private static final float TELEPORT_GUARD = 1f;
 
 	{
@@ -51,24 +65,43 @@ public class DaggerTeleport extends EmbedDagger {
 	protected void recover( Hero hero ){
 
 		int spot = -1;
+
+		//① 有活着的被嵌敌人 → 传到他背后
 		if (stuckEnemy != null && stuckEnemy.isAlive()){
-			spot = behindCell( hero, stuckEnemy );   //敌人背面 > any, 让其落稳
+			spot = behindCell( hero, stuckEnemy );
 		}
+		//② 否则（包括"落在平地"）→ 传到匕首所在的那一格
+		//
+		//==== END(修复·平地不传送) ====
+		//文档所有者定稿："传送可以扔到平地也传送。"
+		//
+		//原来这里也是这么写的，但有一个漏洞：
+		//如果 spot 恰好等于 hero.pos（比如匕首就落在脚下），
+		//下面的 `spot != hero.pos` 判定会跳过移动 —— 看起来像"没传送"。
+		//现在即使同格也允许"传一次"（至少给隐匿），保证行为一致。
 		if (spot == -1 && stuckCell != -1){
-			spot = stuckCell;                         //敌人已离场时, 直接回到嵌住它的方格
+			spot = stuckCell;
 		}
 
 		boolean moved = false;
-		if (spot != -1 && spot != hero.pos){
-			moved = moveTo( hero, spot );
+		if (spot != -1){
+			if (spot != hero.pos){
+				moved = moveTo( hero, spot );
+			} else {
+				//原地也算"成功传送" —— 否则落脚下时什么都不发生，很怪
+				moved = true;
+			}
 		}
 
 		if (moved){
-			//真正到了背后, 才给英雄一小段隐匿；落空就不给（避免无谓 bug）。
+			//传送成功 → 一小段隐匿
 			Buff.affect( hero, Invisibility.class, TELEPORT_GUARD );
+		} else {
+			com.shatteredpixel.shatteredpixeldungeon.utils.GLog
+					.w("没有可以落下的地方。");
 		}
 
-		//无论是否成行都记一次冷却, 防止每次“回收”都可以绕开传送 CD 连续闪身。
+		//无论是否成行都记一次冷却，防止靠"反复回收"绕开 CD 连续闪身
 		Buff.affect( hero, TeleportCooldown.class, TELEPORT_COOLDOWN );
 
 		clean( hero );
@@ -81,7 +114,10 @@ public class DaggerTeleport extends EmbedDagger {
 	@Override public float durabilityPerUse(int lvl){ return 0f; }
 
 	@Override public String info(){
-		return "掷出并嵌在敌人身上的传送刃。拔出(回收)时把你传送到它背后再退入暗影，" +
-				"\n两次传送之间受‘传送冷却’约束, 每次都得想好避开哪一侧。";
+		return "掷出后嵌在敌人身上、或插在地上。\n\n" +
+				"回收时：\n" +
+				"-嵌在**敌人**身上 → 传到他**背后**\n" +
+				"-插在**平地**上 → 直接传送到那一格\n\n" +
+				"传送后获得 1 回合隐匿，冷却 **10 回合**。";
 	}
 }

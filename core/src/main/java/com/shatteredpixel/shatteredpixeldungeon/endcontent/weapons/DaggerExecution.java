@@ -2,6 +2,7 @@ package com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons;
 
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Invisibility;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.rogue.DeathMark;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Brute;
@@ -9,19 +10,43 @@ import com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons.buffs.Executi
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 
 /**
- * 刺杀·处决（成品，嵌入→回收 model）。
- * <p>投掷后匕首嵌进敌人/落地。从物品的“回收(DAG_REC)”动作拔出时:
- * 若被嵌住的敌人仍存活、非 Boss / mini-Boss 且生命已跌破上限 25%,
- * 即对其执行处决(沿用 SPD 处决样板: 置零并走标准死亡流程), 并写 ExecutionCooldown。
- * 否则不强杀、只结算普通一击并收刀。不进行任何位移。
- * <p>数值如普通投掷匕首：非堆叠、非骨、力量 10、无限耐久。
+ * END(刺杀匕首·刺杀分支): 刺杀·处决。
+ *
+ * <h3>文档所有者定稿</h3>
+ * <ul>
+ *   <li>**传送斩杀 25% 生命以下的小怪**（两个效果都有）</li>
+ *   <li>冷却 **20 回合**</li>
+ * </ul>
+ *
+ * <h3>与"刺杀·传送"的区别</h3>
+ * <pre>
+ *   刺杀·传送   CD 10   传送之后什么都不做（纯位移）
+ *   刺杀·处决   CD 20   传送之后**顺手斩杀**残血小怪
+ * </pre>
+ * 所以处决是"位移 + 收割"的合体，CD 翻倍是合理的代价。
+ *
+ * <h3>斩杀条件</h3>
+ * <ul>
+ *   <li>被嵌住的敌人**还活着**</li>
+ *   <li>**不是 Boss / mini-Boss**（文档所有者说"小怪"）</li>
+ *   <li>生命 **低于上限的 25%**</li>
+ * </ul>
+ * 不满足就只做传送 + 一次普通伤害，不浪费这一刀。
  */
 public class DaggerExecution extends EmbedDagger {
 
-	//处决阈值: 生命低于上限 25%
+	/** 处决阈值: 生命低于上限 25%。 */
 	private static final float EXECUTE_FRACTION = 0.25f;
-	//处决冷却(回合)
-	private static final float EXECUTION_COOLDOWN = 50f;
+
+	/**
+	 * END(修订·文档所有者定稿): 冷却 **20 回合**。
+	 *
+	 * <p>沿革：50（初版）→ **20**（现在）。
+	 */
+	private static final float EXECUTION_COOLDOWN = 20f;
+
+	/** 传送后给的隐匿回合。 */
+	private static final float TELEPORT_GUARD = 1f;
 
 	{
 		image = ItemSpriteSheet.THROWING_KNIFE;
@@ -44,8 +69,34 @@ public class DaggerExecution extends EmbedDagger {
 	@Override
 	protected void recover( Hero hero ){
 
+		//==== END(修复·补上传送) ====
+		//文档所有者定稿："（三个分支）都有传送功能。"
+		//
+		//原来这个类**完全不做位移** —— 只判定处决。
+		//于是它名义上是"刺杀匕首的进阶"，实际却失去了刺杀匕首最核心的传送。
+		//
+		//现在：先传送（与 DaggerTeleport 同一套逻辑），再判定处决。
+		int spot = -1;
+		if (stuckEnemy != null && stuckEnemy.isAlive()){
+			spot = behindCell( hero, stuckEnemy );   //敌人背面优先
+		}
+		if (spot == -1 && stuckCell != -1){
+			spot = stuckCell;                        //敌人已离场/落平地 → 落到那一格
+		}
+
+		boolean moved = false;
+		if (spot != -1){
+			moved = (spot == hero.pos) || moveTo( hero, spot );
+		}
+		if (moved){
+			Buff.affect( hero, Invisibility.class, TELEPORT_GUARD );
+		}
+
+		//---- 传送之后再判定处决 ----
 		Char enemy = stuckEnemy;
 		if (enemy == null || !enemy.isAlive()){
+			//没有可斩的目标 → 只完成传送
+			Buff.affect( hero, ExecutionCooldown.class, EXECUTION_COOLDOWN );
 			clean( hero );
 			return;
 		}
@@ -72,14 +123,16 @@ public class DaggerExecution extends EmbedDagger {
 				DeathMark.processFearTheReaper( enemy );
 			}
 
-			//写处决冷却, 收口连续处决
-			Buff.affect( hero, ExecutionCooldown.class, EXECUTION_COOLDOWN );
+			com.shatteredpixel.shatteredpixeldungeon.utils.GLog
+					.p("刺杀。");
 		} else {
-			//未到阈值则收刀时给一下普通伤害(不漏刀), 不强杀, 同样记一次处决冷却
+			//未到阈值则收刀时给一下普通伤害(不漏刀), 不强杀
 			int dmg = Math.round( damageRoll( hero ) + enemy.HT * 0.1f );
 			enemy.damage( Math.max( 1, dmg ), this );
-			Buff.affect( hero, ExecutionCooldown.class, EXECUTION_COOLDOWN );
 		}
+
+		//写冷却, 收口连续处决
+		Buff.affect( hero, ExecutionCooldown.class, EXECUTION_COOLDOWN );
 
 		clean( hero );
 	}
@@ -91,7 +144,11 @@ public class DaggerExecution extends EmbedDagger {
 	@Override public float durabilityPerUse(int lvl){ return 0f; }
 
 	@Override public String info(){
-		return "嵌在敌人身上的处决刃: 拔出(回收)时, 若它残血跌破 25% 便将其直接处决。" +
-				"\n对 Boss / mini-Boss 无效; 每次处决受‘处决冷却’约束, 适合用来收割而非拔刀起手。";
+		return "掷出后嵌在敌人身上、或插在地上。\n\n" +
+				"回收时：\n" +
+				"-**传送到敌人背后**（或匕首落点）\n" +
+				"-若目标**生命低于 25%** 且不是 Boss，**直接斩杀**\n\n" +
+				"传送后获得 1 回合隐匿，冷却 **20 回合**。\n" +
+				"适合收残血，也适合强行切入。";
 	}
 }

@@ -168,6 +168,51 @@ public class RabbitRing extends Ring {
 		return true;
 	}
 
+	//==================================================================
+	//END(修复·黑兔戒指不生效·第二版): 用"免费标记"而不是 spend(-TICK)
+	//==================================================================
+	//
+	//**为什么 spend(-TICK) 没用**：
+	//攻击的调用方是 Hero.onAttackComplete()，它在 attack() 返回后
+	//**紧接着又调 spend(attackDelay())** —— 返还的 1 与花掉的 1 正好抵消。
+	//
+	//**正确做法**：在 attack() 里只**挂标记**，
+	//由 Hero.onAttackComplete() 看到标记就跳过那次 spend。
+	//这才是"一回合攻击两次"的真正含义。
+	//
+	//标记存在 tracker 上（与"每回合一次"的计数同一个 buff），
+	//所以它天然是"每回合最多一次"，且随回合重置。
+
+	/** END: 记下"这一击免费"。 */
+	public static void markFreeAttack(Hero hero){
+		if (hero == null) return;
+		RabbitRingTracker t = hero.buff(RabbitRingTracker.class);
+		if (t == null) {
+			t = Buff.affect(hero, RabbitRingTracker.class, 9999f);
+		}
+		t.freeAttack = true;
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.log(
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.COMBAT,
+				"【127 黑兔戒指】标记免费出手");
+	}
+
+	/**
+	 * END: 消费"免费出手"标记。
+	 *
+	 * <p>由 {@code Hero.onAttackComplete()} 在花时间**之前**调用：
+	 * 返回 true 就跳过那一次 {@code spend(attackDelay())}。
+	 *
+	 * <p>**消费式**（取走即清）—— 这样一次标记只能免一次攻击，
+	 * 不会变成"永久免费"。
+	 */
+	public static boolean consumeFreeAttack(Hero hero){
+		if (hero == null) return false;
+		RabbitRingTracker t = hero.buff(RabbitRingTracker.class);
+		if (t == null || !t.freeAttack) return false;
+		t.freeAttack = false;
+		return true;
+	}
+
 	/** END(127): 本回合的触发计数（不显示图标）。 */
 	public static class RabbitRingTracker extends FlavourBuff {
 		{
@@ -177,10 +222,22 @@ public class RabbitRing extends Ring {
 
 		public boolean usedThisTurn = false;
 
+		/**
+		 * END(修复·黑兔戒指): "这一击免费"的标记。
+		 *
+		 * <p>由 {@code Char.attack()} 置位、{@code Hero.onAttackComplete()} 消费。
+		 * 之所以要这个标记而不是直接改时间：攻击的调用方在 attack() 返回后
+		 * **还会再 spend 一次**，直接改时间会被它抵消。
+		 */
+		public boolean freeAttack = false;
+
 		@Override
 		public boolean act(){
 			//回合结束，允许下一回合再次触发
 			usedThisTurn = false;
+			//免费标记也一并清掉 —— 它只在**当次**攻击有效，
+			//若攻击因为某种原因没能走完 onAttackComplete，也不该留到下一回合
+			freeAttack = false;
 			spend(TICK);
 			return true;
 		}

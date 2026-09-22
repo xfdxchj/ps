@@ -80,7 +80,20 @@ public class SilverGun extends Weapon {
 	@Override
 	public ArrayList<String> actions( Hero hero ) {
 		ArrayList<String> actions = super.actions(hero);
+
+		//==== END(修复·"直接扔枪") ====
+		//文档所有者反馈："银色短铳…是直接把枪扔了。"
+		//
+		//根因：{@code super.actions()} 会加上 {@code AC_DROP} 与 {@code AC_THROW}——
+		//那是"把物品本身丢出去/投掷"。对短铳来说这两个动作毫无意义
+		//（它是"按 SHOOT 开火"，不是"投掷武器"），
+		//玩家点到"扔出"就等于把枪扔在了地上 —— 看起来像"枪没了"。
+		//
+		//修法：把这两个动作去掉，只留 SHOOT。
 		actions.remove(AC_EQUIP);        //像灵能弓：不可装备，按 SHOOT 触发
+		actions.remove(AC_DROP);         //不能丢
+		actions.remove(AC_THROW);        //不能投掷（开火走 SHOOT）
+
 		actions.add(AC_SHOOT);
 		return actions;
 	}
@@ -263,8 +276,20 @@ public class SilverGun extends Weapon {
 	/**
 	 * END(125): 银色短铳的冷却。
 	 *
-	 * <p>用 {@code FlavourBuff} 的时长字段当冷却计时器 ——
-	 * 它每回合自动递减，减到 0 就自动 detach，不需要自己写计时逻辑。
+	 * <h3>修复记录：冷却没生效（可以一直射击）</h3>
+	 * 文档所有者反馈："银色短铳…同时冷却没生效，可以一直射击。"
+	 *
+	 * <p>原来的注释写着"用 FlavourBuff 的时长字段当冷却计时器 ——
+	 * 它每回合自动递减" —— **那是错的**：
+	 * <pre>
+	 *   // FlavourBuff.act()
+	 *   public boolean act() { detach(); return true; }   // 第一个 tick 就消失
+	 * </pre>
+	 * 它完全不递减 {@code cooldown}，所以 {@code affect(hero, ..., FREE_CD)}
+	 * 设的回合数只撑了 **1 个 tick** —— 冷却形同虚设，玩家自然可以连射。
+	 *
+	 * <p>修法照原版 {@code AdrenalineSurge} 那类计时 buff：
+	 * 每 tick {@code spend(TICK)} 续命，直到 {@code cooldown()} 归零才 detach。
 	 */
 	public static class SilverGunCooldown extends FlavourBuff {
 		{
@@ -273,6 +298,17 @@ public class SilverGun extends Weapon {
 		}
 
 		@Override public int icon(){ return BuffIndicator.NONE; }
+
+		/** END(修复): 真正的倒计时 —— 见类注释。 */
+		@Override
+		public boolean act(){
+			if (cooldown() > 1f){
+				spend( TICK );
+			} else {
+				detach();
+			}
+			return true;
+		}
 
 		/** 剩余回合数（用于界面提示）。 */
 		public int turnsLeft(){

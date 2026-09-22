@@ -194,21 +194,57 @@ public final class InfinityMaterials {
 	/**
 	 * END: 分解一件装备能得到多少碎片。
 	 *
-	 * <p>规律：**基础 10 + 每级 5**。
+	 * <h3>文档所有者定稿</h3>
+	 * "无尽碎片**按阶数**，每阶获得一个。"
+	 *
+	 * <p>也就是看装备的 {@code tier}（原版 1~5 阶）：
 	 * <pre>
-	 *   +0  →  10
-	 *   +5  →  35
-	 *   +10 →  60
-	 *   +15 →  85
-	 *   +20 → 110   （已能直接换 1 个锭）
+	 *   1 阶 → 1 个碎片
+	 *   3 阶 → 3 个
+	 *   5 阶 → 5 个
 	 * </pre>
 	 *
-	 * <p>这样"攒 100 个换一个锭"大约是 +18 件装备的量 ——
-	 * 与"顶级装备需要 2 锭"的定位相称：需要认真攒，但不至于遥不可及。
+	 * <p>原来我写的是"基础 10 + 每级 5"（等级越高给得越多）——
+	 * 那与"按阶数"不是一回事：等级靠强化卷轴就能堆，
+	 * 而阶数是装备本身的品质，无法靠堆强化改变。
+	 * 用阶数计价，意味着**只能靠捡到更高阶的装备**来加快攒碎片，
+	 * 这与"无尽装备是稀有品"的定位一致。
+	 *
+	 * <p>取不到阶数时（神器、戒指等没有 tier 的）按 1 阶算。
 	 */
 	public static int shardsFrom(Item item){
 		if (item == null) return 0;
-		int lvl = Math.max(0, item.buffedLvl());
-		return 10 + 5 * lvl;
+		return Math.max(1, Math.min(5, tierOf(item)));
+	}
+
+	/**
+	 * END: 取一件装备的**阶数**。
+	 *
+	 * <p>为什么用反射：原版 {@code tier} 是**各个武器/护甲子类各自声明的**
+	 * 字段（{@code Weapon} 与 {@code Armor} 本身都没有统一的访问器），
+	 * 编译期拿不到统一的类型。
+	 *
+	 * <p>走反射虽然不优雅，但这里是**纯读取**、有兜底、且不在热路径上
+	 * （只在炼金分解时调一次），可以接受。
+	 *
+	 * @return 阶数（1~5）；取不到时按 1 阶
+	 */
+	public static int tierOf(Item item){
+		if (item == null) return 1;
+
+		//护甲的 tier 是 public 字段，直接读
+		if (item instanceof com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor){
+			return ((com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor) item).tier;
+		}
+
+		//武器的 tier 是各子类自己的字段，反射读
+		try {
+			java.lang.reflect.Field f = item.getClass().getDeclaredField("tier");
+			f.setAccessible(true);
+			return f.getInt(item);
+		} catch (Throwable t){
+			//读不到（没有该字段 / 不可访问）→ 按 1 阶
+			return 1;
+		}
 	}
 }
