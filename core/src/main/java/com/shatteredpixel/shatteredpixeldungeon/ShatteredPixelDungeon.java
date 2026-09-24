@@ -66,6 +66,11 @@ public class ShatteredPixelDungeon extends Game {
 		Sample.INSTANCE.enable( SPDSettings.soundFx() );
 		Sample.INSTANCE.volume( SPDSettings.SFXVol()*SPDSettings.SFXVol()/100f );
 
+		//==== END(移植·我的世界 228): 注册音效替换钩子 ====
+		//必须在批量加载之前注册 —— 否则这批音效会按原路径加载。
+		com.watabou.noosa.audio.Sample.setPathMapper(
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.JingmiAssets::soundFor);
+
 		Sample.INSTANCE.load( Assets.Sounds.all );
 
 		//END(挑战 130 格林之音): 注册 BGM 替换钩子。

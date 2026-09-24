@@ -327,6 +327,19 @@ public abstract class Recipe {
 	}
 	
 	public static boolean usableInRecipe(Item item){
+		//==== END(修复·214 无尽碎片：装备进不了炼金炉) ====
+		//文档所有者反馈："无尽炼金不能使用，无法获得无尽碎片。"
+		//根因：炼金界面（AlchemyScene）用本方法过滤可投入的材料，而下面那段
+		//只放行"可升级的投掷物 + 灵能弓"，近战武器/护甲/戒指全被挡在炉外 ——
+		//无尽碎片的三条配方（分解装备 / 15 级装备出核心 / 样品装备合顶级装备）永远不成立。
+		//修法：勾选 214 时把无尽体系要吃的三类装备按同样规则放行（已鉴定且未诅咒）。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+			.ChallengeEffects.infinityShardEnabled()
+			&& (item instanceof com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon
+				|| item instanceof com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor
+				|| item instanceof com.shatteredpixel.shatteredpixeldungeon.items.rings.Ring)) {
+		return item.cursedKnown && !item.cursed;
+		}
 		//only upgradeable thrown weapons and wands allowed among equipment items
 		if (item instanceof EquipableItem){
 			return item.cursedKnown && !item.cursed &&

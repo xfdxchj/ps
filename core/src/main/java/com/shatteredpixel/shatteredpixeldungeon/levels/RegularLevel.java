@@ -332,6 +332,8 @@ public abstract class RegularLevel extends Level {
 			if (tries >= 0) {
 				mobsToSpawn--;
 				mobs.add(mob);
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.spawnStackCopies(mob, mobs);
 				mob = null;
 				failedStreak = 0;          //END(修复 119): 成功一次就重置连续失败计数
 
@@ -362,6 +364,8 @@ public abstract class RegularLevel extends Level {
 					if (tries >= 0) {
 						mobsToSpawn--;
 						mobs.add(mob);
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.spawnStackCopies(mob, mobs);
 						mob = null;
 					}
 				}

@@ -396,6 +396,10 @@ public abstract class Level implements Bundlable {
 		//每 2 层刷一枚，每层最多一枚（文档所有者定稿）。
 		//放在最后：它需要用到已经铺好的地形找落点。
 		spawnFairyFragmentIfDue();
+
+		//==== END(移植·星界军团 26): 本层启动分波刷怪 ====
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+			.ChallengeEffects.startLegionIfEnabled();
 	}
 
 	/**
@@ -594,8 +598,27 @@ public abstract class Level implements Bundlable {
 				.ChallengeEffects.chestCountMultiplier() != 1f;
 		int contentBonus = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 				.ChallengeEffects.chestContentBonus();
+		//==== END(移植·惊喜礼物 82) ====
+		boolean wantMimics = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.mimicsEnabled();
 
-		if (!wantExtra && contentBonus <= 0) return;
+		if (!wantExtra && contentBonus <= 0 && !wantMimics) return;
+
+		//==== END(移植·惊喜礼物 82): 普通宝箱全部换成宝箱怪 ====
+		//放在最前面：换掉之后下面的 64/62 只会作用于剩下的（非宝箱）堆。
+		if (wantMimics) {
+			ArrayList<Heap> convert = new ArrayList<>();
+			for (Heap h : heaps.valueList()) {
+				if (h != null && h.type == Heap.Type.CHEST) convert.add(h);
+			}
+			for (Heap h : convert) {
+				Item[] its = h.items.toArray(new Item[0]);
+				h.items.clear();
+				mobs.add(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mimic
+					.spawnAt(h.pos, its));
+				heaps.remove(h.pos);
+			}
+		}
 
 		//先收集，避免边遍历边改 heaps（SparseArray 结构会被 drop 修改）
 		ArrayList<Heap> chests = new ArrayList<>();

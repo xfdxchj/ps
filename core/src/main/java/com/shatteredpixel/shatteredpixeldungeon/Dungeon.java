@@ -278,6 +278,10 @@ public class Dungeon {
 		//完整掩码为空时 SPDSettings.challengeMask() 会自行退化到旧 int。
 		setChallengeMask( SPDSettings.challengeMask() );
 
+		//==== END(移植·我的世界 228): 应用整套贴图替换 ====
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.JingmiAssets.reset();
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.JingmiAssets.apply();
+
 		//END(挑战·音频): 只加载已勾选挑战用到的音频（31 个文件不全量预载）。
 		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeSfx.init();
 
@@ -1393,7 +1397,35 @@ public class Dungeon {
 		}
 	}
 	
+	/**
+	 * END(修复·126 格林之心): 下一次 {@link #saveLevel} 时**丢弃当前层**。
+	 *
+	 * <p>文档所有者反馈："格林之心 Boss 层失败不会变成 Boss 初始状态。"
+	 *
+	 * <p>为什么需要它：126 下死亡是"退回上一层"，而离开 Boss 层时
+	 * {@code InterlevelScene} 会先 {@code saveAll()} 把 Boss 层写盘 ——
+	 * 下次再下来 {@code levelHasBeenGenerated()} 为真，直接读回旧档，
+	 * Boss 就保持着被打过（甚至已进二阶段）的状态。
+	 *
+	 * <p>所以在 {@code saveLevel} 里拦截一次：不写盘、从已生成表移除，
+	 * 下次进入该层就会重新生成（Boss 复位）。
+	 */
+	public static void discardLevelOnNextSave() {
+		discardLevelKey = depth + 1000*branch;
+	}
+
+	/** END(修复·126): 待丢弃层的 key（depth + 1000*branch），MIN_VALUE 表示无。 */
+	private static int discardLevelKey = Integer.MIN_VALUE;
+
 	public static void saveLevel( int save ) throws IOException {
+		//==== END(修复·126 Boss 复位): 被标记的层不写盘 ====
+		if (discardLevelKey == depth + 1000*branch) {
+			discardLevelKey = Integer.MIN_VALUE;
+			generatedLevels.remove((Integer)(depth + 1000*branch));
+			FileUtils.deleteFile(GamesInProgress.depthFile(save, depth, branch));
+			return;
+		}
+
 		Bundle bundle = new Bundle();
 		bundle.put( LEVEL, level );
 		

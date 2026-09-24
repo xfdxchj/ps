@@ -268,6 +268,9 @@ public abstract class Mob extends Char {
 				HP = Math.max(1, Math.round(HT * pct));
 			}
 		}
+		//==== END(移植·15/17): 高阶精英的跟班 ====
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+			.ChallengeEffects.spawnChampionMinions(this);
 	}
 
 	private static final String STATE	= "state";
@@ -601,6 +604,12 @@ public abstract class Mob extends Char {
 		}
 
 		boolean result = state.act( enemyInFOV, justAlerted );
+
+		//==== END(移植·48/49): 发现目标后成堆的怪物散开 ====
+		if (enemyInFOV && state == HUNTING){
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.spreadStack(this);
+		}
 
 		//for updating hero FOV
 		if (buff(PowerOfMany.PowerBuff.class) != null){

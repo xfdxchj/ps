@@ -503,6 +503,8 @@ public final class ChallengeEffects {
 		float mult = 1f;
 		if (on(CROWDED))      mult *= CROWDED_MOBS_MULT;
 		if (on(MONSTER_WAVE)) mult *= WAVE_MOBS_MULT;
+		//==== END(移植·堆积威胁 48): 数量 +50% ====
+		if (on(STACKING)) mult *= STACKING_COUNT_MULT;
 		return mult;
 	}
 
@@ -877,7 +879,10 @@ public final class ChallengeEffects {
 				|| on(BOUNTY)
 				|| on(TREASURE_HUNTER)
 				|| on(ELITE_DUNGEON_ID)
-				|| on(ELITE_MIGRATION_ID);
+				|| on(ELITE_MIGRATION_ID)
+				//==== END(移植·15/17): 这两条自己也开精英 ====
+				|| on(ELITE_CHAMPIONS)
+				|| on(DUNGEON_OF_CHAMPIONS);
 	}
 
 	/**
@@ -5468,4 +5473,507 @@ public final class ChallengeEffects {
 	public static int heroLevelCap() {
 		return on(INFINITE_GREED) ? Integer.MAX_VALUE : 30;
 	}
+	//==================================================================
+	//==== END(移植·英烈地牢): 登神长阶（原表 41）====
+	//==================================================================
+
+	/** 移植·登神长阶。**新开表 ID 218**（本 fork 的 41 已被「钱是万能」占用）。 */
+	public static final int ASCENSION = 218;
+
+	/** 致死时原地复活的概率(%) —— 文档所有者定稿："13% 概率重生"。 */
+	public static final int ASCENSION_CHANCE_PCT = 13;
+
+	/** 复活次数上限 —— 文档所有者定稿："最大 6 次"。 */
+	public static final int ASCENSION_MAX_REVIVES = 6;
+
+	/** END(移植·登神长阶): 本挑战是否启用。 */
+	public static boolean ascensionEnabled(){
+		return on(ASCENSION);
+	}
+
+	/**
+	 * END(移植·登神长阶): 尝试让一只刚被打死的怪物原地复活。
+	 *
+	 * <p>调用点：{@code Char.damage()} 判定 {@code !isAlive()} 之后、{@code die()} 之前。
+	 *
+	 * <p>规则（文档所有者定稿）：致死时 <b>13%</b> 概率复活，最多 <b>6</b> 次；
+	 * 每次复活都是一次永久增益 —— 生命上限翻倍 + 回满 + 净化负面。
+	 *
+	 * @return true 表示已复活（调用方不要再走 die()）
+	 */
+	public static boolean tryAscensionRevive(Char ch){
+		if (!on(ASCENSION) || !(ch instanceof Mob)) return false;
+		Mob mob = (Mob) ch;
+
+		AscensionReviveTracker t = mob.buff(AscensionReviveTracker.class);
+		if (t == null) {
+			//用带 duration 的重载 = 挂上后长期不 detach（我们只读写计数，不需要它 act）
+			t = com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff
+				.affect(mob, AscensionReviveTracker.class, 99999f);
+		}
+		if (t.revives >= ASCENSION_MAX_REVIVES) return false;
+		if (Random.Int(100) >= ASCENSION_CHANCE_PCT) return false;
+
+		t.revives++;
+		mob.HT *= 2;
+		mob.HP = mob.HT;
+		com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHealing.cure(mob);
+		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.detach(mob,
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Paralysis.class);
+		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.detach(mob,
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Doom.class);
+
+		com.shatteredpixel.shatteredpixeldungeon.utils.GLog.n(
+			"【登神长阶】" + mob.name() + " 第 " + t.revives + " 次从死亡中归来 —— 生命上限 ×2。");
+		return true;
+	}
+
+	/** END(移植·登神长阶): 记录某只怪已经复活过几次（随存档保存）。 */
+	public static class AscensionReviveTracker
+		extends com.shatteredpixel.shatteredpixeldungeon.actors.buffs.FlavourBuff {
+		{
+			type = buffType.NEUTRAL;
+			announced = false;
+		}
+		public int revives = 0;
+		@Override public int icon(){
+			return com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator.NONE;
+		}
+		private static final String REVIVES = "ascension_revives";
+		@Override public void storeInBundle(com.watabou.utils.Bundle b){
+			super.storeInBundle(b); b.put(REVIVES, revives);
+		}
+		@Override public void restoreFromBundle(com.watabou.utils.Bundle b){
+			super.restoreFromBundle(b); revives = b.getInt(REVIVES);
+		}
+	}
+
+	//==================================================================
+	//==== END(移植·英烈地牢): 惊喜礼物（原表 82）====
+	//==================================================================
+
+	/** 移植·惊喜礼物。新开表 ID 219。 */
+	public static final int MIMICS = 219;
+
+	/** END(移植·惊喜礼物): 地牢里所有普通宝箱都变成宝箱怪。 */
+	public static boolean mimicsEnabled(){
+		return on(MIMICS);
+	}
+
+	//==================================================================
+	//==== END(移植·英烈地牢): 同仇敌忾(78) / 复仇狂怒(79) ====
+	//==================================================================
+
+	/** 移植·同仇敌忾（原表 78）。 */
+	public static final int REVENGE = 220;
+	/** 移植·复仇狂怒（原表 79）。 */
+	public static final int REVENGE_FURY = 221;
+
+	/** 复仇狂怒每层"受伤 +20%"。 */
+	public static final float REVENGE_FURY_TAKEN_PER_STACK = 0.20f;
+	/** 复仇狂怒最大层数。 */
+	public static final int REVENGE_FURY_MAX_STACKS = 9;
+	/** 复仇狂怒一次触发给的持续回合。 */
+	public static final float REVENGE_FURY_DURATION = 15f;
+
+	public static boolean revengeEnabled(){ return on(REVENGE); }
+	public static boolean revengeFuryEnabled(){ return on(REVENGE_FURY); }
+
+	/**
+	 * END(移植·同仇敌忾 78): 致死时把**过量伤害**转嫁给死亡者视野内的其它怪。
+	 *
+	 * <p>调用点：{@code Char.damage()} 在 {@code die()} 之前（HP 还没被清零时先把 overkill 记下来）。
+	 */
+	public static void revengeSpread(Char dead, int overkill, Object src){
+		if (!on(REVENGE) || overkill <= 0 || !(dead instanceof Mob)) return;
+		Mob mob = (Mob) dead;
+		if (mob.fieldOfView == null) return;
+		java.util.ArrayList<Mob> targets = new java.util.ArrayList<>();
+		for (Char ch : com.shatteredpixel.shatteredpixeldungeon.actors.Actor.chars()){
+			if (ch == dead || !(ch instanceof Mob) || !ch.isAlive()) continue;
+			if (ch.alignment == Char.Alignment.ALLY) continue;
+			if (ch.pos < 0 || ch.pos >= mob.fieldOfView.length) continue;
+			if (!mob.fieldOfView[ch.pos]) continue;
+			targets.add((Mob) ch);
+		}
+		if (targets.isEmpty()) return;
+		Object cause = (src == null) ? dead : src;
+		for (Mob t : targets){
+			if (!t.isAlive()) continue;
+			t.damage(overkill, cause);
+			if (t.sprite != null) t.sprite.showStatus(
+				com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite.NEGATIVE, "同仇敌忾");
+		}
+		com.shatteredpixel.shatteredpixeldungeon.utils.GLog.n("【同仇敌忾】" + mob.name()
+			+ " 的怨念扩散，把 " + overkill + " 点过量伤害传给了视野内的 " + targets.size() + " 只怪物。");
+	}
+
+	/** END(移植·复仇狂怒 79): 带此 buff 的怪物攻击伤害 ×2。 */
+	public static int revengeFuryAttackDamage(Char attacker, int dmg){
+		if (!on(REVENGE_FURY) || attacker == null || dmg <= 0) return dmg;
+		if (attacker.buff(RevengeFuryBuff.class) == null) return dmg;
+		return Math.round(dmg * 2f);
+	}
+
+	/** END(移植·复仇狂怒 79): 受伤 +(20%×层)，Boss/小 Boss 免疫。 */
+	public static int revengeFuryTakenDamage(Char victim, int dmg){
+		if (!on(REVENGE_FURY) || victim == null || dmg <= 0) return dmg;
+		RevengeFuryBuff b = victim.buff(RevengeFuryBuff.class);
+		if (b == null) return dmg;
+		if (Char.hasProp(victim, Char.Property.BOSS) || Char.hasProp(victim, Char.Property.MINIBOSS)) return dmg;
+		return Math.round(dmg * (1f + REVENGE_FURY_TAKEN_PER_STACK * b.stacks));
+	}
+
+	/** END(移植·复仇狂怒 79): 有怪死亡 → 它视野内的其它怪叠一层复仇狂怒。 */
+	public static void onMobDeath(Char dead){
+		if (!on(REVENGE_FURY) || !(dead instanceof Mob)) return;
+		Mob mob = (Mob) dead;
+		if (mob.fieldOfView == null) return;
+		int n = 0;
+		for (Char ch : com.shatteredpixel.shatteredpixeldungeon.actors.Actor.chars()){
+			if (ch == dead || !(ch instanceof Mob) || !ch.isAlive()) continue;
+			if (ch.alignment == Char.Alignment.ALLY) continue;
+			if (ch.pos < 0 || ch.pos >= mob.fieldOfView.length) continue;
+			if (!mob.fieldOfView[ch.pos]) continue;
+			RevengeFuryBuff b = com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff
+				.prolong(ch, RevengeFuryBuff.class, REVENGE_FURY_DURATION);
+			if (b != null) { b.addStack(); n++; }
+		}
+		if (n > 0){
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.log(
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.CHALLENGE,
+				"【复仇狂怒】" + mob.name() + " 死亡，视野内 " + n + " 只怪物进入狂怒。");
+		}
+	}
+
+	/** END(移植·复仇狂怒 79): 同伴死亡后的狂怒 buff。 */
+	public static class RevengeFuryBuff
+		extends com.shatteredpixel.shatteredpixeldungeon.actors.buffs.FlavourBuff {
+		{
+			type = buffType.NEGATIVE;
+			announced = true;
+		}
+		public int stacks = 1;
+		public void addStack(){
+			stacks = Math.min(REVENGE_FURY_MAX_STACKS, stacks + 1);
+		}
+		@Override public String name(){ return "复仇狂怒"; }
+		@Override public String desc(){
+			return "同伴在你眼前倒下。它造成的伤害翻倍，受到的伤害 +"
+				+ Math.round(REVENGE_FURY_TAKEN_PER_STACK * 100 * stacks) + "%（" + stacks + " 层）。";
+		}
+		@Override public int icon(){
+			return com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator.NONE;
+		}
+		private static final String STACKS = "revenge_fury_stacks";
+		@Override public void storeInBundle(com.watabou.utils.Bundle b){
+			super.storeInBundle(b); b.put(STACKS, stacks);
+		}
+		@Override public void restoreFromBundle(com.watabou.utils.Bundle b){
+			super.restoreFromBundle(b); stacks = b.getInt(STACKS);
+		}
+	}
+
+	//==================================================================
+	//==== END(移植·英烈地牢): 堆积威胁(48) / 成群结队(49) / 集体荣誉(16) ====
+	//==================================================================
+
+	/** 移植·集体荣誉（原表 16）。 */
+	public static final int STACKING_CHAMPIONS = 222;
+	/** 移植·堆积威胁（原表 48）。 */
+	public static final int STACKING = 223;
+/** 移植·成群结队（原表 49）。 */
+	public static final int STACKING_SPAWN = 224;
+
+	/** 48：怪物数量 +50%。 */
+	public static final float STACKING_COUNT_MULT = 1.5f;
+
+	/**
+	 * END(移植·48/49): 这一只怪额外再"叠"几只到同一格。
+	 *
+	 * <p>48 堆积威胁：以堆的形式出现（总数 2~3），怪物发现目标后会自行散开；
+	 * 49 成群结队：至少 2 只成堆（这里取额外 1 只）。
+	 * Boss/小 Boss/体型巨大者不参与堆叠。
+	 */
+	public static int stackingExtraCount(Mob m){
+		if (m == null) return 0;
+		if (Char.hasProp(m, Char.Property.BOSS) || Char.hasProp(m, Char.Property.MINIBOSS)) return 0;
+		boolean s48 = on(STACKING), s49 = on(STACKING_SPAWN);
+		if (!s48 && !s49) return 0;
+		if (s48) return 1 + Random.Int(2);   //总数 2~3
+		return 1;                          //49：至少 2 只
+	}
+
+	/** END(移植·16): 把 base 身上的精英词条原样复制给同堆的另一只。 */
+	public static void shareChampion(Mob base, Mob copy){
+		if (base == null || copy == null) return;
+		java.util.HashSet<com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ChampionEnemy> set =
+			base.buffs(com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ChampionEnemy.class);
+		if (set == null) return;
+		for (com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ChampionEnemy c : set){
+			try {
+				com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(copy, c.getClass());
+			} catch (Throwable ignored) { }
+		}
+	}
+
+	/** END(移植·16): 随机取一个常规精英词条类（与原版 6 选 1 一致）。 */
+	public static Class<? extends com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ChampionEnemy>
+		randomChampionClass(){
+		//==== END(移植·英烈): 常规词条池（本体 6 种 + 英烈新增 3 种）====
+		return com.shatteredpixel.shatteredpixeldungeon.endcontent.champion
+			.EndChampions.randomNormal();
+	}
+
+	/** END(移植·15/17): 高阶精英词条（英烈 9 种）。 */
+	public static Class<? extends com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ChampionEnemy>
+		randomHighTierChampionClass(){
+		return com.shatteredpixel.shatteredpixeldungeon.endcontent.champion
+			.EndChampions.randomElite();
+	}
+
+
+	/**
+	 * END(移植·48/49/16): 给一只刚摆好的怪补上同堆的其它几只。
+	 *
+	 * <p>调用点：{@code RegularLevel.createMobs()} 的 {@code mobs.add(mob)} 之后。
+	 * 只往 {@code level.mobs} 里加（与宝箱怪同一套做法）—— 精灵与行动队列
+	 * 由关卡加载流程统一接上。
+	 */
+	public static void spawnStackCopies(Mob base, java.util.Collection<Mob> mobs){
+		if (base == null || mobs == null) return;
+		int extra = stackingExtraCount(base);
+		if (extra <= 0) return;
+
+		//16 集体荣誉：堆里的怪共享词条，并且可以多带一个
+		if (on(STACKING_CHAMPIONS) && base.buff(com.shatteredpixel.shatteredpixeldungeon
+			.actors.buffs.ChampionEnemy.class) != null) {
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(base,
+				randomChampionClass());
+		}
+
+		for (int i = 0; i < extra; i++){
+			Mob clone = com.watabou.utils.Reflection.newInstance(base.getClass());
+			if (clone == null) continue;
+			clone.pos = base.pos;
+			clone.HT = base.HT;
+			clone.HP = base.HP;
+			shareChampion(base, clone);
+			mobs.add(clone);
+		}
+	}
+
+	//==================================================================
+	//==== END(移植·英烈地牢): 精英强敌(14→升级116) / 全副武装(15) / 现代战争(17) ====
+	//==================================================================
+
+	/** 移植·全副武装（原表 15）。 */
+	public static final int ELITE_CHAMPIONS = 225;
+	/** 移植·现代战争（原表 17）。 */
+	public static final int DUNGEON_OF_CHAMPIONS = 226;
+
+	/** END(移植·15/17): 精英刷新间隔（越小越密）。 */
+	public static float championInterval(int depth){
+		float base = 8 - Math.min(20, depth - 1) / 10f;
+		if (on(DUNGEON_OF_CHAMPIONS)) base *= 0.5f;
+		else if (on(ELITE_CHAMPIONS)) base *= 0.7f;
+		return base;
+	}
+
+	/**
+	 * END(移植·15/17): 这只精英额外再带几个词条（"高阶精英"）。
+	 * <p>15 全副武装：1/3 概率高阶；17 现代战争：必定多一个词条。
+	 */
+	public static int championExtraWords(Mob m){
+		if (on(DUNGEON_OF_CHAMPIONS)) return 1;
+		if (on(ELITE_CHAMPIONS) && Random.Int(3) == 0) return 1;
+		return 0;
+	}
+
+	/** END(移植·15/17): 高阶精英的跟班数量（15→1 只，17→2 只）。 */
+	public static int championMinionCount(){
+		if (on(DUNGEON_OF_CHAMPIONS)) return 2;
+		if (on(ELITE_CHAMPIONS)) return 1;
+		return 0;
+	}
+
+	/**
+	 * END(移植·15/17): 给高阶精英补上跟班（随机普通怪，刷在附近的空格）。
+	 *
+	 * <p>调用点：{@code Mob.onAdd()}。找不到落点/场景未就绪时静默跳过。
+	 */
+	public static void spawnChampionMinions(Mob champ){
+		if (champ == null) return;
+		int n = championMinionCount();
+		if (n <= 0) return;
+		if (champ.buffs(com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ChampionEnemy.class).size() < 2) return;
+		//==== END(移植·17): 跟班每 30 回合刷新 ====
+		if (on(DUNGEON_OF_CHAMPIONS) && champ.buff(ChampionMinionRefresher.class) == null){
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(
+				champ, ChampionMinionRefresher.class, 30f);
+		}
+
+		try {
+			for (int i = 0; i < n; i++){
+				int cell = champ.pos + com.watabou.utils.PathFinder.NEIGHBOURS8[Random.Int(8)];
+				if (cell < 0 || cell >= Dungeon.level.length()) continue;
+				if (Dungeon.level.solid[cell] || Dungeon.level.findMob(cell) != null) continue;
+				Mob minion = com.watabou.utils.Reflection.newInstance(
+					com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Rat.class);
+				minion.pos = cell;
+				com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.add(minion);
+			}
+		} catch (Throwable ignored) { }
+	}
+
+	//==================================================================
+	//==== END(移植·英烈地牢): 星界军团（原表 26） ====
+	//==================================================================
+
+	/** 移植·星界军团。新开表 ID 227。 */
+	public static final int LEGION = 227;
+	/** 多少回合来一波。 */
+	public static final int LEGION_INTERVAL_TURNS = 25;
+	/** 一波的数量范围。 */
+	public static final int LEGION_WAVE_MIN = 4;
+	public static final int LEGION_WAVE_MAX = 8;
+	/** 每次大波后楼层封锁回合数。 */
+	public static final int LEGION_LOCK_TURNS = 20;
+
+	public static boolean legionEnabled(){ return on(LEGION); }
+
+	/** END(移植·星界军团 26): 本层启动分波刷怪（由 Level.create() 调用）。 */
+	public static void startLegionIfEnabled(){
+		if (!on(LEGION) || Dungeon.level == null || Dungeon.bossLevel()) return;
+		com.shatteredpixel.shatteredpixeldungeon.actors.Actor.addDelayed(
+			new LegionSpawner(), LEGION_INTERVAL_TURNS);
+	}
+
+	/** END(移植·星界军团 26): 定时刷一大波怪并封锁楼层。 */
+	public static class LegionSpawner extends com.shatteredpixel.shatteredpixeldungeon.actors.Actor {
+		{ actPriority = com.shatteredpixel.shatteredpixeldungeon.actors.Actor.MOB_PRIO - 1; }
+		@Override protected boolean act(){
+			if (!on(LEGION) || Dungeon.level == null){
+				com.shatteredpixel.shatteredpixeldungeon.actors.Actor.remove(this);
+				return true;
+			}
+			spend(TICK * LEGION_INTERVAL_TURNS);
+			spawnLegionWave();
+			return true;
+		}
+	}
+
+	/** END(移植·星界军团 26): 铺一波怪 + 封锁 20 回合。 */
+	public static void spawnLegionWave(){
+		if (!on(LEGION) || Dungeon.level == null || Dungeon.hero == null) return;
+		int n = LEGION_WAVE_MIN + Random.Int(LEGION_WAVE_MAX - LEGION_WAVE_MIN + 1);
+		int spawned = 0;
+		for (int i = 0; i < n; i++){
+			try {
+				int cell = Dungeon.level.randomRespawnCell(null);
+				if (cell == -1) continue;
+				Mob m = Dungeon.level.createMob();
+				if (m == null) continue;
+				m.pos = cell;
+				if (m.state != m.PASSIVE) m.state = m.WANDERING;
+				com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.add(m);
+				spawned++;
+			} catch (Throwable ignored) { }
+		}
+		if (spawned <= 0) return;
+		Dungeon.level.locked = true;
+		com.shatteredpixel.shatteredpixeldungeon.actors.Actor.addDelayed(
+			new com.shatteredpixel.shatteredpixeldungeon.actors.Actor(){
+				{ actPriority = com.shatteredpixel.shatteredpixeldungeon.actors.Actor.MOB_PRIO - 1; }
+				@Override protected boolean act(){
+					if (Dungeon.level != null) Dungeon.level.locked = false;
+					com.shatteredpixel.shatteredpixeldungeon.actors.Actor.remove(this);
+					return true;
+				}
+			}, LEGION_LOCK_TURNS);
+		com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w("【星界军团】" + spawned
+			+ " 只怪物涌入这一层 —— 楼层封锁 " + LEGION_LOCK_TURNS + " 回合！");
+	}
+
+	//==================================================================
+	//==== END(移植·英烈地牢/静谧花园): 我的世界（资源替换） ====
+	//==================================================================
+
+	/** 移植·我的世界（静谧花园 4.0 全量替换：贴图 + 音乐）。 */
+	public static final int JINGMI = 228;
+
+	/** END(228 我的世界): 是否启用整套资源替换。 */
+	public static boolean jingmiEnabled(){ return on(JINGMI); }
+
+	//==================================================================
+	//==== END(移植·英烈地牢): 堆叠散开(48/49) + 跟班刷新(17) ====
+	//==================================================================
+
+	/** END(移植·48/49): 堆叠的怪物"发现目标后散开" —— 每只只散一次。 */
+	public static void spreadStack(Mob m){
+		if (m == null) return;
+		if (!on(STACKING) && !on(STACKING_SPAWN)) return;
+		if (m.buff(StackSpreadDone.class) != null) return;
+		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
+			m, StackSpreadDone.class, 99999f);
+
+		int moved = 0;
+		for (Char ch : com.shatteredpixel.shatteredpixeldungeon.actors.Actor.chars()){
+			if (ch == m || !(ch instanceof Mob)) continue;
+			if (ch.pos != m.pos) continue;
+			if (ch.buff(StackSpreadDone.class) != null) continue;
+			int cell = -1;
+			int[] dirs = com.watabou.utils.PathFinder.NEIGHBOURS8;
+			int start = Random.Int(dirs.length);
+			for (int k = 0; k < dirs.length; k++){
+				int c = m.pos + dirs[(start + k) % dirs.length];
+				if (c < 0 || c >= Dungeon.level.length()) continue;
+				if (Dungeon.level.solid[c] || !Dungeon.level.passable[c]) continue;
+				if (com.shatteredpixel.shatteredpixeldungeon.actors.Actor.findChar(c) != null) continue;
+				cell = c; break;
+			}
+			if (cell < 0) continue;
+			ch.pos = cell;
+			if (ch.sprite != null) ch.sprite.place(cell);
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
+				ch, StackSpreadDone.class, 99999f);
+			moved++;
+		}
+		if (moved > 0){
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.log(
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.CHALLENGE,
+				"【堆积威胁】" + m.name() + " 发现了目标，堆里的 " + moved + " 只散开了。");
+		}
+	}
+
+	/** END: 散开标记（每只怪只散一次）。 */
+	public static class StackSpreadDone extends com.shatteredpixel.shatteredpixeldungeon.actors.buffs.FlavourBuff {
+		{ type = buffType.NEUTRAL; announced = false; }
+		@Override public int icon(){
+			return com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator.NONE;
+		}
+	}
+
+	/**
+	 * END(移植·17): 高阶精英的跟班每 30 回合刷新一次。
+	 *
+	 * <p>由 {@link #spawnChampionMinions} 在开启 17 时挂到高阶精英身上；
+	 * 怪物死亡/17 取消时自行 detach。
+	 */
+	public static class ChampionMinionRefresher extends com.shatteredpixel.shatteredpixeldungeon.actors.buffs.FlavourBuff {
+		{ type = buffType.NEUTRAL; announced = false; }
+		@Override public boolean act(){
+			if (!on(DUNGEON_OF_CHAMPIONS) || !(target instanceof Mob) || !target.isAlive()){
+				detach();
+				return true;
+			}
+			spend(TICK * 30f);
+			spawnChampionMinions((Mob) target);
+			return true;
+		}
+		@Override public int icon(){
+			return com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator.NONE;
+		}
+	
+}
 }

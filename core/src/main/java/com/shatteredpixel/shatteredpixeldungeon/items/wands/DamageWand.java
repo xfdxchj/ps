@@ -59,6 +59,9 @@ public abstract class DamageWand extends Wand{
 			}
 			Sample.INSTANCE.play(Assets.Sounds.HIT_STRONG, 0.75f, 1.2f);
 		}
+		//==== END(修复·126 格林之心): 法杖伤害 +2 +1% ×等级 ====
+		dmg += com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+			.BlackSoul.grimmMagicBonus(Dungeon.hero, dmg);
 		return dmg;
 	}
 

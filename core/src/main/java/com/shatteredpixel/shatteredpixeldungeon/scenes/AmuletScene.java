@@ -121,13 +121,57 @@ public class AmuletScene extends PixelScene {
 		btnStay.setSize( WIDTH, BTN_HEIGHT );
 		add( btnStay );
 
+		//==== END(真·无尽): 九轮走完后，护符上多一个"陷入无尽轮回" ====
+		//文档所有者定稿："可以在第九次后的古神护符加一个，陷入无尽轮回，
+		//开始真正的无尽。" 点了就不再走结局，直接下到下一层继续轮回。
+		final boolean showEndless = com.shatteredpixel.shatteredpixeldungeon.endcontent
+			.Reincarnation.enabled()
+			&& com.shatteredpixel.shatteredpixeldungeon.endcontent.Reincarnation.cycles()
+				>= com.shatteredpixel.shatteredpixeldungeon.endcontent.Reincarnation.maxCycles()
+			&& !com.shatteredpixel.shatteredpixeldungeon.endcontent.Reincarnation.isTrueEndless();
+		StyledButton btnEndless = null;
+		if (showEndless) {
+			btnEndless = new StyledButton(Chrome.Type.GREY_BUTTON_TR, "陷入无尽轮回") {
+				@Override
+				protected void onClick() {
+					com.shatteredpixel.shatteredpixeldungeon.endcontent.Reincarnation
+						.startTrueEndless();
+					com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w(
+						"护符不肯放你走 —— 你坠入了更深的轮回。");
+					btnExit.enable(false);
+					btnStay.enable(false);
+					//直接下到下一层：shouldEnd() 已被关掉，那里会生成新的轮回层
+					com.shatteredpixel.shatteredpixeldungeon.scenes.InterlevelScene.mode =
+						com.shatteredpixel.shatteredpixeldungeon.scenes.InterlevelScene.Mode.DESCEND;
+					com.shatteredpixel.shatteredpixeldungeon.scenes.InterlevelScene.curTransition =
+						new com.shatteredpixel.shatteredpixeldungeon.levels.features.LevelTransition();
+					com.shatteredpixel.shatteredpixeldungeon.scenes.InterlevelScene
+						.curTransition.destDepth = Dungeon.depth + 1;
+					com.shatteredpixel.shatteredpixeldungeon.scenes.InterlevelScene
+						.curTransition.destBranch = Dungeon.branch;
+					com.shatteredpixel.shatteredpixeldungeon.scenes.InterlevelScene.curTransition.destType =
+						com.shatteredpixel.shatteredpixeldungeon.levels.features.LevelTransition.Type
+							.REGULAR_ENTRANCE;
+					com.shatteredpixel.shatteredpixeldungeon.scenes.InterlevelScene.curTransition.type =
+						com.shatteredpixel.shatteredpixeldungeon.levels.features.LevelTransition.Type
+							.REGULAR_EXIT;
+					com.shatteredpixel.shatteredpixeldungeon.scenes.InterlevelScene
+						.curTransition.centerCell = -1;
+					com.watabou.noosa.Game.switchScene(
+						com.shatteredpixel.shatteredpixeldungeon.scenes.InterlevelScene.class);
+				}
+			};
+			btnEndless.setSize( WIDTH, BTN_HEIGHT );
+			add( btnEndless );
+		}
+
 		RectF insets = getCommonInsets();
 		int w = (int) (Camera.main.width - insets.left + insets.right);
 		int h = (int) (Camera.main.height - insets.top + insets.bottom);
 
 		float height;
 		if (noText) {
-			height = amulet.height + LARGE_GAP + btnExit.height() + SMALL_GAP + btnStay.height();
+			height = amulet.height + LARGE_GAP + btnExit.height() + SMALL_GAP + btnStay.height() + (btnEndless != null ? SMALL_GAP + btnEndless.height() : 0);
 			
 			amulet.x = insets.left + (w - amulet.width) / 2;
 			amulet.y = insets.top + (h - height) / 2;
@@ -135,9 +179,10 @@ public class AmuletScene extends PixelScene {
 
 			btnExit.setPos( insets.left + (w - btnExit.width()) / 2, amulet.y + amulet.height + LARGE_GAP );
 			btnStay.setPos( btnExit.left(), btnExit.bottom() + SMALL_GAP );
+			if (btnEndless != null) btnEndless.setPos( btnStay.left(), btnStay.bottom() + SMALL_GAP );
 			
 		} else {
-			height = amulet.height + LARGE_GAP + text.height() + LARGE_GAP + btnExit.height() + SMALL_GAP + btnStay.height();
+			height = amulet.height + LARGE_GAP + text.height() + LARGE_GAP + btnExit.height() + SMALL_GAP + btnStay.height() + (btnEndless != null ? SMALL_GAP + btnEndless.height() : 0);
 
 			amulet.x = insets.left + (w - amulet.width) / 2;
 			amulet.y = insets.top + (h - height) / 2;
@@ -149,6 +194,7 @@ public class AmuletScene extends PixelScene {
 
 			btnExit.setPos( insets.left + (w - btnExit.width()) / 2, text.top() + text.height() + LARGE_GAP );
 			btnStay.setPos( btnExit.left(), btnExit.bottom() + SMALL_GAP );
+			if (btnEndless != null) btnEndless.setPos( btnStay.left(), btnStay.bottom() + SMALL_GAP );
 		}
 
 		new Flare( 8, 48 ).color( 0xFFDDBB, true ).show( amulet, 0 ).angularSpeed = +30;

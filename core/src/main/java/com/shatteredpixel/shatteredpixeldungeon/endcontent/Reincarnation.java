@@ -117,6 +117,8 @@ public final class Reincarnation {
 	 */
 	public static boolean shouldEnd(int depth){
 		if (!enabled()) return false;      //没开挑战 → 不走循环，交给原版流程
+		//==== END(真·无尽): 在护符处选择"陷入无尽轮回"后，永远不再走结局 ====
+		if (trueEndless) return false;
 		int len = loopLength();
 		if (len <= 0) return false;
 		return depth > (maxCycles() + 1) * len;
@@ -189,12 +191,14 @@ public final class Reincarnation {
 	/**
 	 * END(永无止境): 某个楼层当前的怪物数值倍率。
 	 *
-	 * <p>公式：{@code BASE_RATIO[区域] × 2^(已轮回次数)}
+	 * <p>公式：{@code BASE_RATIO[区域] × (1 + 已轮回次数)} —— **加算**（文档所有者定稿：
+	 * "无尽 2 次轮回的为加算，不是乘算"）。
 	 *
 	 * <pre>
 	 *   第 1 轮（cycles=0）：1区 ×12、2区 ×6、3-5区 ×2
 	 *   第 2 轮（cycles=1）：1区 ×24、2区 ×12、3-5区 ×4
-	 *   第 3 轮（cycles=2）：1区 ×48、2区 ×24、3-5区 ×8
+	 *   第 3 轮（cycles=2）：1区 ×36、2区 ×18、3-5区 ×6
+	 *   第 4 轮（cycles=3）：1区 ×48、2区 ×24、3-5区 ×8
 	 * </pre>
 	 *
 	 * @param depth 实际楼层（会用映射后的层号算区域）
@@ -206,7 +210,10 @@ public final class Reincarnation {
 		int region = Math.max(0, Math.min(4, (mapped - 1) / 5));
 
 		float base = BASE_RATIO[region];
-		float mult = (float) Math.pow(RATIO_PER_CYCLE, cycles);
+		//==== END(修订·无尽轮回数值改为加算) ====
+		//文档所有者定稿："无尽 2 次轮回的为加算，不是乘算。"
+		//原来 base × 2^cycles（1→2→4→8…）；现改为 base × (1 + cycles)（2→3→4→5…）。
+		float mult = 1f + cycles;
 
 		float result = base * mult;
 
@@ -314,13 +321,30 @@ public final class Reincarnation {
 	//==================================================================
 
 	private static final String CYCLES = "end_reincarnation_cycles";
+	private static final String TRUE_ENDLESS = "end_reincarnation_true_endless";
+
+	/** END(真·无尽): 玩家是否已在护符处选择"陷入无尽轮回"。 */
+	private static boolean trueEndless = false;
+
+	public static boolean isTrueEndless(){ return trueEndless; }
+
+	/**
+	 * END(真·无尽): 在古神护符处选择"陷入无尽轮回"后调用。
+	 *
+	 * <p>文档所有者定稿："可以在第九次后的古神护符加一个，陷入无尽轮回，
+	 * 开始真正的无尽。" —— 开启后 {@link #shouldEnd} 永远返回 false，
+	 * 楼层一直按 {@link #mappedDepth} 循环生成下去。
+	 */
+	public static void startTrueEndless(){ trueEndless = true; }
 
 	public static void storeInBundle(com.watabou.utils.Bundle bundle){
 		bundle.put(CYCLES, cycles);
+		bundle.put(TRUE_ENDLESS, trueEndless);
 	}
 
 	public static void restoreFromBundle(com.watabou.utils.Bundle bundle){
 		int n = bundle.contains(CYCLES) ? bundle.getInt(CYCLES) : 0;
 		setCycles(n);
+		trueEndless = bundle.getBoolean(TRUE_ENDLESS);
 	}
 }

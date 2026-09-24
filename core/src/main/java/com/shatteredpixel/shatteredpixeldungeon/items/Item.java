@@ -142,7 +142,7 @@ public class Item implements Bundlable {
 	//==== END(160 氪金大佬): 用金币强化的动作名 ====
 
 	/** 背包动作：花金币强化（见 ChallengeEffects.whaleUpgrade）。 */
-	public static final String AC_WHALE = "WHALE_UPGRADE";
+	public static final String AC_WHALE = "WHALE";
 
 	//==== END(挑战 56 装备绑定) ====
 
@@ -181,6 +181,16 @@ public class Item implements Bundlable {
 	}
 
 	public String actionName(String action, Hero hero){
+		//==== END(修复·160 氪金大佬动作名显示 nofound) ====
+		//文档所有者反馈："金大佬的额外升级 UI 是 nofound。"
+		//根因：Messages 查表时会把 key 转小写，而 AC_WHALE 原值是 "WHALE_UPGRADE"，
+		//拼出来是 ac_whale_upgrade，properties 里只有 ac_whale，查不到就显示 nofound。
+		//改成 "WHALE"（与 AC_DROP/AC_THROW 命名一致），并把费用显示在按钮上。
+		if (AC_WHALE.equals(action)) {
+			return Messages.get(this, "ac_whale") + "  "
+				+ com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.whaleUpgradeCost(this) + "G";
+		}
 		return Messages.get(this, "ac_" + action);
 	}
 
@@ -272,8 +282,13 @@ public class Item implements Bundlable {
 			//没有"点错了亏了"的风险（顶多是花钱花早了）。
 			if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 					.ChallengeEffects.whaleUpgrade(this)) {
-				hero.spend( 1f );
-				hero.busy();
+				//==== END(修复·160 氪金升级后无法打人 / 无限过回合) ====
+				//文档所有者反馈："氪金升级时无法打人、无限过回合，切屏才能解决。"
+				//根因：原来是 hero.spend(1) 与 hero.busy() 分开调用的。
+				//Hero.busy() 只把 ready 置 false，没有任何地方再调 ready()，
+				//精灵停在 BUSY、回合也没推进 —— 于是人物卡死；切屏会强制刷新状态。
+				//原版所有背包动作统一走 spendAndNext()（= busy + spend + next），照抄即可。
+				hero.spendAndNext( 1f );
 				com.shatteredpixel.shatteredpixeldungeon.utils.GLog
 						.p("金币化作了力量。");
 			} else {

@@ -35,6 +35,21 @@ public enum Sample {
 
 	protected HashMap<Object, Sound> ids = new HashMap<>();
 
+	/** END(228 我的世界): 音效路径映射钩子（由 core 层注册）。 */
+	public interface PathMapper { String map( String path ); }
+
+	private static PathMapper pathMapper;
+	public static void setPathMapper( PathMapper m ){ pathMapper = m; }
+
+	/** END(228): 取实际要加载的路径（没有替换时返回原路径）。 */
+	private static String mappedPath( String asset ){
+		if (pathMapper == null || asset == null) return asset;
+		try {
+			String m = pathMapper.map(asset);
+			return (m == null) ? asset : m;
+		} catch (Throwable t) { return asset; }
+	}
+
 	private boolean enabled = true;
 	private float globalVolume = 1f;
 
@@ -64,7 +79,8 @@ public enum Sample {
 	public synchronized void load( final String asset){
 		if (asset != null) {
 			try {
-				Sound newSound = Gdx.audio.newSound(Gdx.files.internal(asset));
+					//==== END(228 我的世界): 音效替换 —— 按原 key 存，但加载替换文件 ====
+			Sound newSound = Gdx.audio.newSound(Gdx.files.internal(mappedPath(asset)));
 				ids.put(asset, newSound);
 			} catch (Exception e){
 				Game.reportException(e);

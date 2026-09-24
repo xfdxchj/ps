@@ -309,6 +309,16 @@ public class FairyFragment extends Item {
 			}
 		}
 
+		//==== END(修复·129 残页重复) ====
+		//文档所有者反馈："心爱的少女的残页会重复，改成唯一。"
+		//根因：残片现在拾取即被《未知的童话书》记成页码、不再留在背包里（见 doPickUp），
+		//而上面的 owned[] 还在遍历 belongings 找 FairyFragment —— 永远找不到，
+		//于是每次都从 9 种里随机抽，必然重复。修法：直接问童话书已经补上了哪几页。
+		UnknownFairyTale book = UnknownFairyTale.of(Dungeon.hero);
+		if (book != null) {
+			for (int i = 0; i < KINDS; i++) owned[i] = book.has(i);
+		}
+
 		ArrayList<Integer> missing = new ArrayList<>();
 		for (int i = 0; i < KINDS; i++) if (!owned[i]) missing.add(i);
 		if (missing.isEmpty()) return null;          //已集齐

@@ -459,6 +459,19 @@ public class Hero extends Char {
 		HP = Math.min(HT, HP + amount);
 	}
 
+	/**
+	 * END(修复·126 格林之心)：按百分比提升最大生命（原表"+5 +1%"里的那个 1%）。
+	 *
+	 * <p>文档所有者反馈："格林之心的 1% 加成没有生效。" —— 就是这里：
+	 * 原实现只调了 {@code grimmBoostMaxHP(5)}，百分比那半截没有任何入口。
+	 */
+	public void grimmBoostMaxHPPct(float pct) {
+		if (pct <= 0f) return;
+		int amount = Math.max(1, Math.round(HT * pct));
+		HT += amount;
+		HP = Math.min(HT, HP + amount);
+	}
+
 	public void upgradeTalent( Talent talent ){
 		for (LinkedHashMap<Talent, Integer> tier : talents){
 			for (Talent f : tier.keySet()){
@@ -827,6 +840,12 @@ public class Hero extends Char {
 		//放在最末 —— 作用于**最终伤害**，与所有加成/天赋都是乘算关系。
 		dmg = Math.round(dmg * com.shatteredpixel.shatteredpixeldungeon.endcontent
 				.challenge.ChallengeEffects.whyDamageDealtMult(this));
+
+		//==== END(修复·126 格林之心): 近战物理伤害 +2 +1% ×等级 ====
+		//原表"物理伤害 +2+1%"，原来 applyEffect 里注释说"由结算时读取"——
+		//但全项目根本没有那段读取代码，所以这条属性一直没生效。
+		dmg += com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+			.BlackSoul.grimmPhysicalBonus(this, dmg);
 
 		if (dmg < 0) dmg = 0;
 		return dmg;

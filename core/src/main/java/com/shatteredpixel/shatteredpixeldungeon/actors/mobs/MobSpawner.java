@@ -81,8 +81,19 @@ public class MobSpawner extends Actor {
 		//==== END(适配 6 完整地牢): 两级映射串联 ====
 		//先 6（50 层 -> 25 层制），再 1（区域倒置）。
 		//详见 Dungeon.newLevel 里同一处映射的说明。
+		//==== END(修复·210 无尽轮回：26F 刷出五区怪) ====
+		//文档所有者反馈："无尽模式出怪有问题，26 出的是五区怪。"
+		//根因：Reincarnation 建图时把 26F 映射回原版 1F（Dungeon.createReincarnatedLevel），
+		//但刷怪表是按 Dungeon.depth（=26）查的，standardMobRotation(26) 落到 default → 五区怪。
+		//修法：查表前先把实际层号映射回 1..25。没开 210 时 mappedDepth 原样返回。
+		int spawnDepth = com.shatteredpixel.shatteredpixeldungeon.endcontent
+			.Reincarnation.enabled()
+				? com.shatteredpixel.shatteredpixeldungeon.endcontent
+					.Reincarnation.mappedDepth(depth)
+				: depth;
+
 		int resourceDepth = com.shatteredpixel.shatteredpixeldungeon.endcontent
-				.challenge.ChallengeEffects.fullDungeonMappedDepth(depth);
+				.challenge.ChallengeEffects.fullDungeonMappedDepth(spawnDepth);
 
 		int tableDepth = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 				.ChallengeEffects.crumblingCrossDepth( resourceDepth );

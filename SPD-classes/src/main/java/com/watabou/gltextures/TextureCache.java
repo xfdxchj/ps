@@ -172,6 +172,19 @@ public class TextureCache {
 		}
 	}
 	
+	/**
+	 * END(228 我的世界): 按**原路径**注册一张替换贴图。
+	 *
+	 * <p>之后所有 {@code TextureCache.get(原路径)} 都会拿到替换图，
+	 * 业务代码一行都不用改。加载失败时静默跳过（保持原图）。
+	 */
+	public synchronized static void alias( String originalPath, String replacementPath ) {
+		try {
+			Pixmap bmp = new Pixmap( Gdx.files.internal( replacementPath ) );
+			all.put( originalPath, new SmartTexture( bmp ) );
+		} catch (Throwable ignored) { }
+	}
+
 	public synchronized static boolean contains( Object key ) {
 		return all.containsKey( key );
 	}

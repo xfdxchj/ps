@@ -834,6 +834,10 @@ public abstract class Char extends Actor {
 				return true;
 			}
 
+			//==== END(移植·复仇狂怒 79): 带狂怒的怪物攻击 ×2 ====
+			effectiveDamage = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.revengeFuryAttackDamage(this, effectiveDamage);
+
 			enemy.damage( effectiveDamage, this );
 
 			if (buff(FireImbue.class) != null)  buff(FireImbue.class).proc(enemy);
@@ -1607,6 +1611,10 @@ public abstract class Char extends Actor {
 			return;
 		}
 
+		//==== END(移植·复仇狂怒 79): 受伤 +20%×层 ====
+		dmg = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+			.ChallengeEffects.revengeFuryTakenDamage(this, dmg);
+
 		//==== END(诊断·伤害为 0): 在真正扣血前打印最终值 ====
 		//文档所有者反馈："有的时候伤害为 0，没有九九归一这种挑战的时候触发的。"
 		//
@@ -1720,9 +1728,18 @@ public abstract class Char extends Actor {
 			sprite.showStatusWithIcon(CharSprite.NEGATIVE, Integer.toString(dmg + shielded), icon);
 		}
 
+		//==== END(移植·同仇敌忾 78): HP 清零前先记下过量伤害 ====
+		int overkillDamage = (HP < 0) ? -HP : 0;
 		if (HP < 0) HP = 0;
 
-		if (!isAlive()) {
+		//==== END(移植·登神长阶): 怪物 13% 概率原地复活（最多 6 次）====
+		if (!isAlive() && com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+			.ChallengeEffects.tryAscensionRevive(this)) {
+			//已复活：不再走 die()，本方法到此为止
+		} else if (!isAlive()) {
+			//==== END(移植·同仇敌忾 78): 过量伤害转嫁 ====
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.revengeSpread(this, overkillDamage, src);
 			die( src );
 		} else if (HP == 0 && buff(DeathMark.DeathMarkTracker.class) != null){
 			DeathMark.processFearTheReaper(this);
@@ -1775,6 +1792,9 @@ public abstract class Char extends Actor {
 	}
 	
 	public void die( Object src ) {
+		//==== END(移植·复仇狂怒 79): 有怪死亡 → 视野内的同伴进入狂怒 ====
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+			.ChallengeEffects.onMobDeath(this);
 		destroy();
 		if (src != Chasm.class) {
 			sprite.die();

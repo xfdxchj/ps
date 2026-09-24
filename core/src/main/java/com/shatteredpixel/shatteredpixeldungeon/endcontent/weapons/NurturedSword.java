@@ -23,7 +23,7 @@ import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
  * <pre>
  *   原版 T3 剑：min = 3 + lvl      max = 20 + 5×lvl
  *   蕴生之剑：  tier 会随强化等级**一起涨** ——
- *              每 +5 级提升一阶（上限 5 阶），
+ *              每 +3 级提升一阶（上限 5 阶），
  *              而阶数又反过来抬高**基础值与成长率**
  * </pre>
  *
@@ -50,15 +50,16 @@ public class NurturedSword extends MeleeWeapon {
 	//==================================================================
 
 	/** 每多少级提升一阶。 */
-	public static final int LEVELS_PER_TIER = 5;
+	//==== END(修订): 文档所有者定稿"3 级升一阶"（原为 5）====
+	public static final int LEVELS_PER_TIER = 3;
 	/** 阶数上限（与原版最高阶一致）。 */
 	public static final int MAX_TIER = 5;
 
 	/**
 	 * END: 当前的**有效阶数**。
 	 *
-	 * <p>{@code 1 + 强化等级 / 5}，上限 5。
-	 * 例：+0 → 1 阶、+5 → 2 阶、+10 → 3 阶、+15 → 4 阶、+20 → 5 阶。
+	 * <p>{@code 1 + 强化等级 / 3}，上限 5。
+	 * 例：+0 → 1 阶、+3 → 2 阶、+6 → 3 阶、+9 → 4 阶、+12 → 5 阶。
 	 */
 	public int effectiveTier(){
 		return Math.min(MAX_TIER, 1 + Math.max(0, buffedLvl()) / LEVELS_PER_TIER);
@@ -114,7 +115,7 @@ public class NurturedSword extends MeleeWeapon {
 		StringBuilder sb = new StringBuilder();
 		sb.append("剑身上刻着一圈年轮。它记得自己每一次被磨利的样子。\n\n");
 
-		sb.append("**伤害 1 阶 1-11**，**5 阶 5-40**（都随等级成长）。\n");
+		sb.append("**伤害：1 阶 +0 为 1-10，5 阶 +12 为 17-114**（都随等级成长）。\n");
 		sb.append("-每 **+").append(LEVELS_PER_TIER)
 				.append(" 级**提升一阶（最高 ").append(MAX_TIER).append(" 阶）\n");
 		sb.append("-阶数越高，**基础伤害与每级成长**都越高\n");

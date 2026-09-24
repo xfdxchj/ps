@@ -400,6 +400,13 @@ public final class ChallengeSfx {
 		//见 reconcileGrimmMusic()（由 Music.play 的入口每帧调用一次）。
 		reconcileGrimmMusic();
 
+		//==== END(移植·我的世界 228): 静谧花园的 BGM 整体替换 ====
+		//放在 130 的提前 return 之前 —— 两条替换互不干扰：
+		//勾了 228 就优先用静谧花园的曲子。
+		String jingmi = com.shatteredpixel.shatteredpixeldungeon.endcontent
+			.JingmiAssets.trackFor(original);
+		if (jingmi != null) return jingmi;
+
 		if (!on(GRIMM_MUSIC)) return original;
 
 		//已经是格林曲目就不要再映射（幂等，防止二次替换）
@@ -533,20 +540,12 @@ public final class ChallengeSfx {
 		if (name.equals("music/boss5.ogg"))   return Assets.Music.GRIMM_AREA5;
 
 		//---- 各区域常规层（按路径前缀，覆盖 _1/_2/_3/_tense）----
-		//==== END(修订·前三区用原版 BGM) ====
-		//文档所有者定稿："格林之音前三区常规层音乐改成原版的。"
-		//
-		//也就是：1 区（下水道）、2 区（监狱）、3 区（洞穴）的**常规层**
-		//保持原版 BGM，格林主题从 4 区才开始。
-		//
-		//原因：前三区是"还在正常地牢里"的部分，过早换成黑魂主题会
-		//冲淡节奏；从 4 区（矮人都市）开始才是真正的"步入黑暗"。
-		//
-		//注意：**Boss 层不受此限** —— 上面的 Boss 映射照常生效，
-		//所以 1/2/3 区的 Boss 战仍然是格林主题。
-		//if (name.startsWith("music/sewers")) return Assets.Music.GRIMM_AREA1;   //1区：保留原版
-		//if (name.startsWith("music/prison")) return Assets.Music.GRIMM_AREA2;   //2区：保留原版
-		//if (name.startsWith("music/caves"))  return Assets.Music.GRIMM_AREA3;   //3区：保留原版
+		//==== END(修订·五区常规层全替换) ====
+		//文档所有者定稿："格林之音"要把 1~5 区的常规层 BGM 全部换成格林主题。
+		//（曾有一版"前三区保留原版"，文档所有者已要求改回全替换。）
+		if (name.startsWith("music/sewers")) return Assets.Music.GRIMM_AREA1;
+		if (name.startsWith("music/prison")) return Assets.Music.GRIMM_AREA2;
+		if (name.startsWith("music/caves"))  return Assets.Music.GRIMM_AREA3;
 		if (name.startsWith("music/city"))   return Assets.Music.GRIMM_AREA4;
 		if (name.startsWith("music/halls"))  return Assets.Music.GRIMM_AREA5;
 

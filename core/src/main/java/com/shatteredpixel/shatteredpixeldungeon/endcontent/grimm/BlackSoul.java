@@ -248,6 +248,15 @@ public class BlackSoul {
 	private static void retreatOneFloor(Hero hero) {
 		if (hero == null) return;
 
+		//==== END(修复·126 Boss 层失败不复位) ====
+		//文档所有者反馈："格林之心 Boss 层失败不会变成 Boss 初始状态。"
+		//126 的死亡是"退回上一层"而不是重开，但 Boss 层已经被存过盘，
+		//再下来会直接读旧档 —— Boss 保持被打过的状态（甚至已进二阶段）。
+		//这里在离开前把该层标记为"下次存档时丢弃"，下次进入就会重新生成。
+		if (com.shatteredpixel.shatteredpixeldungeon.Dungeon.bossLevel()) {
+			com.shatteredpixel.shatteredpixeldungeon.Dungeon.discardLevelOnNextSave();
+		}
+
 		int target = Math.max(1, Dungeon.depth - 1);
 
 		//用 InterlevelScene 的 ASCEND 模式 —— 那是原版"上楼"的标准路径
@@ -363,16 +372,45 @@ public class BlackSoul {
 		return true;
 	}
 
+	/**
+	 * END(修复·126): 物理伤害加成（每级 +2，再 +1%）。
+	 *
+	 * <p>调用点：{@code Hero.damageRoll()} —— 近战最终伤害确定之后。
+	 */
+	public static int grimmPhysicalBonus(Hero hero, int baseDamage) {
+		if (!enabled() || hero == null) return 0;
+		int lv = levelOf(hero, GrimmStat.PHYS);
+		if (lv <= 0) return 0;
+		return lv * 2 + Math.round(baseDamage * 0.01f * lv);
+	}
+
+	/**
+	 * END(修复·126): 法杖伤害加成（每级 +2，再 +1%）。
+	 *
+	 * <p>调用点：{@code DamageWand.damageRoll()}。
+	 */
+	public static int grimmMagicBonus(Hero hero, int baseDamage) {
+		if (!enabled() || hero == null) return 0;
+		int lv = levelOf(hero, GrimmStat.MAGIC);
+		if (lv <= 0) return 0;
+		return lv * 2 + Math.round(baseDamage * 0.01f * lv);
+	}
+
 	/** END(126): 把某一项的**即时效果**施加到角色身上。 */
 	private static void applyEffect(Hero hero, GrimmStat stat) {
 		switch (stat){
 			case HP:
 				hero.grimmBoostMaxHP(5);
+				//==== END(修复·126): 原表是"+5+1%"，这里补上那 1% ====
+				hero.grimmBoostMaxHPPct(0.01f);
 				break;
 			case PHYS:
 			case MAGIC:
-				//伤害类不需要改字段 —— 由 HostileController 在结算时读等级
-				//（见 GrimmCombat 的查询），这里什么都不做。
+				//==== END(修复·126): 伤害类不在这里加字段，由结算时按等级读取 ====
+				//原来的注释指向一个不存在的 "GrimmCombat"，全项目都没有读取代码，
+				//所以这两项从来没生效。现在由以下两个查询真正结算：
+				//  · 近战 → Hero.damageRoll() 调 grimmPhysicalBonus()
+				//  · 法杖 → DamageWand.damageRoll() 调 grimmMagicBonus()
 				break;
 			case ACC:
 			case EVA:

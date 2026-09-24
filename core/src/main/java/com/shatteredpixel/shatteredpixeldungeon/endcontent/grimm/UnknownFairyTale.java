@@ -165,6 +165,11 @@ public class UnknownFairyTale extends Item {
 	//==================================================================
 
 	/** END: 已补齐的页数。 */
+	/** END(修复·129): 这一页是否已经补上（掉落去重用）。 */
+	public boolean has(int kind){
+		return kind >= 0 && kind < PAGES && pages[kind];
+	}
+
 	public int pageCount(){
 		int n = 0;
 		for (boolean b : pages) if (b) n++;

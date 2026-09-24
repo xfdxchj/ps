@@ -160,7 +160,9 @@ public abstract class ChampionEnemy extends Buff {
 			}
 
 			//numbers of mobs until a champion scales from 1/8 to 1/6 as depths increases
-			float interval = 8 - Math.min(20, Dungeon.scalingDepth()-1)/10f;
+			//==== END(移植·15/17): 精英间隔改由 ChallengeEffects 统一给 ====
+			float interval = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.championInterval(Dungeon.scalingDepth());
 
 			//==== END(精英体系): 未勾「精英强敌」时，精英概率减半 ====
 			//减半出现率 = 把"距下一只精英的间隔"翻倍。
@@ -169,6 +171,16 @@ public abstract class ChampionEnemy extends Buff {
 			//让 116 保持"专门刷精英"的定位。
 			if (!Dungeon.isChallenged(Challenges.CHAMPION_ENEMIES)) {
 				interval *= 2f;
+			}
+
+			//==== END(移植·15/17): 高阶精英 —— 额外再挂词条 ====
+			int extraWords = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.championExtraWords(m);
+			for (int i = 0; i < extraWords; i++){
+				try {
+					Buff.affect(m, com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+						.ChallengeEffects.randomHighTierChampionClass());
+				} catch (Throwable ignored) { }
 			}
 
 			Dungeon.mobsToChampion += interval;
