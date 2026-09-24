@@ -79,7 +79,7 @@ public class ReincarnationRing extends Ring {
 				"-提供的效果等级**翻倍**（+100%）\n" +
 				"-每升级 1 级额外折算 **0.5 级**（升级效果 +50%）\n" +
 				"-**伤害提升 20%**\n" +
-				"-**护甲提升 20%**";
+				"-**护甲提升 20%**" + com.shatteredpixel.shatteredpixeldungeon.endcontent.EndItemStats.block(this);
 	}
 
 	@Override

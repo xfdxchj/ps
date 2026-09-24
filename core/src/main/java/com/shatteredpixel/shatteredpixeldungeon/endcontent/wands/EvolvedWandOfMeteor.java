@@ -37,6 +37,7 @@ import com.watabou.utils.Bundle;
  */
 public class EvolvedWandOfMeteor extends WandOfMeteor {
 
+
 	/** 充能上限（与本 fork 其它 13 把进化法杖一致）。 */
 	public static final int CHARGE_CAP = 20;
 

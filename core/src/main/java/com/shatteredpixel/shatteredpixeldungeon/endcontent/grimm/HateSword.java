@@ -78,7 +78,7 @@ public class HateSword extends MeleeWeapon {
 				"- 满血时无加成；血量趋近于零时倍率趋近 **2 倍**\n" +
 				"- 一旦真正只剩 **1 点生命**，倍率**跃升到 3 倍**\n" +
 				"- 最大生命为 1 时同样享受 3 倍\n\n" +
-				"它逼你在死亡边缘作战 —— 也会在边缘把你杀死。";
+				"它逼你在死亡边缘作战 —— 也会在边缘把你杀死。" + com.shatteredpixel.shatteredpixeldungeon.endcontent.EndItemStats.block(this);
 	}
 
 	/**

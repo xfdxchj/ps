@@ -109,7 +109,9 @@ public class DaggerTrident extends EmbedDagger {
 	}
 
 	@Override public String info(){
-		return "铸造精悍的三叉戟：出手厚重，一掷就是重击。\n\n" +
+		//==== END(修订·原版写法): 风味(desc) + 数值/力量 + 机制说明 ====
+		String info = super.info();
+		return info + "\n\n" + "铸造精悍的三叉戟：出手厚重，一掷就是重击。\n\n" +
 				"回收时：\n" +
 				"-**传送到敌人背后**（或匕首落点）\n" +
 				"-并对被嵌住的目标**再补一记伤害**\n\n" +

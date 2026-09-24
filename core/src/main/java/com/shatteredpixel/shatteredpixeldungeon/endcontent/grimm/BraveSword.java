@@ -117,7 +117,7 @@ public class BraveSword extends MeleeWeapon
 				"- 第 2 次：单次攻击，但**必定命中**\n" +
 				"- 第 3 次：**4 连击**，每击 60% 伤害\n" +
 				"- 然后回到第 1 次\n\n" +
-				"只有**命中**才会推进循环 —— 空挥不会。";
+				"只有**命中**才会推进循环 —— 空挥不会。" + com.shatteredpixel.shatteredpixeldungeon.endcontent.EndItemStats.block(this);
 	}
 
 	/**

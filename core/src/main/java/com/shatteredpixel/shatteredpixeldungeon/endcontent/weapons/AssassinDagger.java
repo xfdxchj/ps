@@ -118,7 +118,9 @@ public class AssassinDagger extends MissileWeapon {
 	}
 
 	@Override public String info(){
-		return "专为刺杀打造的基础投掷匕首,数值与原版初始飞刀一致。命中敌人时可借刀光传送到目标背后并短暂隐身(有传送冷却)。" +
+		//==== END(修订·原版写法): 风味(desc) + 数值/力量 + 机制说明 ====
+		String info = super.info();
+		return info + "\n\n" + "专为刺杀打造的基础投掷匕首,数值与原版初始飞刀一致。命中敌人时可借刀光传送到目标背后并短暂隐身(有传送冷却)。" +
 				"\n亦可在炼金锅中消耗邪能碎片进化为成品:三叉戟 / 传送 / 处决。";
 	}
 }

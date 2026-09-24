@@ -144,7 +144,9 @@ public class DaggerExecution extends EmbedDagger {
 	@Override public float durabilityPerUse(int lvl){ return 0f; }
 
 	@Override public String info(){
-		return "掷出后嵌在敌人身上、或插在地上。\n\n" +
+		//==== END(修订·原版写法): 风味(desc) + 数值/力量 + 机制说明 ====
+		String info = super.info();
+		return info + "\n\n" + "掷出后嵌在敌人身上、或插在地上。\n\n" +
 				"回收时：\n" +
 				"-**传送到敌人背后**（或匕首落点）\n" +
 				"-若目标**生命低于 25%** 且不是 Boss，**直接斩杀**\n\n" +

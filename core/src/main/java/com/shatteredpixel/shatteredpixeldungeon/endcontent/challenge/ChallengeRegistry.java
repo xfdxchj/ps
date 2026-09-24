@@ -459,7 +459,7 @@ public final class ChallengeRegistry {
 				"所有 Boss 的命中与闪避提升 20%。");
 		done(all, 144,"破碎权柄",   "broken_authority", "怪物", T_MON, 3, T_MED,    "s:75,143",
 				"每个 Boss 生命**降至 33%** 后，**每 5 回合召唤 1 只稀有怪**（带随机精英词缀）。");
-		done(all, 145,"神圣附体",   "holy_possession",  "特殊", T_BEN, 1, T_EASY,   "",
+		done(all, 145,"神圣附体",   "holy_possession",  "神明", T_BEN, 1, T_EASY,   "",
 				"经验获取增加 20%。");
 		done(all, 146,"醍醐灌顶",   "enlightenment",    "特殊", T_BEN, 2, T_EASY,   "x:147",
 				"每个天赋层级额外获得 1 点天赋点（与神圣灵感药水可叠加）。");
@@ -473,7 +473,7 @@ public final class ChallengeRegistry {
 				"每一层额外刷新 2 只蜜蜂。");
 		done(all, 150,"淹没地牢",   "flooded_dungeon",  "地图", T_MON, 2, T_HARD,   "s:74;x:154",
 				"每一层都是水域生态（整层被水淹没），水中 **3%** 生成幻影食人鱼（原表 20%，实测过多已下调）。与「废弃地牢」互斥。");
-		done(all, 151,"圣明神明",   "holy_divinity",    "特殊", T_TWO, 3, T_HARD,   "s:145",
+		done(all, 151,"圣明神明",   "holy_divinity",    "神明", T_TWO, 3, T_HARD,   "s:145",
 				"玩家**生命 / 命中 / 闪避 +50%**、**攻击 +30%**，但**每 5 回合有 1 回合**必须停下来祷告（那回合无法行动）。");
 		done(all, 152,"和平地牢",   "peaceful_dungeon", "怪物", T_TWO, 2, T_HARD,   "",
 				"所有怪物**不会主动攻击你**，直到你**主动攻击任何怪物**（违反合约）。违反后本层怪物属性 +50%（Boss 层为 Boss 生命 +50%），**每下一层重置**。");
@@ -487,7 +487,7 @@ public final class ChallengeRegistry {
 				"开局额外获得一件板甲（已鉴定）。");
 		done(all, 157,"附魔扩充",   "enchant_expansion","装备", T_BEN, 1, T_MED,    "s:58,108",
 				"附魔池新增两条：**锋利**（近战伤害 +20%）与**力量**（远程伤害 +20%）。");
-		done(all, 158,"神圣之力",   "holy_power",       "特殊", T_BEN, 2, T_MED,    "s:153",
+		done(all, 158,"神圣之力",   "holy_power",       "神明", T_BEN, 2, T_MED,    "s:153",
 				"对恶魔类目标造成的伤害提升 30%。与「恶魔地牢」联动时收益最大化。");
 		done(all, 159,"绵羊地牢",   "sheep_dungeon",    "环境", T_MON, 2, T_MED,    "",
 				"玩家周围 7x7 范围内 13% 概率生成 1~2 只绵羊，触发后有 20 回合冷却。");
@@ -501,10 +501,10 @@ public final class ChallengeRegistry {
 				"玩家每达到 3 级，伤害的下限与上限各提升 10%。");
 		done(all, 164,"魔法地牢",   "magic_dungeon",    "怪物", T_MON, 2, T_MED,    "s:141",
 				"怪物有 **13%** 概率使用**随机一种魔法**（以法杖法术表示）。");
-		done(all, 165,"神圣之光",   "holy_light",       "特殊", T_BEN, 1, T_EASY,   "s:145",
+		done(all, 165,"神圣之光",   "holy_light",       "神明", T_BEN, 1, T_EASY,   "s:145",
 				"每回合 13% 概率回复 2% 最大生命（满血时不触发）。");
 		//166 神圣天使：前置为 4 条神圣类规则（145 神圣附体 / 158 神圣之力 / 165 神圣之光 / 151 圣明神明）
-		done(all, 166,"神圣天使",   "holy_angel",       "特殊", T_BEN, 3, T_SER,    "p:145,158,165,151",
+		done(all, 166,"神圣天使",   "holy_angel",       "神明", T_BEN, 3, T_SER,    "p:145,158,165,151",
 				"集齐所有神圣类挑战后**变为天使**：祷告**不再消耗回合**。");
 		done(all, 167,"黄金地牢",   "golden_dungeon",   "经济", T_TWO, 3, T_HARD,   "p:41",
 				"怪物**不掉落任何物品**；地面生成的物品**全部换算成金币**。任务/剧情物品除外。");
@@ -684,17 +684,17 @@ public final class ChallengeRegistry {
 		//文档所有者定稿：每条 -33%，集齐全部后变为 -50%。
 		//所以这里用 p: 前置把它们串成一条链 —— 最后一条（为何无敌）
 		//要求前面六条全部勾选，它才生效。
-		done(all, 202, "为何无泪",   "why_no_tears",    "特殊", T_TWO, 2, T_MED,  "s:203,204,205,206,207",
+		done(all, 202, "为何无泪",   "why_no_tears",    "为何", T_TWO, 2, T_MED,  "s:203,204,205,206,207",
 				"受到的伤害增加 33%。");
-		done(all, 203, "为何无力",   "why_no_strength", "特殊", T_TWO, 2, T_MED,  "s:202,204,205,206,207",
+		done(all, 203, "为何无力",   "why_no_strength", "为何", T_TWO, 2, T_MED,  "s:202,204,205,206,207",
 				"造成的伤害降低 33%。");
-		done(all, 204, "为何无悔",   "why_no_regret",   "特殊", T_TWO, 2, T_MED,  "s:202,203,205,206,207",
+		done(all, 204, "为何无悔",   "why_no_regret",   "为何", T_TWO, 2, T_MED,  "s:202,203,205,206,207",
 				"生命回复速度降低 33%。");
-		done(all, 205, "为何无忌",   "why_no_fear",     "特殊", T_TWO, 2, T_MED,  "s:202,203,204,206,207",
+		done(all, 205, "为何无忌",   "why_no_fear",     "为何", T_TWO, 2, T_MED,  "s:202,203,204,206,207",
 				"生命上限降低 33%。");
-		done(all, 206, "为何无视",   "why_no_sight",    "特殊", T_TWO, 2, T_MED,  "s:202,203,204,205,207",
+		done(all, 206, "为何无视",   "why_no_sight",    "为何", T_TWO, 2, T_MED,  "s:202,203,204,205,207",
 				"命中降低 33%。");
-		done(all, 207, "为何无避",   "why_no_escape",   "特殊", T_TWO, 2, T_MED,  "s:202,203,204,205,206",
+		done(all, 207, "为何无避",   "why_no_escape",   "为何", T_TWO, 2, T_MED,  "s:202,203,204,205,206",
 				"闪避降低 33%。");
 		//==== END(无尽系列·六条独立挑战) ====
 		//文档所有者定稿：这六条各自独立注册，各自控制自己的内容。
@@ -725,7 +725,7 @@ public final class ChallengeRegistry {
 		done(all, 209, "无尽贪婪",   "infinite_greed",  "特殊", T_RISK,3, T_HARD, "s:188,191",
 				"唯有贪婪之人，才可登阶成神。\n\n-解除**人物等级上限**（原本是 30 级）\n-满级后继续获得经验会照常升级");
 
-		done(all, 208, "为何无敌",   "why_invincible",  "特殊", T_TWO, 3, T_SER,  "p:202,203,204,205,206,207",
+		done(all, 208, "为何无敌",   "why_invincible",  "为何", T_TWO, 3, T_SER,  "p:202,203,204,205,206,207",
 				"集齐前面六条「为何无X」后生效：所有百分比由 33% 变为 50%。");
 	}
 

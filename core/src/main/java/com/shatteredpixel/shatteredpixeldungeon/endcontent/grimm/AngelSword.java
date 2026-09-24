@@ -121,7 +121,7 @@ public class AngelSword extends MeleeWeapon
 				"- 最多 " + MAX_HITS + " 次\n" +
 				"- 每一次造成 **60% 伤害**\n" +
 				"- **停手一回合，计数直接归零**\n\n" +
-				"所以它逼你不能停下 —— 一旦犹豫，就得从头再来。";
+				"所以它逼你不能停下 —— 一旦犹豫，就得从头再来。" + com.shatteredpixel.shatteredpixeldungeon.endcontent.EndItemStats.block(this);
 	}
 
 	/**

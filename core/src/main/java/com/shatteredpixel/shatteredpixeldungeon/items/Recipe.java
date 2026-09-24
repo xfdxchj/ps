@@ -321,6 +321,16 @@ public abstract class Recipe {
 					result.add(recipe);
 				}
 			}
+			//==== END(修复·法杖炼金进阶失效) ====
+			//文档所有者反馈："爆裂法杖的进阶[应该]和原版法杖的进阶一样，是指靠炼金进阶。"
+			//根因：EvolveWandRecipe 需要 **3 样**（法杖 + 强化符石 + 星露花种子），
+			//但这里只在 size==2 分支里遍历 endVariantRecipes —— 3 材料时根本没人查它，
+			//于是 14 把法杖（含爆裂法杖）的炼金进阶**全部不可用**。
+			for (Recipe recipe : endVariantRecipes){
+				if (recipe.testIngredients(ingredients)){
+					result.add(recipe);
+				}
+			}
 		}
 		
 		return result;

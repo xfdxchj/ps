@@ -135,7 +135,7 @@ public class SilverGun extends Weapon {
 				"- 冷却期间攻击照常消耗回合\n" +
 				"- 无限耐久\n\n" +
 				"它几乎打不死人 —— 价值全在节奏上。与**兔子怀表**配合时，\n" +
-				"怀表可以立刻重置这条冷却。";
+				"怀表可以立刻重置这条冷却。" + com.shatteredpixel.shatteredpixeldungeon.endcontent.EndItemStats.block(this);
 	}
 
 	//==================================================================

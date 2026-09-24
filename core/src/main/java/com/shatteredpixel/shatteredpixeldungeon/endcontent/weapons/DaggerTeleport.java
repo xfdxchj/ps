@@ -114,7 +114,9 @@ public class DaggerTeleport extends EmbedDagger {
 	@Override public float durabilityPerUse(int lvl){ return 0f; }
 
 	@Override public String info(){
-		return "掷出后嵌在敌人身上、或插在地上。\n\n" +
+		//==== END(修订·原版写法): 风味(desc) + 数值/力量 + 机制说明 ====
+		String info = super.info();
+		return info + "\n\n" + "掷出后嵌在敌人身上、或插在地上。\n\n" +
 				"回收时：\n" +
 				"-嵌在**敌人**身上 → 传到他**背后**\n" +
 				"-插在**平地**上 → 直接传送到那一格\n\n" +

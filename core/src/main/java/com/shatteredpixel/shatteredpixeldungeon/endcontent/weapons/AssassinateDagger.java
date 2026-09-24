@@ -32,7 +32,9 @@ public class AssassinateDagger extends MissileWeapon {
 	@Override public float durabilityPerUse(int lvl){ return 0f; }
 
 	@Override public String info(){
-		return "专为背刺与偷袭打磨的潜行匕首: 更高的基准攻击面兼作“先发制人”的一步。" +
+		//==== END(修订·原版写法): 风味(desc) + 数值/力量 + 机制说明 ====
+		String info = super.info();
+		return info + "\n\n" + "专为背刺与偷袭打磨的潜行匕首: 更高的基准攻击面兼作“先发制人”的一步。" +
 				"\n命中可靠、无限耐久。配合隐匿/背对打出的伤害尤其凶险。";
 	}
 }

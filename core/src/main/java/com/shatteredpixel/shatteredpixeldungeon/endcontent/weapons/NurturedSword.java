@@ -128,7 +128,7 @@ public class NurturedSword extends MeleeWeapon {
 		} else {
 			sb.append("（已满阶）");
 		}
-		return sb.toString();
+		return sb.toString() + com.shatteredpixel.shatteredpixeldungeon.endcontent.EndItemStats.block(this);
 	}
 
 	@Override

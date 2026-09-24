@@ -81,7 +81,7 @@ public class HeavenFallBow extends MissileWeapon {
 				"-命中后弹道向**四个方向分裂**\n" +
 				"-**神射戒**对其伤害加成提升 **200%**\n" +
 				"-若换成**轮回噬灭之戒**，加成提升 **300%**\n" +
-				"-不可叠加（只带 1 件）";
+				"-不可叠加（只带 1 件）" + com.shatteredpixel.shatteredpixeldungeon.endcontent.EndItemStats.block(this);
 	}
 
 	@Override

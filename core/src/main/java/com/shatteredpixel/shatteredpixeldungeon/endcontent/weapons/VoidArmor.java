@@ -86,7 +86,7 @@ public class VoidArmor extends Armor {
 				"-免伤 **15 + 升级等级** %（最多 **50%**）\n" +
 				"-**15 + 升级等级** % 概率完全免疫一次伤害（最多 50%）\n" +
 				"-每 **50 回合**回复 **50%** 生命\n" +
-				"-受到致命伤时触发**祝福十字架**，冷却 **50 回合**";
+				"-受到致命伤时触发**祝福十字架**，冷却 **50 回合**" + com.shatteredpixel.shatteredpixeldungeon.endcontent.EndItemStats.block(this);
 	}
 
 	@Override

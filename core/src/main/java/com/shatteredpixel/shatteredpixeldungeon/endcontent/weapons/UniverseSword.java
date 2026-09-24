@@ -70,7 +70,7 @@ public class UniverseSword extends MeleeWeapon {
 				"-附带相当于你**最大生命 10%** 的额外伤害\n" +
 				"-造成相当于目标**最大生命 10%** 的百分比伤害\n" +
 				"-每命中一次，伤害与攻速**翻倍**，最多 **3 次**\n" +
-				"-切换目标后连击清零";
+				"-切换目标后连击清零" + com.shatteredpixel.shatteredpixeldungeon.endcontent.EndItemStats.block(this);
 	}
 
 	@Override

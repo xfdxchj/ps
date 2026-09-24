@@ -206,7 +206,7 @@ public class WandOfMeteor extends DamageWand {
 				"伤害 **4-8**，每次施法消耗 **1 充能**。\n\n" +
 				"-落点为中心**炸开**，3×3 范围内造成全额伤害\n" +
 				"-附带冲击波音效\n" +
-				"-存在**进阶版**：范围扩至 5×5，3×3 内伤害再提升 25%";
+				"-存在**进阶版**：范围扩至 5×5，3×3 内伤害再提升 25%" + com.shatteredpixel.shatteredpixeldungeon.endcontent.EndItemStats.block(this);
 	}
 
 	@Override
