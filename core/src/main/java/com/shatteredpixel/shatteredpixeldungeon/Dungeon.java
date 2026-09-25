@@ -287,8 +287,14 @@ public class Dungeon {
 		//声音是按原路径加载的 —— 开门声之类换不掉。掩码就绪后**重新加载一遍**即可覆盖。
 		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
 			.jingmiEnabled()) {
-			com.watabou.noosa.audio.Sample.INSTANCE.load(
-				com.shatteredpixel.shatteredpixeldungeon.Assets.Sounds.all);
+			//==== END(修复·音效没换成功) ====
+			//根因：Sample.load(String[]) 对**已经在 ids 里的资源直接跳过**，
+			//而这些音效在 app 启动时已预载 —— 再 load 一遍等于没做。
+			//修法：逐个 unload（释放旧对象）再 load，才会真正换成静谧版。
+			for (String snd : com.shatteredpixel.shatteredpixeldungeon.Assets.Sounds.all){
+				com.watabou.noosa.audio.Sample.INSTANCE.unload(snd);
+				com.watabou.noosa.audio.Sample.INSTANCE.load(snd);
+			}
 		}
 
 		//END(挑战·音频): 只加载已勾选挑战用到的音频（31 个文件不全量预载）。
