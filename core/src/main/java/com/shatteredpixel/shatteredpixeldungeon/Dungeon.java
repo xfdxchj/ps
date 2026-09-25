@@ -282,6 +282,15 @@ public class Dungeon {
 		com.shatteredpixel.shatteredpixeldungeon.endcontent.JingmiAssets.reset();
 		com.shatteredpixel.shatteredpixeldungeon.endcontent.JingmiAssets.apply();
 
+		//==== END(修复·静谧音效没替换完全) ====
+		//批量预载发生在 app 启动时（ShatteredPixelDungeon.onCreate），那时挑战掩码还没读，
+		//声音是按原路径加载的 —— 开门声之类换不掉。掩码就绪后**重新加载一遍**即可覆盖。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
+			.jingmiEnabled()) {
+			com.watabou.noosa.audio.Sample.INSTANCE.load(
+				com.shatteredpixel.shatteredpixeldungeon.Assets.Sounds.all);
+		}
+
 		//END(挑战·音频): 只加载已勾选挑战用到的音频（31 个文件不全量预载）。
 		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeSfx.init();
 

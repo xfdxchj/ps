@@ -152,7 +152,8 @@ public final class ChallengeRegistry {
 		done(all, 227, "星界军团", "legion", "英烈", ChallengeDef.TENDENCY_MONSTER, 3, ChallengeDef.TIER_MEDIUM, "",
 			"每隔一段时间生成**一大波敌人**；每生成一波，**楼层封锁 20 回合**（仍可信仰之跃）。");
 
-		done(all, 228, "我的世界", "jingmi", "英烈", ChallengeDef.TENDENCY_NEUTRAL, 2, ChallengeDef.TIER_SERIES, "",			"**静谧花园**：整套地牢资源替换 —— 全部地牢贴图、角色/怪物贴图、界面与 **BGM/音效** 都换成静谧花园 4.0 的版本。纯外观，不影响数值。");
+		done(all, 228, "我的世界", "jingmi", "静谧", ChallengeDef.TENDENCY_NEUTRAL, 2, ChallengeDef.TIER_SERIES, "",
+			"**静谧花园**：把**地牢美术**（地形/怪物/特效）与 **BGM/音效** 换成静谧花园 4.0 的版本。界面、字形与标题画**不替换**。纯外观，不影响数值。");
 
 		registerChallengeAreas(all);
 

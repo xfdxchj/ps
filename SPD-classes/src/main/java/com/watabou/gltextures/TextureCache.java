@@ -185,6 +185,11 @@ public class TextureCache {
 		} catch (Throwable ignored) { }
 	}
 
+	/** END(228): 取消一条路径别名（新开一局时要还原原图）。 */
+	public synchronized static void unalias( String originalPath ) {
+		all.remove( originalPath );
+	}
+
 	public synchronized static boolean contains( Object key ) {
 		return all.containsKey( key );
 	}

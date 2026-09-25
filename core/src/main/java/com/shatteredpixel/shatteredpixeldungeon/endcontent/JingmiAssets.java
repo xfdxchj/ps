@@ -11,25 +11,17 @@ public final class JingmiAssets {
 	private JingmiAssets() {}
 
 	/** 替换的图片资源（相对 assets 的路径，与 jingmi/ 下同构）。 */
-		public static final String[] IMAGES = {
+				public static final String[] IMAGES = {
 			"effects/effects.png",
 			"effects/fireball-short.png",
 			"effects/fireball-tall.png",
 			"effects/specks.png",
 			"effects/spell_icons.png",
 			"effects/text_icons.png",
-			"environment/custom_tiles/carpet.png",
 			"environment/custom_tiles/caves_boss.png",
-			"environment/custom_tiles/caves_quest.png",
 			"environment/custom_tiles/city_boss.png",
-			"environment/custom_tiles/city_quest.png",
 			"environment/custom_tiles/prison_exit.png",
-			"environment/custom_tiles/prison_quest.png",
-			"environment/custom_tiles/rat_king_room.png",
 			"environment/custom_tiles/weak_floor.png",
-			"environment/occlusion_shadows.png",
-			"environment/raised_terrain.png",
-			"environment/terrain_features.png",
 			"environment/tiles_caves.png",
 			"environment/tiles_caves_crystal.png",
 			"environment/tiles_caves_gnoll.png",
@@ -37,48 +29,12 @@ public final class JingmiAssets {
 			"environment/tiles_halls.png",
 			"environment/tiles_prison.png",
 			"environment/tiles_sewers.png",
-			"fonts/pixel_font.png",
-			"gdx/cursor_controller.png",
-			"gdx/cursor_mouse.png",
-			"interfaces/badges.png",
-			"interfaces/banners.png",
-			"interfaces/boss_hp.png",
-			"interfaces/buffs.png",
-			"interfaces/change_icons.png",
-			"interfaces/chrome.png",
-			"interfaces/hero_icons.png",
-			"interfaces/icons.png",
-			"interfaces/large_buffs.png",
-			"interfaces/menu_button.png",
-			"interfaces/menu_pane.png",
-			"interfaces/radial_menu.png",
-			"interfaces/status_pane.png",
-			"interfaces/surface.png",
-			"interfaces/talent_icons.png",
-			"interfaces/toolbar.png",
-			"splashes/caves.jpg",
-			"splashes/city.jpg",
-			"splashes/cleric.jpg",
-			"splashes/duelist.jpg",
-			"splashes/halls.jpg",
-			"splashes/huntress.jpg",
-			"splashes/mage.jpg",
-			"splashes/prison.jpg",
-			"splashes/rogue.jpg",
-			"splashes/sewers.jpg",
-			"splashes/title/archs.png",
-			"splashes/title/back_clusters.png",
-			"splashes/title/front_small.png",
-			"splashes/title/mid_mixed.png",
-			"splashes/warrior.jpg",
 			"sprites/avatars.png",
 			"sprites/brute.png",
 			"sprites/cleric.png",
 			"sprites/crab.png",
 			"sprites/crystal_guardian.png",
-			"sprites/crystal_spire.png",
 			"sprites/crystal_wisp.png",
-			"sprites/dm100.png",
 			"sprites/dm200.png",
 			"sprites/duelist.png",
 			"sprites/fungal_core.png",
@@ -88,20 +44,12 @@ public final class JingmiAssets {
 			"sprites/gnoll_geomancer.png",
 			"sprites/gnoll_guard.png",
 			"sprites/gnoll_sapper.png",
-			"sprites/imp.png",
 			"sprites/item_icons.png",
-			"sprites/items.png",
-			"sprites/mimic.png",
 			"sprites/piranha.png",
 			"sprites/rat.png",
 			"sprites/ratking.png",
 			"sprites/scorpio.png",
-			"sprites/sentry.png",
 			"sprites/shaman.png",
-			"sprites/skeleton.png",
-			"sprites/vault_boss_elemental.png",
-			"sprites/vault_mirror.png",
-			"sprites/vault_tokens_door.png",
 			"sprites/wraith.png",
 		};
 
@@ -241,6 +189,15 @@ public final class JingmiAssets {
 	 * 不需要改动任何一处业务代码。
 	 */
 	public static void apply(){
+		//==== END(修复·没勾挑战也换贴图) ====
+		//文档所有者反馈："为什么没有开启我的世界挑战也会错乱？"
+		//根因：这里原来**没有判开关** —— Dungeon.init() 一调就无条件把全部图集
+		//别名到 jingmi/，于是没勾 228 也整个换皮。
+		if (!com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
+			.jingmiEnabled()) {
+			applied = false;
+			return;
+		}
 		if (applied) return;
 		applied = true;
 		for (String p : IMAGES){
@@ -249,7 +206,13 @@ public final class JingmiAssets {
 	}
 
 	/** END(228): 新开一局时允许重新注册替换贴图。 */
-	public static void reset(){ applied = false; }
+	public static void reset(){
+		applied = false;
+		//撤掉上一局注册的别名 —— 否则关了 228 还在用替换图
+		for (String p : IMAGES){
+			com.watabou.gltextures.TextureCache.unalias(p);
+		}
+	}
 
 	private static boolean applied = false;
 }
