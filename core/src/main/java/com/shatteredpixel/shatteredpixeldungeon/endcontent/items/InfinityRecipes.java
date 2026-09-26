@@ -277,27 +277,30 @@ public final class InfinityRecipes {
 					.ChallengeEffects.infinityShardEnabled()) return false;
 			if (ingredients.size() < 2 || ingredients.size() > 3) return false;
 
-			InfinityMaterials.InfinityCore.Kind needKind = null;
-			InfinityMaterials.InfinityCore.Kind haveKind = null;
-			boolean hasSample = false;
+			boolean hasCore = false;
 			int ingotCount = 0;
 
 			for (Item it : ingredients){
 				if (it instanceof InfinityMaterials.InfinityCore){
-					haveKind = ((InfinityMaterials.InfinityCore) it).kind();
+					if (hasCore) return false;            //只允许一个核心
+					hasCore = true;
 				} else if (it instanceof InfinityMaterials.InfinityIngot){
 					ingotCount += it.quantity();
 				} else {
-					InfinityMaterials.InfinityCore.Kind k = ToCore.kindOf(it);
-					if (k == null) return false;      //不认识的料
-					needKind = k;
-					hasSample = true;
+					return false;                          //不认识的料
 				}
 			}
+			return hasCore && ingotCount >= INGOTS;        //核心决定成品类型
+		}
 
-			if (!hasSample || ingotCount < INGOTS) return false;
-			if (haveKind == null) return false;
-			return haveKind == needKind;              //核心必须对应
+		/** END: 从材料里取核心类型。 */
+		private static InfinityMaterials.InfinityCore.Kind coreKind(ArrayList<Item> ingredients){
+			for (Item it : ingredients){
+				if (it instanceof InfinityMaterials.InfinityCore){
+					return ((InfinityMaterials.InfinityCore) it).kind();
+				}
+			}
+			return null;
 		}
 
 		@Override public int cost(ArrayList<Item> ingredients){ return 0; }
@@ -318,11 +321,7 @@ public final class InfinityRecipes {
 
 		@Override
 		public Item sampleOutput(ArrayList<Item> ingredients){
-			InfinityMaterials.InfinityCore.Kind k = null;
-			for (Item it : ingredients){
-				InfinityMaterials.InfinityCore.Kind kk = ToCore.kindOf(it);
-				if (kk != null){ k = kk; break; }
-			}
+			InfinityMaterials.InfinityCore.Kind k = coreKind(ingredients);
 			Class<? extends Item> c = outputFor(k);
 			if (c == null) return null;
 			try { return c.getDeclaredConstructor().newInstance(); }
@@ -333,14 +332,7 @@ public final class InfinityRecipes {
 		public Item brew(ArrayList<Item> ingredients){
 			if (!testIngredients(ingredients)) return null;
 
-			Item sample = null;
-			InfinityMaterials.InfinityCore.Kind kind = null;
-			for (Item it : ingredients){
-				InfinityMaterials.InfinityCore.Kind kk = ToCore.kindOf(it);
-				if (kk != null){ sample = it; kind = kk; break; }
-			}
-			if (sample == null) return null;
-
+			InfinityMaterials.InfinityCore.Kind kind = coreKind(ingredients);
 			Class<? extends Item> outCls = outputFor(kind);
 			if (outCls == null) return null;
 
@@ -354,12 +346,10 @@ public final class InfinityRecipes {
 			out.identify();
 			Catalog.setSeen(out.getClass());
 
-			//消耗：样品、核心、以及 2 个锭
+			//消耗：核心 + 2 个锭（锭可堆叠在同一格）
 			int ingotsLeft = INGOTS;
 			for (Item it : ingredients){
-				if (it == sample){
-					ItemConsume.remove(it);
-				} else if (it instanceof InfinityMaterials.InfinityCore){
+				if (it instanceof InfinityMaterials.InfinityCore){
 					ItemConsume.remove(it);
 				} else if (it instanceof InfinityMaterials.InfinityIngot){
 					int take = Math.min(ingotsLeft, it.quantity());

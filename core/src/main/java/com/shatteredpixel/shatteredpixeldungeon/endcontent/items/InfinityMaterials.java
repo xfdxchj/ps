@@ -121,7 +121,7 @@ public final class InfinityMaterials {
 			return "一件装备被强化到极致之后，内部凝结出的核。\n\n" +
 					"-由 **" + MIN_LEVEL + " 级以上**的装备炼金转化而来\n" +
 					"-种类由**被炼化的装备类型**决定（武器→剑 / 护甲→甲 / 戒指→戒 / 远程→弓）\n" +
-					"-与 **2 个无尽锭 + 同类型样品装备** 一起炼金 → 对应顶级装备";
+					"-与 **2 个无尽锭** 一起炼金 → 对应顶级装备";
 		}
 
 		@Override public String desc(){ return info(); }
@@ -177,7 +177,7 @@ public final class InfinityMaterials {
 		public String info(){
 			return "一百份碎片压成的一块，沉得不像话。\n\n" +
 					"-由 **100 个无尽碎片**合成\n" +
-					"-**2 个无尽锭 + 对应核心 + 同类型样品装备** 可以炼金合成对应的顶级装备";
+					"-**2 个无尽锭 + 对应核心** 可以炼金合成对应的顶级装备";
 		}
 
 		@Override public String desc(){ return info(); }
