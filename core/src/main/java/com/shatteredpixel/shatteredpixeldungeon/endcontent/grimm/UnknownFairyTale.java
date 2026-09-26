@@ -82,10 +82,19 @@ public class UnknownFairyTale extends Item {
 		} else {
 			sb.append("每捡到一枚**童话残片**，这里就会自动补上一页。");
 		}
+		sb.append("\n\n点击**阅读**可以逐页翻看已经补上的内容。");
 		return sb.toString();
 	}
 
 	@Override public String desc(){ return info(); }
+
+	@Override
+	public String actionName(String action,
+			com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero hero){
+		if (AC_READ.equals(action)) return "阅读";
+		if (AC_USE.equals(action)) return "使用";
+		return super.actionName(action, hero);
+	}
 
 	@Override public boolean isUpgradable(){ return false; }
 	@Override public boolean isIdentified(){ return true; }
@@ -97,13 +106,16 @@ public class UnknownFairyTale extends Item {
 
 	/** END: 动作名（Item 基类没有 AC_USE，子类自己声明）。 */
 	public static final String AC_USE = "USE";
+	/** END(阅读): 逐页翻阅童话书。 */
+	public static final String AC_READ = "READ";
 
 	@Override
 	public java.util.ArrayList<String> actions(
 			com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero hero){
 		java.util.ArrayList<String> actions = super.actions(hero);
 		if (actions.isEmpty()) return actions;
-		//只有写满的书才能用 —— 否则玩家会反复点它看提示，很烦
+		//随时都能翻阅；只有写满的书才额外多一个"使用"
+		actions.add(AC_READ);
 		if (isComplete()) actions.add(AC_USE);
 		return actions;
 	}
@@ -123,7 +135,16 @@ public class UnknownFairyTale extends Item {
 	public void execute(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero hero,
 			String action){
 		super.execute(hero, action);
-		if (!action.equals(AC_USE) || hero == null) return;
+		if (hero == null) return;
+
+		//END(阅读): 打开逐页阅读窗口
+		if (action.equals(AC_READ)){
+			com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.show(
+					new WndFairyTale(this));
+			return;
+		}
+
+		if (!action.equals(AC_USE)) return;
 
 		if (!isComplete()){
 			com.shatteredpixel.shatteredpixeldungeon.utils.GLog
