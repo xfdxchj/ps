@@ -526,11 +526,9 @@ public class Gun extends MeleeWeapon {
 
 		//END(bugfix): Bullet 是非静态内部类，没有无参构造，Item.split 的反射 newInstance 会崩。
 		//子弹是纯效果物品，直接返回自身即可（ReRe 的 DisposableMissileWeapon 也是这么做的）。
-		@Override
-		public int defaultQuantity() {
-			return 1;
-		}
-
+		//END(bugfix): Bullet 保持默认 quantity(3)，让 Item.detach 走 split(1) 分支；
+		//split 返回自身，随后 callback 会调用 onThrow。若把 quantity 改成 1，
+		//detachAll 会因为子弹不在背包里返回 null，onThrow 根本不会被调用（表现为"子弹没伤害"）。
 		@Override
 		public com.shatteredpixel.shatteredpixeldungeon.items.Item split(int amount) {
 			return this;
@@ -550,6 +548,12 @@ public class Gun extends MeleeWeapon {
 		@Override
 		public int buffedLvl() {
 			return Gun.this.buffedLvl();
+		}
+
+		//END(bugfix): 直接返回枪械的子弹伤害，避免走 MissileWeapon 的加成链导致 0 伤害。
+		@Override
+		public int damageRoll(Char owner) {
+			return Gun.this.bulletDamage();
 		}
 
 		@Override
