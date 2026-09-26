@@ -524,6 +524,18 @@ public class Gun extends MeleeWeapon {
 			return true;
 		}
 
+		//END(bugfix): Bullet 是非静态内部类，没有无参构造，Item.split 的反射 newInstance 会崩。
+		//子弹是纯效果物品，直接返回自身即可（ReRe 的 DisposableMissileWeapon 也是这么做的）。
+		@Override
+		public int defaultQuantity() {
+			return 1;
+		}
+
+		@Override
+		public com.shatteredpixel.shatteredpixeldungeon.items.Item split(int amount) {
+			return this;
+		}
+
 		@Override
 		public int proc(Char attacker, Char defender, int damage) {
 			damage = whatBullet().damageFactor(damage);
