@@ -31,6 +31,8 @@ import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 import com.shatteredpixel.shatteredpixeldungeon.windows.WndBag;
 import com.watabou.noosa.audio.Sample;
 import com.watabou.utils.Bundle;
+import com.watabou.utils.DeviceCompat;
+import com.watabou.utils.Random;
 import com.watabou.utils.Reflection;
 
 import java.util.ArrayList;
@@ -118,6 +120,16 @@ public class GunBlueprint extends Item {
 			return;
 		}
 		Gun result = convert((Gun)item);
+
+		//END(ReReARPD gun port): 与 ReRe 一致，蓝图有成功率；升级蓝图可提高成功率。
+		float chance = 1f - 0.2f * (result.tier - ((Gun)item).tier) + 0.1f * level();
+		if (Random.Float() >= chance && !DeviceCompat.isDebug()) {
+			result = null;
+		}
+		if (result == null) {
+			GLog.n(Messages.get(this, "nothing"));
+			return;
+		}
 
 		if (result != item) {
 			int slot = Dungeon.quickslot.getSlot(item);
