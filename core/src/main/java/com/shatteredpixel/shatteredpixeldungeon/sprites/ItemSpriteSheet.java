@@ -1481,4 +1481,13 @@ public class ItemSpriteSheet {
 		assignItemRect(GUNSMITHING_TOOL, 16, 13);
 		assignItemRect(NO_BULLET, 0, 0);
 	}
+	public static final int EVOLUTION = 832;
+	public static final int UPGRADE_DUST = 833;
+	public static final int BLUEPRINT = 834;
+
+	static {
+		assignItemRect(EVOLUTION, 10, 15);
+		assignItemRect(UPGRADE_DUST, 15, 11);
+		assignItemRect(BLUEPRINT, 15, 14);
+	}
 }

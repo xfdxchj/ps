@@ -24,6 +24,7 @@ package com.shatteredpixel.shatteredpixeldungeon.items.armor;
 import com.shatteredpixel.shatteredpixeldungeon.Badges;
 import com.shatteredpixel.shatteredpixeldungeon.Challenges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArmorEnhance;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
 import com.shatteredpixel.shatteredpixeldungeon.endcontent.EndGem;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
@@ -420,6 +421,17 @@ public class Armor extends EquipableItem {
 		mult *= com.shatteredpixel.shatteredpixeldungeon.endcontent.items
 				.ReincarnationRing.armorMultiplier(Dungeon.hero);
 		return (mult == 1f) ? base : Math.max(1, Math.round(base * mult));
+	}
+
+	//END(ReReARPD gun port): UpgradeDust 的临时护甲强化
+	@Override
+	public int buffedLvl() {
+		int lvl = super.buffedLvl();
+		if (Dungeon.hero != null && isEquipped(Dungeon.hero)) {
+			ArmorEnhance ae = Dungeon.hero.buff(ArmorEnhance.class);
+			if (ae != null) lvl = ae.armorLevel(lvl);
+		}
+		return lvl;
 	}
 
 	public int DRMax(int lvl){

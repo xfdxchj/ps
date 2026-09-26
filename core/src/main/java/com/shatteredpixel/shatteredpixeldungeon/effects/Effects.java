@@ -40,7 +40,9 @@ public class Effects {
 		D_CHAIN,
 		P_CHAIN,
 		L_CHAIN,
-		HEALTH_RAY
+		HEALTH_RAY,
+		//END(ReReARPD gun port): 镭射炮用的超级新星光束
+		SUPERNOVA_RAY
 	}
 	
 	public static Image get( Type type ) {
@@ -72,6 +74,9 @@ public class Effects {
 				break;
 			case HEALTH_RAY:
 				icon.frame(icon.texture.uvRect(16, 30, 32, 38));
+				break;
+			case SUPERNOVA_RAY:
+				icon.frame(icon.texture.uvRect(16, 62, 32, 70));
 				break;
 		}
 		return icon;

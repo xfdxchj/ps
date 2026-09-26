@@ -250,19 +250,22 @@ public abstract class Recipe {
 		new StewedMeat.twoMeat(),
 		//==== END(ReReARPD gun port): 强化符石 + 20 液态金属 -> 枪械改造工具 ====
 		new GunSmithingTool.ToolRecipe(),
+		//==== END(ReReARPD gun port): ReRe 炼金链条 ====
+		new com.shatteredpixel.shatteredpixeldungeon.items.spells.UpgradeDust.Recipe(),
+		new com.shatteredpixel.shatteredpixeldungeon.items.spells.Evolution.Recipe(),
 	};
 	
 	private static Recipe[] threeIngredientRecipes = new Recipe[]{
 		new Potion.SeedToPotion(),
 		new StewedMeat.threeMeat(),
-		new MeatPie.Recipe()
+		new MeatPie.Recipe(),
+		//==== END(ReReARPD gun port): T5 枪 + 升级之尘 + 进化法术 -> 枪械蓝图 ====
+		new com.shatteredpixel.shatteredpixeldungeon.items.changer.GunBlueprint.Recipe()
 	};
 	
 	//END 法杖蜕变：+8 法杖 ＋ 强化符石 → 对应进化法杖（由一条动态配方覆盖全部 13 把）
 	private static Recipe[] endVariantRecipes = new Recipe[]{
 		new com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolveWandRecipe(),
-		//==== END(ReReARPD gun port): T5 枪 + 强化符石 + 星花种子 -> T6 战术型 ====
-		new com.shatteredpixel.shatteredpixeldungeon.endcontent.gun.EvolveGunRecipe(),
 		//==== END(删除·童话残片的炼金路径) ====
 		//文档所有者定稿："（残片 → 3 残页 → 炼金 → 少女 → 去 999 层）
 		//这个方法去掉，因为如果已有碎片 1 捡到 2 回变 2 个 1，

@@ -42,6 +42,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Barrier;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Berserk;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Bless;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArmorEnhance;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Charm;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Combo;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Drowsy;
@@ -1941,6 +1942,11 @@ public class Hero extends Char {
 		}
 
 		dmg = Math.round(damage);
+
+		//END(ReReARPD gun port): UpgradeDust 的临时护甲强化计数
+		if (buff(ArmorEnhance.class) != null){
+			buff(ArmorEnhance.class).defenseProc();
+		}
 
 		//we ceil this one to avoid letting the player easily take 0 dmg from tenacity early
 		dmg = (int)Math.ceil(dmg * RingOfTenacity.damageMultiplier( this ));

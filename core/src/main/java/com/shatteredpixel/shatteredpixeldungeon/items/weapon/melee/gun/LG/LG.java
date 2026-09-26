@@ -10,7 +10,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Invisibility;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Beam;
 import com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter;
-import com.shatteredpixel.shatteredpixeldungeon.effects.particles.SparkParticle;
+import com.shatteredpixel.shatteredpixeldungeon.effects.particles.LaserParticle;
 import com.shatteredpixel.shatteredpixeldungeon.effects.particles.ShadowParticle;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.gun.Gun;
 import com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica;
@@ -71,7 +71,7 @@ extends Gun {
                         GameScene.updateMap(c);
                         terrainAffected = true;
                     }
-                    CellEmitter.center(c).burst(SparkParticle.FACTORY, 3);
+                    CellEmitter.center(c).burst(LaserParticle.BURST, 3);
                 }
                 if (terrainAffected) {
                     Dungeon.observe();
@@ -89,7 +89,7 @@ extends Gun {
                         multi = 3.0f;
                     }
                 }
-                LGBullet.curUser.sprite.parent.add(new Beam.SunRay(LGBullet.curUser.sprite.center(), DungeonTilemap.raisedTileCenterToWorld(cells)));
+                LGBullet.curUser.sprite.parent.add(new Beam.SuperNovaRay(LGBullet.curUser.sprite.center(), DungeonTilemap.raisedTileCenterToWorld(cells), multi));
                 for (Char ch : chars) {
                     for (int i = 0; i < LG.this.shotPerShoot(); ++i) {
                         if (!curUser.shoot(ch, this)) continue;

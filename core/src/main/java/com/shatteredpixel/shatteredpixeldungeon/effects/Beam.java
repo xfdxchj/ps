@@ -32,9 +32,9 @@ public class Beam extends Image {
 	
 	private static final double A = 180 / Math.PI;
 	
-	private  float duration;
+	protected float duration;
 	
-	private float timeLeft;
+	protected float timeLeft;
 
 	private Beam(PointF s, PointF e, Effects.Type asset, float duration) {
 		super( Effects.get( asset ) );
@@ -95,6 +95,27 @@ public class Beam extends Image {
 		Blending.setLightMode();
 		super.draw();
 		Blending.setNormalMode();
+	}
+
+	//END(ReReARPD gun port): 镭射炮的超级新星光束
+	public static class SuperNovaRay extends Beam {
+		float multi;
+
+		public SuperNovaRay(PointF s, PointF e, float multi) {
+			super(s, e, Effects.Type.SUPERNOVA_RAY, 2f);
+			this.multi = multi;
+		}
+
+		@Override
+		public void update() {
+			//Do not call super.update(), we want a custom alpha/scale curve.
+			float p = timeLeft * multi / duration;
+			alpha(p);
+			scale.set(scale.x, p);
+			if ((timeLeft -= Game.elapsed) <= 0) {
+				killAndErase();
+			}
+		}
 	}
 
 	//END(port from Arknights): 水射线（海嗣 Boss 用）

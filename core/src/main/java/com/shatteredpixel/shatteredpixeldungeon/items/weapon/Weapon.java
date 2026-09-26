@@ -27,6 +27,7 @@ import com.shatteredpixel.shatteredpixeldungeon.Statistics;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Berserk;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.MagicImmune;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.WeaponEnhance;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
@@ -116,6 +117,17 @@ abstract public class Weapon extends KindOfWeapon {
 	}
 	
 	public Augment augment = Augment.NONE;
+
+	//END(ReReARPD gun port): UpgradeDust 的临时武器强化
+	@Override
+	public int buffedLvl() {
+		int lvl = super.buffedLvl();
+		if (Dungeon.hero != null && isEquipped(Dungeon.hero)) {
+			WeaponEnhance we = Dungeon.hero.buff(WeaponEnhance.class);
+			if (we != null) lvl = we.weaponLevel(lvl);
+		}
+		return lvl;
+	}
 
 	protected int usesToID(){
 		return 20;

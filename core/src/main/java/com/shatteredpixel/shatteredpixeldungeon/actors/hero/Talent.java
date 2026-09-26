@@ -30,6 +30,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtifactRecharge;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Barrier;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.WeaponEnhance;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.CounterBuff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.EnhancedRings;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.FlavourBuff;
@@ -884,6 +885,11 @@ public enum Talent {
 	}
 
 	public static int onAttackProc( Hero hero, Char enemy, int dmg ){
+
+		//END(ReReARPD gun port): UpgradeDust 的临时武器强化计数
+		if (hero.buff(WeaponEnhance.class) != null){
+			hero.buff(WeaponEnhance.class).attackProc();
+		}
 
 		if (hero.hasTalent(Talent.PROVOKED_ANGER)
 			&& hero.buff(ProvokedAngerTracker.class) != null){

@@ -143,8 +143,13 @@ public enum HeroClass {
 				break;
 		}
 
-		//==== END(ReReARPD gun port): gunsmith challenge gives a starting tool ====
+		//==== END(ReReARPD gun port): gunsmith challenge gives a random T1 gun + starting tool ====
 		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects.gunsmithEnabled()){
+			com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon gun =
+					com.shatteredpixel.shatteredpixeldungeon.items.Generator.randomGun(0);
+			if (gun != null){
+				(hero.belongings.weapon = gun).identify();
+			}
 			new com.shatteredpixel.shatteredpixeldungeon.items.GunSmithingTool().identify().collect();
 		}
 
