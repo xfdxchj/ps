@@ -2081,32 +2081,14 @@ public final class ChallengeEffects {
 					.PotionOfPurity());
 		}
 
-		//==== END(改版·格林之器不给开局武器) ====
-		//文档所有者要求："格林之器不要开局给武器，获得方式为和 5 阶武器一样刷新。"
+		//==== END(改版·格林之器全部走掉落) ====
+		//文档所有者要求："把格林之器的内容删除" —— 即 125 不再开局给装备。
 		//
-		//所以这里**不再发放** 133/136 的两件近战武器（神天使双剑、
-		//怨恨之剑+勇剑沃柏尔）—— 它们改由 {@link #grimmWeaponDropChance()}
-		//在关卡掉落时按 5 阶武器的概率出现。
+		//所以这里**不再发放** 125 的银色短铳与兔子怀表（也不发放 133/136 的近战）。
+		//格林武器一律改由 {@link #rollGrimmWeaponDrop()} 在关卡掉落时按
+		//5 阶武器的概率出现；其中**勇剑已归入 125**（不是开局给）。
 		//
-		//仍然发放的是"道具类"（怀表、戒指、镇魂歌…）—— 那些不是武器，
-		//原表也没说它们要改成掉落。
-
-		//==== END(修订·格林之器1 改回开局携带) ====
-		//文档所有者定稿："**格林之器1 改为开局携带**"。
-		//
-		//也就是把 125 从"掉落"改回"开局直接给"：
-		//  · 银色短铳（主武器）
-		//  · 兔子的怀表（配套道具）
-		//
-		//133/136 维持掉落 —— 只有 1 改回开局。
-		//这样格林之器1 是一个"起手就有专武"的流派，
-		//而 2/3 仍然是"打到才有"的目标。
-		if (on(GRIMM_WEAPON)) {
-			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
-					.SilverGun());
-			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
-					.RabbitWatch());
-		}
+		//开场仍然发放的是"道具类"（戒指、镇魂歌…）—— 那些不是武器。
 
 		//127 格林之戒：黑兔戒指
 		if (on(GRIMM_RING)) {
@@ -2999,11 +2981,11 @@ public final class ChallengeEffects {
 
 	//==== 格林系列（125/133/136 的专属装备）====
 
-	/** 125 格林之器：银色短铳 + 兔子怀表。 */
+	/** 125 格林之器：勇剑（21 层起掉落获得）。 */
 	public static final int GRIMM_WEAPON   = 125;
 	/** 133 格林之器2：神天使双剑。 */
 	public static final int GRIMM_WEAPON_2 = 133;
-	/** 136 格林之器3：怨恨之剑 + 勇剑。 */
+	/** 136 格林之器3：怨恨之剑（勇剑已在 125）。 */
 	public static final int GRIMM_WEAPON_3 = 136;
 
 	/** 129 心爱的少女：童话残片 + 999 层的爱丽丝。 */
@@ -5204,11 +5186,11 @@ public final class ChallengeEffects {
 
 	public static com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee
 			.MeleeWeapon rollGrimmWeaponDrop() {
-		//==== END(修订·格林之器1 改为开局携带) ====
-		//125（格林之器1）已经改回开局发放，它的武器**不进掉落池**。
-		//所以这里只看 2/3 —— 否则只勾 125 时会白白走一遍掉落判定
-		//（池子是空的，浪费一次随机数）。
-		boolean any = on(GRIMM_WEAPON_2) || on(GRIMM_WEAPON_3);
+		//==== END(修订·格林之器1 进掉落池) ====
+		//文档所有者要求："把格林之器的内容删除，把勇剑放到1里" ——
+		//125 现在**走掉落**（不再开局给），并且持有**勇剑**。
+		//所以 125/133/136 三档都进掉落池。
+		boolean any = on(GRIMM_WEAPON) || on(GRIMM_WEAPON_2) || on(GRIMM_WEAPON_3);
 		if (!any) return null;
 
 		//楼层门槛：只有第 5 区（21 层起）才有机会
@@ -5221,8 +5203,11 @@ public final class ChallengeEffects {
 		java.util.ArrayList<com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee
 				.MeleeWeapon> pool = new java.util.ArrayList<>();
 
-		//125 格林之器：银色短铳（它继承 Weapon，不是 MeleeWeapon，所以不进这个池）
-		//—— 见下方单独处理。
+		//125 格林之器：勇剑（从 136 挪入；不是开局给，按 5 阶武器掉落）
+		if (on(GRIMM_WEAPON)) {
+			pool.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+					.BraveSword());
+		}
 		if (on(GRIMM_WEAPON_2)) {
 			pool.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
 					.AngelSword());
@@ -5230,8 +5215,6 @@ public final class ChallengeEffects {
 		if (on(GRIMM_WEAPON_3)) {
 			pool.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
 					.HateSword());
-			pool.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
-					.BraveSword());
 		}
 
 		if (pool.isEmpty()) return null;
@@ -5976,4 +5959,13 @@ public final class ChallengeEffects {
 		}
 	
 }
+
+	//==================================================================
+	//==== END(ReReARPD 枪械移植): 枪械工坊 ====
+	//==================================================================
+
+	/** END(229 枪械工坊): 武器掉落池加入 10 系 27 把枪械，并解锁枪械改造工具。 */
+	public static final int GUNSMITH = 229;
+
+	public static boolean gunsmithEnabled(){ return on(GUNSMITH); }
 }

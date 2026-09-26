@@ -895,9 +895,61 @@ public class Generator {
 		return randomWeapon(Dungeon.effectiveDepth() / 5, useDefaults);
 	}
 	
+	/**
+	 * END(ReReARPD gun port): return a gun appropriate to the floor tier.
+	 * Only called by {@link #randomWeapon} when challenge 229 (gunsmith) is on.
+	 */
+	public static MeleeWeapon randomGun(int floorSet) {
+		floorSet = (int)GameMath.gate(0, floorSet, 4);
+		Class<?>[][] pools = new Class<?>[][]{
+				{
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.gun.AR.AR_T1.class
+				},
+				{
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.gun.AR.AR_T2.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.gun.HG.HG_T2.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.gun.SMG.SMG_T2.class
+				},
+				{
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.gun.AR.AR_T3.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.gun.MG.MG_T3.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.gun.SG.SG_T3.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.gun.SR.SR_T3.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.gun.GL.GL_T3.class
+				},
+				{
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.gun.AR.AR_T4.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.gun.SMG.SMG_T4.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.gun.RL.RL_T4.class
+				},
+				{
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.gun.AR.AR_T5.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.gun.HG.HG_T5.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.gun.SMG.SMG_T5.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.gun.MG.MG_T5.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.gun.SG.SG_T5.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.gun.SR.SR_T5.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.gun.GL.GL_T5.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.gun.RL.RL_T5.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.gun.FT.FT_T5.class,
+						com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.gun.LG.LG_T5.class
+				}
+		};
+		Class<?> cls = Random.element(pools[floorSet]);
+		Item it = (Item)Reflection.newInstance((Class)cls);
+		return (MeleeWeapon)it.random();
+	}
+
 	public static MeleeWeapon randomWeapon(int floorSet, boolean useDefaults) {
 
 		floorSet = (int)GameMath.gate(0, floorSet, floorSetTierProbs.length-1);
+
+		//==== END(ReReARPD gun port): gunsmith weapon drop ====
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects.gunsmithEnabled()
+				&& Random.Float() < 0.35f){
+			MeleeWeapon gun = randomGun(floorSet);
+			if (gun != null) return gun;
+		}
 
 		//==== END(改版·格林之器改为掉落刷新) ====
 		//文档所有者要求："格林之器不要开局给武器，获得方式为和 5 阶武器一样刷新。"

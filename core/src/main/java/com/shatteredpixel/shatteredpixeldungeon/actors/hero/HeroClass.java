@@ -143,6 +143,11 @@ public enum HeroClass {
 				break;
 		}
 
+		//==== END(ReReARPD gun port): gunsmith challenge gives a starting tool ====
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects.gunsmithEnabled()){
+			new com.shatteredpixel.shatteredpixeldungeon.items.GunSmithingTool().identify().collect();
+		}
+
 		if (SPDSettings.quickslotWaterskin()) {
 			for (int s = 0; s < QuickSlot.SIZE; s++) {
 				if (Dungeon.quickslot.getItem(s) == null) {

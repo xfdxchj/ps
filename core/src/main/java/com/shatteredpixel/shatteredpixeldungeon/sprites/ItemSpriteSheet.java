@@ -1410,4 +1410,75 @@ public class ItemSpriteSheet {
 
 		return null;
 	}
+
+	//END(gun port): 27 gun icons + bullets + gunsmithing tool, copied from ReReARPD items.png
+	public static final int AR_T1 = 800;
+	public static final int AR_T2 = 801;
+	public static final int AR_T3 = 802;
+	public static final int AR_T4 = 803;
+	public static final int AR_T5 = 804;
+	public static final int AR_T6 = 805;
+	public static final int HG_T2 = 806;
+	public static final int HG_T5 = 807;
+	public static final int HG_T6 = 808;
+	public static final int SMG_T2 = 809;
+	public static final int SMG_T4 = 810;
+	public static final int SMG_T5 = 811;
+	public static final int MG_T3 = 812;
+	public static final int MG_T5 = 813;
+	public static final int SG_T3 = 814;
+	public static final int SG_T5 = 815;
+	public static final int SR_T3 = 816;
+	public static final int SR_T5 = 817;
+	public static final int SR_T6 = 818;
+	public static final int GL_T3 = 819;
+	public static final int GL_T5 = 820;
+	public static final int GL_T6 = 821;
+	public static final int RL_T4 = 822;
+	public static final int RL_T5 = 823;
+	public static final int RL_T6 = 824;
+	public static final int FT_T5 = 825;
+	public static final int LG_T5 = 826;
+	public static final int SINGLE_BULLET = 827;
+	public static final int TRIPLE_BULLET = 828;
+	public static final int SNIPER_BULLET = 829;
+	public static final int GUNSMITHING_TOOL = 830;
+	public static final int NO_BULLET = 831;
+
+	static {
+
+	//END(gun port)
+		assignItemRect(AR_T1, 12, 13);
+		assignItemRect(AR_T2, 13, 14);
+		assignItemRect(AR_T3, 15, 16);
+		assignItemRect(AR_T4, 16, 15);
+		assignItemRect(AR_T5, 15, 16);
+		assignItemRect(AR_T6, 15, 16);
+		assignItemRect(HG_T2, 11, 15);
+		assignItemRect(HG_T5, 12, 16);
+		assignItemRect(HG_T6, 16, 16);
+		assignItemRect(SMG_T2, 15, 15);
+		assignItemRect(SMG_T4, 13, 14);
+		assignItemRect(SMG_T5, 15, 15);
+		assignItemRect(MG_T3, 13, 15);
+		assignItemRect(MG_T5, 16, 15);
+		assignItemRect(SG_T3, 14, 16);
+		assignItemRect(SG_T5, 15, 16);
+		assignItemRect(SR_T3, 13, 16);
+		assignItemRect(SR_T5, 15, 16);
+		assignItemRect(SR_T6, 15, 16);
+		assignItemRect(GL_T3, 11, 13);
+		assignItemRect(GL_T5, 15, 15);
+		assignItemRect(GL_T6, 15, 15);
+		assignItemRect(RL_T4, 16, 16);
+		assignItemRect(RL_T5, 16, 16);
+		assignItemRect(RL_T6, 16, 16);
+		assignItemRect(FT_T5, 14, 15);
+		assignItemRect(LG_T5, 14, 16);
+		assignItemRect(SINGLE_BULLET, 8, 8);
+		assignItemRect(TRIPLE_BULLET, 11, 11);
+		assignItemRect(SNIPER_BULLET, 8, 8);
+		assignItemRect(GUNSMITHING_TOOL, 16, 13);
+		assignItemRect(NO_BULLET, 0, 0);
+	}
 }

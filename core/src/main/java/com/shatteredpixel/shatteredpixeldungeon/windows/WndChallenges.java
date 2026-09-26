@@ -111,6 +111,16 @@ public class WndChallenges extends Window {
 	private ScrollPane pane;
 	private Component content;
 
+	/**
+	 * END(修复·关闭挑战窗口后详情残留): 当前打开的详情窗口。
+	 *
+	 * <p>详情 {@code WndMessage} 是独立加进场景的，跟挑战窗口没有父子关系。
+	 * 若不用字段记住它，关闭挑战窗口时它不会跟着关，
+	 * 就会"同一位置还能点到、只是不显示"（点中的是残留的静态消息窗口）。
+	 * 记录它并在 {@link #hide()} 里一起关掉，即可解除残留。</p>
+	 */
+	private Window detailWindow;
+
 	private RenderedTextBlock passLevelText;
 
 	//随机条
@@ -777,6 +787,10 @@ public class WndChallenges extends Window {
 		if (d == null) return;
 		if (!isAlive()) return;                 //窗口已销毁 → 忽略残留点击
 
+		//==== END(修复·关闭挑战窗口后详情残留): 先关掉上一次打开的详情 ====
+		//详情窗口是独立加进场景的，不在这里关掉旧的就可能叠出多个。
+		closeDetail();
+
 		//==== END(修复·点详情卡死): 必须用 addToFront，不能用 GameScene.show ====
 		//文档所有者报告："在挑战界面选择时，点击挑战详细会卡死。"
 		//
@@ -791,8 +805,21 @@ public class WndChallenges extends Window {
 		//
 		//正确做法（原版 WndKeyBindings / WndSettings 都是这么写的）：
 		//直接往场景最前面加，**不动**当前窗口。
-		com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon.scene()
-				.addToFront( new WndMessage( describe( d ) ) );
+		detailWindow = new WndMessage( describe( d ) );
+		ShatteredPixelDungeon.scene().addToFront( detailWindow );
+	}
+
+	/**
+	 * END(修复·关闭挑战窗口后详情残留): 关闭当前打开的详情窗口（若有）。
+	 *
+	 * <p>联想方式：从场景摘掉（{@code parent} 变 null）即视为已关闭。
+	 * 兼容用户先手动点掉详情、再关挑战窗口的情况。</p>
+	 */
+	private void closeDetail() {
+		if (detailWindow != null && detailWindow.parent != null) {
+			detailWindow.hide();
+		}
+		detailWindow = null;
 	}
 
 	/**
@@ -1421,6 +1448,10 @@ public class WndChallenges extends Window {
 		if (UI_DEBUG) {
 			System.out.println("[详情诊断] 挑战窗口 hide() 被调用");
 		}
+		//==== END(修复·关闭挑战窗口后详情残留): 连详情一起关 ====
+		//详情是独立窗口，挑战窗口关闭时必须把它一起摘掉，
+		//否则会在原位置残留"还能点、但不显示"的静态消息窗口。
+		closeDetail();
 		super.hide();
 	}
 
