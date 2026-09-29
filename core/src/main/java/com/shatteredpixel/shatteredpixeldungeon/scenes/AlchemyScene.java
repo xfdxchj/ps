@@ -86,8 +86,9 @@ import java.util.ArrayList;
 
 public class AlchemyScene extends PixelScene {
 
-	//max of 3 inputs, and 3 potential recipe outputs
-	private static final InputButton[] inputs = new InputButton[3];
+	//END(无尽工作台): 默认 3 格；无尽工作台可开到 3x3=9 格
+	public static int slotCount = 3;
+	private static final InputButton[] inputs = new InputButton[9];
 	private static final CombineButton[] combines = new CombineButton[3];
 	private static final OutputSlot[] outputs = new OutputSlot[3];
 
@@ -222,26 +223,46 @@ public class AlchemyScene extends PixelScene {
 		NinePatch inputBG = Chrome.get(Chrome.Type.TOAST_TR);
 		inputBG.x = left + 6;
 		inputBG.y = pos;
-		inputBG.size(BTN_SIZE+8, 3*BTN_SIZE + 4 + 8);
+		if (slotCount <= 3){
+			inputBG.size(BTN_SIZE+8, 3*BTN_SIZE + 4 + 8);
+		} else {
+			inputBG.size(3*BTN_SIZE+4+8, 3*BTN_SIZE + 4 + 8);
+		}
 		add(inputBG);
 
 		pos += 4;
 
 		synchronized (inputs) {
-			for (int i = 0; i < inputs.length; i++) {
-				if (inputs[i] == null) {
-					inputs[i] = new InputButton();
-				} else {
-					//in case the scene was reset without calling destroy() for some reason
-					Item item = inputs[i].item();
-					inputs[i] = new InputButton();
-					if (item != null){
-						inputs[i].item(item);
+			if (slotCount <= 3){
+				//原版：3 格竖排
+				for (int i = 0; i < slotCount; i++) {
+					if (inputs[i] == null) {
+						inputs[i] = new InputButton();
+					} else {
+						Item item = inputs[i].item();
+						inputs[i] = new InputButton();
+						if (item != null) inputs[i].item(item);
 					}
+					inputs[i].setRect(left + 10, pos, BTN_SIZE, BTN_SIZE);
+					add(inputs[i]);
+					pos += BTN_SIZE + 2;
 				}
-				inputs[i].setRect(left + 10, pos, BTN_SIZE, BTN_SIZE);
-				add(inputs[i]);
-				pos += BTN_SIZE + 2;
+			} else {
+				//无尽工作台：3x3
+				int cols = 3;
+				for (int i = 0; i < slotCount; i++) {
+					if (inputs[i] == null) {
+						inputs[i] = new InputButton();
+					} else {
+						Item item = inputs[i].item();
+						inputs[i] = new InputButton();
+						if (item != null) inputs[i].item(item);
+					}
+					int r = i / cols, cc = i % cols;
+					inputs[i].setRect(left + 10 + cc*(BTN_SIZE+2), pos + r*(BTN_SIZE+2), BTN_SIZE, BTN_SIZE);
+					add(inputs[i]);
+				}
+				pos += ((slotCount + cols - 1) / cols) * (BTN_SIZE + 2);
 			}
 		}
 
@@ -306,7 +327,7 @@ public class AlchemyScene extends PixelScene {
 											Item item = items.get(idx);
 											synchronized (inputs) {
 												if (item != null && inputs[0] != null) {
-													for (int i = 0; i < inputs.length; i++) {
+													for (int i = 0; i < slotCount; i++) {
 														if (inputs[i].item() == null) {
 															if (item instanceof LiquidMetal || item instanceof MissileWeapon){
 																inputs[i].item(item.detachAll(Dungeon.hero.belongings.backpack));
@@ -382,7 +403,7 @@ public class AlchemyScene extends PixelScene {
 		lastIngredients.clear();
 		lastRecipe = null;
 
-		for (int i = 0; i < inputs.length; i++){
+		for (int i = 0; i < slotCount; i++){
 			combines[i] = new CombineButton(i);
 			combines[i].enable(false);
 
@@ -391,8 +412,8 @@ public class AlchemyScene extends PixelScene {
 
 			if (i == 0){
 				//first ones are always visible
-				combines[i].setRect(left + (pw-30)/2f, inputs[1].top()+5, 30, inputs[1].height()-10);
-				outputs[i].setRect(left + pw - BTN_SIZE - 10, inputs[1].top(), BTN_SIZE, BTN_SIZE);
+				combines[i].setRect(left + (pw-30)/2f, inputs[0].top()+5, 30, inputs[0].height()-10);
+				outputs[i].setRect(left + pw - BTN_SIZE - 10, inputs[0].top(), BTN_SIZE, BTN_SIZE);
 			} else {
 				combines[i].visible = false;
 				outputs[i].visible = false;
@@ -577,7 +598,7 @@ public class AlchemyScene extends PixelScene {
 		public void onSelect( Item item ) {
 			synchronized (inputs) {
 				if (item != null && inputs[0] != null) {
-					for (int i = 0; i < inputs.length; i++) {
+					for (int i = 0; i < slotCount; i++) {
 						if (inputs[i].item() == null) {
 							if (item instanceof LiquidMetal || item instanceof MissileWeapon){
 								inputs[i].item(item.detachAll(Dungeon.hero.belongings.backpack));
@@ -595,7 +616,7 @@ public class AlchemyScene extends PixelScene {
 	
 	private<T extends Item> ArrayList<T> filterInput(Class<? extends T> itemClass){
 		ArrayList<T> filtered = new ArrayList<>();
-		for (int i = 0; i < inputs.length; i++){
+		for (int i = 0; i < slotCount; i++){
 			Item item = inputs[i].item();
 			if (item != null && itemClass.isInstance(item)){
 				filtered.add((T)item);
@@ -625,8 +646,8 @@ public class AlchemyScene extends PixelScene {
 		cancel.enable(!ingredients.isEmpty());
 
 		if (recipes.isEmpty()){
-			combines[0].setPos(combines[0].left(), inputs[1].top()+5);
-			outputs[0].setPos(outputs[0].left(), inputs[1].top());
+			combines[0].setPos(combines[0].left(), inputs[0].top()+5);
+			outputs[0].setPos(outputs[0].left(), inputs[0].top());
 			energyAddBlinking = false;
 			return;
 		}
@@ -634,7 +655,7 @@ public class AlchemyScene extends PixelScene {
 		//positions active buttons
 		float gap = recipes.size() == 2 ? 6 : 2;
 
-		float height = inputs[2].bottom() - inputs[0].top();
+		float height = inputs[slotCount-1].bottom() - inputs[0].top();
 		height -= recipes.size()*BTN_SIZE + (recipes.size()-1)*gap;
 		float top = inputs[0].top() + height/2;
 
@@ -738,7 +759,7 @@ public class AlchemyScene extends PixelScene {
 
 		cancel.enable(false);
 		synchronized (inputs) {
-			for (int i = 0; i < inputs.length; i++) {
+			for (int i = 0; i < slotCount; i++) {
 				if (inputs[i] != null && inputs[i].item() != null) {
 					cancel.enable(true);
 					break;
@@ -774,7 +795,7 @@ public class AlchemyScene extends PixelScene {
 		}
 
 		synchronized (inputs) {
-			for (int i = 0; i < inputs.length; i++) {
+			for (int i = 0; i < slotCount; i++) {
 				if (inputs[i] != null && inputs[i].item() != null) {
 					Item item = inputs[i].item();
 					if (item.quantity() <= 0) {
@@ -1021,7 +1042,9 @@ public class AlchemyScene extends PixelScene {
 				@Override
 				//only the first empty button accepts key input
 				public GameAction keyAction() {
-					for (InputButton i : inputs){
+					for (int ii = 0; ii < slotCount; ii++){
+						InputButton i = inputs[ii];
+						if (i == null) continue;
 						if (i.item == null || i.item instanceof WndBag.Placeholder) {
 							if (i == InputButton.this) {
 								return SPDAction.INVENTORY;
@@ -1204,10 +1227,21 @@ public class AlchemyScene extends PixelScene {
 
 	public static void assignToolkit( AlchemistsToolkit toolkit ){
 		AlchemyScene.toolkit = toolkit;
+		slotCount = 3;
 	}
 
 	public static void clearToolkit(){
 		AlchemyScene.toolkit = null;
+		slotCount = 3;
+	}
+
+	/** END(无尽工作台): 使用 3x3=9 格炼金界面。 */
+	public static void assignWorkbench(){
+		slotCount = 9;
+	}
+
+	public static void clearWorkbench(){
+		slotCount = 3;
 	}
 
 	//END 挑战·炼金无望：炼金能量消耗 ×1.5
