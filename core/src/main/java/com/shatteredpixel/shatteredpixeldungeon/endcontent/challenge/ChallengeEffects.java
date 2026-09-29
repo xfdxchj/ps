@@ -5521,13 +5521,8 @@ public final class ChallengeEffects {
 		if (Random.Int(100) >= ASCENSION_CHANCE_PCT) return false;
 
 		t.revives++;
-		//END(登神长阶·分裂苍蝇): 苍蝇群复活后回到初始状态，生命=初始值×2
-		if (mob instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Swarm){
-			((com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Swarm) mob).resetForAscension();
-		} else {
-			mob.HT *= 2;
-			mob.HP = mob.HT;
-		}
+		mob.HT *= 2;
+		mob.HP = mob.HT;
 		com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHealing.cure(mob);
 		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.detach(mob,
 			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Paralysis.class);

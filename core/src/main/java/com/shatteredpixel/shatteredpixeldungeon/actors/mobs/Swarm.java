@@ -108,6 +108,9 @@ public class Swarm extends Mob {
 				GameScene.add( clone, SPLIT_DELAY ); //we add before assigning HP due to ascension
 
 				clone.HP = (HP - damage) / 2;
+				//END(登神长阶·分裂苍蝇): 分裂体的生命上限也跟着分裂后的生命走，
+				//否则复活时用初始 50 翻倍会变成 100（文档所有者反馈的 bug）。
+				clone.HT = clone.HP;
 				Actor.add( new Pushing( clone, pos, clone.pos ) );
 
 				Dungeon.level.occupyCell(clone);
@@ -124,14 +127,6 @@ public class Swarm extends Mob {
 		return 10;
 	}
 	
-	/** END(登神长阶): 触发复活时回到"初始状态"，并把生命设为初始值 ×2。 */
-	public void resetForAscension(){
-		generation = 0;
-		EXP = 3;
-		HT = 50 * 2;
-		HP = HT;
-	}
-
 	private Swarm split() {
 		Swarm clone = new Swarm();
 		clone.generation = generation + 1;

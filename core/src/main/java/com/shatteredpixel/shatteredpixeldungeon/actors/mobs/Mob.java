@@ -1030,6 +1030,12 @@ public abstract class Mob extends Char {
 	}
 	
 	protected boolean doAttack( Char enemy ) {
+		//END(152 和平地牢): 合约未破时禁止对玩家出手（兜底，防自定义 AI 绕过 chooseEnemy）
+		if (enemy == Dungeon.hero && alignment == Alignment.ENEMY
+				&& com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+						.ChallengeEffects.monstersPassive()) {
+			return true;   //消耗掉这次行动，但不攻击
+		}
 
 		//==== END(挑战 164 魔法地牢): 怪物有 13% 概率施放随机魔法 ====
 		//文档所有者说明："怪物有 13% 的可以使用随机一种魔法"
@@ -1292,6 +1298,12 @@ public abstract class Mob extends Char {
 	}
 
 	public void aggro( Char ch ) {
+		//END(152 和平地牢): 合约未破时不主动仇恨玩家
+		if (ch == Dungeon.hero && alignment == Alignment.ENEMY
+				&& com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+						.ChallengeEffects.monstersPassive()) {
+			return;
+		}
 		enemy = ch;
 		if (state != PASSIVE){
 			state = HUNTING;
