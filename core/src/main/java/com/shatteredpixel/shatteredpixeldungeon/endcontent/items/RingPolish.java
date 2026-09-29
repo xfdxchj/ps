@@ -23,7 +23,7 @@ public class RingPolish extends Item {
 	public static final String AC_USE = "USE";
 
 	{
-		image = ItemSpriteSheet.ARCANE_RESIN;
+		image = ItemSpriteSheet.RING_POLISH;
 		defaultAction = AC_USE;
 		stackable = true;
 		bones = false;

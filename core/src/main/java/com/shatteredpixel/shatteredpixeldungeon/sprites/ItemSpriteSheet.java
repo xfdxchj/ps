@@ -1442,6 +1442,8 @@ public class ItemSpriteSheet {
 	public static final int SNIPER_BULLET = 829;
 	public static final int GUNSMITHING_TOOL = 830;
 	public static final int NO_BULLET = 831;
+	//END(230 原神地牢): 洗练石
+	public static final int RING_POLISH = 835;
 
 	static {
 
@@ -1478,6 +1480,7 @@ public class ItemSpriteSheet {
 		assignItemRect(SNIPER_BULLET, 8, 8);
 		assignItemRect(GUNSMITHING_TOOL, 16, 13);
 		assignItemRect(NO_BULLET, 0, 0);
+		assignItemRect(RING_POLISH, 16, 16);
 	}
 	public static final int EVOLUTION = 832;
 	public static final int UPGRADE_DUST = 833;
