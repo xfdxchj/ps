@@ -642,6 +642,15 @@ public abstract class Char extends Actor {
 				}
 			}
 
+			//END(230 原神地牢): 玩家暴击（词条）—— 命中后 2 倍伤害
+			if (this instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero){
+				float crit = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.RingAffix.critChance(
+						(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) this);
+				if (crit > 0f && Random.Float() < crit){
+					dmg *= 2f;
+				}
+			}
+
 			dmg = dmg*dmgMulti;
 
 			//flat damage bonus is affected by multipliers

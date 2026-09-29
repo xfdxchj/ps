@@ -96,6 +96,11 @@ public class Regeneration extends Buff {
 
 				partialRegen += 1f / delay;
 
+				//END(230 原神地牢): 戒指词条·每回合回复
+				if (target instanceof Hero){
+					partialRegen += com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.RingAffix.regenPerTurn((Hero) target);
+				}
+
 				if (partialRegen >= 1) {
 					target.HP += (int)partialRegen;
 					partialRegen -= (int)partialRegen;

@@ -253,6 +253,8 @@ public abstract class Recipe {
 		//==== END(ReReARPD gun port): ReRe 炼金链条 ====
 		new com.shatteredpixel.shatteredpixeldungeon.items.spells.UpgradeDust.Recipe(),
 		new com.shatteredpixel.shatteredpixeldungeon.items.spells.Evolution.Recipe(),
+		//==== END(230 原神地牢): 升级卷轴 + 强化符石 -> 50 洗练石 ====
+		new com.shatteredpixel.shatteredpixeldungeon.endcontent.items.RingPolish.PolishRecipe(),
 	};
 	
 	private static Recipe[] threeIngredientRecipes = new Recipe[]{

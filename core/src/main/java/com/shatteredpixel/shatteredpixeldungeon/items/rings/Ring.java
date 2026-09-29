@@ -33,6 +33,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.spells.SpiritForm;
 import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.RingAffix;
 import com.shatteredpixel.shatteredpixeldungeon.items.ItemStatusHandler;
 import com.shatteredpixel.shatteredpixeldungeon.items.KindofMisc;
 import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.ShardOfOblivion;
@@ -98,6 +99,31 @@ public class Ring extends KindofMisc {
 		handler = new ItemStatusHandler<>( (Class<? extends Ring>[])Generator.Category.RING.classes, gems, bundle );
 	}
 	
+	//END(230 原神地牢): 戒指词条
+	public RingAffix[] affixes = new RingAffix[0];
+
+	/** 按当前强化等级补齐词条数量（每 3 级 1 条，最多 3 条）。 */
+	public void ensureAffixes(){
+		if (!com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.genshinEnabled()){
+			return;
+		}
+		int want = RingAffix.countFor(level());
+		if (affixes == null) affixes = new RingAffix[0];
+		if (affixes.length == want) return;
+		RingAffix[] next = new RingAffix[want];
+		System.arraycopy(affixes, 0, next, 0, Math.min(affixes.length, want));
+		for (int i = affixes.length; i < want; i++){
+			next[i] = RingAffix.randomAffix();
+		}
+		affixes = next;
+	}
+
+	/** END(230): 洗练 —— 全部词条重掷。 */
+	public void rerollAffixes(){
+		affixes = RingAffix.roll(RingAffix.countFor(level()));
+	}
+
 	public Ring() {
 		super();
 		reset();
@@ -231,6 +257,7 @@ public class Ring extends KindofMisc {
 		if (Random.Int(3) == 0) {
 			cursed = false;
 		}
+		ensureAffixes();
 		
 		return this;
 	}
@@ -273,6 +300,7 @@ public class Ring extends KindofMisc {
 		if (Random.Float() < 0.3f) {
 			cursed = true;
 		}
+		ensureAffixes();
 		
 		return this;
 	}
@@ -313,17 +341,31 @@ public class Ring extends KindofMisc {
 	}
 
 	private static final String LEVELS_TO_ID    = "levels_to_ID";
+	private static final String AFFIXES = "ring_affixes";
 
 	@Override
 	public void storeInBundle( Bundle bundle ) {
 		super.storeInBundle( bundle );
 		bundle.put( LEVELS_TO_ID, levelsToID );
+		if (affixes != null && affixes.length > 0){
+			int[] ids = new int[affixes.length];
+			for (int i = 0; i < affixes.length; i++) ids[i] = affixes[i].ordinal();
+			bundle.put( AFFIXES, ids );
+		}
 	}
 
 	@Override
 	public void restoreFromBundle( Bundle bundle ) {
 		super.restoreFromBundle( bundle );
 		levelsToID = bundle.getFloat( LEVELS_TO_ID );
+		int[] ids = bundle.getIntArray( AFFIXES );
+		if (ids != null){
+			RingAffix[] vals = RingAffix.values();
+			affixes = new RingAffix[ids.length];
+			for (int i = 0; i < ids.length; i++){
+				affixes[i] = (ids[i] >= 0 && ids[i] < vals.length) ? vals[ids[i]] : RingAffix.randomAffix();
+			}
+		}
 	}
 	
 	public void onHeroGainExp( float levelPercent, Hero hero ){

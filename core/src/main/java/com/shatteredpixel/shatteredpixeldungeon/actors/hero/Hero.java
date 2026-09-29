@@ -259,7 +259,7 @@ public class Hero extends Char {
 		
 		HT = 20 + 5*(lvl-1) + HTBoost;
 		float multiplier = RingOfMight.HTMultiplier(this);
-		HT = Math.round(multiplier * HT);
+		HT = Math.round(multiplier * HT * com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.RingAffix.htMultiplier(this));
 		
 		if (buff(ElixirOfMight.HTBoost.class) != null){
 			HT += buff(ElixirOfMight.HTBoost.class).boost();
@@ -623,6 +623,7 @@ public class Hero extends Char {
 		
 		float accuracy = 1;
 		accuracy *= RingOfAccuracy.accuracyMultiplier( this );
+		accuracy *= com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.RingAffix.accuracyMultiplier( this );
 		
 		//precise assault and liquid agility
 		if (!(wep instanceof MissileWeapon)) {
@@ -702,6 +703,7 @@ public class Hero extends Char {
 		float evasion = defenseSkill;
 		
 		evasion *= RingOfEvasion.evasionMultiplier( this );
+		evasion *= com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.RingAffix.evasionMultiplier( this );
 
 		if (buff(Talent.LiquidAgilEVATracker.class) != null){
 			if (pointsInTalent(Talent.LIQUID_AGILITY) == 1){
@@ -1949,7 +1951,8 @@ public class Hero extends Char {
 		}
 
 		//we ceil this one to avoid letting the player easily take 0 dmg from tenacity early
-		dmg = (int)Math.ceil(dmg * RingOfTenacity.damageMultiplier( this ));
+		dmg = (int)Math.ceil(dmg * RingOfTenacity.damageMultiplier( this )
+				* com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.RingAffix.defenseMultiplier( this ));
 
 		int preHP = HP + shielding();
 		if (src instanceof Hunger) preHP -= shielding();

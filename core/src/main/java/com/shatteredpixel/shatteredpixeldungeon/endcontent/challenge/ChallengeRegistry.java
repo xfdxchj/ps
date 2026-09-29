@@ -159,6 +159,12 @@ public final class ChallengeRegistry {
 		done(all, 229, "枪械工坊", "gunsmith", "装备", ChallengeDef.TENDENCY_NEUTRAL, 2, ChallengeDef.TIER_MEDIUM, "",
 			"武器掉落池中加入 **10 系 27 把枪械**；开局获得一把随机 **T1 枪** 与 **枪械改造工具**。\n枪械打空弹匣后需花回合装填（装填时间已减半）；射击伤害吃**投掷加成**（力量/神射之戒），不消耗子弹。\n炼金进阶：**强化符石+20液态金属**→升级之尘；**嬗变卷轴+不稳定法术**→进化法术；**T5枪+升级之尘+进化法术**→枪械蓝图，对对应 T5 枪使用 → T6 战术型（+0 时 80%）。");
 
+		//==== END(原神地牢): 戒指词条 ====
+		done(all, 230, "原神地牢", "genshin", "装备", ChallengeDef.TENDENCY_BENEFIT, 2, ChallengeDef.TIER_MEDIUM, "",
+			"**戒指可以获得词条**：每强化 **3 级**获得 1 条（最多 **3 条**），词条在获得时随机。\n\n"
+			+ "可选词条：**生命 +20% 最大生命**、**回复 每回合 0.2 生命**、**暴击率 +20%**、**闪避 +20%**、**命中 +20%**、**防御 +20%**、**充能效率 +20%**。\n\n"
+			+ "新增炼金道具**洗练石**（升级卷轴 + 强化符石 → 50 个），对戒指使用可重掷全部词条。");
+
 		registerChallengeAreas(all);
 
 		ALL = Collections.unmodifiableList(all);

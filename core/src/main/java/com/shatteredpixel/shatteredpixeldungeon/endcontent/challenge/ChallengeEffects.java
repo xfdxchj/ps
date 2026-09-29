@@ -5991,4 +5991,13 @@ public final class ChallengeEffects {
 	public static final int GUNSMITH = 229;
 
 	public static boolean gunsmithEnabled(){ return on(GUNSMITH); }
+
+	//==================================================================
+	//==== END(新增·原神地牢): 戒指词条系统 ====
+	//==================================================================
+
+	/** 230 原神地牢：戒指可以获得词条，并可洗练。 */
+	public static final int GENSHIN = 230;
+
+	public static boolean genshinEnabled(){ return on(GENSHIN); }
 }
