@@ -198,7 +198,10 @@ public abstract class Recipe {
 			new com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolveDaggerRecipe(),
 			//END(顶级装备体系): 2 无尽锭 + 对应核心 + 样品装备 → 顶级装备
 			new com.shatteredpixel.shatteredpixeldungeon.endcontent.items
-					.InfinityRecipes.ToEquipment()
+					.InfinityRecipes.ToEquipment(),
+			//END(无尽炼金·戒指): 6 枚不同原版戒指 → 1 戒指碎片
+			new com.shatteredpixel.shatteredpixeldungeon.endcontent.items
+					.RingFragment.FragmentRecipe()
 	};
 	
 	private static Recipe[] oneIngredientRecipes = new Recipe[]{

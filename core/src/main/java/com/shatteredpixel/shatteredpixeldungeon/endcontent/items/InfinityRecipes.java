@@ -270,50 +270,125 @@ public final class InfinityRecipes {
 		/** 需要的锭数。 */
 		public static final int INGOTS = 2;
 
-		@Override
-		public boolean testIngredients(ArrayList<Item> ingredients) {
-			//END(214 无尽碎片): 勾了这条挑战才有这套配方
-			if (!com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
-					.ChallengeEffects.infinityShardEnabled()) return false;
-			if (ingredients.size() < 2 || ingredients.size() > 3) return false;
+		private static final Class<?>[] SWORD_SET = new Class<?>[]{
+				com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Greatsword.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.WarHammer.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Glaive.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Greataxe.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Greatshield.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Gauntlet.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.WarScythe.class
+		};
 
-			boolean hasCore = false;
-			int ingotCount = 0;
+		private static final Class<?>[] ARMOR_SET = new Class<?>[]{
+				com.shatteredpixel.shatteredpixeldungeon.items.armor.ClothArmor.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.armor.LeatherArmor.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.armor.MailArmor.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.armor.ScaleArmor.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.armor.PlateArmor.class
+		};
 
+		private static final Class<?>[] BOW_SET = new Class<?>[]{
+				com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.Trident.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.ThrowingHammer.class,
+				com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.ForceCube.class
+		};
+
+		private static InfinityMaterials.InfinityCore core(ArrayList<Item> ingredients){
+			InfinityMaterials.InfinityCore core = null;
 			for (Item it : ingredients){
 				if (it instanceof InfinityMaterials.InfinityCore){
-					if (hasCore) return false;            //只允许一个核心
-					hasCore = true;
-				} else if (it instanceof InfinityMaterials.InfinityIngot){
-					ingotCount += it.quantity();
-				} else {
-					return false;                          //不认识的料
+					if (core != null) return null;
+					core = (InfinityMaterials.InfinityCore) it;
 				}
 			}
-			return hasCore && ingotCount >= INGOTS;        //核心决定成品类型
+			return core;
 		}
 
-		/** END: 从材料里取核心类型。 */
-		private static InfinityMaterials.InfinityCore.Kind coreKind(ArrayList<Item> ingredients){
+		private static int ingots(ArrayList<Item> ingredients){
+			int n = 0;
 			for (Item it : ingredients){
-				if (it instanceof InfinityMaterials.InfinityCore){
-					return ((InfinityMaterials.InfinityCore) it).kind();
+				if (it instanceof InfinityMaterials.InfinityIngot) n += it.quantity();
+			}
+			return n;
+		}
+
+		private static boolean matchesSet(ArrayList<Item> others, Class<?>[] set){
+			if (others.size() != set.length) return false;
+			boolean[] used = new boolean[set.length];
+			for (Item it : others){
+				if (it.cursed || !it.isIdentified()) return false;
+				int idx = -1;
+				for (int i = 0; i < set.length; i++){
+					if (it.getClass() == set[i]){ idx = i; break; }
+				}
+				if (idx < 0 || used[idx]) return false;
+				used[idx] = true;
+			}
+			return true;
+		}
+
+		private static boolean matchesBow(ArrayList<Item> others){
+			if (others.size() != BOW_SET.length) return false;
+			boolean[] used = new boolean[BOW_SET.length];
+			for (Item it : others){
+				if (it.cursed || !it.isIdentified() || it.quantity() < 5) return false;
+				int idx = -1;
+				for (int i = 0; i < BOW_SET.length; i++){
+					if (it.getClass() == BOW_SET[i]){ idx = i; break; }
+				}
+				if (idx < 0 || used[idx]) return false;
+				used[idx] = true;
+			}
+			return true;
+		}
+
+		private static boolean matchesRing(ArrayList<Item> others){
+			if (others.size() != 2) return false;
+			RingFragment a = null, b = null;
+			for (Item it : others){
+				if (!(it instanceof RingFragment)) return false;
+				if (a == null) a = (RingFragment) it; else b = (RingFragment) it;
+			}
+			if (a == null || b == null) return false;
+			for (String s : a.rings){
+				if (b.rings.contains(s)) return false;   //两个碎片的戒指种类不能重复
+			}
+			return true;
+		}
+
+		@Override
+		public boolean testIngredients(ArrayList<Item> ingredients) {
+			if (!com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects.infinityShardEnabled()) return false;
+			if (ingredients.size() < 2 || ingredients.size() > 9) return false;
+
+			InfinityMaterials.InfinityCore core = core(ingredients);
+			if (core == null || ingots(ingredients) < INGOTS) return false;
+
+			ArrayList<Item> others = new ArrayList<>();
+			for (Item it : ingredients){
+				if (!(it instanceof InfinityMaterials.InfinityCore)
+						&& !(it instanceof InfinityMaterials.InfinityIngot)){
+					others.add(it);
 				}
 			}
-			return null;
+			switch (core.kind()){
+				case SWORD: return matchesSet(others, SWORD_SET);
+				case ARMOR: return matchesSet(others, ARMOR_SET);
+				case BOW:   return matchesBow(others);
+				case RING:  return matchesRing(others);
+				default:    return false;
+			}
 		}
 
 		@Override public int cost(ArrayList<Item> ingredients){ return 0; }
 
-		/** END: 样品装备对应哪种成品。 */
-		private static Class<? extends Item> outputFor(
-				InfinityMaterials.InfinityCore.Kind k){
+		private static Class<? extends Item> outputFor(InfinityMaterials.InfinityCore.Kind k){
 			if (k == null) return null;
 			switch (k){
 				case SWORD: return UniverseSword.class;
 				case ARMOR: return VoidArmor.class;
-				case RING:  return com.shatteredpixel.shatteredpixeldungeon
-						.endcontent.items.ReincarnationRing.class;
+				case RING:  return ReincarnationRing.class;
 				case BOW:   return HeavenFallBow.class;
 				default:    return null;
 			}
@@ -321,8 +396,7 @@ public final class InfinityRecipes {
 
 		@Override
 		public Item sampleOutput(ArrayList<Item> ingredients){
-			InfinityMaterials.InfinityCore.Kind k = coreKind(ingredients);
-			Class<? extends Item> c = outputFor(k);
+			Class<? extends Item> c = outputFor(core(ingredients) == null ? null : core(ingredients).kind());
 			if (c == null) return null;
 			try { return c.getDeclaredConstructor().newInstance(); }
 			catch (Exception e){ return null; }
@@ -332,21 +406,17 @@ public final class InfinityRecipes {
 		public Item brew(ArrayList<Item> ingredients){
 			if (!testIngredients(ingredients)) return null;
 
-			InfinityMaterials.InfinityCore.Kind kind = coreKind(ingredients);
-			Class<? extends Item> outCls = outputFor(kind);
+			InfinityMaterials.InfinityCore core = core(ingredients);
+			Class<? extends Item> outCls = outputFor(core.kind());
 			if (outCls == null) return null;
 
 			Item out;
-			try {
-				out = outCls.getDeclaredConstructor().newInstance();
-			} catch (Exception e){
-				return null;
-			}
+			try { out = outCls.getDeclaredConstructor().newInstance(); }
+			catch (Exception e){ return null; }
 
 			out.identify();
 			Catalog.setSeen(out.getClass());
 
-			//消耗：核心 + 2 个锭（锭可堆叠在同一格）
 			int ingotsLeft = INGOTS;
 			for (Item it : ingredients){
 				if (it instanceof InfinityMaterials.InfinityCore){
@@ -355,6 +425,8 @@ public final class InfinityRecipes {
 					int take = Math.min(ingotsLeft, it.quantity());
 					ingotsLeft -= take;
 					ItemConsume.consume(it, take);
+				} else {
+					ItemConsume.remove(it);
 				}
 			}
 
