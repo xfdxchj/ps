@@ -34,7 +34,7 @@ public class EvolvedWandOfCorrosion extends WandOfCorrosion {
 	@Override
 	public String desc() {
 		return "进化·蚀骨法杖（源：腐蚀法杖）：腐蚀在落点留下的 3×3 酸蚀气几乎不变，但现在命中区域内的每个敌人都会被缠绕（Roots）1 回合，难以脱身地吃着持续的腐蚀伤害。\n\n"
-				+ "真实等级 +8，充能上限提升到 20，随角色等级成长。";
+				+ "**继承源法杖的等级**；充能上限提升到 20。";
 	}
 
 	@Override
@@ -67,7 +67,7 @@ public class EvolvedWandOfCorrosion extends WandOfCorrosion {
 			Dungeon.level.pressCell(bolt.collisionPos);
 		}
 	}
-	// ---- 终焉·进化基础(统一13把)：真实等级+8、充能上限20(10起步,每级+1) ----
+	// ---- 终焉·进化基础(统一13把)：继承源法杖等级、充能上限20(10起步,每级+1) ----
 	@Override
 	public void updateLevel() {
 		maxCharges = Math.min(initialCharges() + level(), 20);

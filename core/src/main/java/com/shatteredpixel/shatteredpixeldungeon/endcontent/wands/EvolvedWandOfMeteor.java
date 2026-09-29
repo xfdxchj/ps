@@ -25,7 +25,7 @@ import com.watabou.utils.Bundle;
  *   <li>起一个**中文独有名字**</li>
  *   <li>{@code desc()} 以"进化·名（源：原法杖）：…"开头</li>
  *   <li>{@code glowing()} 给出辨识度高的光泽</li>
- *   <li>**真实等级 +8**、**充能上限 20**</li>
+ *   <li>**继承源法杖等级**、**充能上限 20**</li>
  *   <li>注册进 {@code EndWandEvolution.REGISTRY}</li>
  * </ul>
  *
@@ -50,7 +50,7 @@ public class EvolvedWandOfMeteor extends WandOfMeteor {
 	public String desc() {
 		return "进化·爆裂法杖（源：爆炸法杖）：爆炸范围扩至 5×5，"
 				+ "爆炸正中 3×3 范围内的敌人承受额外 25% 伤害。\n\n"
-				+ "**继承源法杖的等级**（不再有 +8 地板），充能上限提升到 20。";
+				+ "**继承源法杖的等级**，充能上限提升到 20。";
 	}
 
 	@Override

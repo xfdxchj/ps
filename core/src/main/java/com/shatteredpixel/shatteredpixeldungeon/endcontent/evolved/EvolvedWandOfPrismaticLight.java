@@ -69,7 +69,7 @@ public class EvolvedWandOfPrismaticLight extends WandOfPrismaticLight implements
 		return "进化·棱辉法杖（源：棱光法杖）：拥有两种发射形态，可在背包-法杖窗口切换。\n\n"
 				+ "▍形态 0·普攻·直射（默认，耗 1 充）：直射单目标，照亮落点周围 3×3，有概率致盲并对亡灵/恶魔增伤。\n"
 				+ "▍形态 1·灵光光束（耗 1 充）：射出 3 格宽的矩形光带，光带内每个敌对单位独立承受致盲/伤害判定，并照亮沿途地形。\n\n"
-				+ "充能上限提升到 20，真实等级 +8，随角色等级成长。";
+				+ "充能上限提升到 20；**继承源法杖的等级**。";
 	}
 
 	@Override
@@ -353,7 +353,7 @@ public class EvolvedWandOfPrismaticLight extends WandOfPrismaticLight implements
 		if (mode < 0 || mode >= modeCount()) mode = 0;
 	}
 
-	// ---- 终焉·进化基础(统一13把)：真实等级+8、充能上限20(10起步,每级+1) ----
+	// ---- 终焉·进化基础(统一13把)：继承源法杖等级、充能上限20(10起步,每级+1) ----
 	@Override
 	public void updateLevel() {
 		maxCharges = Math.min(initialCharges() + level(), 20);

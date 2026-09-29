@@ -24,7 +24,7 @@ public class EvolvedWandOfMagicMissile extends WandOfMagicMissile {
 	@Override
 	public String desc() {
 		return "进化·灵陨·魔弹法杖（源：魔弹法杖）：你掷出的魔弹命中敌人时会立即连作两段独立的魔弹伤害（魔弹 ×2），每一段都会各自结算一次命中加成。\n\n"
-				+ "真实等级 +8，充能上限提升到 20，随角色等级成长。";
+				+ "**继承源法杖的等级**；充能上限提升到 20。";
 	}
 
 	@Override
@@ -47,7 +47,7 @@ public class EvolvedWandOfMagicMissile extends WandOfMagicMissile {
 			com.shatteredpixel.shatteredpixeldungeon.Dungeon.level.pressCell( bolt.collisionPos );
 		}
 	}
-	// ---- 终焉·进化基础(统一13把)：真实等级+8、充能上限20(10起步,每级+1) ----
+	// ---- 终焉·进化基础(统一13把)：继承源法杖等级、充能上限20(10起步,每级+1) ----
 	@Override
 	public void updateLevel() {
 		maxCharges = Math.min(initialCharges() + level(), 20);

@@ -53,7 +53,7 @@ public class EvolvedWandOfFrost extends WandOfFrost implements EndModeWand {
 				+ "▍形态 0·冰霜直击（默认，耗 1 充）：命中点单目标冰冻/寒冷，并把落点周围 3×3 内其它敌人附上寒冷。\n"
 				+ "▍形态 1·冰雪区域（耗 2 充）：在你指定的落点铺开 3×3 持续冰雪区域（4 回合）——"
 				+ "区域每回合对敌人造成 100% 面板伤害并附上寒冷；对已被冻结的敌人破除冻结并造成 200% 面板伤害。已在寒冷中的敌人每回合有 40% 概率被冻住。\n\n"
-				+ "充能上限提升到 20，随角色等级成长（真实等级 +8）。";
+				+ "充能上限提升到 20；**继承源法杖的等级**。";
 	}
 
 	@Override
@@ -228,7 +228,7 @@ public class EvolvedWandOfFrost extends WandOfFrost implements EndModeWand {
 		if (mode < 0 || mode >= modeCount()) mode = 0;
 	}
 
-	// ---- 终焉·进化基础(统一13把)：真实等级+8、充能上限20(10起步,每级+1) ----
+	// ---- 终焉·进化基础(统一13把)：继承源法杖等级、充能上限20(10起步,每级+1) ----
 	@Override
 	public void updateLevel() {
 		maxCharges = Math.min(initialCharges() + level(), 20);

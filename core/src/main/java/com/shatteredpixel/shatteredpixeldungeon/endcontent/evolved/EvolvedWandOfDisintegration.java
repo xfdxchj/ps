@@ -55,7 +55,7 @@ public class EvolvedWandOfDisintegration extends WandOfDisintegration implements
 		return "进化·湮解法杖（源：解离法杖）：拥有两种发射形态，可在背包-法杖窗口切换。\n\n"
 				+ "▍形态 0·湮解·单线（默认，耗 1 充）：一条穿透直射柱，越穿越痛，伤害 ×1.2。\n"
 				+ "▍形态 1·湮解·分裂（耗 1 充）：在瞄准方向双侧各偏转 45° 补两条，共 3 条穿多段覆盖多目标。\n\n"
-				+ "两形态弹壁均可摧毁易燃地形；射程随 buffedLvl ×2 + 6；充能上限 20、真实等级 +8。";
+				+ "两形态弹壁均可摧毁易燃地形；射程随 buffedLvl ×2 + 6；充能上限 20；**继承源法杖的等级**。";
 	}
 
 	@Override
@@ -244,7 +244,7 @@ public class EvolvedWandOfDisintegration extends WandOfDisintegration implements
 		if (mode < 0 || mode >= modeCount()) mode = 0;
 	}
 
-	// ---- 终焉·进化基础(统一13把)：真实等级+8、充能上限20(10起步,每级+1) ----
+	// ---- 终焉·进化基础(统一13把)：继承源法杖等级、充能上限20(10起步,每级+1) ----
 	@Override
 	public void updateLevel() {
 		maxCharges = Math.min(initialCharges() + level(), 20);

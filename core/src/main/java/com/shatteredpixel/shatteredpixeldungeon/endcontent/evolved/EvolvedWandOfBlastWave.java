@@ -47,7 +47,7 @@ public class EvolvedWandOfBlastWave extends WandOfBlastWave {
 	@Override
 	public String desc() {
 		return "进化·震岳法杖（源：冲击波法杖）：冲击波的直接伤害提升 50%，把敌人撞到墙等硬地时眩晕时长翻倍；并可在使用前用「调整冲击距离」动作在 1 / 3 / 5 格之间切换推进距离。\n\n"
-				+ "真实等级 +8，充能上限提升到 20，随角色等级成长。";
+				+ "**继承源法杖的等级**；充能上限提升到 20。";
 	}
 
 	@Override
@@ -222,7 +222,7 @@ public class EvolvedWandOfBlastWave extends WandOfBlastWave {
 			}
 		}));
 	}
-	// ---- 终焉·进化基础(统一13把)：真实等级+8、充能上限20(10起步,每级+1) ----
+	// ---- 终焉·进化基础(统一13把)：继承源法杖等级、充能上限20(10起步,每级+1) ----
 	@Override
 	public void updateLevel() {
 		maxCharges = Math.min(initialCharges() + level(), 20);

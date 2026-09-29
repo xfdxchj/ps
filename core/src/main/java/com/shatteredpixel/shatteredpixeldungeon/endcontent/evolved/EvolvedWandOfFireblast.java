@@ -41,7 +41,7 @@ public class EvolvedWandOfFireblast extends WandOfFireblast {
 	@Override
 	public String desc() {
 		return "进化·灵炎法杖（源：爆炎法杖）：呼出的锥形烈焰换成了不会因浸水而熄灭的【灵焰】，即使站在水里也会持续焚烧敌人；集得越久喷得更远更宽，还可能在 2 段聚能时拖拽令敌人踉跄、3 段时使其麻痹。\n\n"
-				+ "真实等级 +8，充能上限提升到 20，随角色等级成长。";
+				+ "**继承源法杖的等级**；充能上限提升到 20。";
 	}
 
 	@Override
@@ -146,7 +146,7 @@ public class EvolvedWandOfFireblast extends WandOfFireblast {
 		Sample.INSTANCE.play( Assets.Sounds.ZAP );
 		Sample.INSTANCE.play( Assets.Sounds.BURNING );
 	}
-	// ---- 终焉·进化基础(统一13把)：真实等级+8、充能上限20(10起步,每级+1) ----
+	// ---- 终焉·进化基础(统一13把)：继承源法杖等级、充能上限20(10起步,每级+1) ----
 	@Override
 	public void updateLevel() {
 		maxCharges = Math.min(initialCharges() + level(), 20);

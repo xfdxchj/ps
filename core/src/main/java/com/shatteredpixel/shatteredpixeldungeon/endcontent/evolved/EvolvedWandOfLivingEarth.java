@@ -18,7 +18,7 @@ public class EvolvedWandOfLivingEarth extends WandOfLivingEarth {
 	@Override
 	public String desc() {
 		return "进化·灵壤大地法杖（源：活体大地法杖）：唤出的灵壤大地守卫更强——伤害与它所携带的泥沙护甲量都同时提升 40%（两者源自同一股土系力量）。\n\n"
-				+ "真实等级 +8，充能上限提升到 20，随角色等级成长。";
+				+ "**继承源法杖的等级**；充能上限提升到 20。";
 	}
 
 	@Override
@@ -32,7 +32,7 @@ public class EvolvedWandOfLivingEarth extends WandOfLivingEarth {
 	public int damageRoll() {
 		return Math.round(super.damageRoll() * 1.4f);
 	}
-	// ---- 终焉·进化基础(统一13把)：真实等级+8、充能上限20(10起步,每级+1) ----
+	// ---- 终焉·进化基础(统一13把)：继承源法杖等级、充能上限20(10起步,每级+1) ----
 	@Override
 	public void updateLevel() {
 		maxCharges = Math.min(initialCharges() + level(), 20);

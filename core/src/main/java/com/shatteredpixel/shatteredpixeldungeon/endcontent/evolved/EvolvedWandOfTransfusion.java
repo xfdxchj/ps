@@ -41,7 +41,7 @@ public class EvolvedWandOfTransfusion extends WandOfTransfusion {
 	@Override
 	public String desc() {
 		return "进化·汲魂法杖（源：注魂法杖）：注魂不论治疗友军还是反噬敌我，护盾落入你身上时都会额外再按护盾约 20% 吸取生命；被魅惑命中时同样提供护盾并自动回能。\n\n"
-				+ "真实等级 +8，充能上限提升到 20，随角色等级成长。";
+				+ "**继承源法杖的等级**；充能上限提升到 20。";
 	}
 
 	@Override
@@ -177,7 +177,7 @@ public class EvolvedWandOfTransfusion extends WandOfTransfusion {
 		bundle.put( FREECHARGE, freeCharge );
 	}
 
-	// ---- 终焉·进化基础(统一13把)：真实等级+8、充能上限20(10起步,每级+1) ----
+	// ---- 终焉·进化基础(统一13把)：继承源法杖等级、充能上限20(10起步,每级+1) ----
 	@Override
 	public void updateLevel() {
 		maxCharges = Math.min(initialCharges() + level(), 20);

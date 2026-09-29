@@ -68,7 +68,7 @@ public class EvolvedWandOfCorruption extends WandOfCorruption {
 	@Override
 	public String desc() {
 		return "进化·腐灵法杖（源：腐蚀/腐化法杖之腐化）：使敌人的腐化触发威力提升 30% — 越是低血/叠满减益的敌人越容易被直接腐化为你这边，无法腐化的强敌则会吃更重的削弱效果。\n\n"
-				+ "真实等级 +8，充能上限提升到 20，随角色等级成长。";
+				+ "**继承源法杖的等级**；充能上限提升到 20。";
 	}
 
 	@Override
@@ -215,7 +215,7 @@ public class EvolvedWandOfCorruption extends WandOfCorruption {
 			Buff.affect(enemy, Doom.class);
 		}
 	}
-	// ---- 终焉·进化基础(统一13把)：真实等级+8、充能上限20(10起步,每级+1) ----
+	// ---- 终焉·进化基础(统一13把)：继承源法杖等级、充能上限20(10起步,每级+1) ----
 	@Override
 	public void updateLevel() {
 		maxCharges = Math.min(initialCharges() + level(), 20);
