@@ -88,7 +88,14 @@ public class Gold extends Item {
 	
 	@Override
 	public Item random() {
-		quantity = Random.IntRange( 30 + Dungeon.depth * 10, 60 + Dungeon.depth * 20 );
+		//END(167 黄金地牢): 金币堆公式 = Random(20~50) × 区域数
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.goldenNoDrops()){
+			quantity = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.goldenGoldAmount();
+		} else {
+			quantity = Random.IntRange( 30 + Dungeon.depth * 10, 60 + Dungeon.depth * 20 );
+		}
 		return this;
 	}
 

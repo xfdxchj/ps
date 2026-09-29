@@ -256,7 +256,15 @@ public abstract class Level implements Bundlable {
 				//for 0 levelgen impact, we need to do something like give the player all SOU, but nerf them
 				//or give a random scroll (from a separate RNG) instead of every 2nd SOU
 				if (!Dungeon.isChallenged(Challenges.NO_SCROLLS) || Dungeon.LimitedDrops.UPGRADE_SCROLLS.count%2 != 0){
-					addItemToSpawn(new ScrollOfUpgrade());
+					//END(210 永无止境): 每次轮回后升级卷轴获得量 +100%（即 1 + 轮回次数 份）
+					int copies = 1;
+					if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+							.ChallengeEffects.endlessEnabled()){
+						copies += com.shatteredpixel.shatteredpixeldungeon.endcontent.Reincarnation.cycles();
+					}
+					for (int i = 0; i < copies; i++){
+						addItemToSpawn(new ScrollOfUpgrade());
+					}
 				}
 			}
 			if (Dungeon.asNeeded()) {
@@ -888,7 +896,7 @@ public abstract class Level implements Bundlable {
 		//它们的削弱由 ChallengeEffects 在计算侧处理（见 mobDamageMultiplier）。
 		//Boss/小 Boss 不削弱（已定稿）。
 		float statMult = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
-				.ChallengeEffects.mobStatMultiplier(m);
+				.ChallengeEffects.mobHPMultiplier(m);
 		if (statMult != 1f) {
 			m.HT = Math.max(1, Math.round(m.HT * statMult));
 			m.HP = m.HT;
@@ -1390,7 +1398,9 @@ public abstract class Level implements Bundlable {
 		//**任务/剧情物品不换算**（天狗面具等），否则主线会断。
 		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 				.ChallengeEffects.shouldConvertDropToGold(item)) {
-			int value = Math.max(1, item.value() * Math.max(1, item.quantity()));
+			//END(修复·黄金地牢金币公式): 直接按文档所有者口径 (20~50)×区域 生成金币堆
+			int value = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeEffects.goldenGoldAmount();
 
 			//==== END(修复·黄金地牢金币太少): 提高折算比例 ====
 			//文档所有者反馈："黄金地牢金币数量太少，该为替代物品生成，
@@ -1400,9 +1410,7 @@ public abstract class Level implements Bundlable {
 			//但黄金地牢里**没有别的获取途径**，40% 会让玩家穷得买不起东西。
 			//
 			//现在按**全额物品价值 × 1.5 倍补偿**折算。
-			value = Math.max(1, Math.round(value
-					* com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
-							.ChallengeEffects.GOLDEN_VALUE_MULT));
+			value = Math.max(1, value);
 
 			//END(修复): 不要用 Gold().random() —— 它会先随机一个数量，
 			//再被 quantity() 覆盖，白白消耗一次随机数（影响种子一致性）。

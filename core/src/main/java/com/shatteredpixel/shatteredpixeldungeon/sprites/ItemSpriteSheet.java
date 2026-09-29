@@ -387,12 +387,10 @@ public class ItemSpriteSheet {
 		assignItemRect(ARMOR_CLOTH,     15, 12);
 		assignItemRect(ARMOR_LEATHER,   14, 13);
 		assignItemRect(ARMOR_MAIL,      14, 12);
-		//END(修复·鳞甲图标看起来"歪"): 高度 11 -> 12
-		//它比同排的其它护甲矮 1 像素（布甲/锁甲/板甲/盗贼甲都是 12），
-		//而 ItemSlot 是按裁切框尺寸居中的 —— 矮 1 像素就会被抬高 0.5 像素，
-		//在物品栏里与旁边的护甲对不齐。
-		//补成 12 之后与同类一致（多出来的那一行是透明像素，不影响画面）。
-		assignItemRect(ARMOR_SCALE,     14, 12);
+		//END(修复·鳞甲图标位置): 文档所有者要求"贴图右 1 下 3" ——
+		//已把 items.png 里鳞甲的实际像素整体右移 1px、下移 3px，
+		//裁切框也跟着放大到 15x14，避免右下被裁掉。
+		assignItemRect(ARMOR_SCALE,     15, 14);
 		assignItemRect(ARMOR_PLATE,     12, 12);
 		assignItemRect(ARMOR_WARRIOR,   12, 12);
 		assignItemRect(ARMOR_MAGE,      15, 15);

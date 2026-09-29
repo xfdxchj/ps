@@ -518,6 +518,18 @@ public final class ChallengeEffects {
 	 *
 	 * @param m 刚创建的怪物
 	 */
+	/**
+	 * END(119 怪物浪潮): 只改**生命**的倍率（0.5），伤害保持 100%。
+	 * 文档所有者要求："怪物浪潮的怪物生命为 50%"。
+	 * Boss / 小 Boss 不削。
+	 */
+	public static float mobHPMultiplier(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob m) {
+		if (m == null) return 1f;
+		if (!on(MONSTER_WAVE)) return 1f;
+		if (Char.hasProp(m, Char.Property.BOSS) || Char.hasProp(m, Char.Property.MINIBOSS)) return 1f;
+		return 0.5f;
+	}
+
 	public static float mobStatMultiplier(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob m) {
 		//==== END(修订 119·不要降低伤害) ====
 		//文档所有者要求："怪物浪潮还是没有生成 x4，同时改为不要降低伤害。"
@@ -3995,6 +4007,12 @@ public final class ChallengeEffects {
 	 */
 	public static final float GOLDEN_VALUE_MULT = 1.5f;
 
+	/** END(167 黄金地牢): 金币堆公式 = Random(20~50) × 区域数。 */
+	public static int goldenGoldAmount() {
+		int region = resourceSegment(com.shatteredpixel.shatteredpixeldungeon.Dungeon.depth) + 1;
+		return com.watabou.utils.Random.NormalIntRange(20, 50) * region;
+	}
+
 	//---- 160 氪金大佬 ----
 
 	/** 每次"氪金升级"消耗的金币（按等级递增）。 */
@@ -4618,7 +4636,7 @@ public final class ChallengeEffects {
 			}
 		}
 
-		safeLogW("你违反了和平合约。");
+		safeLogW("你违反了和平合约 —— 本层怪物获得 +50% 属性，直到你进入下一层。");
 	}
 
 	/** END(152): 换层时清除强化标记（"每下一层重置"）。 */
@@ -5466,8 +5484,13 @@ public final class ChallengeEffects {
 	/** 致死时原地复活的概率(%) —— 文档所有者定稿："13% 概率重生"。 */
 	public static final int ASCENSION_CHANCE_PCT = 13;
 
-	/** 复活次数上限 —— 文档所有者定稿："最大 6 次"。 */
-	public static final int ASCENSION_MAX_REVIVES = 6;
+	/**
+	 * END(修订·登神长阶): 复活次数上限 = 当前区域数 + 1。
+	 * 区域 1 → 2 次，区域 5 → 6 次，与旧版"固定 6 次"在 5 区一致。
+	 */
+	public static int ascensionMaxRevives(){
+		return resourceSegment(com.shatteredpixel.shatteredpixeldungeon.Dungeon.depth) + 2;
+	}
 
 	/** END(移植·登神长阶): 本挑战是否启用。 */
 	public static boolean ascensionEnabled(){
@@ -5494,12 +5517,17 @@ public final class ChallengeEffects {
 			t = com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff
 				.affect(mob, AscensionReviveTracker.class, 99999f);
 		}
-		if (t.revives >= ASCENSION_MAX_REVIVES) return false;
+		if (t.revives >= ascensionMaxRevives()) return false;
 		if (Random.Int(100) >= ASCENSION_CHANCE_PCT) return false;
 
 		t.revives++;
-		mob.HT *= 2;
-		mob.HP = mob.HT;
+		//END(登神长阶·分裂苍蝇): 苍蝇群复活后回到初始状态，生命=初始值×2
+		if (mob instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Swarm){
+			((com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Swarm) mob).resetForAscension();
+		} else {
+			mob.HT *= 2;
+			mob.HP = mob.HT;
+		}
 		com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHealing.cure(mob);
 		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.detach(mob,
 			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Paralysis.class);

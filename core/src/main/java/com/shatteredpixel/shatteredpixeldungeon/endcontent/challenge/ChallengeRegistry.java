@@ -129,7 +129,7 @@ public final class ChallengeRegistry {
 		//互斥关系用 x: 声明，由注册表统一处理。
 		//==== END(移植·英烈地牢): 第一批 ====
 		done(all, 218, "登神长阶", "ascension", "英烈", ChallengeDef.TENDENCY_MONSTER, 3, ChallengeDef.TIER_MEDIUM, "",
-			"怪物死亡时 **13%** 概率原地复活（最多 **6 次**）：每次复活生命上限翻倍、回满生命并净化负面状态。");
+			"怪物死亡时 **13%** 概率原地复活（最多 **区域数+1** 次）：每次复活生命上限翻倍、回满生命并净化负面状态。");
 
 		done(all, 219, "惊喜礼物", "mimics", "英烈", ChallengeDef.TENDENCY_MONSTER, 2, ChallengeDef.TIER_EASY, "",
 			"地牢里**所有普通宝箱都变成宝箱怪**（击杀后掉落原本该在箱里的东西）。");
@@ -304,7 +304,7 @@ public final class ChallengeRegistry {
 		done(all, 100,"镜像对决",   "mirror_duel",      "怪物", T_MON, 3, T_HARD,   "",
 				"每层 **13%** 概率生成一只**敌对镜像**：外观/攻击/生命跟随玩家，**只能普通攻击**（没有背包，用不了道具与法杖）。击杀后掉落一件**同等级的随机装备**。");
 		done(all, 119,"怪物浪潮",   "monster_wave",     "怪物", T_TWO, 2, T_EASY,   "s:30",
-				"怪物生成数量 ×4；**怪物本身的生命与伤害不变**（Boss 不受影响）。");
+				"怪物生成数量 ×4；**怪物生命变为 50%**、伤害不变（Boss 不受影响）。");
 
 		//---- 经济 ----
 		done(all, 33, "黑市",       "black_market",     "经济", T_TWO, 1, T_MED,    "",
@@ -727,7 +727,7 @@ public final class ChallengeRegistry {
 		done(all, 210, "永无止境",   "endless",         "无尽", T_RISK,3, T_SER,  "",
 				"唯有不停攀登之人，才配知晓终点在何处。\n\n-通关 25 层后**不再结束**，而是从第 1 层重新开始\n-楼层号继续上涨（26/27/28…），地牢却是原版的第 1/2/3 层\n-每次循环，怪物获得一种新的**诅咒**，最多 **9 次**\n-区域倍率随轮回**加算**（每多一轮 +1 倍基础值，1 区起始 1200%）\n-**九次轮回之后**抵达原版第 26 层：可选择结束，或在**古神护符**处选「陷入无尽轮回」继续玩下去");
 
-		done(all, 209, "无尽贪婪",   "infinite_greed",  "特殊", T_RISK,3, T_HARD, "s:188,191",
+		done(all, 209, "无尽贪婪",   "infinite_greed",  "无尽", T_RISK,3, T_HARD, "s:188,191",
 				"唯有贪婪之人，才可登阶成神。\n\n-解除**人物等级上限**（原本是 30 级）\n-满级后继续获得经验会照常升级");
 
 		done(all, 208, "为何无敌",   "why_invincible",  "为何", T_TWO, 3, T_SER,  "p:202,203,204,205,206,207",

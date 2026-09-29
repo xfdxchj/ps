@@ -124,6 +124,14 @@ public class Swarm extends Mob {
 		return 10;
 	}
 	
+	/** END(登神长阶): 触发复活时回到"初始状态"，并把生命设为初始值 ×2。 */
+	public void resetForAscension(){
+		generation = 0;
+		EXP = 3;
+		HT = 50 * 2;
+		HP = HT;
+	}
+
 	private Swarm split() {
 		Swarm clone = new Swarm();
 		clone.generation = generation + 1;
