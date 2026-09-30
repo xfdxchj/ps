@@ -153,6 +153,10 @@ public enum HeroClass {
 			new com.shatteredpixel.shatteredpixeldungeon.items.GunSmithingTool().identify().collect();
 		}
 
+		//==== END(修复·为何系列开局不降生命): 开局在挑战生效后重算一次 HT，
+		//否则 205 为何无忌(-33%)、12 玻璃大炮等要等第一次升级才生效。
+		hero.updateHT(false);
+
 		if (SPDSettings.quickslotWaterskin()) {
 			for (int s = 0; s < QuickSlot.SIZE; s++) {
 				if (Dungeon.quickslot.getItem(s) == null) {

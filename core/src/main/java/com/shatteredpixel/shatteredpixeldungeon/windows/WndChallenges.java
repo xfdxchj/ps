@@ -927,6 +927,8 @@ public class WndChallenges extends Window {
 						for (int id : missing) {
 							mask = mask.with(id);
 						}
+						//END(修复·点了挑战只开前置): 把"所点的那条"也一起勾上
+						mask = mask.with(d.id);
 						rebuildAll();
 					}
 				});
