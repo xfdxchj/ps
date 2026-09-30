@@ -2,7 +2,7 @@
  * Shattered Pixel Dungeon: End —《破碎的像素地牢：终焉扩展》
  * 凝霜法杖(冰霜进化) 双形态：
  *   形态 0·冰霜直击(default)：耗 1 充能。命中点单目标冰冻/寒冷，并对命中点 3×3 内其它敌人附加寒冷。
- *   形态 1·冰雪区域：耗 1 充能。选中一个位置铺开 3×3 持续冰雪区域（像气体一样扩散）；
+ *   形态 1·冰雪区域：耗 1 充能。选中一个位置放出冰雪气体，像酸蚀气一样向外扩散；
  *       气体每回合给区域内敌人挂上冰爆 buff；buff 负责施加寒冷、概率冻结，
  *       并在冻结消失时造成 400% 面板伤害。
  */
@@ -33,9 +33,6 @@ public class EvolvedWandOfFrost extends WandOfFrost implements EndModeWand {
 	private static final int MODE_FROST_BOLT = 0;
 	private static final int MODE_FROST_FIELD = 1;
 
-	/** 冰雪区域持续回合数(铺地后每格 cur 值；可调)。 */
-	private static final int FIELD_TURNS = 30; //END: 气体量，越大扩散越广、持续越久
-
 	/** END: 形态0 —— 已寒冷的敌人被直接冻住的概率(%)。 */
 	private static final int DIRECT_FREEZE_PCT = 25;
 
@@ -49,7 +46,7 @@ public class EvolvedWandOfFrost extends WandOfFrost implements EndModeWand {
 
 	@Override
 	public String desc() {
-		return "进化·凝霜法杖：拥有两种发射形态，可在背包-法杖窗口切换。\n\n▍形态 0·冰霜直击（默认，耗 1 充）：命中点单目标冰冻/寒冷，并把落点周围 3×3 内其它敌人附上寒冷。\n▍形态 1·冰雪区域（耗 1 充）：在你指定的落点铺开 3×3 持续冰雪区域——区域本身不造成伤害，只施加寒冷与冰爆；敌人被冻结后，冻结消失时冰爆造成 400% 面板伤害。已在寒冷中的敌人每回合有 40% 概率被冻住。\n\n充能上限提升到 20；**继承源法杖的等级**。";
+		return "进化·凝霜法杖：拥有两种发射形态，可在背包-法杖窗口切换。\n\n▍形态 0·冰霜直击（默认，耗 1 充）：命中点单目标冰冻/寒冷，并把落点周围 3×3 内其它敌人附上寒冷。\n▍形态 1·冰雪区域（耗 1 充）：在你指定的落点放出冰雪气体，像酸蚀气一样向外扩散——气体本身不造成伤害，只施加寒冷与冰爆；敌人被冻结后，冻结消失时冰爆造成 400% 面板伤害。已在寒冷中的敌人每回合有 40% 概率被冻住。\n\n充能上限提升到 20；**继承源法杖的等级**。";
 	}
 
 	@Override
@@ -172,7 +169,7 @@ public class EvolvedWandOfFrost extends WandOfFrost implements EndModeWand {
 		}
 	}
 
-	/** 形态 1：以“玩家选定的命中点”为中心铺开 3×3 冰雪区域(持续 FIELD_TURNS 回合)，
+	/** 形态 1：以“玩家选定的命中点”为中心放出冰雪气体，
 	 *  允许在视野内任意指定落点位置。 */
 	private void onZapField(Ballistica bolt) {
 
@@ -186,19 +183,11 @@ public class EvolvedWandOfFrost extends WandOfFrost implements EndModeWand {
 		int burstDmg = Math.round( dmgBase * 4f );
 		float chillDur = 2f + buffedLvl();
 
-		//3×3 铺开(含中心)，经 Blob.seed 登记到 level.blobs 以便持久化/查询
-		int seeded = 0;
-		EndFrostField field = null;
-		for (int i : PathFinder.NEIGHBOURS9) {
-			int cell = center + i;
-			if (!Dungeon.level.insideMap( cell ) || Dungeon.level.solid[cell]) {
-				continue;
-			}
-			field = Blob.seed( cell, FIELD_TURNS, EndFrostField.class );
-			seeded++;
-		}
-
-		if (field != null && seeded > 0){
+		//END(改·真气体): 像腐蚀法杖一样只在一个点放出气体，
+		//由 Blob.super.evolve() 自然向外扩散，不再固定铺 3×3。
+		int volume = 50 + 10 * buffedLvl();
+		EndFrostField field = Blob.seed( center, volume, EndFrostField.class );
+		if (field != null){
 			field.set( burstDmg, chillDur, this );
 			GameScene.add( field );
 		}
