@@ -67,7 +67,7 @@ public class EvolvedWandOfCorruption extends WandOfCorruption {
 
 	@Override
 	public String desc() {
-		return "进化·腐灵法杖（源：腐蚀/腐化法杖之腐化）：使敌人的腐化触发威力提升 30% — 越是低血/叠满减益的敌人越容易被直接腐化为你这边，无法腐化的强敌则会吃更重的削弱效果。\n\n"
+		return "进化·腐灵法杖（源：腐蚀/腐化法杖之腐化）：每次命中敌人有 **50%** 概率附加 **2 个负面效果**（一重一轻）。\n\n"
 				+ "**继承源法杖的等级**；充能上限提升到 20。";
 	}
 
@@ -130,43 +130,10 @@ public class EvolvedWandOfCorruption extends WandOfCorruption {
 				Statistics.qualifiedForBossChallengeBadge = false;
 			}
 
-			float corruptingPower = (3 + buffedLvl()/3f) * 1.3f;
-
-			float enemyResist;
-			if (ch instanceof Mimic || ch instanceof Statue){
-				enemyResist = 1 + Dungeon.depth;
-			} else if (ch instanceof Piranha || ch instanceof Bee) {
-				enemyResist = 1 + Dungeon.depth/2f;
-			} else if (ch instanceof Wraith) {
-				enemyResist = (1f + Dungeon.scalingDepth()/4f) / 5f;
-			} else if (ch instanceof Swarm){
-				enemyResist = 1 + AscensionChallenge.AscensionCorruptResist(enemy);
-				if (enemyResist == 1) enemyResist = 1 + 3;
-			} else {
-				enemyResist = 1 + AscensionChallenge.AscensionCorruptResist(enemy);
-			}
-
-			enemyResist *= 1 + 4*Math.pow(enemy.HP/(float)enemy.HT, 2);
-
-			for (Buff buff : enemy.buffs()){
-				if (MAJOR_DEBUFFS.containsKey(buff.getClass()))         enemyResist *= (1f-MAJOR_DEBUFF_WEAKEN);
-				else if (MINOR_DEBUFFS.containsKey(buff.getClass()))    enemyResist *= (1f-MINOR_DEBUFF_WEAKEN);
-				else if (buff.type == Buff.buffType.NEGATIVE)           enemyResist *= (1f-MINOR_DEBUFF_WEAKEN);
-			}
-
-			if(enemy.buff(Corruption.class) != null || enemy.buff(Doom.class) != null){
-				corruptingPower = enemyResist - 0.001f;
-			}
-
-			if (corruptingPower > enemyResist){
-				corruptEnemy( enemy );
-			} else {
-				float debuffChance = corruptingPower / enemyResist;
-				if (Random.Float() < debuffChance){
-					debuffEnemy( enemy, MAJOR_DEBUFFS);
-				} else {
-					debuffEnemy( enemy, MINOR_DEBUFFS);
-				}
+			//END(二.9): 删除进阶腐化效果 —— 改为 50% 概率附加 2 个 debuff
+			if (Random.Float() < 0.5f){
+				debuffEnemy( enemy, MAJOR_DEBUFFS);
+				debuffEnemy( enemy, MINOR_DEBUFFS);
 			}
 
 			wandProc(ch, chargesPerCast());
