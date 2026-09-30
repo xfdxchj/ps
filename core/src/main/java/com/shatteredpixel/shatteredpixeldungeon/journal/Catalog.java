@@ -430,7 +430,8 @@ public enum Catalog {
 			}
 		}
 		if (bundle.contains(CATALOG_ITEMS)) {
-			for (Class<?> cls : Arrays.asList(bundle.getClassArray(CATALOG_ITEMS))){
+			Class<?>[] legacyClasses = safeClassArray(bundle, CATALOG_ITEMS);
+			for (Class<?> cls : Arrays.asList(legacyClasses)){
 				for (Catalog cat : values()) {
 					if (cat.seen.containsKey(cls)) {
 						cat.seen.put(cls, true);
@@ -441,7 +442,8 @@ public enum Catalog {
 		//end of old logic
 
 		if (bundle.contains(CATALOG_CLASSES)){
-			Class<?>[] classes = bundle.getClassArray(CATALOG_CLASSES);
+			Class<?>[] classes = safeClassArray(bundle, CATALOG_CLASSES);
+			if (classes == null) classes = new Class<?>[0];
 			boolean[] seen = bundle.getBooleanArray(CATALOG_SEEN);
 			int[] uses = bundle.getIntArray(CATALOG_USES);
 
@@ -458,4 +460,13 @@ public enum Catalog {
 
 	}
 	
+	/** END(删物品兼容): 旧存档里的已删除类直接跳过，避免 ClassNotFound 崩档。 */
+	private static Class<?>[] safeClassArray(com.watabou.utils.Bundle bundle, String key){
+		try {
+			return bundle.getClassArray(key);
+		} catch (Throwable t){
+			return new Class<?>[0];
+		}
+	}
+
 }

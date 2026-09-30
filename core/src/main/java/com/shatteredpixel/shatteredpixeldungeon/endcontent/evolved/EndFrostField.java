@@ -70,7 +70,9 @@ public class EndFrostField extends Blob {
 	public void use( BlobEmitter emitter ) {
 		super.use( emitter );
 		//蓝色暴风雪粒子
-		emitter.pour( Speck.factory( Speck.BLIZZARD, true ), 0.3f );
+		//END(冰天雪地): 用原版暴雪粒子铺出更明显的雪场
+		emitter.pour( com.shatteredpixel.shatteredpixeldungeon.effects.particles
+				.SnowParticle.FACTORY, 0.8f );
 	}
 
 	//——持久化 ——//

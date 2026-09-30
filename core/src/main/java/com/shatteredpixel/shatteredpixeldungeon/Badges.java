@@ -262,7 +262,21 @@ public class Badges {
 	
 	private static final HashSet<String> removedBadges = new HashSet<>();
 	static{
-		//no removed badges currently
+		//END(删除非原版徽章): 旧存档里仍有这些名字，恢复时直接跳过，避免崩档
+		removedBadges.add("KILL_DOG");
+		removedBadges.add("HALOFIRE_DIED");
+		removedBadges.add("CITY_END");
+		removedBadges.add("NYZ_SHOP");
+		removedBadges.add("HIKARI");
+		removedBadges.add("SIESTA");
+		removedBadges.add("GAVIAL");
+		removedBadges.add("IBERIA");
+		removedBadges.add("WILL");
+		removedBadges.add("TALU_BOSS");
+		removedBadges.add("CERTIFICATE_1");
+		removedBadges.add("CERTIFICATE_2");
+		removedBadges.add("CERTIFICATE_3");
+		removedBadges.add("CERTIFICATE_4");
 	}
 
 	private static final HashMap<String, String> renamedBadges = new HashMap<>();
@@ -285,8 +299,8 @@ public class Badges {
 				if (!removedBadges.contains(names[i])){
 					badges.add( Badge.valueOf( names[i] ) );
 				}
-			} catch (Exception e) {
-				ShatteredPixelDungeon.reportException(e);
+			} catch (Throwable e) {
+				//END(删徽章兼容): 旧存档里的未知/已删除徽章直接忽略，不要弹崩溃
 			}
 		}
 
