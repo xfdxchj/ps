@@ -101,6 +101,9 @@ public class Ring extends KindofMisc {
 	
 	//END(230 原神地牢): 戒指词条
 	public RingAffix[] affixes = new RingAffix[0];
+	//END(二.13 词条升级): 每条词条的升级次数与累计倍率（与 affixes 同长）
+	public int[] affixUps = new int[0];
+	public float[] affixMult = new float[0];
 
 	/** 按当前强化等级补齐词条数量（每 3 级 1 条，最多 3 条）。 */
 	public void ensureAffixes(){
@@ -110,18 +113,67 @@ public class Ring extends KindofMisc {
 		}
 		int want = RingAffix.countFor(level());
 		if (affixes == null) affixes = new RingAffix[0];
-		if (affixes.length == want) return;
+		if (affixUps == null) affixUps = new int[0];
+		if (affixMult == null) affixMult = new float[0];
+		if (affixes.length == want && affixUps.length == want && affixMult.length == want) return;
 		RingAffix[] next = new RingAffix[want];
-		System.arraycopy(affixes, 0, next, 0, Math.min(affixes.length, want));
+		int[] nextUps = new int[want];
+		float[] nextMult = new float[want];
+		int keep = Math.min(affixes.length, want);
+		System.arraycopy(affixes, 0, next, 0, keep);
+		System.arraycopy(affixUps, 0, nextUps, 0, Math.min(affixUps.length, keep));
+		float[] oldMult = (affixMult.length >= keep) ? affixMult : new float[keep];
+		for (int i = 0; i < keep; i++){
+			nextMult[i] = (oldMult.length > i && oldMult[i] > 0f) ? oldMult[i] : 1f;
+		}
 		for (int i = affixes.length; i < want; i++){
 			next[i] = RingAffix.randomAffix();
+			nextMult[i] = 1f;
 		}
 		affixes = next;
+		affixUps = nextUps;
+		affixMult = nextMult;
 	}
 
-	/** END(230): 洗练 —— 全部词条重掷。 */
+	/** END(230): 洗练 —— 全部词条重掷，同时清空升级。 */
 	public void rerollAffixes(){
 		affixes = RingAffix.roll(RingAffix.countFor(level()));
+		affixUps = new int[affixes.length];
+		affixMult = new float[affixes.length];
+		for (int i = 0; i < affixMult.length; i++) affixMult[i] = 1f;
+	}
+
+	/** END(二.13): 第 i 条词条的实际数值（基础值 × 升级倍率）。 */
+	public float affixValue(int i){
+		if (affixes == null || i < 0 || i >= affixes.length) return 0f;
+		float m = (affixMult != null && i < affixMult.length && affixMult[i] > 0f) ? affixMult[i] : 1f;
+		return affixes[i].value * m;
+	}
+
+	/** END(二.13): 第 i 条词条已升级次数。 */
+	public int affixUpgrades(int i){
+		if (affixUps == null || i < 0 || i >= affixUps.length) return 0;
+		return affixUps[i];
+	}
+
+	/** END(二.13): 对第 i 条词条应用一次升级；已达 3 次返回 false。 */
+	public boolean upgradeAffix(int i, float bonus){
+		if (affixes == null || i < 0 || i >= affixes.length) return false;
+		if (affixUps == null || affixUps.length != affixes.length){
+			int[] tmp = new int[affixes.length];
+			if (affixUps != null) System.arraycopy(affixUps, 0, tmp, 0, Math.min(affixUps.length, affixes.length));
+			affixUps = tmp;
+		}
+		if (affixMult == null || affixMult.length != affixes.length){
+			float[] tmp = new float[affixes.length];
+			for (int k = 0; k < tmp.length; k++) tmp[k] = 1f;
+			if (affixMult != null) System.arraycopy(affixMult, 0, tmp, 0, Math.min(affixMult.length, affixes.length));
+			affixMult = tmp;
+		}
+		if (affixUps[i] >= 3) return false;
+		affixUps[i]++;
+		affixMult[i] *= (1f + bonus);
+		return true;
 	}
 
 	public Ring() {
@@ -229,9 +281,34 @@ public class Ring extends KindofMisc {
 		
 		if (isKnown()) {
 			desc += "\n\n" + statsInfo();
+			String ai = affixInfo();
+			if (!ai.isEmpty()){
+				desc += "\n\n" + ai;
+			}
 		}
 		
 		return desc;
+	}
+
+	/** END(二.13): 词条一览，供物品信息面板展示。 */
+	public String affixInfo(){
+		if (affixes == null || affixes.length == 0) return "";
+		StringBuilder sb = new StringBuilder("戒指词条：");
+		for (int i = 0; i < affixes.length; i++){
+			RingAffix a = affixes[i];
+			float v = affixValue(i);
+			sb.append("\n• ").append(a.label).append(" ");
+			if (a == RingAffix.REGEN){
+				sb.append("每回合 ").append(v == Math.round(v) ? Integer.toString(Math.round(v)) : String.format("%.1f", v));
+			} else {
+				sb.append("+").append(Math.round(v * 100f)).append("%");
+			}
+			int ups = affixUpgrades(i);
+			if (ups > 0){
+				sb.append("（强化 ").append(ups).append("/3）");
+			}
+		}
+		return sb.toString();
 	}
 	
 	protected String statsInfo(){
@@ -342,6 +419,8 @@ public class Ring extends KindofMisc {
 
 	private static final String LEVELS_TO_ID    = "levels_to_ID";
 	private static final String AFFIXES = "ring_affixes";
+	private static final String AFFIX_UPS = "ring_affix_ups";
+	private static final String AFFIX_MULT = "ring_affix_mult";
 
 	@Override
 	public void storeInBundle( Bundle bundle ) {
@@ -351,6 +430,12 @@ public class Ring extends KindofMisc {
 			int[] ids = new int[affixes.length];
 			for (int i = 0; i < affixes.length; i++) ids[i] = affixes[i].ordinal();
 			bundle.put( AFFIXES, ids );
+			if (affixUps != null && affixUps.length == affixes.length){
+				bundle.put( AFFIX_UPS, affixUps );
+			}
+			if (affixMult != null && affixMult.length == affixes.length){
+				bundle.put( AFFIX_MULT, affixMult );
+			}
 		}
 	}
 
@@ -364,6 +449,17 @@ public class Ring extends KindofMisc {
 			affixes = new RingAffix[ids.length];
 			for (int i = 0; i < ids.length; i++){
 				affixes[i] = (ids[i] >= 0 && ids[i] < vals.length) ? vals[ids[i]] : RingAffix.randomAffix();
+			}
+			affixUps = bundle.getIntArray( AFFIX_UPS );
+			if (affixUps == null || affixUps.length != affixes.length){
+				affixUps = new int[affixes.length];
+			}
+			affixMult = bundle.getFloatArray( AFFIX_MULT );
+			if (affixMult == null || affixMult.length != affixes.length){
+				affixMult = new float[affixes.length];
+			}
+			for (int i = 0; i < affixMult.length; i++){
+				if (affixMult[i] <= 0f) affixMult[i] = 1f;
 			}
 		}
 	}

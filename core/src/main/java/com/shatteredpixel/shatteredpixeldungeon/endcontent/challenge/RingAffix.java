@@ -66,8 +66,9 @@ public enum RingAffix {
 				if (it instanceof Ring && it.isEquipped(hero)){
 					Ring r = (Ring) it;
 					if (r.affixes != null){
-						for (RingAffix a : r.affixes){
-							if (a == type) sum += a.value;
+						//END(二.13): 按"基础值 × 升级倍率"计入
+						for (int i = 0; i < r.affixes.length; i++){
+							if (r.affixes[i] == type) sum += r.affixValue(i);
 						}
 					}
 				}

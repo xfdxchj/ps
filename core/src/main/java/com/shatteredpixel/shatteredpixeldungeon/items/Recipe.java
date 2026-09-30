@@ -258,6 +258,8 @@ public abstract class Recipe {
 		new com.shatteredpixel.shatteredpixeldungeon.items.spells.Evolution.Recipe(),
 		//==== END(230 原神地牢): 升级卷轴 + 强化符石 -> 50 洗练石 ====
 		new com.shatteredpixel.shatteredpixeldungeon.endcontent.items.RingPolish.PolishRecipe(),
+		//==== END(二.13 词条升级): 升级卷轴 + 强化符石 -> 3 词条强化石 ====
+		new com.shatteredpixel.shatteredpixeldungeon.endcontent.items.AffixUpgradeStone.UpgradeRecipe(),
 		//==== END(无尽炼金): 炼金工具箱 + 无尽锭 -> 无尽工作台 ====
 		new com.shatteredpixel.shatteredpixeldungeon.endcontent.items.InfinityWorkbench.BenchRecipe(),
 	};
