@@ -73,8 +73,8 @@ public class UniverseSword extends MeleeWeapon {
 	@Override public int min(int lvl){ return 60 + 5 * lvl; }
 	@Override public int max(int lvl){ return 80 + 10 * lvl; }
 
-	/** 重量级武器：力量需求比同阶更高。 */
-	@Override public int STRReq(int lvl){ return Math.max(18, 18 + lvl); }
+	/** 力量需求按原版 5 阶武器。 */
+	@Override public int STRReq(int lvl){ return super.STRReq(lvl); } // 原版 5 阶：18 起，随强化降低
 
 	//==== 特效常量 ====
 
@@ -194,7 +194,7 @@ public class UniverseSword extends MeleeWeapon {
 	public String info() {
 		int stacks = kills / KILLS_PER_STACK;
 		return "剑身上浮着整片星图，每一次挥动都像在挪动某个世界。\n\n"
-				+ "基础伤害 60-80，每级 +5~+10；力量需求 18（每级 +1）；额外附带自身最大生命 10% 的伤害。\n\n"
+				+ "基础伤害 60-80，每级 +5~+10；力量需求 18（随强化等级降低）；额外附带自身最大生命 10% 的伤害。\n\n"
 				+ "-**支配模式**（默认）：单体 100% 伤害。\n"
 				+ "-**寰宇模式**：攻击 9x9 范围内所有敌人，伤害 200%，攻击速度减半。\n"
 				+ "每通过此剑击杀 5 个敌人伤害 +1%。\n"

@@ -51,7 +51,7 @@ public class VoidArmor extends Armor {
 	@Override public int DRMin(int lvl){ return 5 + 5 * lvl; }
 	@Override public int DRMax(int lvl){ return 10 + 10 * lvl; }
 
-	@Override public int STRReq(int lvl){ return Math.max(16, 16 + lvl); }
+	@Override public int STRReq(int lvl){ return super.STRReq(lvl); } // 原版 5 阶：18 起，随强化降低
 
 	//==== 特效参数 ====
 
@@ -87,7 +87,7 @@ public class VoidArmor extends Armor {
 	@Override
 	public String info(){
 		return "甲面上什么也映不出来 —— 包括你自己。\n\n" +
-				"护甲值 5-10，每级 +5~+10；力量需求 16（每级 +1）。\n\n" +
+				"护甲值 5-10，每级 +5~+10；力量需求 18（随强化等级降低）。\n\n" +
 				"-免伤 **15 + 升级等级** %（最多 **50%**）\n" +
 				"-**15 + 升级等级** % 概率完全免疫一次伤害（最多 50%）\n" +
 				"-每 **50 回合**回复 **50%** 生命\n" +
