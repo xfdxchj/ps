@@ -51,8 +51,8 @@ public class EvolvedWandOfFrost extends WandOfFrost implements EndModeWand {
 	public String desc() {
 		return "进化·凝霜法杖（源：冰霜法杖）：拥有两种发射形态，可在背包-法杖窗口切换。\n\n"
 				+ "▍形态 0·冰霜直击（默认，耗 1 充）：命中点单目标冰冻/寒冷，并把落点周围 3×3 内其它敌人附上寒冷。\n"
-				+ "▍形态 1·冰雪区域（耗 2 充）：在你指定的落点铺开 3×3 持续冰雪区域（4 回合）——"
-				+ "区域每回合对敌人造成 100% 面板伤害并附上寒冷；对已被冻结的敌人破除冻结并造成 200% 面板伤害。已在寒冷中的敌人每回合有 40% 概率被冻住。\n\n"
+				+ "▍形态 1·冰雪区域（耗 1 充）：在你指定的落点铺开 3×3 持续冰雪区域（4 回合）——"
+				+ "区域本身不造成伤害，只施加寒冷与冰爆；敌人被冻结后，冻结消失时冰爆造成 400% 面板伤害。已在寒冷中的敌人每回合有 40% 概率被冻住。\n\n"
 				+ "充能上限提升到 20；**继承源法杖的等级**。";
 	}
 
@@ -87,7 +87,7 @@ public class EvolvedWandOfFrost extends WandOfFrost implements EndModeWand {
 	/** 冰雪区域耗 2 充能(较原 3 减 1)；冰霜直击耗 1。 */
 	@Override
 	protected int chargesPerCast() {
-		return mode == MODE_FROST_FIELD ? 2 : 1;
+		return 1;  //END(二.7): 两个形态都只耗 1
 	}
 
 	/** 瞄准按父类默认：点到的可达最远落点即铺放处（撤掉此前试验性的特殊瞄准）。 */
@@ -186,13 +186,9 @@ public class EvolvedWandOfFrost extends WandOfFrost implements EndModeWand {
 		}
 
 		int dmgBase = damageRoll();
-		//==== END(修复·冰霜区域伤害太低) ====
-		//文档所有者反馈："区域伤害很低。" —— 原来每回合只有面板 50%，
-		//而每一次都要单独扣一次护甲，低等级时几乎打不动。
-		//改为每回合 100% 面板，破冰 200%。
-		int tickDmg  = dmgBase;                        //每回合常规伤害(面板 100%)
-		int breakDmg = Math.round( dmgBase * 2f );     //破冰伤害(面板 200%)
-		float chillDur = 2f + buffedLvl();            //"全额"寒冷时长(与直击命中一致)
+		//END(二.7 重做): 区域不造成伤害；冰爆在冻结消失时造成面板 400%
+		int burstDmg = Math.round( dmgBase * 4f );
+		float chillDur = 2f + buffedLvl();
 
 		//3×3 铺开(含中心)，经 Blob.seed 登记到 level.blobs 以便持久化/查询
 		int seeded = 0;
@@ -207,7 +203,7 @@ public class EvolvedWandOfFrost extends WandOfFrost implements EndModeWand {
 		}
 
 		if (field != null && seeded > 0){
-			field.set( tickDmg, breakDmg, chillDur, this );
+			field.set( burstDmg, chillDur, this );
 			GameScene.add( field );
 		}
 
