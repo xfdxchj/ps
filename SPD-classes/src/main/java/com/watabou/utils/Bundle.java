@@ -254,16 +254,20 @@ public class Bundle {
 		try {
 			JSONArray array = data.getJSONArray( key );
 			int length = array.length();
-			Class[] result = new Class[length];
+			//END(save compat): 旧存档里已删除/改名的类直接跳过，不再让读档崩溃
+			ArrayList<Class> result = new ArrayList<>();
 			for (int i=0; i < length; i++) {
 				String clName = array.getString( i ).replace("class ", "");
 				if (aliases.containsKey( clName )) {
 					clName = aliases.get( clName );
 				}
-				Class cl = Reflection.forName( clName );
-				result[i] = cl;
+				try {
+					result.add( Reflection.forName( clName ) );
+				} catch (Throwable t) {
+					//skip missing class
+				}
 			}
-			return result;
+			return result.toArray(new Class[0]);
 		} catch (JSONException e) {
 			Game.reportException(e);
 			return null;
