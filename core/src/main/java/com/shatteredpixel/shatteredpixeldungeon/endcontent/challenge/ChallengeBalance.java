@@ -43,4 +43,23 @@ public final class ChallengeBalance {
 	public static final int MIMIC_THREAT_PCT = 20;
 	public static final int GRIMM_WEAPON_DROP_PCT = 25;
 
+	//---- 巨人 / 狂乱 / 大力水手 / 迅捷 / 霜冻 / 雷暴 / 学生 ----
+	public static final float GIANT_HP_MULT = 1.50f;
+	public static final int   ABSURD_PCT = 100;
+	public static final float FRENZY_STEP = 0.13f;
+	public static final int   FRENZY_MAX_STACK = 3;
+	public static final float POPEYE_DMG_MULT = 1.25f;
+	public static final float POPEYE_SPEED_MULT = 0.80f;
+	public static final float SWIFT_SPEED_MULT = 1.20f;
+	public static final int   FROZEN_CHILL_PCT = 1;
+	public static final int   FROZEN_FREEZE_PCT = 1;
+	public static final int   THUNDER_PCT = 5;
+	public static final int   STUDENT_PCT = 3;
+
+	//---- 生态地图概率 ----
+	public static final int   FLOODED_PIRANHA_PCT = 3;
+	public static final int   ABANDONED_TANGLE_PCT = 0;
+	public static final float ABANDONED_TANGLE_TURNS = 3f;
+	public static final int   BOSS_GUARD_COUNT = 3;
+
 }

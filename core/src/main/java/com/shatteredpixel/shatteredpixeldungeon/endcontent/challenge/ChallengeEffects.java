@@ -192,7 +192,7 @@ public final class ChallengeEffects {
 			//16 大力水手：物理攻击 +25%（攻速惩罚在 speedModifier 里）
 			//"物理"判据：玩家手持近战武器。法杖/投掷物不计入。
 			if (on(POPEYE) && isPhysicalAttacker(attacker)) {
-				bonus += (POPEYE_DMG_MULT - 1f);   // 1.25 → +0.25
+				bonus += (ChallengeBalance.POPEYE_DMG_MULT - 1f);   // 1.25 → +0.25
 			}
 
 		} else if (attacker instanceof Mob) {
@@ -2206,10 +2206,8 @@ public final class ChallengeEffects {
 
 	/** 10 巨型化：触发概率 13%。 */
 	/** 10 巨型化：生命倍率。 */
-	private static final float GIANT_HP_MULT    = 1.50f;
 	/** 54 我爱花花：替换概率 13%。 */
 	/** 138 荒诞世界：贴图随机变化概率。 */
-	private static final int   ABSURD_PCT       = 100;
 
 	/**
 	 * END(10 巨型化): 决定该怪物是否被巨型化（13% 概率）。
@@ -2245,7 +2243,7 @@ public final class ChallengeEffects {
 				m, com.shatteredpixel.shatteredpixeldungeon.actors.buffs
 						.ChallengeGiantMark.class);
 
-		int newHT = Math.max(1, Math.round(m.HT * GIANT_HP_MULT));
+		int newHT = Math.max(1, Math.round(m.HT * ChallengeBalance.GIANT_HP_MULT));
 		int gained = newHT - m.HT;
 		m.HT = newHT;
 		m.HP = Math.min(newHT, m.HP + Math.max(0, gained));
@@ -2275,7 +2273,7 @@ public final class ChallengeEffects {
 	 */
 	public static boolean rollAbsurdSprite() {
 		if (!on(ABSURD_WORLD)) return false;
-		return Random.Int(100) < ABSURD_PCT;
+		return Random.Int(100) < ChallengeBalance.ABSURD_PCT;
 	}
 
 	/**
@@ -2298,13 +2296,8 @@ public final class ChallengeEffects {
 
 	/** 23 血流成河 / 24 以牙还牙 / 28 不动如山 / 78 烈火焚身：13%。 */
 	/** 13 狂热：每次 +13%，封顶 3 层。 */
-	private static final float FRENZY_STEP      = 0.13f;
-	private static final int   FRENZY_MAX_STACK = 3;
 	/** 16 大力水手：物理 +25%、攻速 −20%。 */
-	private static final float POPEYE_DMG_MULT   = 1.25f;
-	private static final float POPEYE_SPEED_MULT = 0.80f;
 	/** 19 风驰电掣：玩家攻速 +20%、怪物移速 +20%。 */
-	private static final float SWIFT_SPEED_MULT  = 1.20f;
 	/**
 	 * 80 冰天雪地：寒冷概率、冰冻概率。
 	 *
@@ -2315,12 +2308,8 @@ public final class ChallengeEffects {
 	 * 不是简单相加，而是 {@code 冰冻 + (1-冰冻)×寒冷}：
 	 * 改前 = 2% + 98%×13% ≈ 14.7%，改后 = 2% + 98%×3% ≈ 4.9%。
 	 */
-	private static final int   FROZEN_CHILL_PCT  = 1;   //END(修订): 3% -> 1%（实测过高）
-	private static final int   FROZEN_FREEZE_PCT = 1;   //END(修订): 2% -> 1%
 	/** 90 雷暴：每回合 5% 概率触发。 */
-	private static final int   THUNDER_PCT       = 5;
 	/** 123 大学生：每回合 3% 受 1 点伤害。 */
-	private static final int   STUDENT_PCT       = 3;
 
 	/**
 	 * END(13 狂热): 怪物攻击命中后的攻速加成倍率。
@@ -2336,10 +2325,10 @@ public final class ChallengeEffects {
 						.ChallengeFrenzyMark.class);
 		if (mark == null) return 1f;
 
-		int stacks = Math.min(FRENZY_MAX_STACK, mark.stacks);
+		int stacks = Math.min(ChallengeBalance.FRENZY_MAX_STACK, mark.stacks);
 		if (stacks <= 0) return 1f;
 
-		return 1f + stacks * FRENZY_STEP;
+		return 1f + stacks * ChallengeBalance.FRENZY_STEP;
 	}
 
 	/** END(13 狂热): 怪物攻击命中后累加一层（由 {@code Char.attack()} 调用）。 */
@@ -2354,7 +2343,7 @@ public final class ChallengeEffects {
 						com.shatteredpixel.shatteredpixeldungeon.actors.buffs
 								.ChallengeFrenzyMark.class);
 		if (mark != null) {
-			mark.addStack(FRENZY_MAX_STACK);
+			mark.addStack(ChallengeBalance.FRENZY_MAX_STACK);
 		}
 	}
 
@@ -2453,13 +2442,13 @@ public final class ChallengeEffects {
 		//文档所有者要求："所有概率触发加触发 CD，避免小概率的连续触发。"
 		if (on(FROZEN_WORLD)) {
 			if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
-					.ChallengeSfx.roll(FROZEN_WORLD, FROZEN_FREEZE_PCT)) {
+					.ChallengeSfx.roll(FROZEN_WORLD, ChallengeBalance.FROZEN_FREEZE_PCT)) {
 				com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
 						hero,
 						com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Frost.class,
 						2f);
 			} else if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
-					.ChallengeSfx.roll(FROZEN_WORLD + 1000, FROZEN_CHILL_PCT)) {
+					.ChallengeSfx.roll(FROZEN_WORLD + 1000, ChallengeBalance.FROZEN_CHILL_PCT)) {
 				com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
 						hero,
 						com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Chill.class,
@@ -2470,14 +2459,14 @@ public final class ChallengeEffects {
 		//---- 90 雷暴：5% 闪电随机劈中一个角色（玩家或怪物）----
 		//END(修订·加冷却)
 		if (on(THUNDERSTORM) && com.shatteredpixel.shatteredpixeldungeon.endcontent
-				.challenge.ChallengeSfx.roll(THUNDERSTORM, THUNDER_PCT)) {
+				.challenge.ChallengeSfx.roll(THUNDERSTORM, ChallengeBalance.THUNDER_PCT)) {
 			strikeLightning(hero);
 		}
 
 		//---- 123 大学生：3% 受 1 点伤害（**不致死**，已定稿）----
 		//END(修订·加冷却)
 		if (on(COLLEGE_STUDENT) && com.shatteredpixel.shatteredpixeldungeon.endcontent
-				.challenge.ChallengeSfx.roll(COLLEGE_STUDENT, STUDENT_PCT)) {
+				.challenge.ChallengeSfx.roll(COLLEGE_STUDENT, ChallengeBalance.STUDENT_PCT)) {
 			//HP <= 1 时本次伤害不生效，避免 3% 概率暴毙
 			if (hero.HP > 1) {
 				hero.damage(1, hero);
@@ -2562,14 +2551,14 @@ public final class ChallengeEffects {
 	 */
 	public static float popeyeDamageMultiplier(boolean isPhysical) {
 		if (!on(POPEYE) || !isPhysical) return 1f;
-		return POPEYE_DMG_MULT;
+		return ChallengeBalance.POPEYE_DMG_MULT;
 	}
 
 	/** END(16 大力水手): 玩家攻速倍率（−20%）。 */
 	public static float popeyeSpeedMultiplier(Char ch) {
 		if (!on(POPEYE) || ch == null) return 1f;
 		if (!(ch instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero)) return 1f;
-		return POPEYE_SPEED_MULT;
+		return ChallengeBalance.POPEYE_SPEED_MULT;
 	}
 
 	/**
@@ -2579,7 +2568,7 @@ public final class ChallengeEffects {
 	 */
 	public static float swiftSpeedMultiplier(Char ch) {
 		if (!on(SWIFT) || ch == null) return 1f;
-		return SWIFT_SPEED_MULT;
+		return ChallengeBalance.SWIFT_SPEED_MULT;
 	}
 
 	//==================================================================
@@ -3214,10 +3203,9 @@ public final class ChallengeEffects {
 	}
 
 	/** 150 淹没地牢：水中生成幻影食人鱼的概率。 */
-	private static final int FLOODED_PIRANHA_PCT = 3;    //END(修订): 20% -> 3%（实测过多）
 
 	public static int floodedPiranhaChance() {
-		return on(FLOODED_DUNGEON) ? FLOODED_PIRANHA_PCT : 0;
+		return on(FLOODED_DUNGEON) ? ChallengeBalance.FLOODED_PIRANHA_PCT : 0;
 	}
 
 	/**
@@ -3230,15 +3218,13 @@ public final class ChallengeEffects {
 	 * 这样旧存档里已经挂着 Paralysis 的玩家不会出问题，
 	 * 将来若要恢复也只改这一个数字。
 	 */
-	private static final int ABANDONED_TANGLE_PCT = 0;   //END(定稿): 3 -> 0（取消缠绕）
-	private static final float ABANDONED_TANGLE_TURNS = 3f;
 
 	public static int abandonedTangleChance() {
-		return on(ABANDONED_DUNGEON) ? ABANDONED_TANGLE_PCT : 0;
+		return on(ABANDONED_DUNGEON) ? ChallengeBalance.ABANDONED_TANGLE_PCT : 0;
 	}
 
 	public static float abandonedTangleTurns() {
-		return ABANDONED_TANGLE_TURNS;
+		return ChallengeBalance.ABANDONED_TANGLE_TURNS;
 	}
 	/**
 	 * END(适配 6 完整地牢): Boss 层之间的间隔。
@@ -3346,11 +3332,10 @@ public final class ChallengeEffects {
 	//---- 15 首领护卫 ----
 
 	/** 每个 Boss 战额外生成的精英护卫数量。 */
-	private static final int BOSS_GUARD_COUNT = 3;
 
 	/** END(15): Boss 战应生成几个精英护卫。 */
 	public static int bossGuardCount() {
-		return on(BOSS_GUARD) ? BOSS_GUARD_COUNT : 0;
+		return on(BOSS_GUARD) ? ChallengeBalance.BOSS_GUARD_COUNT : 0;
 	}
 
 	//---- 20 等我启动 ----
