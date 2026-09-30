@@ -816,6 +816,7 @@ public class HeroSelectScene extends PixelScene {
 					//新规则（139-168 等）的勾选每次都读不回来，于是：
 					//  打开窗口 → 新规则显示未勾 → 关窗保存 → 真的把它们清掉。
 					//这就是"选择原版以外的不会生效 / 启动后仍显示未选择"的根因。
+					WndChallenges.logLife("openSite", null, "HeroSelectScene editable=true");
 					ShatteredPixelDungeon.scene().addToFront(
 							new WndChallenges(SPDSettings.challengeMask(), true) {
 						public void onBackPressed() {
@@ -962,6 +963,7 @@ public class HeroSelectScene extends PixelScene {
 							SPDSettings.challengeMask(randomMask);
 							Dungeon.setChallengeMask(randomMask);
 							challengeButton.icon(Icons.get(!randomMask.isEmpty() ? Icons.CHALLENGE_COLOR : Icons.CHALLENGE_GREY));
+							WndChallenges.logLife("openSite", null, "HeroSelectScene random editable=false");
 							ShatteredPixelDungeon.scene().addToFront(new WndChallenges(randomMask, false));
 						}
 

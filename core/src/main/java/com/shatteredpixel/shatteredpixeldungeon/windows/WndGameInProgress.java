@@ -82,6 +82,7 @@ public class WndGameInProgress extends Window {
 					//END(一.1 生命周期): 这里在 StartScene 上打开挑战窗口，
 					//必须走 addToFront（窗口层），不能用 Game.scene().add()
 					//（只加到普通成员层，窗口不在最前、关闭时生命周期也不干净）。
+					WndChallenges.logLife("openSite", null, "WndGameInProgress addToFront editable=false");
 					ShatteredPixelDungeon.scene().addToFront(
 							new WndChallenges( info.challengeMask, false ) );
 				}

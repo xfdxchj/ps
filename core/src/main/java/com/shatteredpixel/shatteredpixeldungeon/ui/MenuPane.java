@@ -134,6 +134,7 @@ public class MenuPane extends Component {
 				@Override
 				protected void onClick() {
 					//END(修复·掩码): 传完整掩码，否则菜单里看不到新规则
+					WndChallenges.logLife("openSite", null, "MenuPane GameScene.show editable=false");
 					GameScene.show(new WndChallenges(Dungeon.challengeMask, false));
 				}
 

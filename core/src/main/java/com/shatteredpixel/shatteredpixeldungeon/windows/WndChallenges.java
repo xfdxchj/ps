@@ -254,6 +254,8 @@ public class WndChallenges extends Window {
 		//现在两条路径共用 relayout()，只有一份公式。
 		buildList();
 		relayout();
+		logLife("constructor", "editable=" + editable + " maskEmpty=" + mask.isEmpty()
+				+ " groups=" + groups.size());
 
 		//END(删除·通过等级): 控件已不再创建 —— 判空后才设置位置，
 		//否则这里会 NPE（首次打开挑战窗口就崩）。
@@ -784,6 +786,7 @@ public class WndChallenges extends Window {
 	 * </ul>
 	 */
 	private void showDetail( ChallengeDef d ) {
+		logLife("showDetail", "id=" + (d == null ? "null" : d.id));
 		if (d == null) return;
 		if (!isAlive()) return;                 //窗口已销毁 → 忽略残留点击
 
@@ -816,6 +819,8 @@ public class WndChallenges extends Window {
 	 * 兼容用户先手动点掉详情、再关挑战窗口的情况。</p>
 	 */
 	private void closeDetail() {
+		logLife("closeDetail", "hasDetail=" + (detailWindow != null)
+				+ " detailParent=" + (detailWindow != null && detailWindow.parent != null));
 		if (detailWindow != null && detailWindow.parent != null) {
 			detailWindow.hide();
 		}
@@ -848,6 +853,7 @@ public class WndChallenges extends Window {
 		if (!editable) return;
 
 		boolean on = !mask.has( d.id );
+		logLife("toggleRequest", "id=" + d.id + " on=" + on);
 
 		//==== END(修复·前置弹窗没出现) ====
 		//文档所有者反馈："询问前置的窗口没有出现。"
@@ -984,13 +990,23 @@ public class WndChallenges extends Window {
 	 *   <li>两者都不满足时，再做一次 members 探测兜底</li>
 	 * </ul>
 	 */
+	/** END(一.1 诊断): 生命周期日志开关。排查完可设 false。 */
+	public static final boolean LIFECYCLE_LOG = true;
+	public static void logLife(String tag, Object win, String msg){
+		if (!LIFECYCLE_LOG) return;
+		String id = (win == null) ? "null"
+				: Integer.toHexString(System.identityHashCode(win));
+		System.out.println("[WndChallenges@" + id + "] " + tag + " " + msg);
+	}
+	private void logLife(String tag, String msg){ logLife(tag, this, msg); }
+
 	private boolean isAlive() {
 		try {
 			//① 已从场景树摘掉 / 已隐藏 → 一定不能操作
-			if (parent == null) return false;
-			if (!visible) return false;
+			if (parent == null) { logLife("isAlive", "false(parent==null)"); return false; }
+			if (!visible) { logLife("isAlive", "false(visible==false)"); return false; }
 
-			if (catContent == null || content == null) return false;
+			if (catContent == null || content == null) { logLife("isAlive", "false(content==null)"); return false; }
 
 			//② 兜底：members 已被销毁的探测
 			com.watabou.noosa.Gizmo probe = new com.watabou.noosa.Gizmo();
@@ -1450,15 +1466,26 @@ public class WndChallenges extends Window {
 		if (UI_DEBUG) {
 			System.out.println("[详情诊断] 挑战窗口 hide() 被调用");
 		}
+		logLife("hide", "start parent=" + (parent != null)
+				+ " visible=" + visible + " detail=" + (detailWindow != null));
 		//==== END(修复·关闭挑战窗口后详情残留): 连详情一起关 ====
 		//详情是独立窗口，挑战窗口关闭时必须把它一起摘掉，
 		//否则会在原位置残留"还能点、但不显示"的静态消息窗口。
 		closeDetail();
 		super.hide();
+		logLife("hide", "end parent=" + (parent != null) + " visible=" + visible);
+	}
+
+	@Override
+	public void destroy() {
+		logLife("destroy", "parent=" + (parent != null) + " visible=" + visible);
+		super.destroy();
 	}
 
 	@Override
 	public void onBackPressed() {
+		logLife("onBackPressed", "editable=" + editable + " parent=" + (parent != null)
+				+ " visible=" + visible);
 
 		if (editable) {
 			//写回设置（开局选择才 editable，查看已有存档时是 false）。

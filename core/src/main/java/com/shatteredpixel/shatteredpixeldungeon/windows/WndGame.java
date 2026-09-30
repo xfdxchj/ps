@@ -70,6 +70,7 @@ public class WndGame extends Window {
 				protected void onClick() {
 					hide();
 					//传完整掩码，否则窗口里看不到新规则
+					WndChallenges.logLife("openSite", null, "WndGame GameScene.show editable=false");
 					GameScene.show( new WndChallenges( Dungeon.challengeMask, false ) );
 				}
 			} );
