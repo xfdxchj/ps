@@ -8,6 +8,8 @@ package com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
+import com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfMagicMissile;
 import com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSprite;
@@ -42,6 +44,14 @@ public class EvolvedWandOfMagicMissile extends WandOfMagicMissile {
 				ch.damage(damageRoll(), this);
 				Sample.INSTANCE.play( Assets.Sounds.HIT_MAGIC, 1, Random.Float(0.87f, 1.15f) );
 				ch.sprite.burst( 0xFFFFFFFF, buffedLvl()/2 + 2 );
+			}
+
+			//END(一.10): 保留原版魔弹「强化其它法杖」的效果（MagicCharge）
+			for (Wand.Charger wandCharger : curUser.buffs(Wand.Charger.class)){
+				if (wandCharger.wand().buffedLvl() < buffedLvl() || curUser.buff(MagicCharge.class) != null){
+					Buff.prolong(curUser, MagicCharge.class, MagicCharge.DURATION).setup(this);
+					break;
+				}
 			}
 		} else {
 			com.shatteredpixel.shatteredpixeldungeon.Dungeon.level.pressCell( bolt.collisionPos );

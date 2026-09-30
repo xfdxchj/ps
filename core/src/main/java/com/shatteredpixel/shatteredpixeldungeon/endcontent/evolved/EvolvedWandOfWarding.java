@@ -9,6 +9,7 @@ import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.mage.WildMagic;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.spells.Stasis;
 import com.shatteredpixel.shatteredpixeldungeon.effects.MagicMissile;
@@ -39,10 +40,26 @@ public class EvolvedWandOfWarding extends WandOfWarding {
 		return new ItemSprite.Glowing( 9090280, 1.3f );
 	}
 
+	/** END(一.12): 当前这一发是否瞄的是已有哨位（升级/治疗只应耗 1 充能）。 */
+	private boolean targetingWard = false;
+
+	@Override
+	public boolean tryToZap(Hero owner, int target) {
+		targetingWard = Actor.findChar(target) instanceof WandOfWarding.Ward;
+		return super.tryToZap(owner, target);
+	}
+
+	/** END(一.12): 哨位总能量上限 +30%。 */
+	@Override
+	protected int maxWardEnergy() {
+		return (int)Math.floor(super.maxWardEnergy() * 1.3f);
+	}
+
 	//结束扩展 M2：消耗当前充能的 30%（1~3），仿照火焰法杖；充能越多，生成的哨兵阶位越高。
+	//END(一.12): 对已有哨位使用时只耗 1 充能。
 	@Override
 	protected int chargesPerCast() {
-		if (cursed ||
+		if (cursed || targetingWard ||
 				(charger != null && charger.target != null && charger.target.buff(WildMagic.WildMagicTracker.class) != null)){
 			return 1;
 		}
@@ -67,7 +84,7 @@ public class EvolvedWandOfWarding extends WandOfWarding {
 
 		if (ch != null){
 			if (ch instanceof WandOfWarding.Ward){
-				if (wardAvailable()) {
+				if (wardAvailable) {
 					((WandOfWarding.Ward) ch).upgrade( buffedLvl() );
 				} else {
 					((WandOfWarding.Ward) ch).wandHeal( buffedLvl() );
@@ -98,31 +115,6 @@ public class EvolvedWandOfWarding extends WandOfWarding {
 		}
 	}
 
-	//父类 wardAvailable 为 private，跨包不可见，这里按相同规则重新计算。
-	private boolean wardAvailable() {
-		int currentWardEnergy = 0;
-		for (Char c : Actor.chars()){
-			if (c instanceof WandOfWarding.Ward){
-				currentWardEnergy += ((WandOfWarding.Ward) c).tier;
-			}
-		}
-		if (Stasis.getStasisAlly() instanceof WandOfWarding.Ward){
-			currentWardEnergy += ((WandOfWarding.Ward) Stasis.getStasisAlly()).tier;
-		}
-
-		int maxWardEnergy = 0;
-		for (Buff buff : curUser.buffs()){
-			if (buff instanceof Wand.Charger){
-				if (((Wand.Charger) buff).wand() instanceof WandOfWarding){
-					maxWardEnergy += 2 + ((Wand.Charger) buff).wand().level();
-				}
-			}
-		}
-		//end 需求：哨位法杖能维持的哨位总能量上限提升 30%
-		maxWardEnergy = (int)Math.floor( maxWardEnergy * 1.3f );
-
-		return currentWardEnergy < maxWardEnergy;
-	}
 	// ---- 终焉·进化基础(统一13把)：继承源法杖等级、充能上限20(10起步,每级+1) ----
 	@Override
 	public void updateLevel() {

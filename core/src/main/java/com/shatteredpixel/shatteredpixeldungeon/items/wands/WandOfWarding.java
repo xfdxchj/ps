@@ -75,8 +75,21 @@ public class WandOfWarding extends Wand {
 		super.execute(hero, action);
 	}
 
-	private boolean wardAvailable = true;
+	protected boolean wardAvailable = true;
 	
+	/** END(一.12): 可维持的哨位总能量上限；灵哨法杖会在此基础上乘 1.3。 */
+	protected int maxWardEnergy() {
+		int maxWardEnergy = 0;
+		for (Buff buff : curUser.buffs()){
+			if (buff instanceof Wand.Charger){
+				if (((Charger) buff).wand() instanceof WandOfWarding){
+					maxWardEnergy += 2 + ((Charger) buff).wand().level();
+				}
+			}
+		}
+		return maxWardEnergy;
+	}
+
 	@Override
 	public boolean tryToZap(Hero owner, int target) {
 		
@@ -91,14 +104,7 @@ public class WandOfWarding extends Wand {
 			currentWardEnergy += ((Ward) Stasis.getStasisAlly()).tier;
 		}
 		
-		int maxWardEnergy = 0;
-		for (Buff buff : curUser.buffs()){
-			if (buff instanceof Wand.Charger){
-				if (((Charger) buff).wand() instanceof WandOfWarding){
-					maxWardEnergy += 2 + ((Charger) buff).wand().level();
-				}
-			}
-		}
+		int maxWardEnergy = maxWardEnergy();
 		
 		wardAvailable = (currentWardEnergy < maxWardEnergy);
 		
