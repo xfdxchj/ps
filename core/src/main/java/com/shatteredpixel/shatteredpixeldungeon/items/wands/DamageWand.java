@@ -62,6 +62,13 @@ public abstract class DamageWand extends Wand{
 		//==== END(修复·126 格林之心): 法杖伤害 +2 +1% ×等级 ====
 		dmg += com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
 			.BlackSoul.grimmMagicBonus(Dungeon.hero, dmg);
+
+		//==== END(修复·124 野生狗奶): 法杖伤害也吃"全属性 -75%" ====
+		if (Dungeon.hero != null && com.shatteredpixel.shatteredpixeldungeon.endcontent
+				.grimm.WildDogMilk.isActive(Dungeon.hero)){
+			dmg = Math.round(dmg * com.shatteredpixel.shatteredpixeldungeon.endcontent
+					.grimm.WildDogMilk.STAT_MULT);
+		}
 		return dmg;
 	}
 
