@@ -52,3 +52,16 @@
 
 - [ ] logcat 过滤 `GAME` / `Exception` / `WndChallenges`，确认没有新增堆栈。
 - [ ] 记录本次改动影响范围，供下次回归。
+
+
+## 附：存档兼容自动检查
+
+`_tmp/run_save_compat_test.sh` 会：
+
+1. 全量编译；
+2. 编译并运行 `_tmp/SaveCompatTest.java`；
+3. 造一个包含「已删除类」的假存档数组，验证 `Bundle.getClassArray()` 会跳过它而不是崩溃。
+
+输出 `OK: missing class skipped, kept 2 classes` 即为通过。
+
+> 注意：`_tmp/` 里的脚本是临时工具，清理器可能会删；需要长期保留就复制到仓库里。
