@@ -13,13 +13,10 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.Blob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Chill;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Frost;
 import com.shatteredpixel.shatteredpixeldungeon.effects.BlobEmitter;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand;
 import com.watabou.utils.Bundle;
-import com.watabou.utils.Random;
 
 public class EndFrostField extends Blob {
 
@@ -27,11 +24,6 @@ public class EndFrostField extends Blob {
 	private int burstDamage = 0;
 	private float chillDuration = 0;
 	private Wand cause;
-
-	/** END: 已在寒冷中的敌人每回合被冻住的概率(%)。 */
-	private static final int FREEZE_PCT = 40;
-	/** END: 冻住持续回合数。 */
-	private static final float FREEZE_TURNS = 2f;
 
 	public EndFrostField set(int burstDamage, float chillDuration, Wand cause){
 		this.burstDamage = burstDamage;
@@ -63,22 +55,10 @@ public class EndFrostField extends Blob {
 							&& ch.alignment != Char.Alignment.ALLY
 							&& ch.isAlive()){
 
-						//施加寒冷
-						if (!ch.isImmune( Chill.class )){
-							Buff.prolong( ch, Chill.class, chillDuration );
-						}
-
-						//施加/刷新冰爆（面板 400% 由法杖写入）
+						//像酸蚀气体挂 Corrosion 一样：气体只负责每回合挂上
+						//FrostBurst，具体的寒冷/冻结/引爆都在 buff 里处理。
 						if (!ch.isImmune( FrostBurst.class )){
-							Buff.affect( ch, FrostBurst.class ).damage = burstDamage;
-						}
-
-						//已在寒冷中的敌人有概率被冻住 → 冻结消失时触发冰爆
-						if (!ch.isImmune( Frost.class )
-								&& ch.buff( Frost.class ) == null
-								&& ch.buff( Chill.class ) != null
-								&& Random.Int(100) < FREEZE_PCT){
-							Buff.affect( ch, Frost.class, FREEZE_TURNS );
+							Buff.affect( ch, FrostBurst.class ).set( burstDamage, chillDuration );
 						}
 					}
 				}
