@@ -149,8 +149,6 @@ public final class ChallengeRegistry {
 			"精英出现率提升；精英有 **1/3** 概率成为**高阶精英**（多带一个词条 + 1 个跟班）。");
 		done(all, 226, "现代战争", "dungeon_of_champions", "英烈", ChallengeDef.TENDENCY_MONSTER, 3, ChallengeDef.TIER_HARD, "s:116,225",
 			"精英出现率进一步提高；精英**必定多带一个词条**；高阶精英带 **2 个跟班**。");
-		done(all, 227, "星界军团", "legion", "英烈", ChallengeDef.TENDENCY_MONSTER, 3, ChallengeDef.TIER_MEDIUM, "",
-			"每隔一段时间生成**一大波敌人**；每生成一波，**楼层封锁 20 回合**（仍可信仰之跃）。");
 
 		done(all, 228, "我的世界", "jingmi", "音乐", ChallengeDef.TENDENCY_NEUTRAL, 2, ChallengeDef.TIER_SERIES, "",
 			"**静谧花园**：把**地牢美术**（地形/怪物/特效）与 **BGM/音效** 换成静谧花园 4.0 的版本。界面、字形与标题画**不替换**。纯外观，不影响数值。");
@@ -329,10 +327,8 @@ public final class ChallengeRegistry {
 				"开局获得**赌徒之骰**：使用后选择一件可堆叠物品赌博 —— 50% 数量翻倍，50% 数量清零。");
 		done(all, 40, "贷款",       "loan",             "经济", T_TWO, 2, T_EASY,   "",
 				"可在商店贷款金币（100/300/500/1000 自选），1000 回合内偿还本金的 110%。同一时间只能欠一笔。");
-		done(all, 41, "钱是万能",   "money_is_power",   "经济", T_BEN, 2, T_MED,    "",
+		done(all, 41, "等价交换",   "money_is_power",   "经济", T_BEN, 2, T_MED,    "",
 				"开局获得**万能钱袋**：用金币直接买任何物品（药水/卷轴/装备/神器/力量药水/升级卷轴）。与 160 不重叠 —— 160 是升级，41 是购买。");
-		done(all, 42, "等价交换",   "equivalent_exchange","经济",T_TWO,1, T_MED,    "",
-				"开局获得 **3 张交换契约**：选择一件物品，随机换成**同类别**的另一件，等级保留。");
 		done(all, 43, "一贫如洗",   "destitute",        "经济", T_RES, 2, T_EASY,   "",
 				"每次进入新区域（每 5 层）时，金币减少 20%。");
 		done(all, 44, "慷慨商人",   "generous_merchant","经济", T_TWO, 1, T_EASY,   "s:32",
@@ -743,12 +739,12 @@ public final class ChallengeRegistry {
 	private static void registerBatch2(List<ChallengeDef> all) {
 
 		//==================== 时间类 ====================
-		done(all, 188, "时间之力",   "time_power",      "特殊", T_BEN, 2, T_MED,  "s:189,191",
+		done(all, 188, "时间之力",   "time_power",      "神明", T_BEN, 2, T_MED,  "s:189,191",
 				"开局获得**时间沙漏**：一件可以操纵时间流向的道具。");
-		done(all, 189, "时间加速",   "time_accel",      "特殊", T_TWO, 1, T_EASY, "s:188,191",
+		done(all, 189, "时间加速",   "time_accel",      "神明", T_TWO, 1, T_EASY, "s:188,191",
 				"**游戏动画速度提升 2 倍**。战斗、移动、特效全部加快 —— 节省时间，但怪物也行动得更快。");
 		//（190 时间倒转已取消 —— 需要序列化整个游戏状态，属于引擎级功能，文档所有者决定不做。）
-		done(all, 191, "时间之神",   "time_god",        "特殊", T_BEN, 3, T_SER,  "p:188,189",
+		done(all, 191, "时间之神",   "time_god",        "神明", T_BEN, 3, T_SER,  "p:188,189",
 				"集齐全部时间类挑战后：**每 10 回合获得 2 回合时间气泡**（期间时间静止）。");
 
 		//==================== 怪物类 ====================
