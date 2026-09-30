@@ -35,7 +35,7 @@ public class EvolvedWandOfBlastWave extends WandOfBlastWave {
 	public static final String AC_SET_THRUST = "SET_THRUST";
 
 	//END M2：可调冲击距离的档位（1/3/5 格）
-	public int thrustDistance = 2;  //END(二.8): 1/3/5 -> 2/4/5
+	public int thrustDistance = 2;  //END(二.8): 2/4/实际；0 表示"实际距离"(buffedLvl+3)
 
 	private static final String THRUST = "thrust_distance";
 
@@ -46,7 +46,7 @@ public class EvolvedWandOfBlastWave extends WandOfBlastWave {
 
 	@Override
 	public String desc() {
-		return "进化·震岳法杖（源：冲击波法杖）：冲击波的直接伤害提升 50%，把敌人撞到墙等硬地时眩晕时长翻倍；并可在使用前用「调整冲击距离」动作在 2 / 4 / 5 格之间切换推进距离。\n\n"
+		return "进化·震岳法杖（源：冲击波法杖）：冲击波的直接伤害提升 50%，把敌人撞到墙等硬地时眩晕时长翻倍；并可在使用前用「调整冲击距离」动作在 2 / 4 / 实际距离 之间切换推进距离。\n\n"
 				+ "**继承源法杖的等级**；充能上限提升到 20。";
 	}
 
@@ -95,8 +95,8 @@ public class EvolvedWandOfBlastWave extends WandOfBlastWave {
 	@Override
 	public void execute(Hero hero, String action) {
 		if (action.equals(AC_SET_THRUST)) {
-			thrustDistance = (thrustDistance == 5) ? 2 : (thrustDistance == 2) ? 4 : 5;
-			GLog.i("冲击距离已设为 " + thrustDistance + " 格");
+			thrustDistance = (thrustDistance == 0) ? 2 : (thrustDistance == 2) ? 4 : 0;
+			GLog.i("冲击距离已设为 " + (thrustDistance == 0 ? "实际距离" : thrustDistance + " 格"));
 		} else {
 			super.execute(hero, action);
 		}
@@ -115,7 +115,9 @@ public class EvolvedWandOfBlastWave extends WandOfBlastWave {
 		}
 
 		//周围 8 格：冲击距离为所选档位的一半（向上取整）
-		int sideStrength = Math.max(1, Math.round(thrustDistance / 2f));
+		int sideStrength = (thrustDistance == 0)
+				? Math.round(1.5f + buffedLvl() / 2f)   //实际：与原版一致
+				: Math.max(1, Math.round(thrustDistance / 2f));
 
 		for (int i  : PathFinder.NEIGHBOURS8){
 			Char ch = Actor.findChar(bolt.collisionPos + i);
@@ -142,7 +144,7 @@ public class EvolvedWandOfBlastWave extends WandOfBlastWave {
 			if ((ch.isAlive() || ch.flying || !Dungeon.level.pit[ch.pos])
 					&& bolt.path.size() > bolt.dist+1 && ch.pos == bolt.collisionPos) {
 				Ballistica trajectory = new Ballistica(ch.pos, bolt.path.get(bolt.dist + 1), Ballistica.MAGIC_BOLT);
-				throwCharEvolved(ch, trajectory, thrustDistance, false, true, this);
+				throwCharEvolved(ch, trajectory, (thrustDistance == 0 ? buffedLvl() + 3 : thrustDistance), false, true, this);
 			}
 		}
 
