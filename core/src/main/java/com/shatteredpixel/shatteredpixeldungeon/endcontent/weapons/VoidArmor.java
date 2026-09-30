@@ -48,8 +48,14 @@ public class VoidArmor extends Armor {
 
 	//==== 数值：5-10，成长 5-10 ====
 
-	@Override public int DRMin(int lvl){ return 5 + 5 * lvl; }
-	@Override public int DRMax(int lvl){ return 10 + 10 * lvl; }
+	/** 护甲值只在常量里定义一次。 */
+	public static final int DR_MIN_BASE = 5;
+	public static final int DR_MIN_PER_LVL = 5;
+	public static final int DR_MAX_BASE = 10;
+	public static final int DR_MAX_PER_LVL = 10;
+
+	@Override public int DRMin(int lvl){ return DR_MIN_BASE + DR_MIN_PER_LVL * lvl; }
+	@Override public int DRMax(int lvl){ return DR_MAX_BASE + DR_MAX_PER_LVL * lvl; }
 
 	@Override public int STRReq(int lvl){ return super.STRReq(lvl); } // 原版 5 阶：18 起，随强化降低
 
@@ -87,11 +93,13 @@ public class VoidArmor extends Armor {
 	@Override
 	public String info(){
 		return "甲面上什么也映不出来 —— 包括你自己。\n\n" +
-				"护甲值 5-10，每级 +5~+10；力量需求 18。\n\n" +
-				"-免伤 **15 + 升级等级** %（最多 **50%**）\n" +
-				"-**15 + 升级等级** % 概率完全免疫一次伤害（最多 50%）\n" +
-				"-每 **50 回合**回复 **50%** 生命\n" +
-				"-受到致命伤时触发**祝福十字架**，冷却 **50 回合**" + com.shatteredpixel.shatteredpixeldungeon.endcontent.EndItemStats.block(this);
+				"护甲值 " + DR_MIN_BASE + "-" + DR_MAX_BASE + "，每级 +" + DR_MIN_PER_LVL + "~+" + DR_MAX_PER_LVL
+				+ "；力量需求 " + STRReq(0) + "。\n\n" +
+				"-免伤 **" + REDUCTION_BASE + " + 升级等级** %（最多 **" + REDUCTION_CAP + "%**）\n" +
+				"-**" + REDUCTION_BASE + " + 升级等级** % 概率完全免疫一次伤害（最多 " + IMMUNE_CAP + "%）\n" +
+				"-每 **" + REGEN_INTERVAL + " 回合**回复 **" + Math.round(REGEN_PCT * 100f) + "%** 生命\n" +
+				"-受到致命伤时触发**祝福十字架**，冷却 **" + SECOND_LIFE_CD + " 回合**"
+				+ com.shatteredpixel.shatteredpixeldungeon.endcontent.EndItemStats.block(this);
 	}
 
 	@Override

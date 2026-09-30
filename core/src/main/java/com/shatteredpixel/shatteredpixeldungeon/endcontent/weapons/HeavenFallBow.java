@@ -81,12 +81,13 @@ public class HeavenFallBow extends MissileWeapon {
 
 	@Override
 	public String info(){
-		return "弓弦上残留着某种从天而降的东西。\n\n伤害随角色等级与神射戒成长；力量需求 16。\n\n" +
-				"每次攻击**连射 3 发**，且**无视目标护甲**。\n\n" +
+		return "弓弦上残留着某种从天而降的东西。\n\n伤害随角色等级与神射戒成长；力量需求 " + STRReq(0) + "。\n\n" +
+				"每次攻击**连射 " + BURST + " 发**，且**无视目标护甲**。\n\n" +
 				"-命中后弹道向**四个方向分裂**\n" +
-				"-**神射戒**对其伤害加成提升 **200%**\n" +
-				"-若换成**轮回噬灭之戒**，加成提升 **300%**\n" +
-				"-不可叠加（只带 1 件）" + com.shatteredpixel.shatteredpixeldungeon.endcontent.EndItemStats.block(this);
+				"-**神射戒**对其伤害加成提升 **" + Math.round((SHARP_RING_MULT - 1f) * 100f) + "%**\n" +
+				"-若换成**轮回噬灭之戒**，加成提升 **" + Math.round((REINCARNATION_MULT - 1f) * 100f) + "%**\n" +
+				"-不可叠加（只带 1 件）"
+				+ com.shatteredpixel.shatteredpixeldungeon.endcontent.EndItemStats.block(this);
 	}
 
 	@Override
