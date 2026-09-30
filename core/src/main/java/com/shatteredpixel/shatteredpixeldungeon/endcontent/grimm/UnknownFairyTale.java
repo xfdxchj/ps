@@ -152,6 +152,15 @@ public class UnknownFairyTale extends Item {
 			return;
 		}
 
+		//END(修复·使用书崩溃): 与《心爱的少女》一样，先确认 999 层已经就绪，
+		//否则切场景后找不到 AliceRealm 会崩。
+		if (!com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.aliceRealmReady()){
+			com.shatteredpixel.shatteredpixeldungeon.utils.GLog
+					.w("故事还缺最后几页 —— 那个地方尚未成形。");
+			return;
+		}
+
 		//记下当前位置，供对话结束后返回
 		BelovedGirl.AliceReturn.setReturnPoint(hero);
 
