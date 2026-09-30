@@ -17,7 +17,7 @@ import com.watabou.utils.Bundle;
  * <p>统计玩家用**近战 / 投掷 / 法术**三种方式对它造成的累计伤害。
  * 累计受伤每达到最大生命的 20% 就适应一次，最多 4 次；
  * 每次适应到当前累计伤害最高的方式，依次获得
- * 10% / 25% / 33% / 50% 的**该方式**减伤。
+ * 10% / 25% / 43% / 70% 的**该方式**减伤。
  */
 public class AdaptiveResistance extends FlavourBuff {
 
@@ -26,8 +26,8 @@ public class AdaptiveResistance extends FlavourBuff {
 	public static final int SPELL = 2;
 	public static final int TYPES = 3;
 
-	/** 4 次适应的减伤档位。 */
-	public static final float[] TIERS = { 0.10f, 0.25f, 0.33f, 0.50f };
+	/** 4 次适应的减伤档位（同一方式被连续适应时逐档提升）。 */
+	public static final float[] TIERS = { 0.10f, 0.25f, 0.43f, 0.70f };
 	public static final int MAX_STACKS = 4;
 	/** 每个「区域」（每 20% 最大生命）适应一次。 */
 	public static final float THRESHOLD_FRAC = 0.20f;
