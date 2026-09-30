@@ -29,8 +29,6 @@ public class AffixUpgradeStone extends Item {
 
 	public static final String AC_USE = "USE";
 
-	//每次强化的乘算加成，三档随机
-	public static final float[] BONUSES = { 0.20f, 0.35f, 0.40f };
 
 	{
 		image = ItemSpriteSheet.STONE_AUGMENTATION;
@@ -81,11 +79,11 @@ public class AffixUpgradeStone extends Item {
 				GameScene.show(new WndOptions("选择要强化的词条", "强化随机获得 +20% / +35% / +40%（乘算），每条词条最多 3 次。", opts){
 					@Override
 					protected void onSelect(int index){
-						if (ring.affixUpgrades(index) >= 3){
+						if (ring.affixUpgrades(index) >= RingAffix.MAX_UPGRADES){
 							GLog.w("这条词条已经强化 3 次，不能再强化了。");
 							return;
 						}
-						float bonus = BONUSES[Random.Int(BONUSES.length)];
+						float bonus = RingAffix.UPGRADE_BONUSES[Random.Int(RingAffix.UPGRADE_BONUSES.length)];
 						if (!ring.upgradeAffix(index, bonus)){
 							GLog.w("强化失败。");
 							return;
@@ -118,6 +116,15 @@ public class AffixUpgradeStone extends Item {
 	@Override public boolean isUpgradable(){ return false; }
 	@Override public boolean isIdentified(){ return true; }
 	@Override public int value(){ return 0; }
+
+	@Override
+	public String desc(){
+		return "一块能强化戒指词条的符石。\n\n"
+				+ "对一枚已有词条的戒指使用，从它的词条中**选择 1 条**强化："
+				+ "随机获得 **" + RingAffix.upgradeBonusText() + "** 的**乘算**提升，"
+				+ "每条词条最多强化 **" + RingAffix.MAX_UPGRADES + " 次**。\n\n"
+				+ "炼金配方：**升级卷轴 ×1 + 强化符石 ×1 → 3 个**。";
+	}
 
 	/** 炼金：升级卷轴 + 强化符石 → 3 个词条强化石（仅 230 挑战开启时可用）。 */
 	public static class UpgradeRecipe extends Recipe.SimpleRecipe {

@@ -37,9 +37,28 @@ public enum RingAffix {
 		this.effectText = effectText;
 	}
 
+	/** 每多少级获得 1 条词条。 */
+	public static final int LEVELS_PER_AFFIX = 3;
+	/** 最多几条词条。 */
+	public static final int MAX_AFFIXES = 3;
+	/** 每条词条最多强化几次。 */
+	public static final int MAX_UPGRADES = 3;
+	/** 每次强化的乘算加成档位。 */
+	public static final float[] UPGRADE_BONUSES = { 0.20f, 0.35f, 0.40f };
+
+	/** 供文本使用的 "＋20% / ＋35% / ＋40%" 串，避免说明里再手写数字。 */
+	public static String upgradeBonusText(){
+		StringBuilder sb = new StringBuilder();
+		for (float b : UPGRADE_BONUSES){
+			if (sb.length() > 0) sb.append(" / ");
+			sb.append("+").append(Math.round(b * 100f)).append("%");
+		}
+		return sb.toString();
+	}
+
 	/** 每 3 级 1 条，最多 3 条。 */
 	public static int countFor(int level){
-		return Math.min(3, Math.max(0, level) / 3);
+		return Math.min(MAX_AFFIXES, Math.max(0, level) / LEVELS_PER_AFFIX);
 	}
 
 	/** 随机一条词条（允许重复）。 */

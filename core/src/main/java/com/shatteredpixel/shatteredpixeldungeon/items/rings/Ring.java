@@ -170,7 +170,7 @@ public class Ring extends KindofMisc {
 			if (affixMult != null) System.arraycopy(affixMult, 0, tmp, 0, Math.min(affixMult.length, affixes.length));
 			affixMult = tmp;
 		}
-		if (affixUps[i] >= 3) return false;
+		if (affixUps[i] >= RingAffix.MAX_UPGRADES) return false;
 		affixUps[i]++;
 		affixMult[i] *= (1f + bonus);
 		return true;
