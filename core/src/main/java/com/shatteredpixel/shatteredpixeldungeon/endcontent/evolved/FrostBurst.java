@@ -83,7 +83,7 @@ public class FrostBurst extends FlavourBuff {
 
 		//像原版冰霜一样挂寒冷，时长随法杖等级提升
 		if (!target.isImmune(Chill.class)){
-			float dur = chillDuration + (Dungeon.level.water[target.pos] ? 2f : 0f);
+			float dur = chillDuration + (Dungeon.level.water[target.pos] ? FrostBalance.CHILL_WATER_BONUS : 0f);
 			Chill chill = target.buff(Chill.class);
 			if (chill == null){
 				Buff.affect(target, Chill.class, dur);

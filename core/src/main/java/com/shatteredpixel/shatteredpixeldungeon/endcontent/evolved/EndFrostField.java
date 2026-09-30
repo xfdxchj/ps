@@ -74,7 +74,7 @@ public class EndFrostField extends Blob {
 		super.use( emitter );
 		//蓝色暴风雪粒子
 		//END(冰天雪地): 用纯白雪花粒子铺出雪场
-		emitter.pour( SnowflakeParticle.FACTORY, 0.4f ); //与原版毒气/酸蚀气一致
+		emitter.pour( SnowflakeParticle.FACTORY, FrostBalance.PARTICLE_INTERVAL ); //与原版毒气/酸蚀气一致
 	}
 
 	//——持久化 ——//

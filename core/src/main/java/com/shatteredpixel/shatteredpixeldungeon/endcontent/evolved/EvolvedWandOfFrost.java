@@ -62,10 +62,10 @@ public class EvolvedWandOfFrost extends WandOfFrost {
 		}
 
 		int dmgBase = damageRoll();
-		int burstDmg = Math.round( dmgBase * 1.5f );
-		int splashDmg = Math.round( dmgBase * 0.5f );
-		float chillDur = 2f + buffedLvl();
-		int volume = 60 + 20 * buffedLvl();
+		int burstDmg = Math.round( dmgBase * FrostBalance.BURST_PCT );
+		int splashDmg = Math.round( dmgBase * FrostBalance.SPLASH_PCT );
+		float chillDur = FrostBalance.CHILL_BASE + buffedLvl();
+		int volume = FrostBalance.GAS_VOLUME_BASE + FrostBalance.GAS_VOLUME_PER_LVL * buffedLvl();
 
 		EndFrostField field = Blob.seed( center, volume, EndFrostField.class );
 		if (field != null){
