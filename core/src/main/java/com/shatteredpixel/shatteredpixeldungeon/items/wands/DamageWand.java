@@ -32,14 +32,21 @@ import com.watabou.noosa.audio.Sample;
 //wands with AOE or circumstantial direct damage count here (e.g. fireblast, transfusion), but wands with indirect damage do not (e.g. corrosion)
 public abstract class DamageWand extends Wand{
 
+	//END(二.5): 进阶法杖伤害成长下限+1、上限+2（按当前等级）
+	protected boolean evolvedWand(){
+		return getClass().getName().contains(".endcontent.evolved.EvolvedWandOf");
+	}
+
 	public int min(){
-		return min(buffedLvl());
+		int v = min(buffedLvl());
+		return evolvedWand() ? v + buffedLvl() : v;
 	}
 
 	public abstract int min(int lvl);
 
 	public int max(){
-		return max(buffedLvl());
+		int v = max(buffedLvl());
+		return evolvedWand() ? v + 2*buffedLvl() : v;
 	}
 
 	public abstract int max(int lvl);
@@ -49,7 +56,7 @@ public abstract class DamageWand extends Wand{
 	}
 
 	public int damageRoll(int lvl){
-		int dmg = Hero.heroDamageIntRange(min(lvl), max(lvl));
+		int dmg = Hero.heroDamageIntRange(min(lvl) + (evolvedWand()?lvl:0), max(lvl) + (evolvedWand()?2*lvl:0));
 		WandEmpower emp = Dungeon.hero.buff(WandEmpower.class);
 		if (emp != null){
 			dmg += emp.dmgBoost;
