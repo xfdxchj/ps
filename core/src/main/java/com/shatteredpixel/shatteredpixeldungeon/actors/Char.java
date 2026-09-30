@@ -1749,6 +1749,12 @@ public abstract class Char extends Actor {
 			hitMissIcon = -1;
 
 			sprite.showStatusWithIcon(CharSprite.NEGATIVE, Integer.toString(dmg + shielded), icon);
+
+			//END(二.12 修订): 法杖暴击飘字
+			if (src instanceof com.shatteredpixel.shatteredpixeldungeon.items.wands.DamageWand
+					&& com.shatteredpixel.shatteredpixeldungeon.items.wands.DamageWand.consumeLastRollCrit()){
+				sprite.showStatus(CharSprite.WARNING, "暴击");
+			}
 		}
 
 		//==== END(移植·同仇敌忾 78): HP 清零前先记下过量伤害 ====

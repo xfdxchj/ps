@@ -70,9 +70,19 @@ public abstract class DamageWand extends Wand{
 		dmg += com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
 			.BlackSoul.grimmMagicBonus(Dungeon.hero, dmg);
 
-		//END(二.12 原神副词条): 法术伤害加成；暴击不作用于法杖
+		//END(二.12 原神副词条): 法术伤害加成
 		if (Dungeon.hero != null){
 			dmg = Math.round(dmg * com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.RingAffix.spellDamageMultiplier(Dungeon.hero));
+		}
+
+		//END(二.12 修订): 法杖也可以暴击，倍率与近战一致（2 倍）
+		lastRollCrit = false;
+		if (Dungeon.hero != null){
+			float crit = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.RingAffix.critChance(Dungeon.hero);
+			if (crit > 0f && com.watabou.utils.Random.Float() < crit){
+				dmg = Math.round(dmg * 2f);
+				lastRollCrit = true;
+			}
 		}
 
 		//==== END(修复·124 野生狗奶): 法杖伤害也吃"全属性 -75%" ====
@@ -82,6 +92,14 @@ public abstract class DamageWand extends Wand{
 					.grimm.WildDogMilk.STAT_MULT);
 		}
 		return dmg;
+	}
+
+	//END(二.12 修订): 最近一次 damageRoll 是否触发暴击，供飘字使用
+	private static boolean lastRollCrit = false;
+	public static boolean consumeLastRollCrit(){
+		boolean b = lastRollCrit;
+		lastRollCrit = false;
+		return b;
 	}
 
 	@Override
