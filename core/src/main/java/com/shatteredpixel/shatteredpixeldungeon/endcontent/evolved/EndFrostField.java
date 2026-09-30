@@ -14,7 +14,6 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.Blob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.effects.BlobEmitter;
-import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand;
 import com.watabou.utils.Bundle;
 
@@ -70,9 +69,8 @@ public class EndFrostField extends Blob {
 	public void use( BlobEmitter emitter ) {
 		super.use( emitter );
 		//蓝色暴风雪粒子
-		//END(冰天雪地): 用原版暴雪粒子铺出更明显的雪场
-		emitter.pour( com.shatteredpixel.shatteredpixeldungeon.effects.particles
-				.SnowParticle.FACTORY, 0.8f );
+		//END(冰天雪地): 用纯白雪花粒子铺出雪场
+		emitter.pour( SnowflakeParticle.FACTORY, 0.8f );
 	}
 
 	//——持久化 ——//

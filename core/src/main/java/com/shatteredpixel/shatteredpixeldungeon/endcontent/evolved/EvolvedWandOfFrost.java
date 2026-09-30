@@ -2,7 +2,7 @@
  * Shattered Pixel Dungeon: End —《破碎的像素地牢：终焉扩展》
  * 凝霜法杖(冰霜进化) 双形态：
  *   形态 0·冰霜直击(default)：耗 1 充能。命中点单目标冰冻/寒冷，并对命中点 3×3 内其它敌人附加寒冷。
- *   形态 1·冰雪区域：耗 1 充能。选中一个位置放出冰雪气体，像酸蚀气一样向外扩散；
+ *   形态 1·冰天雪地：耗 1 充能。选中一个位置放出冰雪气体，像酸蚀气一样向外扩散；
  *       气体每回合给区域内敌人挂上冰爆 buff；buff 负责施加寒冷、概率冻结，
  *       并在冻结消失时造成 400% 面板伤害。
  */
@@ -36,7 +36,7 @@ public class EvolvedWandOfFrost extends WandOfFrost implements EndModeWand {
 	/** END: 形态0 —— 已寒冷的敌人被直接冻住的概率(%)。 */
 	private static final int DIRECT_FREEZE_PCT = 25;
 
-	/** 当前形态(0=冰霜直击,1=冰雪区域)。 */
+	/** 当前形态(0=冰霜直击,1=冰天雪地)。 */
 	private int mode = MODE_FROST_BOLT;
 
 	@Override
@@ -46,7 +46,7 @@ public class EvolvedWandOfFrost extends WandOfFrost implements EndModeWand {
 
 	@Override
 	public String desc() {
-		return "进化·凝霜法杖：拥有两种发射形态，可在背包-法杖窗口切换。\n\n▍形态 0·冰霜直击（默认，耗 1 充）：命中点单目标冰冻/寒冷，并把落点周围 3×3 内其它敌人附上寒冷。\n▍形态 1·冰雪区域（耗 1 充）：在你指定的落点放出冰雪气体，像酸蚀气一样向外扩散——气体本身不造成伤害，只施加寒冷与冰爆；敌人被冻结后，冻结消失时冰爆造成 400% 面板伤害。已在寒冷中的敌人每回合有 40% 概率被冻住。\n\n充能上限提升到 20；**继承源法杖的等级**。";
+		return "进化·凝霜法杖：拥有两种发射形态，可在背包-法杖窗口切换。\n\n▍形态 0·冰霜直击（默认，耗 1 充）：命中点单目标冰冻/寒冷，并把落点周围 3×3 内其它敌人附上寒冷。\n▍形态 1·冰天雪地（耗 1 充）：在你指定的落点放出冰雪气体，像酸蚀气一样向外扩散——气体本身不造成伤害，只施加寒冷与冰爆；敌人被冻结后，冻结消失时冰爆造成 400% 面板伤害。已在寒冷中的敌人每回合有 40% 概率被冻住。\n\n充能上限提升到 20；**继承源法杖的等级**。";
 	}
 
 	@Override
@@ -72,7 +72,7 @@ public class EvolvedWandOfFrost extends WandOfFrost implements EndModeWand {
 	public String modeName( int index ) {
 		switch (index){
 			case MODE_FROST_BOLT:  return "冰霜直击";
-			case MODE_FROST_FIELD: return "冰雪区域";
+			case MODE_FROST_FIELD: return "冰天雪地";
 			default:               return "";
 		}
 	}
@@ -84,7 +84,7 @@ public class EvolvedWandOfFrost extends WandOfFrost implements EndModeWand {
 	}
 
 	/** 瞄准按父类默认：点到的可达最远落点即铺放处（撤掉此前试验性的特殊瞄准）。 */
-	//END M2：命中点直击(形态0) + 冰雪区域(形态1)
+	//END M2：命中点直击(形态0) + 冰天雪地(形态1)
 	@Override
 	public void onZap(Ballistica bolt) {
 		if (mode == MODE_FROST_FIELD){
