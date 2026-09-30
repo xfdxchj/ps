@@ -195,10 +195,10 @@ public class UniverseSword extends MeleeWeapon {
 		int stacks = kills / KILLS_PER_STACK;
 		return "剑身上浮着整片星图，每一次挥动都像在挪动某个世界。\n\n"
 				+ "基础伤害 60-80，每级 +5~+10；力量需求 18（每级 +1）；额外附带自身最大生命 10% 的伤害。\n\n"
-				+ "-**支配模式**（默认）：单体 100% 伤害；每通过此剑击杀 5 个敌人伤害 +1%（跨局重置）。\n"
-				+ "　　当前击杀 " + kills + "，加成 +" + stacks + "%。\n"
+				+ "-**支配模式**（默认）：单体 100% 伤害。\n"
 				+ "-**寰宇模式**：攻击 9x9 范围内所有敌人，伤害 200%，攻击速度减半。\n"
-				+ "-切换模式不消耗任何资源。"
+				+ "每通过此剑击杀 5 个敌人伤害 +1%。\n"
+				+ "　　当前击杀 " + kills + "，加成 +" + stacks + "%。"
 				+ com.shatteredpixel.shatteredpixeldungeon.endcontent.EndItemStats.block(this);
 	}
 

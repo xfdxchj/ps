@@ -1239,7 +1239,7 @@ public class WndChallenges extends Window {
 		if ( Messages.exists( null, key ) ) {
 			return Messages.get( key );
 		}
-		return d.effect;
+		return d.effect == null ? "" : d.effect;
 	}
 
 	private String describe( ChallengeDef d ) {
@@ -1257,8 +1257,10 @@ public class WndChallenges extends Window {
 		//（等级仍然存在 ChallengeDef 里，用于计算"通过等级"，
 		//  只是不再暴露给玩家 —— 那是个内部配平用的数值。）
 		sb.append( d.group ).append( "   " ).append( d.tendencyName() );
-		if (!d.effect.isEmpty()) {
-			sb.append( "\n\n" ).append( effectTextOf( d ) );
+		//END(修复·32/45 详情不显示): properties-only entries must show too
+		String eff = effectTextOf( d );
+		if (eff != null && !eff.isEmpty()) {
+			sb.append( "\n\n" ).append( eff );
 		}
 
 		appendRelations( sb, d, ChallengeRelation.Type.EXCLUSIVE,
