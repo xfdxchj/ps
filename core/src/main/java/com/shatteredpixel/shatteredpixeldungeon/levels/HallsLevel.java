@@ -63,7 +63,10 @@ public class HallsLevel extends RegularLevel {
 
 	{
 		
-		viewDistance = Math.min( 26 - Dungeon.depth, viewDistance );
+		//END(修复·轮回 46 层全黑): 用映射层号算矮人厅的视野衰减，
+		//否则轮回时 Dungeon.depth=46 会让 26-46 变成负数 → 整层漆黑。
+		viewDistance = Math.min( 26 - com.shatteredpixel.shatteredpixeldungeon.endcontent
+				.Reincarnation.mappedDepth(Dungeon.depth), viewDistance );
 		
 		color1 = 0x801500;
 		color2 = 0xa68521;
