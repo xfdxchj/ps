@@ -1309,6 +1309,28 @@ public abstract class Char extends Actor {
 		//temporarily assign to a float to avoid rounding a bunch
 		float damage = dmg;
 
+		//==== END(231 魔虚罗): 古神 / 古神之拳的适应性减伤 ====
+		//统计玩家用近战/投掷/法术造成的伤害，按档位获得对应方式的减伤。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.mahoragaEnabled()
+				&& com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+						.AdaptiveResistance.isAdaptiveTarget(this)) {
+			int at = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.AdaptiveResistance.classify(src);
+			if (at >= 0) {
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+						.AdaptiveResistance ar = buff(
+						com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+								.AdaptiveResistance.class);
+				if (ar == null) {
+					ar = Buff.affect(this,
+							com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+									.AdaptiveResistance.class);
+				}
+				damage = ar.apply(at, damage);
+			}
+		}
+
 		//if dmg is from a character we already reduced it in Char.attack
 		if (!(src instanceof Char)) {
 			if (Dungeon.hero.alignment == alignment

@@ -6001,4 +6001,13 @@ public final class ChallengeEffects {
 	public static final int GENSHIN = 230;
 
 	public static boolean genshinEnabled(){ return on(GENSHIN); }
+
+	//==================================================================
+	//==== END(新增·231 魔虚罗): 古神 / 古神之拳适应 ====
+	//==================================================================
+
+	/** 231 魔虚罗：古神与古神之拳会适应伤害方式并获得减伤。 */
+	public static final int MAHORAGA = 231;
+
+	public static boolean mahoragaEnabled(){ return on(MAHORAGA); }
 }

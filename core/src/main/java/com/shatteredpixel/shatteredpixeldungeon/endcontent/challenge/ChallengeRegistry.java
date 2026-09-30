@@ -166,6 +166,12 @@ public final class ChallengeRegistry {
 			+ "新增炼金道具**洗练石**（升级卷轴 + 强化符石 → 50 个），对戒指使用可重掷全部词条。\n\n"
 			+ "同一配方还可炼出 **3 个词条强化石**：对戒指使用后**选择 1 条词条**强化，随机获得 **+20% / +35% / +40%**（乘算），每条最多 **3 次**。");
 
+		//==== END(231 魔虚罗): 古神 / 古神之拳适应 ====
+		done(all, 231, "魔虚罗", "mahoraga", "怪物", ChallengeDef.TENDENCY_MONSTER, 3, ChallengeDef.TIER_HARD, "",
+			"**古神与古神之拳**会适应你造成伤害最多的方式（近战 / 投掷 / 法术）。"
+			+ "以最大生命的 **20%** 为一个区域：每在一个区域内累计受到你足够伤害，就适应一次，"
+			+ "适应该区域中你伤害最高的方式，获得对该方式的减伤：**10% → 25% → 33% → 50%**，最多 **4 层**。");
+
 		registerChallengeAreas(all);
 
 		ALL = Collections.unmodifiableList(all);
