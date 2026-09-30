@@ -4303,19 +4303,12 @@ public final class ChallengeEffects {
 								   int price) {
 		if (!on(AUCTION_HOUSE) || item == null) return price;
 
-		float mult = auctionMultiplier(item);
-
-		//NPC 抬价：本层是否已被抬价
-		if (auctionBidUpThisFloor) mult *= AUCTION_BID_UP_MULT;
-
-		return Math.max(1, Math.round(price * mult));
+		return Math.max(1, Math.round(price * auctionMultiplier(item)));
 	}
 
-	/** 价格波动范围：0.5 ~ 1.8 倍。 */
-	private static final float AUCTION_MIN_MULT = 0.5f;
-	private static final float AUCTION_MAX_MULT = 1.8f;
-	/** NPC 抬价的倍率。 */
-	private static final float AUCTION_BID_UP_MULT = 1.5f;
+	/** END(二.10): 商店 13% 概率售价 +30%。 */
+	private static final float AUCTION_UP_CHANCE = 0.13f;
+	private static final float AUCTION_UP_MULT   = 1.3f;
 
 	/** 每件商品的价格倍率（首次查询时定格）。 */
 	private static final java.util.HashMap<com.shatteredpixel.shatteredpixeldungeon.items.Item,
@@ -4329,8 +4322,7 @@ public final class ChallengeEffects {
 		Float cached = auctionMults.get(item);
 		if (cached != null) return cached;
 
-		float m = AUCTION_MIN_MULT
-				+ Random.Float() * (AUCTION_MAX_MULT - AUCTION_MIN_MULT);
+		float m = (Random.Float() < AUCTION_UP_CHANCE) ? AUCTION_UP_MULT : 1f;
 		auctionMults.put(item, m);
 		return m;
 	}

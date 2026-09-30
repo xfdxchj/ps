@@ -35,7 +35,7 @@ public class EvolvedWandOfBlastWave extends WandOfBlastWave {
 	public static final String AC_SET_THRUST = "SET_THRUST";
 
 	//END M2：可调冲击距离的档位（1/3/5 格）
-	public int thrustDistance = 1;
+	public int thrustDistance = 2;  //END(二.8): 1/3/5 -> 2/4/5
 
 	private static final String THRUST = "thrust_distance";
 
@@ -46,7 +46,7 @@ public class EvolvedWandOfBlastWave extends WandOfBlastWave {
 
 	@Override
 	public String desc() {
-		return "进化·震岳法杖（源：冲击波法杖）：冲击波的直接伤害提升 50%，把敌人撞到墙等硬地时眩晕时长翻倍；并可在使用前用「调整冲击距离」动作在 1 / 3 / 5 格之间切换推进距离。\n\n"
+		return "进化·震岳法杖（源：冲击波法杖）：冲击波的直接伤害提升 50%，把敌人撞到墙等硬地时眩晕时长翻倍；并可在使用前用「调整冲击距离」动作在 2 / 4 / 5 格之间切换推进距离。\n\n"
 				+ "**继承源法杖的等级**；充能上限提升到 20。";
 	}
 
@@ -95,7 +95,7 @@ public class EvolvedWandOfBlastWave extends WandOfBlastWave {
 	@Override
 	public void execute(Hero hero, String action) {
 		if (action.equals(AC_SET_THRUST)) {
-			thrustDistance = (thrustDistance == 5) ? 1 : (thrustDistance == 1) ? 3 : 5;
+			thrustDistance = (thrustDistance == 5) ? 2 : (thrustDistance == 2) ? 4 : 5;
 			GLog.i("冲击距离已设为 " + thrustDistance + " 格");
 		} else {
 			super.execute(hero, action);
