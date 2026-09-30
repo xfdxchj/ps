@@ -101,6 +101,22 @@ public class MobSpawner extends Actor {
 		ArrayList<Class<? extends Mob>> mobs = standardMobRotation( tableDepth );
 		addRareMobs(tableDepth, mobs);
 
+		//==== END(挑战 3 区域错位): 混入相邻区域的怪物 ====
+		//原表："地图生态向相邻区域偏移：每个区域的生成内容会混入邻区的风格。"
+		//regionShiftReference 返回相邻区域的第一层；取其刷怪池的一半混进本层。
+		//这样区域之间不再是硬边界，但也不会像挑战 1 那样整个对调。
+		//未勾选 3 时 regionShiftReference 返回 0，本段等价于不存在。
+		int shiftRef = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.regionShiftReference(tableDepth);
+		if (shiftRef > 0) {
+			ArrayList<Class<? extends Mob>> neighbor = standardMobRotation(shiftRef);
+			Random.shuffle(neighbor);
+			int mix = Math.max(1, neighbor.size() / 2);
+			for (int i = 0; i < mix && i < neighbor.size(); i++) {
+				mobs.add(neighbor.get(i));
+			}
+		}
+
 		//==== END(挑战 5 怪物入侵): 混入其它区域的普通怪 ====
 		//原表："当前区域有概率生成其他区域普通怪物"。
 		//
