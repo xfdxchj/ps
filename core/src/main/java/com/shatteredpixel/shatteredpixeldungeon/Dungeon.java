@@ -989,12 +989,12 @@ public class Dungeon {
 
 		//==== END(修复·轮回 26 层结构): 生成期间把 Dungeon.depth 临时换成映射层号，
 		//否则 SewerLevel 的选房/装饰仍按 depth=26（5 区）来铺，结果结构变成 5 区。
-		int realDepth = depth;
+		int realDepth = Dungeon.depth;
 		try {
-			depth = mapped;
+			Dungeon.depth = mapped;
 			return createLevelByMappedDepth(mapped);
 		} finally {
-			depth = realDepth;
+			Dungeon.depth = realDepth;
 		}
 	}
 
