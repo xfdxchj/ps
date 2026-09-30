@@ -61,9 +61,9 @@ public class DaggerTrident extends EmbedDagger {
 
 	@Override public String name(){ return "刺杀·三叉戟"; }
 
-	//==== 数值：三叉戟那套（比基底匕首重且狠）====
-	@Override public int min(int lvl){ return 2 + lvl; }
-	@Override public int max(int lvl){ return 14 + 4*lvl; }
+	//==== 数值：按 tier=3 的标准投掷武器公式（2×tier+lvl / 5×tier+tier×lvl）====
+	@Override public int min(int lvl){ return 6 + lvl; }
+	@Override public int max(int lvl){ return 15 + 3*lvl; }
 	@Override public int STRReq(int lvl){ return 12; }
 
 	//无限耐久

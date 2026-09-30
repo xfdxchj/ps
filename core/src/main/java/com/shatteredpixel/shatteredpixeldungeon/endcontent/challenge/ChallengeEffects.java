@@ -2552,6 +2552,12 @@ public final class ChallengeEffects {
 						+ "  伤害=" + dmg
 						+ "  候选目标=" + targets.size());
 
+		//END(需求·雷暴加日志): 触发时给出可见提示
+		try {
+			com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w(
+					"雷暴：一道闪电劈中了 " + victim.name() + "！");
+		} catch (Throwable ignored) { }
+
 		//视觉与音效（沿用雷击类效果的既有资源）
 		if (victim.sprite != null) {
 			victim.sprite.flash();
