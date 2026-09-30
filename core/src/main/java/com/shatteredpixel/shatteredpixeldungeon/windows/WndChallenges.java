@@ -364,6 +364,12 @@ public class WndChallenges extends Window {
 	 * <p>命中判定：先看 y 落在哪个条目上；
 	 * 若 x 落在条目右侧的"问号"图标区，则打开详情窗口，否则切换勾选。
 	 */
+	/** END: 列表点击音效（ScrollPane 转发时不会走 Button 自带的音效）。 */
+	private static void clickSound(){
+		com.watabou.noosa.audio.Sample.INSTANCE.play(
+				com.shatteredpixel.shatteredpixeldungeon.Assets.Sounds.CLICK);
+	}
+
 	private void handleListClick( float x, float y ) {
 		//END(修复·关闭后残留点击·弹介绍): 与 toggleChallenge 同样的守卫。
 		if (!isAlive()) return;
@@ -389,6 +395,7 @@ public class WndChallenges extends Window {
 
 			//右侧是"问号"详情区（宽度 16）
 			if (x >= cb.right()) {
+				clickSound();
 				showDetail( d );
 				return;
 			}
@@ -398,6 +405,7 @@ public class WndChallenges extends Window {
 			//"直接勾选"还是"弹窗询问补前置"。
 			if (!cb.active) return;         //不可选（未实装/互斥）
 
+			clickSound();
 			toggleChallenge( d );
 			return;
 		}
