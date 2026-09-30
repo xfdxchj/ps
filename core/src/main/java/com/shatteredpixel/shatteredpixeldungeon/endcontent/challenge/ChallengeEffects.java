@@ -841,7 +841,6 @@ public final class ChallengeEffects {
 	//把 116 与精英解绑后，14/34/64 这类规则在任何精英来源下都能正确工作。
 
 	/** END(75 精英地牢·改): 稀有怪出现概率（13%）。 */
-	public static final float RARE_ALT_CHANCE = 0.13f;
 
 	/**
 	 * END(75 精英地牢·改): 是否启用"13% 稀有怪"。
@@ -3977,7 +3976,6 @@ public final class ChallengeEffects {
 	 * <p>现在改为 **100% 物品价值**，并且额外乘一个 1.5 倍补偿
 	 * （因为整层的掉落都变成了金币，数量感受要跟得上）。
 	 */
-	public static final float GOLDEN_VALUE_MULT = 1.5f;
 
 	/** END(167 黄金地牢): 金币堆公式 = Random(20~50) × 区域数。 */
 	public static int goldenGoldAmount() {
@@ -3988,7 +3986,6 @@ public final class ChallengeEffects {
 	//---- 160 氪金大佬 ----
 
 	/** 每次"氪金升级"消耗的金币（按等级递增）。 */
-	private static final int WHALE_BASE_COST = 100;
 
 	/**
 	 * END(160 氪金大佬): 把一件物品升级所需的金币。
@@ -4001,7 +3998,7 @@ public final class ChallengeEffects {
 	public static int whaleUpgradeCost(com.shatteredpixel.shatteredpixeldungeon.items
 			.Item item) {
 		if (item == null) return Integer.MAX_VALUE;
-		return WHALE_BASE_COST * (Math.max(0, item.level()) + 1);
+		return ChallengeBalance.WHALE_BASE_COST * (Math.max(0, item.level()) + 1);
 	}
 
 	/** END(160): 是否可以用金币升级该物品。 */
@@ -4125,7 +4122,6 @@ public final class ChallengeEffects {
 	public static final int CHAOS_WAND = 139;
 
 	/** 每次施法触发"紊乱"的概率（%）。 END(修订): 40% -> 13%（文档所有者指定）。 */
-	private static final int CHAOS_WAND_PCT = 13;
 
 	/**
 	 * END(139 紊乱法杖): 本次施法是否"紊乱"，若是则返回要冒充的法杖。
@@ -4142,7 +4138,7 @@ public final class ChallengeEffects {
 	public static com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand rollChaosWand(
 			com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand current) {
 		if (!on(CHAOS_WAND) || current == null) return null;
-		if (Random.Int(100) >= CHAOS_WAND_PCT) return null;
+		if (Random.Int(100) >= ChallengeBalance.CHAOS_WAND_PCT) return null;
 
 		Class<?>[] pool = com.shatteredpixel.shatteredpixeldungeon.items.Generator
 				.Category.WAND.classes;
@@ -4273,8 +4269,6 @@ public final class ChallengeEffects {
 	}
 
 	/** END(二.10): 商店 13% 概率售价 +30%。 */
-	private static final float AUCTION_UP_CHANCE = 0.13f;
-	private static final float AUCTION_UP_MULT   = 1.3f;
 
 	/** 每件商品的价格倍率（首次查询时定格）。 */
 	private static final java.util.HashMap<com.shatteredpixel.shatteredpixeldungeon.items.Item,
@@ -4288,7 +4282,7 @@ public final class ChallengeEffects {
 		Float cached = auctionMults.get(item);
 		if (cached != null) return cached;
 
-		float m = (Random.Float() < AUCTION_UP_CHANCE) ? AUCTION_UP_MULT : 1f;
+		float m = (Random.Float() < ChallengeBalance.AUCTION_UP_CHANCE) ? ChallengeBalance.AUCTION_UP_MULT : 1f;
 		auctionMults.put(item, m);
 		return m;
 	}
@@ -4317,9 +4311,7 @@ public final class ChallengeEffects {
 	//---- 151 圣明神明 ----
 
 	/** 生命/命中/闪避的倍率（原表：提升 50%）。 */
-	public static final float DEITY_DEF_MULT = 1.5f;
 	/** 攻击的倍率（原表：提升 30%）。 */
-	public static final float DEITY_ATK_MULT = 1.3f;
 
 	/** END(151): 该角色是否享受圣明神明的加成。只对玩家生效。 */
 	public static boolean deityBlessing(Char ch) {

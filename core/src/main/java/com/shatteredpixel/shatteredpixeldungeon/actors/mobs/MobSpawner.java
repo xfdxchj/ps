@@ -385,7 +385,7 @@ public class MobSpawner extends Actor {
 		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 				.ChallengeEffects.rareAltChanceEnabled()) {
 			altChance = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
-					.ChallengeEffects.RARE_ALT_CHANCE;
+					.ChallengeBalance.RARE_ALT_CHANCE;
 		}
 
 		for (int i = 0; i < rotation.size(); i++) {

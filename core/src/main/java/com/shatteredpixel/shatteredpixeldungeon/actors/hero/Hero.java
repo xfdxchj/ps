@@ -859,9 +859,9 @@ public class Hero extends Char {
 		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 				.ChallengeEffects.deityBlessing(Dungeon.hero)) {
 			min = Math.round(min * com.shatteredpixel.shatteredpixeldungeon.endcontent
-					.challenge.ChallengeEffects.DEITY_ATK_MULT);
+					.challenge.ChallengeBalance.DEITY_ATK_MULT);
 			max = Math.round(max * com.shatteredpixel.shatteredpixeldungeon.endcontent
-					.challenge.ChallengeEffects.DEITY_ATK_MULT);
+					.challenge.ChallengeBalance.DEITY_ATK_MULT);
 		}
 
 		if (Random.Float() < ThirteenLeafClover.alterHeroDamageChance()){

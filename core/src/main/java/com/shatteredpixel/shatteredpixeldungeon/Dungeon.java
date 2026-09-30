@@ -393,9 +393,9 @@ public class Dungeon {
 		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 				.ChallengeEffects.deityBlessing(hero)) {
 			hero.grimmScaleMaxHP(com.shatteredpixel.shatteredpixeldungeon.endcontent
-					.challenge.ChallengeEffects.DEITY_DEF_MULT);
+					.challenge.ChallengeBalance.DEITY_DEF_MULT);
 			hero.grimmScaleAccuracyAndEvasion(com.shatteredpixel.shatteredpixeldungeon
-					.endcontent.challenge.ChallengeEffects.DEITY_DEF_MULT);
+					.endcontent.challenge.ChallengeBalance.DEITY_DEF_MULT);
 			//攻击 +30%：加在 damageRoll 的乘算里（见 Hero.damageRoll）
 		}
 

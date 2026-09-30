@@ -62,4 +62,14 @@ public final class ChallengeBalance {
 	public static final float ABANDONED_TANGLE_TURNS = 3f;
 	public static final int   BOSS_GUARD_COUNT = 3;
 
+	//---- 金币 / 商店 / 神明 ----
+	public static final float GOLDEN_VALUE_MULT = 1.5f;
+	public static final int   WHALE_BASE_COST = 100;
+	public static final int   CHAOS_WAND_PCT = 13;
+	public static final float AUCTION_UP_CHANCE = 0.13f;
+	public static final float AUCTION_UP_MULT = 1.3f;
+	public static final float DEITY_DEF_MULT = 1.5f;
+	public static final float DEITY_ATK_MULT = 1.3f;
+	public static final float RARE_ALT_CHANCE = 0.13f;
+
 }
