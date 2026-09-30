@@ -261,7 +261,7 @@ public abstract class Mob extends Char {
 			//
 			//放在 onAdd 的最末尾，与其它 HP 覆写保持同一套顺序。
 			int ratioHt = com.shatteredpixel.shatteredpixeldungeon.endcontent
-					.Reincarnation.applyStatRatio(HT, Dungeon.depth);
+					.Reincarnation.applyStatRatio(HT, Dungeon.depth, this);
 			if (ratioHt > 0) {
 				float pct = HP / (float) HT;
 				HT = ratioHt;

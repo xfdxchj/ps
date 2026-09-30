@@ -183,7 +183,7 @@ public final class Reincarnation {
 	 * 而那已经是"第二轮"了 —— 起点就该比原版凶得多，
 	 * 否则前三区会变成纯粹的走路。
 	 */
-	private static final float[] BASE_RATIO = { 12f, 6f, 2f, 2f, 2f };
+	private static final float[] BASE_RATIO = { 8f, 6f, 2f, 2f, 2f };  //END(二.1): 1区 1200%->800%
 
 	/** END(永无止境): 每多一轮，倍率**翻倍**。 */
 	private static final float RATIO_PER_CYCLE = 2f;
@@ -204,7 +204,24 @@ public final class Reincarnation {
 	 * @param depth 实际楼层（会用映射后的层号算区域）
 	 */
 	public static float mobStatRatio(int depth){
+		return mobStatRatio(depth, null);
+	}
+
+	/**
+	 * END(二.2/二.3): 按怪物种类微调。
+	 *  · 史莱姆：只吃轮回加成 (1+cycles)，不吃区域基础倍率
+	 *  · 苍蝇群：固定 400%
+	 */
+	public static float mobStatRatio(int depth, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob mob){
 		if (!enabled() || cycles <= 0) return 1f;
+
+		float mult = 1f + cycles;
+		if (mob instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Slime){
+			return Math.min(1_000_000f, mult);
+		}
+		if (mob instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Swarm){
+			return Math.min(1_000_000f, 4f * mult);
+		}
 
 		int mapped = mappedDepth(depth);
 		int region = Math.max(0, Math.min(4, (mapped - 1) / 5));
@@ -213,7 +230,6 @@ public final class Reincarnation {
 		//==== END(修订·无尽轮回数值改为加算) ====
 		//文档所有者定稿："无尽 2 次轮回的为加算，不是乘算。"
 		//原来 base × 2^cycles（1→2→4→8…）；现改为 base × (1 + cycles)（2→3→4→5…）。
-		float mult = 1f + cycles;
 
 		float result = base * mult;
 
@@ -230,7 +246,12 @@ public final class Reincarnation {
 	 * <p>返回 {@code -1} 表示不需要改（调用方保持原值）。
 	 */
 	public static int applyStatRatio(int baseHT, int depth){
-		float r = mobStatRatio(depth);
+		return applyStatRatio(baseHT, depth, null);
+	}
+
+	public static int applyStatRatio(int baseHT, int depth,
+			com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob mob){
+		float r = mobStatRatio(depth, mob);
 		if (r == 1f) return -1;
 		return Math.max(1, Math.round(baseHT * r));
 	}

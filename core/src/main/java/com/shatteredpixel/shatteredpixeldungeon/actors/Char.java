@@ -624,6 +624,13 @@ public abstract class Char extends Actor {
 			dmg = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 					.ChallengeEffects.crumblingDamage(this, dmg);
 
+			//==== END(二.1 永无止境): 攻击倍率 = 生命倍率 ====
+			if (this instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob){
+				dmg *= com.shatteredpixel.shatteredpixeldungeon.endcontent
+						.Reincarnation.mobStatRatio(Dungeon.depth,
+								(com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob) this);
+			}
+
 			//==== END(挑战 140 枪枪爆头): 距离 >=5 时远程伤害必为最大值 ====
 			//放在拿到基础伤害之后、所有倍率之前 ——
 			//"必定最大值"改的是基础掷骰结果，后续增益照常作用。
