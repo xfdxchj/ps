@@ -46,7 +46,7 @@ public class EvolvedWandOfFrost extends WandOfFrost implements EndModeWand {
 
 	@Override
 	public String desc() {
-		return "进化·凝霜法杖：拥有两种发射形态，可在背包-法杖窗口切换。\n\n▍形态 0·冰霜直击（默认，耗 1 充）：命中点单目标冰冻/寒冷，并把落点周围 3×3 内其它敌人附上寒冷。\n▍形态 1·冰天雪地（耗 1 充）：在你指定的落点放出一股冰蓝色冰雪气体，像酸蚀气一样向外扩散。气体本身不造成伤害，只会给范围内的敌人施加寒冷与冰爆；敌人被冻结后，冻结消失时冰爆造成 400% 面板伤害。已在寒冷中的敌人每回合有 40% 概率被冻住。\n\n充能上限提升到 20；**继承源法杖的等级**。";
+		return "进化·凝霜法杖：拥有两种发射形态，可在背包-法杖窗口切换。\n\n▍形态 0·冰霜直击（默认，耗 1 充）：命中点单目标冰冻/寒冷，并把落点周围 3×3 内其它敌人附上寒冷。\n▍形态 1·冰天雪地（耗 1 充）：在你指定的落点放出一股冰蓝色冰雪气体。气体本身不造成伤害，只会像原版冰霜一样给范围内的敌人挂上寒冷，寒冷堆满后将其冻结；敌人被冻结后，冻结消失时冰爆造成 400% 面板伤害。\n\n充能上限提升到 20；**继承源法杖的等级**。";
 	}
 
 	@Override
@@ -181,14 +181,12 @@ public class EvolvedWandOfFrost extends WandOfFrost implements EndModeWand {
 		int dmgBase = damageRoll();
 		//END(二.7 重做): 区域不造成伤害；冰爆在冻结消失时造成面板 400%
 		int burstDmg = Math.round( dmgBase * 4f );
-		float chillDur = 2f + buffedLvl();
-
 		//END(改·真气体): 像腐蚀法杖一样只在一个点放出气体，
 		//由 Blob.super.evolve() 自然向外扩散，不再固定铺 3×3。
 		int volume = 50 + 10 * buffedLvl();
 		EndFrostField field = Blob.seed( center, volume, EndFrostField.class );
 		if (field != null){
-			field.set( burstDmg, chillDur, this );
+			field.set( burstDmg, this );
 			GameScene.add( field );
 		}
 

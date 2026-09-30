@@ -21,12 +21,10 @@ public class EndFrostField extends Blob {
 
 	/** 冰爆伤害（面板 400%）。 */
 	private int burstDamage = 0;
-	private float chillDuration = 0;
 	private Wand cause;
 
-	public EndFrostField set(int burstDamage, float chillDuration, Wand cause){
+	public EndFrostField set(int burstDamage, Wand cause){
 		this.burstDamage = burstDamage;
-		this.chillDuration = chillDuration;
 		this.cause = cause;
 		return this;
 	}
@@ -57,7 +55,7 @@ public class EndFrostField extends Blob {
 						//像酸蚀气体挂 Corrosion 一样：气体只负责每回合挂上
 						//FrostBurst，具体的寒冷/冻结/引爆都在 buff 里处理。
 						if (!ch.isImmune( FrostBurst.class )){
-							Buff.affect( ch, FrostBurst.class ).set( burstDamage, chillDuration );
+							Buff.affect( ch, FrostBurst.class ).set( burstDamage );
 						}
 					}
 				}
@@ -75,19 +73,16 @@ public class EndFrostField extends Blob {
 
 	//——持久化 ——//
 	private static final String BURST_DMG = "burst_damage";
-	private static final String CHILL_DUR = "chill_duration";
 
 	@Override
 	public void storeInBundle( Bundle bundle ) {
 		super.storeInBundle( bundle );
 		bundle.put( BURST_DMG, burstDamage );
-		bundle.put( CHILL_DUR, chillDuration );
 	}
 
 	@Override
 	public void restoreFromBundle( Bundle bundle ) {
 		super.restoreFromBundle( bundle );
 		burstDamage = bundle.getInt( BURST_DMG );
-		chillDuration = bundle.getFloat( CHILL_DUR );
 	}
 }
