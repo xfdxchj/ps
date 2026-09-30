@@ -11,7 +11,7 @@
 | 词条强化石 | 读 `RingAffix` 的常量 |
 | 寰宇支配之剑 | `UniverseSword` 内的命名常量 |
 | 魔虚罗适应 | `endcontent/challenge/AdaptiveResistance.java` |
-| 登神长阶 / 复仇狂怒 | `endcontent/challenge/ChallengeBalance.java` |
+| 挑战数值（登神/复仇狂怒/68倍率/通用概率/金币商店/祷告/时间/不死等） | `endcontent/challenge/ChallengeBalance.java`（已迁 60 个常量） |
 | 存档兼容 | `Bundle.getClassArray()` 跳过缺失类 |
 
 这些系统的物品/技能说明由常量拼接，改常量即同时改文本。
@@ -25,7 +25,7 @@
 
 ## 已知历史债务
 
-`ChallengeEffects.java` 里仍有约 **318 个** `static final` 数值常量，分散在 18 个段落。
+`ChallengeEffects.java` 里仍有约 **258 个** `static final` 数值常量（已从 318 迁出 60 个），分散在多个段落。
 这是历史遗留，不做一次性大迁移（风险太高），只做增量收口：
 
 - 新挑战的数值一律放独立类，不再往 `ChallengeEffects` 里加常量。
