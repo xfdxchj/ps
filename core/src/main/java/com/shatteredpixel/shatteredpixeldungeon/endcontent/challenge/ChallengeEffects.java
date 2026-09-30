@@ -2164,14 +2164,7 @@ public final class ChallengeEffects {
 					.TimekeepersHourglass());
 		}
 
-		//42 等价交换：交换契约
-		if (on(EXCHANGE)) {
-			com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm.ExchangeContract ec =
-					new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
-							.ExchangeContract();
-			ec.quantity(3);
-			out.add(ec);
-		}
+//END(删除·交换契约): 挑战 42 已移除，此处不再发放。
 
 		//39 All or Nothing：赌徒之骰
 		if (on(ALL_OR_NOTHING)) {

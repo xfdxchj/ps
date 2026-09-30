@@ -81,7 +81,7 @@ public class HeavenFallBow extends MissileWeapon {
 
 	@Override
 	public String info(){
-		return "弓弦上残留着某种从天而降的东西。\n\n" +
+		return "弓弦上残留着某种从天而降的东西。\n\n伤害随角色等级与神射戒成长；力量需求 16。\n\n" +
 				"每次攻击**连射 3 发**，且**无视目标护甲**。\n\n" +
 				"-命中后弹道向**四个方向分裂**\n" +
 				"-**神射戒**对其伤害加成提升 **200%**\n" +
