@@ -11,6 +11,7 @@
 | 词条强化石 | 读 `RingAffix` 的常量 |
 | 寰宇支配之剑 | `UniverseSword` 内的命名常量 |
 | 魔虚罗适应 | `endcontent/challenge/AdaptiveResistance.java` |
+| 登神长阶 / 复仇狂怒 | `endcontent/challenge/ChallengeBalance.java` |
 | 存档兼容 | `Bundle.getClassArray()` 跳过缺失类 |
 
 这些系统的物品/技能说明由常量拼接，改常量即同时改文本。

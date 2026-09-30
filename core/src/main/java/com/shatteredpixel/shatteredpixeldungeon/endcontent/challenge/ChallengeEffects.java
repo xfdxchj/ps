@@ -5473,7 +5473,6 @@ public final class ChallengeEffects {
 	public static final int ASCENSION = 218;
 
 	/** 致死时原地复活的概率(%) —— 文档所有者定稿："13% 概率重生"。 */
-	public static final int ASCENSION_CHANCE_PCT = 13;
 
 	/**
 	 * END(修订·登神长阶): 复活次数上限 = 当前区域数 + 1。
@@ -5509,7 +5508,7 @@ public final class ChallengeEffects {
 				.affect(mob, AscensionReviveTracker.class, 99999f);
 		}
 		if (t.revives >= ascensionMaxRevives()) return false;
-		if (Random.Int(100) >= ASCENSION_CHANCE_PCT) return false;
+		if (Random.Int(100) >= ChallengeBalance.ASCENSION_CHANCE_PCT) return false;
 
 		t.revives++;
 		//END(修订·登神长阶): 只有第一次复活翻倍生命，后续只回满
@@ -5570,11 +5569,8 @@ public final class ChallengeEffects {
 	public static final int REVENGE_FURY = 221;
 
 	/** 复仇狂怒每层"受伤 +20%"。 */
-	public static final float REVENGE_FURY_TAKEN_PER_STACK = 0.20f;
 	/** 复仇狂怒最大层数。 */
-	public static final int REVENGE_FURY_MAX_STACKS = 9;
 	/** 复仇狂怒一次触发给的持续回合。 */
-	public static final float REVENGE_FURY_DURATION = 15f;
 
 	public static boolean revengeEnabled(){ return on(REVENGE); }
 	public static boolean revengeFuryEnabled(){ return on(REVENGE_FURY); }
@@ -5621,7 +5617,7 @@ public final class ChallengeEffects {
 		RevengeFuryBuff b = victim.buff(RevengeFuryBuff.class);
 		if (b == null) return dmg;
 		if (Char.hasProp(victim, Char.Property.BOSS) || Char.hasProp(victim, Char.Property.MINIBOSS)) return dmg;
-		return Math.round(dmg * (1f + REVENGE_FURY_TAKEN_PER_STACK * b.stacks));
+		return Math.round(dmg * (1f + ChallengeBalance.REVENGE_FURY_TAKEN_PER_STACK * b.stacks));
 	}
 
 	/** END(移植·复仇狂怒 79): 有怪死亡 → 它视野内的其它怪叠一层复仇狂怒。 */
@@ -5636,7 +5632,7 @@ public final class ChallengeEffects {
 			if (ch.pos < 0 || ch.pos >= mob.fieldOfView.length) continue;
 			if (!mob.fieldOfView[ch.pos]) continue;
 			RevengeFuryBuff b = com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff
-				.prolong(ch, RevengeFuryBuff.class, REVENGE_FURY_DURATION);
+				.prolong(ch, RevengeFuryBuff.class, ChallengeBalance.REVENGE_FURY_DURATION);
 			if (b != null) { b.addStack(); n++; }
 		}
 		if (n > 0){
@@ -5655,12 +5651,12 @@ public final class ChallengeEffects {
 		}
 		public int stacks = 1;
 		public void addStack(){
-			stacks = Math.min(REVENGE_FURY_MAX_STACKS, stacks + 1);
+			stacks = Math.min(ChallengeBalance.REVENGE_FURY_MAX_STACKS, stacks + 1);
 		}
 		@Override public String name(){ return "复仇狂怒"; }
 		@Override public String desc(){
 			return "同伴在你眼前倒下。它造成的伤害翻倍，受到的伤害 +"
-				+ Math.round(REVENGE_FURY_TAKEN_PER_STACK * 100 * stacks) + "%（" + stacks + " 层）。";
+				+ Math.round(ChallengeBalance.REVENGE_FURY_TAKEN_PER_STACK * 100 * stacks) + "%（" + stacks + " 层）。";
 		}
 		@Override public int icon(){
 			return com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator.NONE;
