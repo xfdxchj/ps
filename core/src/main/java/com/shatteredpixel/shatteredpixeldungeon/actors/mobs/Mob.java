@@ -850,6 +850,12 @@ public abstract class Mob extends Char {
 				return true;
 			}
 		}
+		//END(修复·76 原始状态不扔石头): 把"投石"也算成可攻击，
+		//否则 doAttack 里的投石分支永远到不了（Hunting 只在 canAttack 为真时才调 doAttack）。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.canThrowRock(this, enemy)){
+			return true;
+		}
 		return false;
 	}
 
