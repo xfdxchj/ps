@@ -8,7 +8,7 @@ import com.watabou.utils.Random;
  * END(冰天雪地): 纯白雪花粒子。
  *
  * <p>原版 SnowParticle 是半透明、偏淡的，这里单独做一个更明显、
- * 纯白色的雪点，用于凝霜法杖「冰天雪地」形态的气体。
+ * 冰蓝色的雪点，用于凝霜法杖「冰天雪地」形态的气体。
  */
 public class SnowflakeParticle extends PixelParticle {
 
@@ -21,7 +21,7 @@ public class SnowflakeParticle extends PixelParticle {
 
 	public SnowflakeParticle() {
 		super();
-		color( 0xFFFFFF );
+		color( 0xA8E6FF ); //冰蓝色
 		size( 2f );
 		lifespan = 1.4f;
 		speed.set( Random.Float( -2f, 2f ), Random.Float( 4f, 8f ) );
