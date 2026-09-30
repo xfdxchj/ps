@@ -31,7 +31,7 @@ public class EvolvedWandOfWarding extends WandOfWarding {
 
 	@Override
 	public String desc() {
-		return "进化·灵哨法杖（源：哨卫法杖）：发射时可消耗当前充能的一部分（约 30%，上限 3）一次生成更高阶的守卫哨兵；对已在场的哨兵瞄准时可在守卫能量允许内升级或治疗它，并能同时维持的哨兵总能量上限提升 30%。\n\n"
+		return "进化·灵哨法杖（源：哨卫法杖）：发射时可消耗当前充能的一部分（约 30%，上限 4）一次生成更高阶的守卫哨兵；对已在场的哨兵瞄准时可在守卫能量允许内升级或治疗它，并能同时维持的哨兵总能量上限提升 30%。\n\n"
 				+ "**继承源法杖的等级**；充能上限提升到 20。";
 	}
 
@@ -55,7 +55,7 @@ public class EvolvedWandOfWarding extends WandOfWarding {
 		return (int)Math.floor(super.maxWardEnergy() * 1.3f);
 	}
 
-	//结束扩展 M2：消耗当前充能的 30%（1~3），仿照火焰法杖；充能越多，生成的哨兵阶位越高。
+	//结束扩展 M2：消耗当前充能的 30%（1~4），仿照火焰法杖；充能越多，生成的哨兵阶位越高。
 	//END(一.12): 对已有哨位使用时只耗 1 充能。
 	@Override
 	protected int chargesPerCast() {
@@ -63,7 +63,7 @@ public class EvolvedWandOfWarding extends WandOfWarding {
 				(charger != null && charger.target != null && charger.target.buff(WildMagic.WildMagicTracker.class) != null)){
 			return 1;
 		}
-		return (int) GameMath.gate(1, (int)Math.ceil(curCharges*0.3f), 3);
+		return (int) GameMath.gate(1, (int)Math.ceil(curCharges*0.3f), 4);
 	}
 
 	@Override
