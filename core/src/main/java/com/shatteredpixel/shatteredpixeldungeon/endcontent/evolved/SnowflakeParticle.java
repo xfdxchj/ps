@@ -9,10 +9,10 @@ import com.watabou.noosa.particles.Emitter;
 import com.watabou.utils.Random;
 
 /**
- * END(冰天雪地): 冰蓝色雪花粒子。
+ * END(冰天雪地): 冰蓝色气体粒子。
  *
- * <p>用特效图集里的 STAR 帧当雪花（六角星形），比原来的方形像素更大、
- * 更明显；下落时缓慢旋转。
+ * <p>照原版毒气/酸蚀气做：用特效图集里的 STEAM 软点，粒子小、
+ * 原地缓慢旋转、淡入淡出并逐渐放大，寿命 1~3 秒。
  */
 public class SnowflakeParticle extends Image {
 
@@ -35,30 +35,28 @@ public class SnowflakeParticle extends Image {
 		if (film == null) {
 			film = new TextureFilm( texture, SIZE, SIZE );
 		}
-		//用第 2 帧的六角雪花，而不是 STAR(第 1 帧的小十字)
-		frame( film.get( 2 ) );
+		frame( film.get( Speck.STEAM ) );
 		origin.set( SIZE / 2f );
 	}
 
 	public void reset( float x, float y ) {
 		revive();
 		this.x = x;
-		this.y = y - Random.Float( 8f, 24f );
+		this.y = y;
 
 		hardlight( 0xA8E6FF );
 		angle = Random.Float( 360 );
-		angularSpeed = Random.Float( -120f, 120f );
-		speed.set( Random.Float( -3f, 3f ), Random.Float( 3f, 6f ) );
-		scale.set( Random.Float( 1.6f, 2.6f ) );
-
-		left = lifespan = Random.Float( 1.4f, 2.4f );
+		angularSpeed = 30;
+		scale.set( 1f );
+		left = lifespan = Random.Float( 1f, 3f );
 	}
 
 	@Override
 	public void update() {
 		super.update();
 		float p = left / lifespan;
-		am = Math.min( 1f, p * 2f );
+		am = (float)Math.sqrt( (p < 0.5f ? p : 1 - p) * 0.5f );
+		scale.set( 1 + p );
 		if ((left -= Game.elapsed) <= 0f) {
 			kill();
 		}
