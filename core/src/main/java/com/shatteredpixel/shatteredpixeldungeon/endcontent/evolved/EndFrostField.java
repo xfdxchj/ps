@@ -4,7 +4,7 @@
  *
  * END(二.7 重做): 区域本身不造成伤害，只施加「寒冷」与「冰爆」；
  * 敌人被冻结后，冻结消失时由冰爆造成面板 400% 伤害。
- * 区域按剩余回合消散，形态/颜色与酸蚀气体一致（蓝色）。
+ * 区域像气体一样**扩散**（调用 Blob.super.evolve），颜色为蓝色。
  */
 package com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved;
 
@@ -43,17 +43,19 @@ public class EndFrostField extends Blob {
 	@Override
 	protected void evolve() {
 
+		//END(二.7 修订): 先走 Blob 的扩散/衰减 —— 冰霜领域像气体一样向外蔓延
+		super.evolve();
+
 		int cell;
 
-		//逐格衰减，不扩散
-		for (int i = area.left-1; i <= area.right; i++) {
-			for (int j = area.top-1; j <= area.bottom; j++) {
-				cell = i + j * Dungeon.level.width();
+		//再用**旧体积 cur** 对格子上的角色生效（与 ToxicGas 的写法一致）
+		for (int i = area.top-1; i <= area.bottom; i++) {
+			for (int j = area.left-1; j <= area.right; j++) {
+				cell = j + i * Dungeon.level.width();
 				if (!Dungeon.level.insideMap( cell )) {
 					continue;
 				}
-				int remaining = cur[cell];
-				if (remaining > 0){
+				if (cur[cell] > 0){
 
 					Char ch = Actor.findChar( cell );
 					if (ch != null
@@ -79,12 +81,6 @@ public class EndFrostField extends Blob {
 							Buff.affect( ch, Frost.class, FREEZE_TURNS );
 						}
 					}
-
-					off[cell] = remaining - 1;
-					volume += off[cell];
-
-				} else {
-					off[cell] = 0;
 				}
 			}
 		}
