@@ -35,7 +35,8 @@ public class SnowflakeParticle extends Image {
 		if (film == null) {
 			film = new TextureFilm( texture, SIZE, SIZE );
 		}
-		frame( film.get( Speck.STAR ) );
+		//用第 2 帧的六角雪花，而不是 STAR(第 1 帧的小十字)
+		frame( film.get( 2 ) );
 		origin.set( SIZE / 2f );
 	}
 

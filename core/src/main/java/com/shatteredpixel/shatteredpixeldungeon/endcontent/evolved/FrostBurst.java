@@ -23,6 +23,8 @@ public class FrostBurst extends FlavourBuff {
 	{
 		type = buffType.NEGATIVE;
 		announced = false;
+		//END: 比 Frost 晚一步行动，冻结在同一回合解除时能立刻引爆
+		actPriority = BUFF_PRIO - 1;
 	}
 
 	/** 冰爆主伤害（面板 150%，由法杖写入）。 */
