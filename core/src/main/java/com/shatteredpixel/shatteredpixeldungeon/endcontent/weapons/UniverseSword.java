@@ -70,13 +70,19 @@ public class UniverseSword extends MeleeWeapon {
 	//==== 数值：60-80，成长 5-10 ====
 	//注意：**不**沿用原版的 tier 公式（那是 5-30），这里显式写死。
 
-	@Override public int min(int lvl){ return 60 + 5 * lvl; }
-	@Override public int max(int lvl){ return 80 + 10 * lvl; }
+	@Override public int min(int lvl){ return BASE_MIN + GROW_MIN * lvl; }
+	@Override public int max(int lvl){ return BASE_MAX + GROW_MAX * lvl; }
 
 	/** 力量需求按原版 5 阶武器。 */
 	@Override public int STRReq(int lvl){ return super.STRReq(lvl); } // 原版 5 阶：18 起，随强化降低
 
 	//==== 特效常量 ====
+
+	/** 基础伤害与成长，只在这里定义一次。 */
+	public static final int BASE_MIN = 60;
+	public static final int BASE_MAX = 80;
+	public static final int GROW_MIN = 5;
+	public static final int GROW_MAX = 10;
 
 	/** 额外伤害 = 自身最大生命的 10%。 */
 	public static final float MAX_HP_BONUS = 0.10f;
@@ -194,10 +200,10 @@ public class UniverseSword extends MeleeWeapon {
 	public String info() {
 		int stacks = kills / KILLS_PER_STACK;
 		return "剑身上浮着整片星图，每一次挥动都像在挪动某个世界。\n\n"
-				+ "基础伤害 60-80，每级 +5~+10；力量需求 18；额外附带自身最大生命 10% 的伤害。\n\n"
+				+ "基础伤害 " + BASE_MIN + "-" + BASE_MAX + "，每级 +" + GROW_MIN + "~+" + GROW_MAX + "；力量需求 18；额外附带自身最大生命 " + Math.round(MAX_HP_BONUS * 100f) + "% 的伤害。\n\n"
 				+ "-**支配模式**（默认）：单体 100% 伤害。\n"
-				+ "-**寰宇模式**：攻击 9x9 范围内所有敌人，伤害 200%，攻击速度减半。\n"
-				+ "每通过此剑击杀 5 个敌人伤害 +1%。\n"
+				+ "-**寰宇模式**：攻击 " + (AOE_RADIUS * 2 + 1) + "x" + (AOE_RADIUS * 2 + 1) + " 范围内所有敌人，伤害 " + Math.round(UNIVERSE_DAMAGE_MULT * 100f) + "%，攻击速度减半。\n"
+				+ "每通过此剑击杀 " + KILLS_PER_STACK + " 个敌人伤害 +" + Math.round(KILL_STACK_BONUS * 100f) + "%。\n"
 				+ "　　当前击杀 " + kills + "，加成 +" + stacks + "%。"
 				+ com.shatteredpixel.shatteredpixeldungeon.endcontent.EndItemStats.block(this);
 	}
