@@ -34,7 +34,7 @@ public class EvolvedWandOfFrost extends WandOfFrost implements EndModeWand {
 	private static final int MODE_FROST_FIELD = 1;
 
 	/** 冰雪区域持续回合数(铺地后每格 cur 值；可调)。 */
-	private static final int FIELD_TURNS = 4;
+	private static final int FIELD_TURNS = 30; //END: 气体量，越大扩散越广、持续越久
 
 	/** END: 形态0 —— 已寒冷的敌人被直接冻住的概率(%)。 */
 	private static final int DIRECT_FREEZE_PCT = 25;
@@ -49,11 +49,7 @@ public class EvolvedWandOfFrost extends WandOfFrost implements EndModeWand {
 
 	@Override
 	public String desc() {
-		return "进化·凝霜法杖（源：冰霜法杖）：拥有两种发射形态，可在背包-法杖窗口切换。\n\n"
-				+ "▍形态 0·冰霜直击（默认，耗 1 充）：命中点单目标冰冻/寒冷，并把落点周围 3×3 内其它敌人附上寒冷。\n"
-				+ "▍形态 1·冰雪区域（耗 1 充）：在你指定的落点铺开 3×3 持续冰雪区域（4 回合）——"
-				+ "区域本身不造成伤害，只施加寒冷与冰爆；敌人被冻结后，冻结消失时冰爆造成 400% 面板伤害。已在寒冷中的敌人每回合有 40% 概率被冻住。\n\n"
-				+ "充能上限提升到 20；**继承源法杖的等级**。";
+		return "进化·凝霜法杖：拥有两种发射形态，可在背包-法杖窗口切换。\n\n▍形态 0·冰霜直击（默认，耗 1 充）：命中点单目标冰冻/寒冷，并把落点周围 3×3 内其它敌人附上寒冷。\n▍形态 1·冰雪区域（耗 1 充）：在你指定的落点铺开 3×3 持续冰雪区域——区域本身不造成伤害，只施加寒冷与冰爆；敌人被冻结后，冻结消失时冰爆造成 400% 面板伤害。已在寒冷中的敌人每回合有 40% 概率被冻住。\n\n充能上限提升到 20；**继承源法杖的等级**。";
 	}
 
 	@Override

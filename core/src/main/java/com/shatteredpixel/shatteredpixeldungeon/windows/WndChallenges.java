@@ -1470,6 +1470,9 @@ public class WndChallenges extends Window {
 		}
 		logLife("hide", "start parent=" + (parent != null)
 				+ " visible=" + visible + " detail=" + (detailWindow != null));
+		//END(修复·残留点击): 关闭瞬间清空列表，队列里残留的点击就找不到任何条目
+		boxes.clear();
+		defs.clear();
 		//==== END(修复·关闭挑战窗口后详情残留): 连详情一起关 ====
 		//详情是独立窗口，挑战窗口关闭时必须把它一起摘掉，
 		//否则会在原位置残留"还能点、但不显示"的静态消息窗口。
