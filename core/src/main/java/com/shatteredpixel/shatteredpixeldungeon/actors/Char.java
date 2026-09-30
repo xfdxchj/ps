@@ -1409,7 +1409,7 @@ public abstract class Char extends Actor {
 				.ChallengeEffects.kingDamageReduction(this)) {
 			dmg = Math.max(1, Math.round(dmg
 					* (1f - com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
-							.ChallengeEffects.KING_DAMAGE_REDUCTION)));
+							.ChallengeBalance.KING_DAMAGE_REDUCTION)));
 		}
 
 		//==== END(轮回诅咒⑤ 顽抗): 怪物受到的伤害 -10% ====
@@ -1647,7 +1647,7 @@ public abstract class Char extends Actor {
 					com.shatteredpixel.shatteredpixeldungeon.actors.buffs
 							.Paralysis.class,
 					com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
-							.ChallengeEffects.UNDYING_PARALYSIS);
+							.ChallengeBalance.UNDYING_PARALYSIS);
 			if (sprite != null) {
 				sprite.showStatus(
 						com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite

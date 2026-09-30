@@ -4411,15 +4411,13 @@ public final class ChallengeEffects {
 	//---- 144 破碎权柄 ----
 
 	/** 触发召唤的生命阈值（33%）。 */
-	public static final float BROKEN_POWER_HP_THRESHOLD = 0.33f;
 	/** 召唤间隔（回合）。 */
-	public static final int BROKEN_POWER_INTERVAL = 5;
 
 	/** END(144): 这只 Boss 是否已进入"破碎权柄"阶段。 */
 	public static boolean brokenPowerActive(Mob boss) {
 		if (!on(BROKEN_POWER) || boss == null) return false;
 		if (!Char.hasProp(boss, Char.Property.BOSS)) return false;
-		return boss.HP <= Math.round(boss.HT * BROKEN_POWER_HP_THRESHOLD);
+		return boss.HP <= Math.round(boss.HT * ChallengeBalance.BROKEN_POWER_HP_THRESHOLD);
 	}
 
 	/**
@@ -4446,7 +4444,7 @@ public final class ChallengeEffects {
 
 		//重新开始计时
 		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(
-				boss, BrokenPowerTimer.class, BROKEN_POWER_INTERVAL);
+				boss, BrokenPowerTimer.class, ChallengeBalance.BROKEN_POWER_INTERVAL);
 	}
 
 	/** END(144): 5 回合的计时器。 */
@@ -4635,13 +4633,9 @@ public final class ChallengeEffects {
 	//---- 166 神圣天使 ----
 
 	/** 祷告 CD 的基础值（回合）。 */
-	public static final int ANGEL_PRAY_BASE_CD = 10;
 	/** 选择"神圣天使"后 CD 增加的回合数。 */
-	public static final int ANGEL_PRAY_CD_BONUS = 4;
 	/** 祷告后获得的护盾比例。 */
-	public static final float ANGEL_SHIELD_PCT = 0.02f;
 	/** 祷告后回复的生命比例。 */
-	public static final float ANGEL_HEAL_PCT = 0.02f;
 
 	/**
 	 * END(166 神圣天使): 是否已满足"变为天使"的条件。
@@ -4965,7 +4959,6 @@ public final class ChallengeEffects {
 	//---- 195 药水永恒：持续时间 +20% ----
 
 	/** 药水持续时间倍率。 */
-	public static final float POTION_DURATION_MULT = 1.20f;
 
 	/**
 	 * END(195 药水永恒): 调整药水带来的 buff 时长。
@@ -4976,7 +4969,7 @@ public final class ChallengeEffects {
 	public static float potionDuration(float base) {
 		if (!on(LASTING_POTIONS)) return base;
 		if (base <= 0) return base;
-		return base * POTION_DURATION_MULT;
+		return base * ChallengeBalance.POTION_DURATION_MULT;
 	}
 
 	//---- 196 是药三分毒 / 197 再来一瓶 ----
@@ -5018,9 +5011,7 @@ public final class ChallengeEffects {
 
 	/** 触发概率（%）。 */
 	/** 体型倍率。 */
-	public static final float EMPOWERED_SCALE = 1.50f;
 	/** 生命倍率。 */
-	public static final float EMPOWERED_HP_MULT = 1.50f;
 
 	/**
 	 * END(193 强化怪物): 这只怪物是否被强化。
@@ -5038,7 +5029,6 @@ public final class ChallengeEffects {
 	//---- 192 不死之身 ----
 
 	/** 麻痹回合数（原表：50）。 */
-	public static final float UNDYING_PARALYSIS = 50f;
 
 	/**
 	 * END(192 不死之身): 怪物是否"不该死"。
@@ -5057,7 +5047,6 @@ public final class ChallengeEffects {
 	//---- 194 怪物之王 ----
 
 	/** 免伤比例。 */
-	public static final float KING_DAMAGE_REDUCTION = 0.20f;
 
 	/**
 	 * END(194 怪物之王): 该怪物是否享受 20% 免伤。
@@ -5076,9 +5065,7 @@ public final class ChallengeEffects {
 	//---- 191 时间之神 ----
 
 	/** 触发间隔（回合）。 */
-	public static final int TIME_GOD_INTERVAL = 10;
 	/** 获得的时间气泡回合数。 */
-	public static final float TIME_GOD_BUBBLE = 2f;
 
 	/**
 	 * END(191 时间之神): 每 10 回合给玩家 2 回合时间气泡。
@@ -5103,7 +5090,7 @@ public final class ChallengeEffects {
 		if (!on(TIME_GOD) || hero == null) return false;
 
 		float now = com.shatteredpixel.shatteredpixeldungeon.actors.Actor.now();
-		if (now - timeGodLastAt < TIME_GOD_INTERVAL) return false;
+		if (now - timeGodLastAt < ChallengeBalance.TIME_GOD_INTERVAL) return false;
 		timeGodLastAt = now;
 
 		try {
@@ -5113,8 +5100,8 @@ public final class ChallengeEffects {
 							com.shatteredpixel.shatteredpixeldungeon.plants
 									.Swiftthistle.TimeBubble.class);
 			//reset(turns) —— 传 2 表示 2 回合
-			tb.reset((int) TIME_GOD_BUBBLE);
-			safeLogI("时间之神眷顾了你。（时间气泡 " + (int) TIME_GOD_BUBBLE + " 回合）");
+			tb.reset((int) ChallengeBalance.TIME_GOD_BUBBLE);
+			safeLogI("时间之神眷顾了你。（时间气泡 " + (int) ChallengeBalance.TIME_GOD_BUBBLE + " 回合）");
 			return true;
 		} catch (Throwable t) {
 			return false;

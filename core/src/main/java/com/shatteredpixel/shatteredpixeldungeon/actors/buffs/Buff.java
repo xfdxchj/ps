@@ -202,7 +202,7 @@ public class Buff extends Actor {
 		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 				.ChallengeEffects.consumePotionDurationFlag()) {
 			mult = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
-					.ChallengeEffects.POTION_DURATION_MULT;
+					.ChallengeBalance.POTION_DURATION_MULT;
 		}
 
 		buff.postpone( duration * mult * target.resist(buffClass) );

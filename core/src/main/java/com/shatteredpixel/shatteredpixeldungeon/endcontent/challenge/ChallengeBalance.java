@@ -72,4 +72,19 @@ public final class ChallengeBalance {
 	public static final float DEITY_ATK_MULT = 1.3f;
 	public static final float RARE_ALT_CHANCE = 0.13f;
 
+	//---- 祷告 / 登神 / 时间 / 药水 / 不死 / 王者 ----
+	public static final float BROKEN_POWER_HP_THRESHOLD = 0.33f;
+	public static final int   BROKEN_POWER_INTERVAL = 5;
+	public static final int   ANGEL_PRAY_BASE_CD = 10;
+	public static final int   ANGEL_PRAY_CD_BONUS = 4;
+	public static final float ANGEL_SHIELD_PCT = 0.02f;
+	public static final float ANGEL_HEAL_PCT = 0.02f;
+	public static final float POTION_DURATION_MULT = 1.20f;
+	public static final float EMPOWERED_SCALE = 1.50f;
+	public static final float EMPOWERED_HP_MULT = 1.50f;
+	public static final float UNDYING_PARALYSIS = 50f;
+	public static final float KING_DAMAGE_REDUCTION = 0.20f;
+	public static final int   TIME_GOD_INTERVAL = 10;
+	public static final float TIME_GOD_BUBBLE = 2f;
+
 }
