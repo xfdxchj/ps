@@ -262,9 +262,9 @@ public class Bundle {
 					clName = aliases.get( clName );
 				}
 				try {
-					result.add( Reflection.forName( clName ) );
+					result.add( Reflection.forNameUnhandled( clName ) );
 				} catch (Throwable t) {
-					//skip missing class
+					//skip missing class silently
 				}
 			}
 			return result.toArray(new Class[0]);
