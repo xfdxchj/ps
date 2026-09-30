@@ -44,7 +44,6 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Ghost;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Imp;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Wandmaker;
 import com.shatteredpixel.shatteredpixeldungeon.items.Amulet;
-import com.shatteredpixel.shatteredpixeldungeon.endcontent.EndGem;
 import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfBlastWave;
 import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfCorrosion;
 import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfCorruption;
@@ -58,7 +57,6 @@ import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOf
 import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfRegrowth;
 import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfTransfusion;
 import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfWarding;
-import com.shatteredpixel.shatteredpixeldungeon.endcontent.items.EndGemItem;
 import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
 import com.shatteredpixel.shatteredpixeldungeon.items.Heap;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
@@ -424,11 +422,6 @@ public class Dungeon {
 		if (isChallenged( Challenges.CONVENIENCE )){
 			gold += 300; //测试资金
 
-			for (EndGem gem : EndGem.values()) {
-				EndGemItem g = new EndGemItem(gem);
-				g.identify();
-				g.collect();
-			}
 
 			//END 便利：先给几只储物(子包)容器——它们能收纳对应物、相当于把背包“扩大”，
 			//后面那堆法杖/卷轴/药水/种子自然不会散到找不见。
@@ -578,7 +571,6 @@ public class Dungeon {
 				if (k != null) Catalog.setSeen(k);
 			}
 		}
-		Catalog.setSeen(EndGemItem.class);
 		for (Class<?> clz : new Class<?>[]{
 				//进化法杖(13)
 				EvolvedWandOfMagicMissile.class,

@@ -26,7 +26,6 @@ import com.shatteredpixel.shatteredpixeldungeon.Challenges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArmorEnhance;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
-import com.shatteredpixel.shatteredpixeldungeon.endcontent.EndGem;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.MagicImmune;
@@ -126,16 +125,6 @@ public class Armor extends EquipableItem {
 	public boolean curseInfusionBonus = false;
 	public boolean masteryPotionBonus = false;
 
-	//END: 可镶嵌在护甲上的宝石（同 glyph 持久化，不随 reset 丢失）
-	public int gem = -1; //EndGem 序号，-1 = 无
-
-	public boolean hasGem(){
-		return gem >= 0 && gem < EndGem.values().length;
-	}
-
-	public EndGem gemType(){
-		return hasGem() ? EndGem.values()[gem] : null;
-	}
 
 	protected BrokenSeal seal;
 	
@@ -157,7 +146,6 @@ public class Armor extends EquipableItem {
 	private static final String MASTERY_POTION_BONUS = "mastery_potion_bonus";
 	private static final String SEAL            = "seal";
 	private static final String AUGMENT			= "augment";
-	private static final String GEM             = "end_gem";
 
 	@Override
 	public void storeInBundle( Bundle bundle ) {
@@ -170,7 +158,6 @@ public class Armor extends EquipableItem {
 		bundle.put( MASTERY_POTION_BONUS, masteryPotionBonus );
 		bundle.put( SEAL, seal);
 		bundle.put( AUGMENT, augment);
-		bundle.put( GEM, gem );
 	}
 
 	@Override
@@ -185,8 +172,6 @@ public class Armor extends EquipableItem {
 		seal = (BrokenSeal)bundle.get(SEAL);
 		
 		augment = bundle.getEnum(AUGMENT, Augment.class);
-		gem = bundle.contains(GEM) ? bundle.getInt( GEM ) : -1;
-		if (!hasGem()) gem = -1;
 	}
 
 	@Override
@@ -558,11 +543,6 @@ public class Armor extends EquipableItem {
 		if (seal != null && seal.level() == 0)
 			seal.upgrade();
 
-		//END gem:同一件甲直接升级(不脱甲)时会提升 buffedLvl;若当前正穿着生命宝石甲,
-		//更新最大生命并让当前血同步涨到新上限(宝石故能切实“加生命”)
-		if (Dungeon.hero != null && Dungeon.hero.isAlive() && isEquipped(Dungeon.hero)){
-			Dungeon.hero.updateHT(true);
-		}
 
 		return super.upgrade();
 	}
@@ -656,19 +636,6 @@ public class Armor extends EquipableItem {
 	public String info() {
 		String info = super.info();
 
-		//END gem: 说明里显示“已嵌宝石 / 提供 +X …”(护甲为防御/闪避/生命类)
-		if (hasGem() && gemType() != null) {
-			int lvl = buffedLvl();
-			int val = com.shatteredpixel.shatteredpixeldungeon.endcontent.EndGemProfile.of(gemType()).bonusAt(lvl);
-			String kindName;
-			switch (gemType()){
-				case DEFENSE: kindName = "防御"; break;
-				case EVASION:  kindName = "闪避"; break;
-				case MAX_HP:   kindName = "生命"; break;
-				default:       kindName = gemType().name(); break;
-			}
-			info += "\n\n镶嵌宝石：" + kindName + "宝石(等级"+lvl+") → 提供 +" + val;
-		}
 
 		if (levelKnown) {
 

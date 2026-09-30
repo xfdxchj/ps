@@ -115,7 +115,6 @@ import com.shatteredpixel.shatteredpixeldungeon.items.weapon.SpiritBow;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.darts.TippedDart;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
-import com.shatteredpixel.shatteredpixeldungeon.endcontent.items.EndGemItem;
 import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfBlastWave;
 import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfCorrosion;
 import com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.EvolvedWandOfCorruption;
@@ -287,8 +286,6 @@ public enum Catalog {
 				GooBlob.class, TengusMask.class, MetalShard.class, KingsCrown.class,
 				LiquidMetal.class, ArcaneResin.class,
 				SealShard.class, BrokenStaff.class, CloakScrap.class, BowFragment.class, BrokenHilt.class, TornPage.class);
-		//END: 终焉装备宝石归入"杂项消耗品"图鉴组
-		MISC_CONSUMABLES.addItems(EndGemItem.class);
 
 	}
 

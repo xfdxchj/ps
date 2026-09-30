@@ -134,8 +134,6 @@ import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.Scroll;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfMagicMapping;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.exotic.ScrollOfChallenge;
 import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.ThirteenLeafClover;
-import com.shatteredpixel.shatteredpixeldungeon.endcontent.EndGem;
-import com.shatteredpixel.shatteredpixeldungeon.endcontent.EndGemProfile;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfLivingEarth;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.SpiritBow;
@@ -264,15 +262,6 @@ public class Hero extends Char {
 		if (buff(ElixirOfMight.HTBoost.class) != null){
 			HT += buff(ElixirOfMight.HTBoost.class).boost();
 		}
-
-		//END gem(生命上限): 当前穿着的护甲若镶嵌 MAX_HP 宝石,按甲上宝石成长量抬升最大生命。
-		//   注意:此处按"当下穿着的护甲"结算,故须在换甲(re-equip=remove Gem)与升级等调用本方法处刷新。
-		//   TODO(endcontent): 迁移更彻底"常驻被动"的 gem life 计算需在 Armor.doEquip/doUnequip 各调用一次
-		//        hero.updateHT(false),因改 items/armor/Armor 属于受限范围,先在此被动带甲求解。
-		if (belongings.armor() != null && belongings.armor().gemType() == EndGem.MAX_HP){
-			HT += EndGemProfile.of(EndGem.MAX_HP).bonusAt( belongings.armor().buffedLvl() );
-		}
-
 		//==== END(挑战 12 玻璃大炮 + 68 极端状态 + 205 为何无忌) ====
 		//放在所有 HT 加成之后，作用于**最终上限**。
 		//下方 HP = Math.min(HP, HT) 会自动把当前血量一并压下来，
@@ -674,12 +663,8 @@ public class Hero extends Char {
 		float whyAcc = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 				.ChallengeEffects.whyAccuracyMult();
 
-		//END gem(命中): 若正在挥击的武器上镶嵌了 ACCURACY 宝石,则在最终命中值上追加其成长量
 		if (!RingOfForce.fightingUnarmed(this)) {
 			int acc = Math.round(attackSkill * accuracy * wep.accuracyFactor( this, target ) * whyAcc);
-			if (wep instanceof Weapon && ((Weapon) wep).gemType() == EndGem.ACCURACY){
-				acc += EndGemProfile.of(EndGem.ACCURACY).bonusAt( ((Weapon) wep).buffedLvl() );
-			}
 			return Math.max(1, acc);
 		} else {
 			return Math.max(1, Math.round(attackSkill * accuracy * whyAcc));
@@ -729,12 +714,6 @@ public class Hero extends Char {
 				return 0;
 			}
 		}
-
-		//END gem(闪避): 若护甲上镶嵌了 EVASION 宝石,追加其成长量为闪避点
-		if (belongings.armor() != null && belongings.armor().gemType() == EndGem.EVASION){
-			evasion += EndGemProfile.of(EndGem.EVASION).bonusAt( belongings.armor().buffedLvl() );
-		}
-
 		//==== END(207 为何无避): 玩家闪避 -33%（集齐全部"为何无X"后 -50%）====
 		//同样放在最终值上，与宝石、护甲、戒指的加成都是乘算。
 		evasion *= com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
@@ -782,10 +761,6 @@ public class Hero extends Char {
 				armDr -= 2*(belongings.armor().STRReq() - STR());
 			}
 			if (armDr > 0) dr += armDr;
-			//END gem(减伤): 护甲上若镶嵌 DEFENSE 宝石,直接追加其成长量作为稳定减伤
-			if (belongings.armor().gemType() == EndGem.DEFENSE){
-				dr += EndGemProfile.of(EndGem.DEFENSE).bonusAt( belongings.armor().buffedLvl() );
-			}
 		}
 		if (belongings.weapon() != null && !RingOfForce.fightingUnarmed(this))  {
 			int wepDr = Random.NormalIntRange( 0 , belongings.weapon().defenseFactor( this ) );
@@ -809,12 +784,6 @@ public class Hero extends Char {
 
 		if (!RingOfForce.fightingUnarmed(this)) {
 			dmg = wep.damageRoll( this );
-
-			//END gem(攻击): 挥击时武器上若镶嵌 ATTACK 宝石,在该次近战伤害结算上追加成长量
-			if (wep instanceof Weapon && ((Weapon) wep).gemType() == EndGem.ATTACK){
-				dmg += EndGemProfile.of(EndGem.ATTACK).bonusAt( ((Weapon) wep).buffedLvl() );
-			}
-
 			if (!(wep instanceof MissileWeapon)) dmg += RingOfForce.armedDamageBonus(this);
 		} else {
 			dmg = RingOfForce.damageRoll(this);

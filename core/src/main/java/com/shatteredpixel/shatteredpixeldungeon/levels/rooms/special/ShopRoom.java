@@ -26,8 +26,6 @@ import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Belongings;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Shopkeeper;
-import com.shatteredpixel.shatteredpixeldungeon.endcontent.EndGem;
-import com.shatteredpixel.shatteredpixeldungeon.endcontent.items.EndGemItem;
 import com.shatteredpixel.shatteredpixeldungeon.items.Ankh;
 import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
 import com.shatteredpixel.shatteredpixeldungeon.items.Heap;
@@ -339,23 +337,6 @@ public class ShopRoom extends SpecialRoom {
 			}
 		}
 
-		//==== END(删除·宝石获取途径): 商店不再刷新宝石 ====
-		//文档所有者要求"把宝石删去（只删获取途径，保留类以兼容旧存档）"。
-		//
-		//原先这里有三行：
-		//    EndGem[] all = EndGem.values();
-		//    itemsToSpawn.add( EndGemItem.of( all[ Random.Int( all.length ) ] ) );
-		//即"每个商店必定刷新一颗随机类型宝石"。
-		//
-		//这是宝石**唯一**的正常获取途径（另一处是便利测试挑战的开局赠送，
-		//那个只在测试包里生效，不影响正常对局）。
-		//
-		//保留 EndGem / EndGemItem / EndGemProfile 三个类不动 ——
-		//旧存档里已经拿到的宝石仍能正常镶嵌、生效、显示，
-		//只是**新的宝石不会再出现**。
-		//
-		//注意：不要删掉 EndGem / EndGemItem 的 import ——
-		//本文件其它地方（购买/展示逻辑）可能仍引用它们。
 
 		TimekeepersHourglass hourglass = Dungeon.hero.belongings.getItem(TimekeepersHourglass.class);
 		if (hourglass != null && hourglass.isIdentified() && !hourglass.cursed){
