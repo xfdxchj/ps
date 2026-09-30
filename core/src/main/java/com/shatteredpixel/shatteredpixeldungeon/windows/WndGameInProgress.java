@@ -79,7 +79,11 @@ public class WndGameInProgress extends Window {
 			RedButton btnChallenges = new RedButton( Messages.get(this, "challenges") ) {
 				@Override
 				protected void onClick() {
-					Game.scene().add( new WndChallenges( info.challengeMask, false ) );
+					//END(一.1 生命周期): 这里在 StartScene 上打开挑战窗口，
+					//必须走 addToFront（窗口层），不能用 Game.scene().add()
+					//（只加到普通成员层，窗口不在最前、关闭时生命周期也不干净）。
+					ShatteredPixelDungeon.scene().addToFront(
+							new WndChallenges( info.challengeMask, false ) );
 				}
 			};
 			btnChallenges.icon(Icons.get(Icons.CHALLENGE_COLOR));
