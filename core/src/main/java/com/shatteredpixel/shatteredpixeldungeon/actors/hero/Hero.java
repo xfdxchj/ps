@@ -252,6 +252,12 @@ public class Hero extends Char {
 		visibleEnemies = new ArrayList<>();
 	}
 	
+	//END(修复·轮回天狗钥匙): 钥匙按"映射层号"记，轮回层实际深度 35 时仍用 10 匹配
+	private static int keyDepth(){
+		return com.shatteredpixel.shatteredpixeldungeon.endcontent.Reincarnation
+				.mappedDepth(Dungeon.depth);
+	}
+
 	public void updateHT( boolean boostHP ){
 		int curHT = HT;
 		
@@ -1445,8 +1451,8 @@ public class Hero extends Char {
 			Heap heap = Dungeon.level.heaps.get( dst );
 			if (heap != null && (heap.type != Type.HEAP && heap.type != Type.FOR_SALE)) {
 				
-				if ((heap.type == Type.LOCKED_CHEST && Notes.keyCount(new GoldenKey(Dungeon.depth)) < 1)
-					|| (heap.type == Type.CRYSTAL_CHEST && Notes.keyCount(new CrystalKey(Dungeon.depth)) < 1)){
+				if ((heap.type == Type.LOCKED_CHEST && Notes.keyCount(new GoldenKey(keyDepth())) < 1)
+					|| (heap.type == Type.CRYSTAL_CHEST && Notes.keyCount(new CrystalKey(keyDepth())) < 1)){
 
 						GLog.w( Messages.get(this, "locked_chest") );
 						ready();
@@ -1493,7 +1499,7 @@ public class Hero extends Char {
 			int door = Dungeon.level.map[doorCell];
 			
 			if (door == Terrain.LOCKED_DOOR
-					&& Notes.keyCount(new IronKey(Dungeon.depth)) > 0) {
+					&& Notes.keyCount(new IronKey(keyDepth())) > 0) {
 				
 				hasKey = true;
 
@@ -1509,7 +1515,7 @@ public class Hero extends Char {
 				}
 				
 			} else if (door == Terrain.CRYSTAL_DOOR
-					&& Notes.keyCount(new CrystalKey(Dungeon.depth)) > 0) {
+					&& Notes.keyCount(new CrystalKey(keyDepth())) > 0) {
 
 				hasKey = true;
 
@@ -2717,7 +2723,7 @@ public class Hero extends Char {
 			} else if (Dungeon.level.distance(pos, doorCell) <= 1) {
 				boolean hasKey = true;
 				if (door == Terrain.LOCKED_DOOR) {
-					hasKey = Notes.remove(new IronKey(Dungeon.depth));
+					hasKey = Notes.remove(new IronKey(keyDepth()));
 					if (hasKey) {
 						if (keyUseTrack != null){
 							keyUseTrack.processIronLockOpened();
@@ -2729,7 +2735,7 @@ public class Hero extends Char {
 					Level.set(doorCell, Terrain.DOOR);
 					GLog.i( Messages.get(SkeletonKey.class, "force_lock"));
 				} else if (door == Terrain.CRYSTAL_DOOR) {
-					hasKey = Notes.remove(new CrystalKey(Dungeon.depth));
+					hasKey = Notes.remove(new CrystalKey(keyDepth()));
 					if (hasKey) {
 						if (keyUseTrack != null){
 							keyUseTrack.processCrystalLockOpened();
@@ -2769,12 +2775,12 @@ public class Hero extends Char {
 				if (heap.type == Type.SKELETON || heap.type == Type.REMAINS) {
 					Sample.INSTANCE.play( Assets.Sounds.BONES );
 				} else if (heap.type == Type.LOCKED_CHEST){
-					hasKey = Notes.remove(new GoldenKey(Dungeon.depth));
+					hasKey = Notes.remove(new GoldenKey(keyDepth()));
 					if (hasKey && keyUseTrack != null){
 						keyUseTrack.processGoldLockOpened();
 					}
 				} else if (heap.type == Type.CRYSTAL_CHEST){
-					hasKey = Notes.remove(new CrystalKey(Dungeon.depth));
+					hasKey = Notes.remove(new CrystalKey(keyDepth()));
 					if (hasKey && keyUseTrack != null){
 						keyUseTrack.processCrystalLockOpened();
 					}
