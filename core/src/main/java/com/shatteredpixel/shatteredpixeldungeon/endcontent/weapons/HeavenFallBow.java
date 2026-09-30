@@ -55,6 +55,11 @@ public class HeavenFallBow extends MissileWeapon {
 
 	@Override public String name(){ return "天堂陨落长弓"; }
 
+	@Override
+	public com.watabou.noosa.particles.Emitter emitter() {
+		return com.shatteredpixel.shatteredpixeldungeon.endcontent.CosmicParticles.equipmentEmitter();
+	}
+
 	/** 连射次数。 */
 	public static final int BURST = 3;
 

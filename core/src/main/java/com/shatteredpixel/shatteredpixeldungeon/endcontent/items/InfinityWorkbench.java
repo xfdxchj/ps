@@ -20,7 +20,7 @@ public class InfinityWorkbench extends Item {
 	public static final String AC_USE = "USE";
 
 	{
-		image = ItemSpriteSheet.ALCHEMIZE;
+		image = ItemSpriteSheet.INFINITY_WORKBENCH;
 		defaultAction = AC_USE;
 		unique = true;
 		bones = false;

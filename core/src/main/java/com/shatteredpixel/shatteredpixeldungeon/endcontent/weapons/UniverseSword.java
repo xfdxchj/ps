@@ -12,9 +12,11 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.FlavourBuff;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon;
+import com.shatteredpixel.shatteredpixeldungeon.endcontent.CosmicParticles;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
 import com.watabou.noosa.Image;
+import com.watabou.noosa.particles.Emitter;
 
 /**
  * END(顶级装备): 寰宇支配之剑。
@@ -44,6 +46,11 @@ public class UniverseSword extends MeleeWeapon {
 	}
 
 	@Override public String name(){ return "寰宇支配之剑"; }
+
+	@Override
+	public com.watabou.noosa.particles.Emitter emitter() {
+		return CosmicParticles.equipmentEmitter();
+	}
 
 	//==== 数值：60-80，成长 5-10 ====
 	//注意：**不**沿用原版的 tier 公式（那是 5-30），这里显式写死。

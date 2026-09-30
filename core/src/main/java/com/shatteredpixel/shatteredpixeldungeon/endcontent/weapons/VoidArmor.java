@@ -41,6 +41,11 @@ public class VoidArmor extends Armor {
 
 	@Override public String name(){ return "虚空不灭之甲"; }
 
+	@Override
+	public com.watabou.noosa.particles.Emitter emitter() {
+		return com.shatteredpixel.shatteredpixeldungeon.endcontent.CosmicParticles.equipmentEmitter();
+	}
+
 	//==== 数值：5-10，成长 5-10 ====
 
 	@Override public int DRMin(int lvl){ return 5 + 5 * lvl; }

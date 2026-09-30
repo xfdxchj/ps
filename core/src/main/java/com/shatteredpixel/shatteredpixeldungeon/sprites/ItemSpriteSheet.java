@@ -1321,6 +1321,10 @@ public class ItemSpriteSheet {
 	static { assignItemRect(GRIMM_INFINITY_INGOT, 16, 16); }
 	public static final int[] GRIMM_INFINITY_INGOT_FRAMES = frameColumn(6, 42, 9);
 
+	//END(无尽炼金): 无尽工作台（9 帧动画，来自 dire_autocrafting_side.png）
+	public static final int INFINITY_WORKBENCH = xy(1, 54);
+	public static final int[] INFINITY_WORKBENCH_FRAMES = frameColumn(1, 54, 9);
+
 	/** END: 轮回噬灭之戒（5 帧）。 */
 	public static final int GRIMM_INFINITY_RING = xy(7, 43);
 	static { assignItemRect(GRIMM_INFINITY_RING, 16, 16); }
@@ -1398,6 +1402,9 @@ public class ItemSpriteSheet {
 		if (image == GRIMM_INFINITY_BOW)     return GRIMM_INFINITY_BOW_FRAMES;
 		if (image == GRIMM_INFINITY_CATALYST)return GRIMM_INFINITY_CATALYST_FRAMES;
 		if (image == GRIMM_INFINITY_INGOT)   return GRIMM_INFINITY_INGOT_FRAMES;
+
+		//END(无尽炼金): 无尽工作台
+		if (image == INFINITY_WORKBENCH) return INFINITY_WORKBENCH_FRAMES;
 		if (image == GRIMM_INFINITY_RING)    return GRIMM_INFINITY_RING_FRAMES;
 
 		//END(顶级装备体系): 四种核心也是动画

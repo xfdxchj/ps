@@ -46,6 +46,11 @@ public class ReincarnationRing extends Ring {
 
 	@Override public String name(){ return "轮回噬灭之戒"; }
 
+	@Override
+	public com.watabou.noosa.particles.Emitter emitter() {
+		return com.shatteredpixel.shatteredpixeldungeon.endcontent.CosmicParticles.equipmentEmitter();
+	}
+
 	/** END: 无尽戒的伤害倍率（+20%）。 */
 	public static final float DAMAGE_MULT = 1.2f;
 	/** END: 无尽戒的护甲倍率（+20%）。 */
