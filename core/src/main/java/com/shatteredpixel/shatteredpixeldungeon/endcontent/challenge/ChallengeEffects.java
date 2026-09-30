@@ -5521,7 +5521,10 @@ public final class ChallengeEffects {
 		if (Random.Int(100) >= ASCENSION_CHANCE_PCT) return false;
 
 		t.revives++;
-		mob.HT *= 2;
+		//END(修订·登神长阶): 只有第一次复活翻倍生命，后续只回满
+		if (t.revives == 1){
+			mob.HT *= 2;
+		}
 		mob.HP = mob.HT;
 		com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHealing.cure(mob);
 		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.detach(mob,

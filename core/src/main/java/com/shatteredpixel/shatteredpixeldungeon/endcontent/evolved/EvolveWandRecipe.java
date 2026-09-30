@@ -12,7 +12,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.Recipe;
 import com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfAugmentation;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand;
 import com.shatteredpixel.shatteredpixeldungeon.journal.Catalog;
-import com.shatteredpixel.shatteredpixeldungeon.plants.Starflower;
+import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfUpgrade;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 
 import java.util.ArrayList;
@@ -25,20 +25,20 @@ public class EvolveWandRecipe extends Recipe {
 
 		boolean hasWand  = false;
 		boolean hasStone = false;
-		boolean hasSeed  = false;
+		boolean hasScroll  = false;
 		for (Item it : ingredients){
 			if (it instanceof Wand){
 				//干净、已鉴定；无需≥+8（isEligible 已不再查等级）
 				hasWand = it.isIdentified() && !it.cursed && EndWandEvolution.isEligible((Wand) it);
 			} else if (it instanceof StoneOfAugmentation){
 				hasStone = true;
-			} else if (it instanceof Starflower.Seed){
-				hasSeed = true;
+			} else if (it instanceof ScrollOfUpgrade){
+				hasScroll = true;
 			} else {
 				return false;
 			}
 		}
-		return hasWand && hasStone && hasSeed;
+		return hasWand && hasStone && hasScroll;
 	}
 
 	@Override

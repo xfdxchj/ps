@@ -259,8 +259,9 @@ public abstract class Level implements Bundlable {
 					//END(210 永无止境): 每次轮回后升级卷轴获得量 +100%（即 1 + 轮回次数 份）
 					int copies = 1;
 					if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
-							.ChallengeEffects.endlessEnabled()){
-						copies += com.shatteredpixel.shatteredpixeldungeon.endcontent.Reincarnation.cycles();
+							.ChallengeEffects.endlessEnabled()
+							&& com.shatteredpixel.shatteredpixeldungeon.endcontent.Reincarnation.cycles() >= 1){
+						copies = 2;   //END(修订 210): 翻倍只在第一次轮回生效
 					}
 					for (int i = 0; i < copies; i++){
 						addItemToSpawn(new ScrollOfUpgrade());
