@@ -404,9 +404,14 @@ public class MagesStaff extends MeleeWeapon {
 
 	/** 该魔杖当前嵌入的是一把“终焉进化法杖”(位于 endcontent.evolved 包, 自带中文名/无消息键)。 */
 	private boolean evolvedWandImbued(){
-		return wand != null
-				&& wand.getClass().getName().startsWith(
-						"com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.");
+		if (wand == null) return false;
+		//END(一.11): 爆裂法杖(EvolvedWandOfMeteor)在 endcontent.wands 包，
+		//不在 endcontent.evolved，所以单独识别，让它和其它进化法杖一样
+		//走自带名称/自带充能上限的适配。
+		return wand.getClass().getName().startsWith(
+						"com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved.")
+				|| wand instanceof com.shatteredpixel.shatteredpixeldungeon.endcontent.wands
+						.EvolvedWandOfMeteor;
 	}
 
 	@Override

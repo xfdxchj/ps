@@ -54,8 +54,9 @@ public class WandOfMeteor extends DamageWand {
 	/** 基础伤害上限。 */
 	public static final int BASE_MAX = 8;
 
-	@Override public int min(int lvl){ return BASE_MIN; }
-	@Override public int max(int lvl){ return BASE_MAX; }
+	//END(一.11): 爆炸法杖原本完全没有等级成长，补上与普通法杖一致的 +1 / +2
+	@Override public int min(int lvl){ return BASE_MIN + lvl; }
+	@Override public int max(int lvl){ return BASE_MAX + 2 * lvl; }
 
 	@Override public int initialCharges(){ return 2; }
 
@@ -203,7 +204,7 @@ public class WandOfMeteor extends DamageWand {
 	@Override
 	public String info(){
 		return "杖头嵌着一颗永远在微微发热的石头。\n\n" +
-				"伤害 **4-8**，每次施法消耗 **1 充能**。\n\n" +
+				"伤害 **4-8**，每级 **+1~+2**；每次施法消耗 **1 充能**。\n\n" +
 				"-落点为中心**炸开**，3×3 范围内造成全额伤害\n" +
 				"-附带冲击波音效\n" +
 				"-存在**进阶版**：范围扩至 5×5，3×3 内伤害再提升 25%" + com.shatteredpixel.shatteredpixeldungeon.endcontent.EndItemStats.block(this);
