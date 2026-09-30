@@ -46,10 +46,14 @@ public class EvolvedWandOfMeteor extends WandOfMeteor {
 		return "爆裂法杖";
 	}
 
+	//END(一.11): 爆裂法杖每级 +2 / +6（比基础版翻倍）
+	@Override public int min(int lvl){ return BASE_MIN + 2 * lvl; }
+	@Override public int max(int lvl){ return BASE_MAX + 6 * lvl; }
+
 	@Override
 	public String desc() {
 		return "进化·爆裂法杖（源：爆炸法杖）：爆炸范围扩至 5×5，"
-				+ "爆炸正中 3×3 范围内的敌人承受额外 25% 伤害。\n\n"
+				+ "爆炸正中 3×3 范围内的敌人承受额外 25% 伤害。伤害 **4-8**，每级 **+2~+6**。\n\n"
 				+ "**继承源法杖的等级**，充能上限提升到 20。";
 	}
 
