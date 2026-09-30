@@ -798,6 +798,13 @@ public class Hero extends Char {
 			}
 		}
 
+		//END(二.12 原神副词条): 近战/投掷伤害加成
+		if (wep instanceof MeleeWeapon){
+			dmg = Math.round(dmg * com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.RingAffix.meleeDamageMultiplier(this));
+		} else if (wep instanceof MissileWeapon){
+			dmg = Math.round(dmg * com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.RingAffix.missileDamageMultiplier(this));
+		}
+
 		PhysicalEmpower emp = buff(PhysicalEmpower.class);
 		if (emp != null){
 			dmg += emp.dmgBoost;

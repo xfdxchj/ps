@@ -650,11 +650,13 @@ public abstract class Char extends Actor {
 			}
 
 			//END(230 原神地牢): 玩家暴击（词条）—— 命中后 2 倍伤害
+			boolean affixCrit = false;
 			if (this instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero){
 				float crit = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.RingAffix.critChance(
 						(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) this);
 				if (crit > 0f && Random.Float() < crit){
 					dmg *= 2f;
+					affixCrit = true;
 				}
 			}
 
@@ -855,6 +857,11 @@ public abstract class Char extends Actor {
 				.ChallengeEffects.revengeFuryAttackDamage(this, effectiveDamage);
 
 			enemy.damage( effectiveDamage, this );
+
+			//END(二.12 原神副词条): 暴击飘字；法杖走 DamageWand 不经过此处暴击
+			if (affixCrit && enemy.sprite != null){
+				enemy.sprite.showStatus(CharSprite.WARNING, "暴击");
+			}
 
 			if (buff(FireImbue.class) != null)  buff(FireImbue.class).proc(enemy);
 			if (buff(FrostImbue.class) != null) buff(FrostImbue.class).proc(enemy);

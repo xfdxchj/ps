@@ -70,6 +70,11 @@ public abstract class DamageWand extends Wand{
 		dmg += com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
 			.BlackSoul.grimmMagicBonus(Dungeon.hero, dmg);
 
+		//END(二.12 原神副词条): 法术伤害加成；暴击不作用于法杖
+		if (Dungeon.hero != null){
+			dmg = Math.round(dmg * com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.RingAffix.spellDamageMultiplier(Dungeon.hero));
+		}
+
 		//==== END(修复·124 野生狗奶): 法杖伤害也吃"全属性 -75%" ====
 		if (Dungeon.hero != null && com.shatteredpixel.shatteredpixeldungeon.endcontent
 				.grimm.WildDogMilk.isActive(Dungeon.hero)){

@@ -11,7 +11,7 @@ import com.watabou.utils.Random;
  *
  * <p>每强化 3 级获得 1 条，最多 3 条；获得时随机，可用洗练石重掷。
  * 词条数值：生命 +20% 最大生命、回复 0.2/回合、暴击率 +20%、
- * 闪避 +20%、命中 +20%、防御 +20%、充能效率 +20%。
+ * 闪避 +20%、命中 +20%、防御 +20%、充能效率 +20%、近战伤害 +20%、投掷伤害 +20%、法术伤害 +20%（暴击不作用于法杖）。
  */
 public enum RingAffix {
 
@@ -21,7 +21,11 @@ public enum RingAffix {
 	EVASION("闪避", 0.20f, "闪避"),
 	ACCURACY("命中", 0.20f, "命中"),
 	DEFENSE("防御", 0.20f, "防御"),
-	CHARGE("充能效率", 0.20f, "充能效率");
+	CHARGE("充能效率", 0.20f, "充能效率"),
+	//END(二.12): 副词条
+	MELEE_DMG("近战伤害", 0.20f, "近战伤害"),
+	MISSILE_DMG("投掷伤害", 0.20f, "投掷伤害"),
+	SPELL_DMG("法术伤害", 0.20f, "法术伤害");
 
 	public final String label;
 	public final float value;
@@ -79,4 +83,7 @@ public enum RingAffix {
 	public static float accuracyMultiplier(Hero hero){ return 1f + total(hero, ACCURACY); }
 	public static float defenseMultiplier(Hero hero){ return Math.max(0f, 1f - total(hero, DEFENSE)); }
 	public static float chargeMultiplier(Char ch){ return 1f + total(ch, CHARGE); }
+	public static float meleeDamageMultiplier(Hero hero){ return 1f + total(hero, MELEE_DMG); }
+	public static float missileDamageMultiplier(Hero hero){ return 1f + total(hero, MISSILE_DMG); }
+	public static float spellDamageMultiplier(Hero hero){ return 1f + total(hero, SPELL_DMG); }
 }
