@@ -26,7 +26,7 @@ import java.util.ArrayList;
 public class AlmightyPurse extends Item {
 
 	{
-		image = ItemSpriteSheet.GOLD;
+		image = ItemSpriteSheet.GRIMM_PURSE;
 		stackable = false;
 		unique = true;
 		bones = false;

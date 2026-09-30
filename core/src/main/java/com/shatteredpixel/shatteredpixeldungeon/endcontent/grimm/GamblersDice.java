@@ -41,7 +41,7 @@ public class GamblersDice extends Item {
 	public static final float WIN_CHANCE = 0.5f;
 
 	{
-		image = ItemSpriteSheet.GRIMM_RABBIT_RING;   //暂时复用（骰子图标以后补）
+		image = ItemSpriteSheet.GRIMM_DICE;
 		stackable = true;
 		bones = false;
 	}

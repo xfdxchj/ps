@@ -1451,6 +1451,11 @@ public class ItemSpriteSheet {
 	public static final int NO_BULLET = 831;
 	//END(230 原神地牢): 洗练石
 	public static final int RING_POLISH = 835;
+	//END(贴图补充): 盲盒/万能钱袋/野生狗奶/赌徒之骰
+	public static final int GRIMM_MYSTERY_BOX = 849;
+	public static final int GRIMM_PURSE      = 850;
+	public static final int GRIMM_DOG_MILK   = 851;
+	public static final int GRIMM_DICE       = 852;
 
 	static {
 
@@ -1488,6 +1493,10 @@ public class ItemSpriteSheet {
 		assignItemRect(GUNSMITHING_TOOL, 16, 13);
 		assignItemRect(NO_BULLET, 0, 0);
 		assignItemRect(RING_POLISH, 16, 16);
+		assignItemRect(GRIMM_MYSTERY_BOX, 16, 16);
+		assignItemRect(GRIMM_PURSE,      16, 16);
+		assignItemRect(GRIMM_DOG_MILK,   16, 16);
+		assignItemRect(GRIMM_DICE,       16, 16);
 	}
 	public static final int EVOLUTION = 832;
 	public static final int UPGRADE_DUST = 833;

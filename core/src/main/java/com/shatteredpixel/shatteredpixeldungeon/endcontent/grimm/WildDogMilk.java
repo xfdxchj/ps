@@ -50,7 +50,7 @@ public class WildDogMilk extends Item {
 
 	{
 		//暂时复用镇魂歌的图标（同属"续命"主题）
-		image = ItemSpriteSheet.GRIMM_REQUIEM;
+		image = ItemSpriteSheet.GRIMM_DOG_MILK;
 		stackable = true;
 		bones = false;
 	}

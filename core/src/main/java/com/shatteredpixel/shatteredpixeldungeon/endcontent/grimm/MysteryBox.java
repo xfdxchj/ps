@@ -36,7 +36,7 @@ public class MysteryBox extends Item {
 
 	{
 		//暂时复用"童话残页"的图标（盲盒图标以后再补）
-		image = ItemSpriteSheet.GRIMM_FAIRY_FRAGMENT;
+		image = ItemSpriteSheet.GRIMM_MYSTERY_BOX;
 		stackable = true;
 		bones = false;
 	}
