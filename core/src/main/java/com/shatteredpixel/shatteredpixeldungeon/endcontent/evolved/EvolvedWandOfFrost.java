@@ -2,9 +2,9 @@
  * Shattered Pixel Dungeon: End —《破碎的像素地牢：终焉扩展》
  * 凝霜法杖(冰霜进化) 双形态：
  *   形态 0·冰霜直击(default)：耗 1 充能。命中点单目标冰冻/寒冷，并对命中点 3×3 内其它敌人附加寒冷。
- *   形态 1·冰雪区域：耗 3 充能。选中一个位置铺开 3×3 持续冰雪区域，持续数回合；
- *       每回合对区域内敌人造成 100% 面板伤害 + 全额寒冷；对已冻结(冰封)的敌人直接破除冻结
- *       并造成 200% 面板伤害；已在寒冷中的敌人每回合有概率被冻住。
+ *   形态 1·冰雪区域：耗 1 充能。选中一个位置铺开 3×3 持续冰雪区域（像气体一样扩散）；
+ *       气体每回合给区域内敌人挂上冰爆 buff；buff 负责施加寒冷、概率冻结，
+ *       并在冻结消失时造成 400% 面板伤害。
  */
 package com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved;
 
@@ -84,7 +84,7 @@ public class EvolvedWandOfFrost extends WandOfFrost implements EndModeWand {
 		}
 	}
 
-	/** 冰雪区域耗 2 充能(较原 3 减 1)；冰霜直击耗 1。 */
+	/** END(二.7): 两个形态都只耗 1 充能。 */
 	@Override
 	protected int chargesPerCast() {
 		return 1;  //END(二.7): 两个形态都只耗 1
