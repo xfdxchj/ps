@@ -83,6 +83,16 @@ public class EvolvedWandOfFrost extends WandOfFrost implements EndModeWand {
 		return 1;  //END(二.7): 两个形态都只耗 1
 	}
 
+	/** END: 冰天雪地要能像酸蚀气一样直接放到空地上。 */
+	@Override
+	public int collisionProperties(int target){
+		if (mode == MODE_FROST_FIELD){
+			return com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica.STOP_TARGET
+					| com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica.STOP_SOLID;
+		}
+		return super.collisionProperties(target);
+	}
+
 	/** 瞄准按父类默认：点到的可达最远落点即铺放处（撤掉此前试验性的特殊瞄准）。 */
 	//END M2：命中点直击(形态0) + 冰天雪地(形态1)
 	@Override
@@ -183,7 +193,7 @@ public class EvolvedWandOfFrost extends WandOfFrost implements EndModeWand {
 		int burstDmg = Math.round( dmgBase * 4f );
 		//END(改·真气体): 像腐蚀法杖一样只在一个点放出气体，
 		//由 Blob.super.evolve() 自然向外扩散，不再固定铺 3×3。
-		int volume = 50 + 10 * buffedLvl();
+		int volume = 60 + 20 * buffedLvl(); //END: 等级越高气量越大、扩散越广
 		EndFrostField field = Blob.seed( center, volume, EndFrostField.class );
 		if (field != null){
 			field.set( burstDmg, this );

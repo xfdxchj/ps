@@ -1,16 +1,23 @@
 package com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved;
 
+import com.shatteredpixel.shatteredpixeldungeon.Assets;
+import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
+import com.watabou.noosa.Game;
+import com.watabou.noosa.Image;
+import com.watabou.noosa.TextureFilm;
 import com.watabou.noosa.particles.Emitter;
-import com.watabou.noosa.particles.PixelParticle;
 import com.watabou.utils.Random;
 
 /**
- * END(冰天雪地): 纯白雪花粒子。
+ * END(冰天雪地): 冰蓝色雪花粒子。
  *
- * <p>原版 SnowParticle 是半透明、偏淡的，这里单独做一个更明显、
- * 冰蓝色的雪点，用于凝霜法杖「冰天雪地」形态的气体。
+ * <p>用特效图集里的 STAR 帧当雪花（六角星形），比原来的方形像素更大、
+ * 更明显；下落时缓慢旋转。
  */
-public class SnowflakeParticle extends PixelParticle {
+public class SnowflakeParticle extends Image {
+
+	private static final int SIZE = 7;
+	private static TextureFilm film;
 
 	public static final Emitter.Factory FACTORY = new Emitter.Factory() {
 		@Override
@@ -19,26 +26,40 @@ public class SnowflakeParticle extends PixelParticle {
 		}
 	};
 
+	private float lifespan;
+	private float left;
+
 	public SnowflakeParticle() {
 		super();
-		color( 0xA8E6FF ); //冰蓝色
-		size( 2f );
-		lifespan = 1.4f;
-		speed.set( Random.Float( -2f, 2f ), Random.Float( 4f, 8f ) );
+		texture( Assets.Effects.SPECKS );
+		if (film == null) {
+			film = new TextureFilm( texture, SIZE, SIZE );
+		}
+		frame( film.get( Speck.STAR ) );
+		origin.set( SIZE / 2f );
 	}
 
 	public void reset( float x, float y ) {
 		revive();
 		this.x = x;
-		this.y = y;
-		left = lifespan;
-		speed.set( Random.Float( -2f, 2f ), Random.Float( 4f, 8f ) );
+		this.y = y - Random.Float( 8f, 24f );
+
+		hardlight( 0xA8E6FF );
+		angle = Random.Float( 360 );
+		angularSpeed = Random.Float( -120f, 120f );
+		speed.set( Random.Float( -3f, 3f ), Random.Float( 3f, 6f ) );
+		scale.set( Random.Float( 1.6f, 2.6f ) );
+
+		left = lifespan = Random.Float( 1.4f, 2.4f );
 	}
 
 	@Override
 	public void update() {
 		super.update();
-		//白色雪花保持较高不透明度，只在消散时淡出
-		am = Math.min( 1f, left / lifespan * 1.5f );
+		float p = left / lifespan;
+		am = Math.min( 1f, p * 2f );
+		if ((left -= Game.elapsed) <= 0f) {
+			kill();
+		}
 	}
 }

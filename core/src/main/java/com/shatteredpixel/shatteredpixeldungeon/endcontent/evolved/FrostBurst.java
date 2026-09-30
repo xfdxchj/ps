@@ -49,6 +49,13 @@ public class FrostBurst extends FlavourBuff {
 			return true;
 		}
 
+		//已经冻住了：不再调用 Freezing.freeze，否则会不断刷新 Frost 时长导致永冻
+		if (target.buff(Frost.class) != null){
+			wasFrozen = true;
+			spend(TICK);
+			return true;
+		}
+
 		//像原版冻气一样：挂寒冷，寒冷堆满时冻结
 		Freezing.freeze( target.pos );
 
