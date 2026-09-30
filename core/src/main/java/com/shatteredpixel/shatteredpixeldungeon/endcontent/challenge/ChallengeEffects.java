@@ -472,23 +472,14 @@ public final class ChallengeEffects {
 	//==== 系数常量 ====
 
 	/** 30 人口密集：刷怪数量 +20%。 */
-	private static final float CROWDED_MOBS_MULT   = 1.20f;
 	/** 119 怪物浪潮：刷怪数量 ×4（原文"生成率提升 300%"）。 */
-	private static final float WAVE_MOBS_MULT      = 4.00f;
 	/** 119 怪物浪潮：怪物数值 ×0.2。 */
 	/** 47 稀缺补给：消耗品 ×0.6。 */
-	private static final float SCARCE_ITEM_MULT    = 0.60f;
 	/** 48 过量补给：消耗品 ×1.5。 */
-	private static final float EXCESS_ITEM_MULT    = 1.50f;
 	/** 35 丰饶：掉落 +25%。 */
-	private static final float ABUNDANCE_MULT      = 1.25f;
 	/** 36 贫瘠：掉落 −25%。 */
-	private static final float BARREN_MULT         = 0.75f;
 	/** 62 芙莉莲：宝箱概率/数量 ×1.2。 */
-	private static final float FRIEREN_MULT        = 1.20f;
 	/** 64 宝物猎人：普通怪掉落 ×0.7，宝箱物品 +1。 */
-	private static final float HUNTER_DROP_MULT    = 0.70f;
-	private static final int   HUNTER_CHEST_BONUS  = 1;
 
 	/**
 	 * END(30 人口密集 + 119 怪物浪潮): 刷怪数量倍率。
@@ -501,8 +492,8 @@ public final class ChallengeEffects {
 	 */
 	public static float mobCountMultiplier() {
 		float mult = 1f;
-		if (on(CROWDED))      mult *= CROWDED_MOBS_MULT;
-		if (on(MONSTER_WAVE)) mult *= WAVE_MOBS_MULT;
+		if (on(CROWDED))      mult *= ChallengeBalance.CROWDED_MOBS_MULT;
+		if (on(MONSTER_WAVE)) mult *= ChallengeBalance.WAVE_MOBS_MULT;
 		//==== END(移植·堆积威胁 48): 数量 +50% ====
 		if (on(STACKING)) mult *= STACKING_COUNT_MULT;
 		return mult;
@@ -555,8 +546,8 @@ public final class ChallengeEffects {
 	 */
 	public static float consumableCountMultiplier() {
 		float mult = 1f;
-		if (on(SCARCE_SUPPLIES)) mult *= SCARCE_ITEM_MULT;
-		if (on(EXCESS_SUPPLIES)) mult *= EXCESS_ITEM_MULT;
+		if (on(SCARCE_SUPPLIES)) mult *= ChallengeBalance.SCARCE_ITEM_MULT;
+		if (on(EXCESS_SUPPLIES)) mult *= ChallengeBalance.EXCESS_ITEM_MULT;
 		return mult;
 	}
 
@@ -568,8 +559,8 @@ public final class ChallengeEffects {
 	 */
 	public static float dropCountMultiplier() {
 		float mult = 1f;
-		if (on(ABUNDANCE)) mult *= ABUNDANCE_MULT;
-		if (on(BARREN))    mult *= BARREN_MULT;
+		if (on(ABUNDANCE)) mult *= ChallengeBalance.ABUNDANCE_MULT;
+		if (on(BARREN))    mult *= ChallengeBalance.BARREN_MULT;
 		return mult;
 	}
 
@@ -577,21 +568,21 @@ public final class ChallengeEffects {
 	 * END(62 芙莉莲): 宝箱生成概率 / 数量倍率。
 	 */
 	public static float chestCountMultiplier() {
-		return on(FRIEREN) ? FRIEREN_MULT : 1f;
+		return on(FRIEREN) ? ChallengeBalance.FRIEREN_MULT : 1f;
 	}
 
 	/**
 	 * END(64 宝物猎人): 普通怪物掉落倍率（降低）。
 	 */
 	public static float monsterDropMultiplier() {
-		return on(TREASURE_HUNTER) ? HUNTER_DROP_MULT : 1f;
+		return on(TREASURE_HUNTER) ? ChallengeBalance.HUNTER_DROP_MULT : 1f;
 	}
 
 	/**
 	 * END(64 宝物猎人): 宝箱内容额外物品数。
 	 */
 	public static int chestContentBonus() {
-		return on(TREASURE_HUNTER) ? HUNTER_CHEST_BONUS : 0;
+		return on(TREASURE_HUNTER) ? ChallengeBalance.HUNTER_CHEST_BONUS : 0;
 	}
 
 	/**
@@ -2214,11 +2205,9 @@ public final class ChallengeEffects {
 	}
 
 	/** 10 巨型化：触发概率 13%。 */
-	private static final int   GIANT_PCT        = 13;
 	/** 10 巨型化：生命倍率。 */
 	private static final float GIANT_HP_MULT    = 1.50f;
 	/** 54 我爱花花：替换概率 13%。 */
-	private static final int   FLOWER_PCT       = 13;
 	/** 138 荒诞世界：贴图随机变化概率。 */
 	private static final int   ABSURD_PCT       = 100;
 
@@ -2238,7 +2227,7 @@ public final class ChallengeEffects {
 		}
 		if (m.alignment != Char.Alignment.ENEMY) return false;
 
-		return Random.Int(100) < GIANT_PCT;
+		return Random.Int(100) < ChallengeBalance.GIANT_PCT;
 	}
 
 	/**
@@ -2276,7 +2265,7 @@ public final class ChallengeEffects {
 	/** END(54 我爱花花): 单格草地是否应替换成花（13%）。 */
 	public static boolean rollFlower() {
 		if (!on(FLOWER_LOVER)) return false;
-		return Random.Int(100) < FLOWER_PCT;
+		return Random.Int(100) < ChallengeBalance.FLOWER_PCT;
 	}
 
 	/**
@@ -2308,7 +2297,6 @@ public final class ChallengeEffects {
 	//==== 概率与数值 ====
 
 	/** 23 血流成河 / 24 以牙还牙 / 28 不动如山 / 78 烈火焚身：13%。 */
-	private static final int PCT_13 = 13;
 	/** 13 狂热：每次 +13%，封顶 3 层。 */
 	private static final float FRENZY_STEP      = 0.13f;
 	private static final int   FRENZY_MAX_STACK = 3;
@@ -2379,7 +2367,7 @@ public final class ChallengeEffects {
 		if (enemy.buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Bleeding.class) != null) {
 			return;
 		}
-		if (Random.Int(100) >= PCT_13) return;
+		if (Random.Int(100) >= ChallengeBalance.PCT_13) return;
 
 		//Bleeding 不是 FlavourBuff，没有带 duration 的 affect 重载：
 		//它是"每次结算扣固定血"的持续 debuff，用 .set(每跳伤害) 设置强度，
@@ -2407,7 +2395,7 @@ public final class ChallengeEffects {
 				.ChallengeRetaliateMark.class) != null) {
 			return;
 		}
-		if (Random.Int(100) >= PCT_13) return;
+		if (Random.Int(100) >= ChallengeBalance.PCT_13) return;
 
 		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(
 				enemy,
@@ -2430,7 +2418,7 @@ public final class ChallengeEffects {
 	public static boolean immovableBlocks(Char ch) {
 		if (!on(IMMOVABLE) || ch == null) return false;
 		if (ch instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) return false;
-		return Random.Int(100) < PCT_13;
+		return Random.Int(100) < ChallengeBalance.PCT_13;
 	}
 
 	/**
@@ -2443,7 +2431,7 @@ public final class ChallengeEffects {
 		if (ch.buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Burning.class) != null) {
 			return;
 		}
-		if (Random.Int(100) >= PCT_13) return;
+		if (Random.Int(100) >= ChallengeBalance.PCT_13) return;
 
 		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(
 				ch, com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Burning.class);
@@ -4410,14 +4398,13 @@ public final class ChallengeEffects {
 	//---- 164 魔法地牢 ----
 
 	/** 怪物能使用魔法的概率（%）。 */
-	private static final int MAGIC_MOB_PCT = 13;
 
 	/** END(164): 这只怪物是否会使用魔法。 */
 	public static boolean rollMagicMob(Mob mob) {
 		if (!on(MAGIC_DUNGEON) || mob == null) return false;
 		if (Char.hasProp(mob, Char.Property.BOSS)
 				|| Char.hasProp(mob, Char.Property.MINIBOSS)) return false;
-		return Random.Int(100) < MAGIC_MOB_PCT;
+		return Random.Int(100) < ChallengeBalance.MAGIC_MOB_PCT;
 	}
 
 	/**
@@ -4728,7 +4715,6 @@ public final class ChallengeEffects {
 	public static final int MIMIC_THREAT = 67;
 
 	/** 每层生成宝箱怪的概率（%）。 */
-	private static final int MIMIC_THREAT_PCT = 20;
 
 	/**
 	 * END(67 宝箱危机): 每层 20% 概率生成一只"保险怪"（宝箱怪）。
@@ -4747,7 +4733,7 @@ public final class ChallengeEffects {
 	public static void spawnMimicThreat(
 			com.shatteredpixel.shatteredpixeldungeon.levels.Level level) {
 		if (!on(MIMIC_THREAT) || level == null) return;
-		if (Random.Int(100) >= MIMIC_THREAT_PCT) return;
+		if (Random.Int(100) >= ChallengeBalance.MIMIC_THREAT_PCT) return;
 
 		com.watabou.utils.Random.pushGenerator(com.watabou.utils.Random.Long());
 		try {
@@ -4816,7 +4802,6 @@ public final class ChallengeEffects {
 	public static final int MIRROR_DUEL = 100;
 
 	/** 每层生成镜像的概率（%）。 */
-	private static final int MIRROR_DUEL_PCT = 13;
 
 	/**
 	 * END(100 镜像对决): 每层 13% 概率生成一只敌对镜像。
@@ -4831,7 +4816,7 @@ public final class ChallengeEffects {
 			com.shatteredpixel.shatteredpixeldungeon.levels.Level level) {
 		if (!on(MIRROR_DUEL) || level == null) return;
 		if (Dungeon.hero == null) return;
-		if (Random.Int(100) >= MIRROR_DUEL_PCT) return;
+		if (Random.Int(100) >= ChallengeBalance.MIRROR_DUEL_PCT) return;
 
 		com.watabou.utils.Random.pushGenerator(com.watabou.utils.Random.Long());
 		try {
@@ -5020,8 +5005,6 @@ public final class ChallengeEffects {
 	//---- 196 是药三分毒 / 197 再来一瓶 ----
 
 	/** 触发概率（%）。 */
-	private static final int TOXIC_PCT   = 13;
-	private static final int ONE_MORE_PCT = 13;
 
 	/**
 	 * END(196 是药三分毒): 喝下这瓶药水后是否中毒。
@@ -5030,24 +5013,23 @@ public final class ChallengeEffects {
 	 */
 	public static boolean rollToxicPotion() {
 		if (!on(TOXIC_POTIONS)) return false;
-		return Random.Int(100) < TOXIC_PCT;
+		return Random.Int(100) < ChallengeBalance.TOXIC_PCT;
 	}
 
 	/** END(197 再来一瓶): 这瓶药水是否不消耗。 */
 	public static boolean rollOneMorePotion() {
 		if (!on(ONE_MORE)) return false;
-		return Random.Int(100) < ONE_MORE_PCT;
+		return Random.Int(100) < ChallengeBalance.ONE_MORE_PCT;
 	}
 
 	//---- 200 炼金术士 / 201 药水盛宴 ----
 
 	/** 制作秘药时额外产出的概率（%）。 */
-	private static final int ALCHEMIST_PCT = 13;
 
 	/** END(200 炼金术士): 制作秘药是否额外得一份。 */
 	public static boolean rollAlchemist() {
 		if (!on(ALCHEMIST)) return false;
-		return Random.Int(100) < ALCHEMIST_PCT;
+		return Random.Int(100) < ChallengeBalance.ALCHEMIST_PCT;
 	}
 
 	/** END(201 药水盛宴): 药水生成的数量倍率。 */
@@ -5058,7 +5040,6 @@ public final class ChallengeEffects {
 	//---- 193 强化怪物 ----
 
 	/** 触发概率（%）。 */
-	private static final int EMPOWERED_PCT = 13;
 	/** 体型倍率。 */
 	public static final float EMPOWERED_SCALE = 1.50f;
 	/** 生命倍率。 */
@@ -5074,7 +5055,7 @@ public final class ChallengeEffects {
 		if (!on(EMPOWERED_MOBS) || mob == null) return false;
 		if (Char.hasProp(mob, Char.Property.BOSS)
 				|| Char.hasProp(mob, Char.Property.MINIBOSS)) return false;
-		return Random.Int(100) < EMPOWERED_PCT;
+		return Random.Int(100) < ChallengeBalance.EMPOWERED_PCT;
 	}
 
 	//---- 192 不死之身 ----
@@ -5191,7 +5172,6 @@ public final class ChallengeEffects {
 	 *
 	 * @return 格林武器；不触发时返回 null（调用方走原本的随机）
 	 */
-	private static final int GRIMM_WEAPON_DROP_PCT = 25;
 
 	public static com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee
 			.MeleeWeapon rollGrimmWeaponDrop() {
@@ -5206,7 +5186,7 @@ public final class ChallengeEffects {
 		int depth = Dungeon.effectiveDepth();
 		if (depth < 21) return null;
 
-		if (Random.Int(100) >= GRIMM_WEAPON_DROP_PCT) return null;
+		if (Random.Int(100) >= ChallengeBalance.GRIMM_WEAPON_DROP_PCT) return null;
 
 		//从已勾选的规则里收集候选
 		java.util.ArrayList<com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee
