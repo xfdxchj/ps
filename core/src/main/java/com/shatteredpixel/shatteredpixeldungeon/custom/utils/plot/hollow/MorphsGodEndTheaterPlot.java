@@ -191,7 +191,7 @@ public class MorphsGodEndTheaterPlot extends Plot {
         diagulewindow.setMainAvatar(new Image(Assets.Splashes.Morphs_1));
         diagulewindow.changeText(Messages.get(MorphsGodEndTheaterPlot.class, "message4"));
         GameScene.flash(Window.DeepPK_COLOR);
-        Badges.CITY_END();
+        // END(删除非原版徽章)
     }
 
     private void process_to_5A_1()

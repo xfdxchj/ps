@@ -646,7 +646,7 @@ public class CerDogBossLevel extends Level {
             && transition.centerCell == EXIT_CELL
             && unsignedInvitationLetter != null){
         GLog.w(Messages.get(Amulet.class, "hollow_city_1", hero.name()));
-        Badges.CITY_END();
+        // END(删除非原版徽章)
         hero.sprite.parent.add(new Delayer(3f) {
             @Override
             protected void onComplete() {

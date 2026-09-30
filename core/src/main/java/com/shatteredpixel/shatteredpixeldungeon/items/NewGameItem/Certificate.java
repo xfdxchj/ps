@@ -50,7 +50,7 @@ extends Item {
         hero.sprite.showStatus(0xFFFF00, TXT_VALUE, this.quantity);
         hero.spendAndNext(1.0f);
         Sample.INSTANCE.play("sounds/evoke.mp3", 1.0f, 1.0f, Random.Float(1.35f, 1.45f));
-        Badges.validateCertificate();
+        // END(删除非原版徽章)
         return true;
     }
 

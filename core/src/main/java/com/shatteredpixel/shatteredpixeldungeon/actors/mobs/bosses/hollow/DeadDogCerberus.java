@@ -1151,7 +1151,7 @@ public class DeadDogCerberus extends Mob {
         super.die( cause );
         Dungeon.level.unseal();
         //END(移植调整): 省略 GameRules.PropsScore()/GetBossLoot()（本 fork 无 GameRules；GetBossLoot 属魔绫 Boss 基类）
-        Badges.KILL_DOG();
+        // END(删除非原版徽章)
         GameScene.bossSlain();
 
         Buff.detach(hero, SoulDead.class);

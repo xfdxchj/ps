@@ -140,7 +140,7 @@ extends Mob {
             Badges.saveGlobal();
             Certificate.specialEndingBouns();
             Badges.silentValidateHappyEnd();
-            Badges.validategavial2();
+            // END(删除非原版徽章)
             Dungeon.win(Amulet.class);
             Dungeon.deleteGame(GamesInProgress.curSlot, true);
             Game.switchScene(SurfaceScene.class);

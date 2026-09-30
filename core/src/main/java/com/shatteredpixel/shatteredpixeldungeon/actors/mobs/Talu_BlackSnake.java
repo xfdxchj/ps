@@ -171,7 +171,7 @@ extends Mob {
         Dungeon.level.drop((Item)new Certificate((int)25), (int)this.pos).sprite.drop(this.pos);
         Certificate.specialEndingBouns();
         Badges.silentValidateHappyEnd();
-        Badges.validatewill();
+        // END(删除非原版徽章)
         Dungeon.win(Amulet.class);
         Dungeon.deleteGame(GamesInProgress.curSlot, true);
         Game.switchScene(SurfaceScene.class);

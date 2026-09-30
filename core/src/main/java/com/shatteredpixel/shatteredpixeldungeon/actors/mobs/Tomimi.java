@@ -266,7 +266,7 @@ extends Mob {
         Dungeon.level.drop((Item)new Certificate((int)40), (int)this.pos).sprite.drop(this.pos);
         GameScene.bossSlain();
         Dungeon.level.unseal();
-        Badges.validategavial1();
+        // END(删除非原版徽章)
         super.die(cause);
     }
 

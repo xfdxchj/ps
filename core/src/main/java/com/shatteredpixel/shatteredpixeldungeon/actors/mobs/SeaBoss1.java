@@ -182,7 +182,7 @@ extends Mob {
 
     @Override
     public void die(Object cause) {
-        Badges.validateiberia1();
+        // END(删除非原版徽章)
         GameScene.bossSlain();
         Dungeon.level.unseal();
         super.die(cause);

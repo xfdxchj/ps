@@ -114,7 +114,7 @@ public class GalaxyHeartDeadEndPlot extends Plot {
                             @Override
                             protected void onComplete() {
                                 GameScene.flash(Window.R_COLOR);
-                                Badges.CITY_END();
+                                // END(删除非原版徽章)
                                 Dungeon.hero.sprite.parent.add(new Delayer(3f){
                                     @Override
                                     protected void onComplete() {

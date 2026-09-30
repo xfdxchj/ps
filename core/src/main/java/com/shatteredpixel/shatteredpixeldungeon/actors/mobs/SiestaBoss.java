@@ -161,7 +161,7 @@ extends Mob {
             if (mob instanceof BossAgent || mob instanceof Schwarz) {
                 mob.die(cause);
             }
-            Badges.validatesiesta1();
+            // END(删除非原版徽章)
         }
         Bestiary.skipCountingEncounters = false;
         this.yell(Messages.get(this, "defeated"));
