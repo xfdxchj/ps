@@ -801,19 +801,6 @@ public class Item implements Bundlable {
 							if (user.buff(Talent.LethalMomentumTracker.class) != null){
 								user.buff(Talent.LethalMomentumTracker.class).detach();
 								user.next();
-							} else if (Item.this instanceof com.shatteredpixel.shatteredpixeldungeon
-									.endcontent.grimm.SilverGun
-									&& com.shatteredpixel.shatteredpixeldungeon.endcontent
-											.grimm.SilverGun.shouldBeFree(user)) {
-								//==== END(挑战 125 银色短铳): 投掷不消耗回合 ====
-								//原表："可以不消耗回合发出远程攻击"。
-								//这里复用原版 LethalMomentumTracker 的"免费出手"路径：
-								//直接 user.next() 推进时间轴但**不 spend**，于是玩家
-								//的回合没有被消耗掉，可以继续行动。
-								//
-								//次数由 SilverGun.shouldBeFree 限制（每回合 2 次），
-								//否则一回合能清空整层。
-								user.next();
 							} else {
 								user.spendAndNext(delay);
 							}

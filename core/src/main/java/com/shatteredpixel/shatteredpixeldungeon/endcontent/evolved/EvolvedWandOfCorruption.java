@@ -67,8 +67,7 @@ public class EvolvedWandOfCorruption extends WandOfCorruption {
 
 	@Override
 	public String desc() {
-		return "进化·腐灵法杖（源：腐蚀/腐化法杖之腐化）：每次命中敌人有 **50%** 概率附加 **2 个负面效果**（一重一轻）。\n\n"
-				+ "**继承源法杖的等级**；充能上限提升到 20。";
+		return "进化·腐灵法杖：每次命中敌人有 **50%** 概率附加 **2 个负面效果**。\n\n**继承源法杖的等级**；充能上限提升到 20。";
 	}
 
 	@Override

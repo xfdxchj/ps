@@ -25,8 +25,7 @@ public class EvolvedWandOfMagicMissile extends WandOfMagicMissile {
 
 	@Override
 	public String desc() {
-		return "进化·灵陨·魔弹法杖（源：魔弹法杖）：你掷出的魔弹命中敌人时会立即连作两段独立的魔弹伤害（魔弹 ×2），每一段都会各自结算一次命中加成。\n\n"
-				+ "**继承源法杖的等级**；充能上限提升到 20。";
+		return "进化·灵陨法杖：你掷出的魔弹命中敌人时会立即连作两段独立的魔弹伤害（魔弹 ×2），每一段都会各自结算一次命中加成。\n\n**继承源法杖的等级**；充能上限提升到 20。";
 	}
 
 	@Override

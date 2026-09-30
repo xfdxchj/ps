@@ -127,7 +127,7 @@ public class FairyFragment extends Item {
 		String tale = fairyTaleName(kind);
 		String lore = characterLore(kind);
 		if (tale.isEmpty()) return lore;
-		return lore + "\n\n——出自《" + tale + "》";
+		return lore;
 	}
 
 	@Override

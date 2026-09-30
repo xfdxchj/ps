@@ -131,8 +131,6 @@ public class MissileSprite extends ItemSprite implements Tweener.Listener {
 				.weapons.AssassinDagger.class,     0);
 		ANGULAR_SPEEDS.put(com.shatteredpixel.shatteredpixeldungeon.endcontent
 				.weapons.AssassinateDagger.class,  0);
-		ANGULAR_SPEEDS.put(com.shatteredpixel.shatteredpixeldungeon.endcontent
-				.grimm.SilverGun.SilverBullet.class, 0); //银色子弹
 	}
 
 	//TODO it might be nice to have a source and destination angle, to improve thrown weapon visuals

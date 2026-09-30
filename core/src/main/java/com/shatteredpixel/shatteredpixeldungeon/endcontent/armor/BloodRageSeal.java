@@ -42,7 +42,7 @@ public class BloodRageSeal extends BrokenSeal {
 	}
 
 	@Override public String info(){
-		return "战意决堤：以当前生命 30% 为代价,进入狂暴——攻击伤害提高 100% (±不改变攻速),持续 " +
+		return "战意决堤：以当前生命 30% 为代价,进入狂暴——攻击伤害提高 100% ,持续 " +
 				Math.round(EndRageAttack.DURATION) + " 回合。" +
 				"\n技能冷却 200 回合;冷却中技能键仍可见,仅提示剩余回合。" +
 				"\n贴附到护甲并穿戴，即可在护甲上使用此技能。";

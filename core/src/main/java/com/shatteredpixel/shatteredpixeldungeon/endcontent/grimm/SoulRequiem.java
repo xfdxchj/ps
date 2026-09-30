@@ -53,8 +53,7 @@ public class SoulRequiem extends Item {
 	@Override public String info(){
 		return "一段写在羊皮上的、没有旋律的歌词。\n\n" +
 				"- 使用后获得 **" + DURATION + " 回合**的不死状态\n" +
-				"- 期间生命值降到 0 也不会死（会停在 1）\n" +
-				"- **状态结束时若已欠下死亡，仍会死去**\n\n" +
+				"- 期间生命值降到 0 也不会死\n\n" +
 				"它不是护身符，只是把判决往后推了三个回合。";
 	}
 

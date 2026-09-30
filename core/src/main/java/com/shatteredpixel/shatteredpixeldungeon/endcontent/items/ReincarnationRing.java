@@ -79,7 +79,7 @@ public class ReincarnationRing extends Ring {
 
 	@Override
 	public String info(){
-		return "戒指内侧刻着一圈咬住自己尾巴的蛇。\n\n" +
+		return "如同终末之眼般的戒指。\n\n" +
 				"-拥有**所有戒指**的效果\n" +
 				"-提供的效果等级**翻倍**（+100%）\n" +
 				"-每升级 1 级额外折算 **0.5 级**（升级效果 +50%）\n" +

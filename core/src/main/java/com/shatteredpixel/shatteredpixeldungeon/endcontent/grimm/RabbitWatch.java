@@ -58,7 +58,7 @@ public class RabbitWatch extends Item {
 
 	@Override public String info(){
 		return "一只不再走动的怀表，指针停在某个不会到来的时刻。\n\n" +
-				"- 使用后**立即重置银色短铳的冷却**\n" +
+				"- 银色短铳已被移除，本道具暂无效果\n" +
 				"- 怀表自身冷却 " + WATCH_CD + " 回合";
 	}
 
@@ -96,18 +96,8 @@ public class RabbitWatch extends Item {
 			return;
 		}
 
-		boolean reset = SilverGun.resetCooldown(hero);
-
-		//怀表进入冷却
-		Buff.affect(hero, WatchCooldown.class, (float) WATCH_CD);
-
-		if (reset) {
-			GLog.i("银色短铳的冷却被归零了。");
-		} else {
-			GLog.i("铳本来就还没热。");
-		}
-
-		hero.spendAndNext(1f);
+		//END(用户定稿·删除银色短铳): 怀表失去唯一目标，当前无效果。
+		GLog.w("银色短铳已被移除，怀表现在没有效果。");
 	}
 
 	/** END(125): 怀表自身的冷却。 */
