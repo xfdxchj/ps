@@ -114,11 +114,22 @@ public class EvolvedWandOfDisintegration extends WandOfDisintegration implements
 		ArrayList<Ballistica> list = new ArrayList<>();
 		list.add( aim );
 
-		if (mode == MODE_SPLIT){
-			Ballistica left  = rotatedBeam( aim, aim.sourcePos, -SIDE_DEG );
-			Ballistica right = rotatedBeam( aim, aim.sourcePos, +SIDE_DEG );
-			if (left  != null) list.add( left );
-			if (right != null) list.add( right );
+		if (mode == MODE_SPLIT && aim.path.size() >= 2){
+			//END(二.11): 按示意图 —— 在主光束落点 d 的"后方对角"上下各 45° 分裂。
+			//即目标 = d + 垂直方向 - 主方向。
+			int w = Dungeon.level.width();
+			int d = aim.collisionPos;
+			int last = aim.path.get(aim.path.size()-1);
+			int prev = aim.path.get(aim.path.size()-2);
+			int dx = (last % w) - (prev % w);
+			int dy = (last / w) - (prev / w);
+			int px = -dy, py = dx;                       //垂直方向
+			int c1 = d + (px - dx) + (py - dy) * w;
+			int c2 = d - (px + dx) - (py + dy) * w;
+			c1 = Math.max(0, Math.min(c1, Dungeon.level.length()-1));
+			c2 = Math.max(0, Math.min(c2, Dungeon.level.length()-1));
+			if (c1 != d) list.add(new Ballistica(aim.sourcePos, c1, Ballistica.WONT_STOP));
+			if (c2 != d) list.add(new Ballistica(aim.sourcePos, c2, Ballistica.WONT_STOP));
 		}
 		return list;
 	}
