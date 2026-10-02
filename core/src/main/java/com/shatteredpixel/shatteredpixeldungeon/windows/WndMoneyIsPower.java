@@ -46,8 +46,8 @@ public class WndMoneyIsPower extends Window {
 			{ "随机法杖",   "WAND",     600  },
 			{ "随机戒指",   "RING",     600  },
 			{ "随机神器",   "ARTIFACT", 1200 },
-			{ "力量药水",   "@STR",     1500 },
-			{ "升级卷轴",   "@SOU",     1800 },
+			{ "力量药水",   "@STR",     400  },
+			{ "升级卷轴",   "@SOU",     500  },
 			{ "经验药水",   "@EXP",     1000 },
 	};
 

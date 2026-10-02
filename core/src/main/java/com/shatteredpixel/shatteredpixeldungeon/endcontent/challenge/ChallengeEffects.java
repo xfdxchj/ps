@@ -2435,7 +2435,7 @@ public final class ChallengeEffects {
 		}
 	}
 
-	/** END(90 雷暴): 闪电劈中随机角色，伤害 = 3 × 层数 ÷ 5（已定稿）。 */
+	/** END(90 雷暴): 闪电劈中随机角色，伤害 = 3 × 层数 / 5（已定稿）。 */
 	private static void strikeLightning(
 			com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero hero) {
 

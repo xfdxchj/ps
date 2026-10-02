@@ -370,7 +370,7 @@ public final class ChallengeRegistry {
 		done(all, 80, "冰天雪地",   "frozen_world",     "环境", T_TWO, 2, T_EASY,   "",
 				"玩家每回合 **1%** 概率寒冷、**1%** 概率冰冻（原表为 13%/2%，实测过高已下调）。");
 		done(all, 90, "雷暴",       "thunderstorm",     "环境", T_TWO, 2, T_EASY,   "",
-				"每回合 5% 概率闪电随机劈中一个角色，伤害 = 3 × 层数 ÷ 5，并可能点燃。");
+				"每回合 5% 概率闪电随机劈中一个角色，伤害 = 3 × 层数 / 5，并可能点燃。");
 
 		//---- 装备 ----
 		done(all, 55, "不稳定强化", "unstable_upgrade", "装备", T_TWO, 2, T_EASY,   "s:108",
@@ -410,7 +410,7 @@ public final class ChallengeRegistry {
 		done(all, 71, "喝大了",     "drunk",            "特殊", T_TWO, 2, T_EASY,   "",
 				"每回合 3% 概率触发眩晕 3 回合。");
 		done(all, 72, "前程似锦",   "bright_future",    "音乐", T_NEU, 1, T_MED,    "",
-				"每回合 3% 概率停止行动，说出「王同学，我祝你前～程～似锦」。");
+				"每回合 3% 概率停止行动，说出「王同学，我祝你前~程~似锦」。");
 		done(all, 95, "耗子尾汁",   "rat_tail_soup",    "音乐", T_BEN, 1, T_MED,    "",
 				"每回合 3% 概率显示「耗子尾汁」，并播放随机音效。");
 		done(all, 96, "奥利给",     "oligei",           "音乐", T_TWO, 1, T_MED,    "",

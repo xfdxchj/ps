@@ -91,7 +91,7 @@ public class AdaptiveResistance extends FlavourBuff {
 			//END: 适应时给一个"咔哒"音效
 			try {
 				com.watabou.noosa.audio.Sample.INSTANCE.play(
-						com.shatteredpixel.shatteredpixeldungeon.Assets.Sounds.CLICK);
+						com.shatteredpixel.shatteredpixeldungeon.Assets.Sounds.UNLOCK);
 			} catch (Throwable ignored) { }
 			if (target.sprite != null){
 				target.sprite.showStatus(CharSprite.WARNING, "适应·" + typeName(dominant));

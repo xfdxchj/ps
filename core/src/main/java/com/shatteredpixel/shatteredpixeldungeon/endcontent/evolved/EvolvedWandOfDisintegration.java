@@ -5,7 +5,7 @@
  *
  *   形态 0·湮解·单线(default)：耗 1 充能。沿瞄准单线投出一束解离柱，
  *      可穿透沿途所有单位、轰开易燃地形；本形态伤害 ×1.2。
- *   形态 1·湮解·分裂：耗 1 充能。以瞄准方向为中心，另向对称 ±45° 各投一束，
+ *   形态 1·湮解·分裂：耗 1 充能。以瞄准方向为中心，另向对称 +/-45° 各投一束，
  *      共 3 束(中心 + 左右)。三束各沿各自弹道穿透命中，本形态伤害不额外提升。
  */
 package com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved;
@@ -105,7 +105,7 @@ public class EvolvedWandOfDisintegration extends WandOfDisintegration implements
 
 	/* ---------------- 三束/单束 ---------------- */
 
-	/** 当前形态应实际射出的光束们。单线只有瞄准线；分裂再加两条对称 ±SIDE_DEG 的旋转束。 */
+	/** 当前形态应实际射出的光束们。单线只有瞄准线；分裂再加两条对称 +/-SIDE_DEG 的旋转束。 */
 	private ArrayList<Ballistica> beams( Ballistica aim ){
 
 		ArrayList<Ballistica> list = new ArrayList<>();
