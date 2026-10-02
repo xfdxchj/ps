@@ -1399,19 +1399,8 @@ public abstract class Level implements Bundlable {
 		//**任务/剧情物品不换算**（天狗面具等），否则主线会断。
 		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 				.ChallengeEffects.shouldConvertDropToGold(item)) {
-			//END(修复·黄金地牢金币公式): 直接按文档所有者口径 (20~50)×区域 生成金币堆
-			int value = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
-					.ChallengeEffects.goldenGoldAmount();
-
-			//==== END(修复·黄金地牢金币太少): 提高折算比例 ====
-			//文档所有者反馈："黄金地牢金币数量太少，该为替代物品生成，
-			//变成一个金币堆。"
-			//
-			//原实现打 4 折（value * 2 / 5），那是照"卖店价格"折算的 ——
-			//但黄金地牢里**没有别的获取途径**，40% 会让玩家穷得买不起东西。
-			//
-			//现在按**全额物品价值 × 1.5 倍补偿**折算。
-			value = Math.max(1, value);
+			//END(修复·黄金地牢金币公式): 按物品售价的 60% 折算成金币
+			int value = Math.max(1, Math.round(item.value() * 0.60f));
 
 			//END(修复): 不要用 Gold().random() —— 它会先随机一个数量，
 			//再被 quantity() 覆盖，白白消耗一次随机数（影响种子一致性）。

@@ -1116,15 +1116,6 @@ public class Hero extends Char {
 			}
 		}
 
-		//==== END(挑战 162 真实地牢): 空气稀薄，定期停下深呼吸 ====
-		//与 70/72/96 的"停止行动"同样处理：消耗本回合并退出。
-		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
-				.ChallengeEffects.tickRealisticBreath(this)) {
-			curAction = null;
-			spendAndNext( TICK );
-			return false;
-		}
-
 		//==== END(挑战 159 绵羊地牢): 玩家周围 13% 概率生成 1~2 只绵羊 ====
 		//生成在**玩家视野外**的空地上（见 findSheepSpot 的说明）——
 		//羊突然在眼前冒出来会很突兀，而且会挡住视野。

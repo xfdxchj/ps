@@ -147,7 +147,7 @@ public final class ChallengeRegistry {
 			"重新生成的怪物**至少 2 只成堆**出现。");
 		done(all, 225, "全副武装", "elite_champions", "英烈", ChallengeDef.TENDENCY_MONSTER, 3, ChallengeDef.TIER_MEDIUM, "s:116",
 			"精英出现率提升；精英有 **1/3** 概率成为**高阶精英**（多带一个词条 + 1 个跟班）。");
-		done(all, 226, "现代战争", "dungeon_of_champions", "英烈", ChallengeDef.TENDENCY_MONSTER, 3, ChallengeDef.TIER_HARD, "s:116,225",
+		done(all, 226, "现代战争", "dungeon_of_champions", "英烈", ChallengeDef.TENDENCY_MONSTER, 3, ChallengeDef.TIER_HARD, "p:116;s:225",
 			"精英出现率进一步提高；精英**必定多带一个词条**；高阶精英带 **2 个跟班**。");
 
 		done(all, 228, "我的世界", "jingmi", "音乐", ChallengeDef.TENDENCY_NEUTRAL, 2, ChallengeDef.TIER_SERIES, "",
@@ -511,8 +511,6 @@ public final class ChallengeRegistry {
 				"可以**消耗金币给物品升级**：费用 = 100 × (当前等级 + 1)，**无等级上限**。");
 		done(all, 161,"钱就是命",   "money_is_life",    "经济", T_BEN, 2, T_MED,    "s:41",
 				"受到**致命伤**时用金币抵消伤害：每 1 点伤害消耗 `12 - 2×当前区域` 金币（最低 2 金），把生命保留在 1。**越深越省**。");
-		done(all, 162,"真实地牢",   "realistic_dungeon","环境", T_RES, 2, T_EASY,   "",
-				"空气稀薄：每 50-5x(层数/5) 回合必须停下深呼吸一次（层数越深间隔越短）。");
 		done(all, 163,"古代升级",   "ancient_upgrade",  "特殊", T_BEN, 2, T_MED,    "",
 				"玩家每达到 3 级，伤害的下限与上限各提升 10%。");
 		done(all, 164,"魔法地牢",   "magic_dungeon",    "怪物", T_MON, 2, T_MED,    "s:141",

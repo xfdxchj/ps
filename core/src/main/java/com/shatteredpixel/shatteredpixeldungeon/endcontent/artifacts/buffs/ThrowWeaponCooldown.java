@@ -8,4 +8,5 @@ public class ThrowWeaponCooldown extends FlavourBuff {
 	@Override public int icon(){ return BuffIndicator.MARK; } //27, <32 确保两套图集都有帧
 	@Override public String name(){ return "飞武冷却"; }
 	@Override public String toString(){ return name(); }
+	@Override public String desc(){ return "飞掷武器还需 " + dispTurns() + " 回合才能再次使用。"; }
 }

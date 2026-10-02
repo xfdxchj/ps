@@ -8,4 +8,5 @@ public class RageCooldown extends FlavourBuff {
 	@Override public int icon(){ return BuffIndicator.FURY; } //18, <32 确保大片/小片两套图集都有帧
 	@Override public String name(){ return "狂暴冷却"; }
 	@Override public String toString(){ return name(); }
+	@Override public String desc(){ return "狂暴技能正在冷却，还需 " + dispTurns() + " 回合。"; }
 }

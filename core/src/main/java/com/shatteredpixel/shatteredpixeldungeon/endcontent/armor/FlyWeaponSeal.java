@@ -60,8 +60,9 @@ public class FlyWeaponSeal extends BrokenSeal {
 					@Override public void call(){
 						Hero cur = Dungeon.hero != null ? Dungeon.hero : hero;
 						if (ch.isAlive()){
-							int dmg = Math.round(wp.damageRoll(cur) * 0.80f);
-							ch.damage(Math.max(1, dmg), wp);
+							//END(修复): 走真实攻击流程 —— 有命中判定、攻击音效与武器 proc，
+							//伤害按 80% 结算；不再直接 ch.damage 造成"莫名必中"。
+							cur.attack(ch, 0.80f, 0f, 1f);
 						}
 					}
 				});

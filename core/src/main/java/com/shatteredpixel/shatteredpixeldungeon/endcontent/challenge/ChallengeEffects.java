@@ -977,8 +977,6 @@ public final class ChallengeEffects {
 	public static final int ANTI_MAGIC_ZONE   = 141;
 	/** 149 黏糊蜂蜜：每层刷新 2 只蜜蜂。 */
 	public static final int STICKY_HONEY      = 149;
-	/** 162 真实地牢：空气稀薄，需要定期停下深呼吸。 */
-	public static final int REALISTIC_DUNGEON = 162;
 	/** 159 绵羊地牢：玩家周围周期性生成绵羊。 */
 	public static final int SHEEP_DUNGEON     = 159;
 	/** 65 及时雨：第一次致命伤害不死，保留 1 点生命。 */
@@ -1747,57 +1745,6 @@ public final class ChallengeEffects {
 	 */
 	public static int honeyBeeCount() {
 		return on(STICKY_HONEY) ? HONEY_BEES : 0;
-	}
-
-	/**
-	 * END(162 真实地牢): 空气稀薄 —— 玩家需要每 N 回合停下深呼吸一次。
-	 *
-	 * <p>原表："每下一个区域，空气会稀薄，需要每 50−5×(层数/5) 回合停下来深呼吸"。
-	 * 即**层数越深，间隔越短**：第 5 层 = 50−5 = 45 回合，第 25 层 = 50−25 = 25 回合。
-	 * 最低不低于 {@link #REALISTIC_MIN_INTERVAL}，避免深层变成每回合都要停。
-	 *
-	 * @return 两次深呼吸之间的回合间隔
-	 */
-	public static final int REALISTIC_MIN_INTERVAL = 15;
-
-	public static int realisticBreathInterval() {
-		int region = Math.max(1, Dungeon.depth / 5);        //第 5 层算 1 区
-		int interval = 50 - 5 * region;
-		return Math.max(REALISTIC_MIN_INTERVAL, interval);
-	}
-
-	/**
-	 * END(162 真实地牢): 玩家本回合是否需要"停下深呼吸"。
-	 *
-	 * <p>用独立的计数器，而不是挂 buff —— 这个状态不需要存读档
-	 * （深呼吸只是每 N 回合强制消耗一回合，中途存读档重新计数无伤大雅）。
-	 *
-	 * @return true 表示本回合被强制停下
-	 */
-	private static int breathCounter = 0;
-
-	public static boolean tickRealisticBreath(
-			com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero hero) {
-		if (!on(REALISTIC_DUNGEON) || hero == null || !hero.isAlive()) {
-			breathCounter = 0;
-			return false;
-		}
-
-		breathCounter++;
-		int interval = realisticBreathInterval();
-		if (breathCounter < interval) return false;
-
-		breathCounter = 0;
-
-		//停下深呼吸：消耗本回合 + 给一个短暂的可视反馈
-		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.prolong(
-				hero,
-				com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Paralysis.class,
-				1f);
-		com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w(
-				com.shatteredpixel.shatteredpixeldungeon.messages.Messages.get(
-						ChallengeEffects.class, "breath_stop"));
-		return true;
 	}
 
 	/** 71 喝大了：概率与眩晕回合数。 */

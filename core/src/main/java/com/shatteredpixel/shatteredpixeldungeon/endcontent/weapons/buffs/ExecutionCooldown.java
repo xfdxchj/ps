@@ -8,4 +8,5 @@ public class ExecutionCooldown extends FlavourBuff {
 	@Override public int icon(){ return BuffIndicator.CRIPPLE; } //23, <32 确保两套图集都有帧
 	@Override public String name(){ return "处决冷却"; }
 	@Override public String toString(){ return name(); }
+	@Override public String desc(){ return "处决技能正在冷却，还需 " + dispTurns() + " 回合。"; }
 }

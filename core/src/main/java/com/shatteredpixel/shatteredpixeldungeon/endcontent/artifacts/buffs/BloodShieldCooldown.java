@@ -8,4 +8,5 @@ public class BloodShieldCooldown extends FlavourBuff {
 	@Override public int icon(){ return BuffIndicator.ARMOR; }
 	@Override public String name(){ return "血盾冷却"; }
 	@Override public String toString(){ return name(); }
+	@Override public String desc(){ return "血盾技能正在冷却，还需 " + dispTurns() + " 回合。"; }
 }
