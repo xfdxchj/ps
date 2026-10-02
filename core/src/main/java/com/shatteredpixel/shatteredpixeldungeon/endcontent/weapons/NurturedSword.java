@@ -113,10 +113,10 @@ public class NurturedSword extends MeleeWeapon {
 	public String info(){
 		int t = effectiveTier();
 		StringBuilder sb = new StringBuilder();
-		sb.append("剑身上刻着一圈年轮。它记得自己每一次被磨利的样子。\n");
-		sb.append("。\n");
+		sb.append("剑身上刻着一圈年轮。它记得自己每一次被磨利的样子。\n\n");
+		sb.append("**伤害：1 阶 +0 为 1-10，5 阶 +12 为 17-114**（都随等级成长）。\n");
 		sb.append("-每 **+").append(LEVELS_PER_TIER)
-				.append(" 级**提升一阶\n");
+				.append(" 级**提升一阶（最高 ").append(MAX_TIER).append(" 阶）\n");
 		sb.append("-阶数越高，**基础伤害与每级成长**都越高\n");
 		sb.append("-开局即可获得\n\n");
 

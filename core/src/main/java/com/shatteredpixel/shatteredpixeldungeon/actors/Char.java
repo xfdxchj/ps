@@ -1318,12 +1318,25 @@ public abstract class Char extends Actor {
 			int at = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 					.AdaptiveResistance.classify(src);
 			if (at >= 0) {
+				//END(修复·魔像罗): 古神之拳不独立适应，统一记在古神本体上
+				Char adaptOwner = this;
+				if (this instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.YogFist
+						&& Dungeon.level != null) {
+					for (com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob m
+							: Dungeon.level.mobs) {
+						if (m instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs
+								.YogDzewa && m.isAlive()) {
+							adaptOwner = m;
+							break;
+						}
+					}
+				}
 				com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
-						.AdaptiveResistance ar = buff(
+						.AdaptiveResistance ar = adaptOwner.buff(
 						com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 								.AdaptiveResistance.class);
 				if (ar == null) {
-					ar = Buff.affect(this,
+					ar = Buff.affect(adaptOwner,
 							com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 									.AdaptiveResistance.class);
 				}
