@@ -2291,6 +2291,10 @@ public final class ChallengeEffects {
 		if (mark != null) {
 			mark.addStack(ChallengeBalance.FRENZY_MAX_STACK);
 		}
+		if (attacker.sprite != null){
+			attacker.sprite.showStatus(
+					com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite.WARNING, "狂热");
+		}
 	}
 
 	/**
@@ -2311,6 +2315,10 @@ public final class ChallengeEffects {
 		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff
 				.affect(enemy, com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Bleeding.class)
 				.set(1f);
+		if (enemy.sprite != null){
+			enemy.sprite.showStatus(
+					com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite.NEGATIVE, "流血");
+		}
 	}
 
 	/**
@@ -2341,6 +2349,10 @@ public final class ChallengeEffects {
 
 		//立即反击（不消耗回合）
 		enemy.attack(attacker);
+		if (enemy.sprite != null){
+			enemy.sprite.showStatus(
+					com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite.WARNING, "反击");
+		}
 	}
 
 	/**
