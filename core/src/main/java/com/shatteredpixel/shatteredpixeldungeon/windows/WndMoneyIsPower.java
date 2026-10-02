@@ -78,7 +78,7 @@ public class WndMoneyIsPower extends Window {
 			final String label = entry[0];
 			final String key   = entry[1];
 			final Runnable action = () -> buy(label, key);
-			RedButton btn = new RedButton(label + "  （价值 x5）") {
+			RedButton btn = new RedButton(label + "  （按商店价）") {
 				@Override
 				protected void onClick() {
 					action.run();
@@ -143,7 +143,8 @@ public class WndMoneyIsPower extends Window {
 			GLog.w("这件东西暂时缺货。");
 			return;
 		}
-		int price = Math.max(1, item.value() * 5); //END: 价格 = 物品价值 x5（与 1 区商店原价一致）
+		int price = Math.max(1, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs
+				.Shopkeeper.sellPrice(item)); //END: 按商店真实售价
 		if (Dungeon.gold < price) {
 			GLog.w("金币不够，需要 " + price + " 金币。");
 			return;
