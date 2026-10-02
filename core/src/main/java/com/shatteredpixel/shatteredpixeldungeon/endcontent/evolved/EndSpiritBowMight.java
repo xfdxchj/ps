@@ -13,11 +13,11 @@ import com.watabou.utils.Bundle;
 import java.util.ArrayList;
 
 /**
- * END 灵能弓· 成品 ①「附魔灵弓」（双模式）。
+ * END 灵能弓· 成品 1.「附魔灵弓」（双模式）。
  *
  * 需求（最终要求）：
- *  ① 锻造时可在本弓详情里从【正面向附魔全池随机抽 5 个】选 1 个写成“本体附魔”(enchantment)。
- *  ② 双模式(背包-本弓窗口里一排按钮手动来回切、可存档)：
+ *  1. 锻造时可在本弓详情里从【正面向附魔全池随机抽 5 个】选 1 个写成“本体附魔”(enchantment)。
+ *  2. 双模式(背包-本弓窗口里一排按钮手动来回切、可存档)：
  *      - 模式 A「稳固」：触发【本体附魔】，并给这把弓一个“+50% 奥术戒”等价加成
  *        (在 Weapon.Enchantment.genericProcChanceMultiplier 对当局只为本模式叠加 +0.5)，
  *        本体大多数时候会必然触发、>100% 溢出再自然变强。
@@ -49,7 +49,7 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 
 	@Override
 	public String desc() {
-		return "进化·附魔灵弓：“随机附魔工匠”。先在锻造/背包中从全池正向附魔里 5 选 1 定出【本体附魔】，随后在背包-弓窗口可切两种用法：\n\n▍稳固本体：每击按本体附魔本身正常强度触发；\n▍随机附魔：每击打出一个全池【随机】附魔并弹名，含稀有在内。\n\n伤害比原版灵能弓高 20%，随角色等级成长；无法用升级卷轴强化。";
+		return "进化·附魔灵弓：“随机附魔工匠”。先在锻造/背包中从全池正向附魔里 5 选 1 定出【本体附魔】，随后在背包-弓窗口可切两种用法：\n\n-稳固本体：每击按本体附魔本身正常强度触发；\n-随机附魔：每击打出一个全池【随机】附魔并弹名，含稀有在内。\n\n伤害比原版灵能弓高 20%，随角色等级成长；无法用升级卷轴强化。";
 	}
 
 	/** 进阶弓整体伤害比原版灵能弓高 20%（仍随角色等级成长、不可被升级卷轴）。 */
@@ -127,7 +127,7 @@ public class EndSpiritBowMight extends SpiritBow implements EndModeWand {
 		});
 	}
 
-	/** 附魔英文类名 → 原版官方汉化前缀名(对齐 items_zh enchantments.*.name，不自造词)。 */
+	/** 附魔英文类名 -> 原版官方汉化前缀名(对齐 items_zh enchantments.*.name，不自造词)。 */
 	private static String cnEnchantName( Enchantment e ){
 		if (e == null) return "？";
 		String sn = e.getClass().getSimpleName();

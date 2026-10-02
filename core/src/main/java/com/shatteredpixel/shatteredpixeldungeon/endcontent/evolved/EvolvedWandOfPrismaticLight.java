@@ -1,7 +1,7 @@
 /*
  * Shattered Pixel Dungeon: End —《破碎的像素地牢：终焉扩展》
  * B4 棱光进化重新设计（取代原"+30% 伤害"的 M2 描述）：
- *   棱辉法杖 → 「灵光光束」，拥有人手可选的两种发射形态（在背包-法杖详情窗口切换）：
+ *   棱辉法杖 -> 「灵光光束」，拥有人手可选的两种发射形态（在背包-法杖详情窗口切换）：
  *
  *   形态 0·普攻直射(default)：耗 1 充能。退回父类的单目标直射——照亮地形浅层，
  *      只命中瞄准落点上的一个敌对单位，附带致盲/对亡灵·恶魔增伤（基础 affectTarget 语义）。
@@ -66,7 +66,7 @@ public class EvolvedWandOfPrismaticLight extends WandOfPrismaticLight implements
 
 	@Override
 	public String desc() {
-		return "进化·棱辉法杖：拥有两种发射形态，可在背包-法杖窗口切换。\n\n▍形态 0·普攻·直射：直射单目标，照亮落点周围 3×3，有概率致盲并对亡灵/恶魔增伤。\n▍形态 1·灵光光束：射出 3 格宽的矩形光带，光带内每个敌对单位独立承受致盲/伤害判定，并照亮沿途地形。\n\n充能上限提升到 20；**继承源法杖的等级**。";
+		return "进化·棱辉法杖：拥有两种发射形态，可在背包-法杖窗口切换。\n\n-形态 0·普攻·直射：直射单目标，照亮落点周围 3×3，有概率致盲并对亡灵/恶魔增伤。\n-形态 1·灵光光束：射出 3 格宽的矩形光带，光带内每个敌对单位独立承受致盲/伤害判定，并照亮沿途地形。\n\n充能上限提升到 20；**继承源法杖的等级**。";
 	}
 
 	@Override
@@ -194,7 +194,7 @@ public class EvolvedWandOfPrismaticLight extends WandOfPrismaticLight implements
 			return result;
 		}
 
-		//垂直扩展半宽(3格宽 → 每侧1格)
+		//垂直扩展半宽(3格宽 -> 每侧1格)
 		int half = (BEAM_WIDTH - 1) / 2;
 
 		for (int i = 0; i < path.size(); i++){
@@ -296,7 +296,7 @@ public class EvolvedWandOfPrismaticLight extends WandOfPrismaticLight implements
 			//垂直向量
 			int perpX = -dirY, perpY = dirX;
 
-			for (int s = -1; s <= 1; s++){   //s=-1,0,1 → 三条平行射线
+			for (int s = -1; s <= 1; s++){   //s=-1,0,1 -> 三条平行射线
 				int tx = endP.x + perpX * s;
 				int ty = endP.y + perpY * s;
 				if (tx < 0 || ty < 0 || tx >= Dungeon.level.width() || ty >= Dungeon.level.height()){

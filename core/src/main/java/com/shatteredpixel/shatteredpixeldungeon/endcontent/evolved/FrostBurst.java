@@ -53,7 +53,7 @@ public class FrostBurst extends FlavourBuff {
 			return true;
 		}
 
-		//冻结刚消失 → 引爆：主目标 150%，周围 3×3 各 50%
+		//冻结刚消失 -> 引爆：主目标 150%，周围 3×3 各 50%
 		if (wasFrozen && target.buff(Frost.class) == null){
 			if (damage > 0 && target.isAlive()){
 				target.damage(damage, this);
@@ -96,7 +96,7 @@ public class FrostBurst extends FlavourBuff {
 			}
 		}
 
-		//寒冷堆满 → 冻结
+		//寒冷堆满 -> 冻结
 		Chill chill = target.buff(Chill.class);
 		if (chill != null && chill.cooldown() >= Chill.DURATION
 				&& !target.isImmune(Frost.class)){

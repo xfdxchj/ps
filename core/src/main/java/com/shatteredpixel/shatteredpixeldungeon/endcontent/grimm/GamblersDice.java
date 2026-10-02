@@ -29,7 +29,7 @@ import java.util.ArrayList;
  *
  * <h3>限制</h3>
  * <ul>
- *   <li>只对**可堆叠且数量 ≥ 2** 的物品生效 —— 数量 1 的"翻倍"没有意义，
+ *   <li>只对**可堆叠且数量 >= 2** 的物品生效 —— 数量 1 的"翻倍"没有意义，
  *       而"清零"会直接毁掉唯一一件装备，太粗暴</li>
  *   <li>不可对**任务物品**使用</li>
  *   <li>不可对**已装备**的物品使用</li>
@@ -54,7 +54,7 @@ public class GamblersDice extends Item {
 				"- 使用后选择一件**可堆叠**的物品赌博\n" +
 				"- **" + (int)(WIN_CHANCE * 100) + "% 成功**：数量**翻倍**\n" +
 				"- **" + (int)((1 - WIN_CHANCE) * 100) + "% 失败**：数量**清零**\n\n" +
-				"只能赌数量 ≥ 2 的可堆叠物品 —— 单件装备不参与。";
+				"只能赌数量 >= 2 的可堆叠物品 —— 单件装备不参与。";
 	}
 
 	@Override public boolean isUpgradable(){ return false; }
@@ -144,8 +144,8 @@ public class GamblersDice extends Item {
 		//说明 quantity 真的被减成了负数。
 		//
 		//根因有两层：
-		//  ① {@code Item.quantity(0)} 只改数字、不移除物品；
-		//  ② 即使加了 detach，如果容器不对（{@code detachAll(backpack)}
+		//  1. {@code Item.quantity(0)} 只改数字、不移除物品；
+		//  2. 即使加了 detach，如果容器不对（{@code detachAll(backpack)}
 		//     只处理背包，而骰子可能被放在别的地方），物品仍留在手里，
 		//     下次再减就成 -1。
 		//

@@ -1,6 +1,6 @@
 /*
  * Shattered Pixel Dungeon: End —《破碎的像素地牢：终焉扩展》
- * M2 真机制：WandOfBlastWave → 震岳法杖（进化新物品 + 独特附魔光泽）。
+ * M2 真机制：WandOfBlastWave -> 震岳法杖（进化新物品 + 独特附魔光泽）。
  * 对应开发.txt 描述：冲击波:伤害+50%、撞墙眩晕翻倍、可调冲击距离(1/3/5格)。
  */
 package com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved;

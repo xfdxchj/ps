@@ -147,7 +147,7 @@ public class FairyFragment extends Item {
 	/**
 	 * END(129 未知的童话书): 捡起残片时给书补一页，**残片本身不进背包**。
 	 *
-	 * <p>文档所有者定稿："（残片 → 残页 → 少女的炼金路径）去掉，
+	 * <p>文档所有者定稿："（残片 -> 残页 -> 少女的炼金路径）去掉，
 	 * 因为如果已有碎片 1 捡到 2 回变 2 个 1，即使修复，占 9 个格子不好。"
 	 *
 	 * <h3>做法</h3>
@@ -175,7 +175,7 @@ public class FairyFragment extends Item {
 		//记进书里（书不在身上时也要提示，否则玩家不知道为什么没拿到）
 		UnknownFairyTale book = UnknownFairyTale.of(hero);
 		if (book == null) {
-			//没有书 → 退回原版行为（留在背包里），总比凭空消失好
+			//没有书 -> 退回原版行为（留在背包里），总比凭空消失好
 			return super.doPickUp(hero, pos);
 		}
 

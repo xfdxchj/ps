@@ -11,8 +11,8 @@ import java.util.HashSet;
 
 /**
  * END(无尽炼金): 戒指碎片。
- * 6 枚**不同种类**的原版戒指 → 1 个碎片；碎片记录用过的戒指种类。
- * 2 个互不重复的碎片 + 2 无尽锭 + 戒指核心 → 轮回噬灭之戒。
+ * 6 枚**不同种类**的原版戒指 -> 1 个碎片；碎片记录用过的戒指种类。
+ * 2 个互不重复的碎片 + 2 无尽锭 + 戒指核心 -> 轮回噬灭之戒。
  */
 public class RingFragment extends Item {
 
@@ -90,7 +90,7 @@ public class RingFragment extends Item {
 		return true;
 	}
 
-	/** 炼金：恰好 6 枚不同种类的原版戒指 → 1 碎片。 */
+	/** 炼金：恰好 6 枚不同种类的原版戒指 -> 1 碎片。 */
 	public static class FragmentRecipe extends Recipe {
 		@Override
 		public boolean testIngredients(ArrayList<Item> ingredients){

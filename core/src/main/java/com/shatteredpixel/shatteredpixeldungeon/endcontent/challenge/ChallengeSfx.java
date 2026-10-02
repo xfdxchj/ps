@@ -283,7 +283,7 @@ public final class ChallengeSfx {
 
 		//==== END(诊断·每回合状态): 每 N 回合打印一次，避免刷屏 ====
 		//关键：这里能直接看出**掩码里到底有没有勾这些规则**。
-		//若全是 false，说明勾选没保存（UI→存档 的链路问题），
+		//若全是 false，说明勾选没保存（UI->存档 的链路问题），
 		//而不是音效或概率的问题。
 		turnCounter++;
 		if (DEBUG && turnCounter % DEBUG_TURN_INTERVAL == 0) {
@@ -584,8 +584,8 @@ public final class ChallengeSfx {
 	 *
 	 * <p>只有**状态发生变化**时才动作：
 	 * <ul>
-	 *   <li>从"开"变"关" → 把正在播的格林曲换成原版</li>
-	 *   <li>从"关"变"开" → 下次请求曲目时自然会被映射（这里不必做事）</li>
+	 *   <li>从"开"变"关" -> 把正在播的格林曲换成原版</li>
+	 *   <li>从"关"变"开" -> 下次请求曲目时自然会被映射（这里不必做事）</li>
 	 * </ul>
 	 */
 	private static void reconcileGrimmMusic() {
@@ -608,7 +608,7 @@ public final class ChallengeSfx {
 		if (original == null) return;           //当前不是格林曲，不用管
 
 		if (GRIMM_MUSIC_DEBUG) {
-			System.out.println("[格林之音] 已取消勾选 → 换回原版曲: " + original);
+			System.out.println("[格林之音] 已取消勾选 -> 换回原版曲: " + original);
 		}
 		com.watabou.noosa.audio.Music.INSTANCE.play(original, true);
 	}
@@ -627,8 +627,8 @@ public final class ChallengeSfx {
 		//GRIMM_YOG_2 虽然定义了却从未被用到。
 		//
 		//现在分开映射：
-		//  · 第一阶段（HALLS_BOSS / HALLS_BOSS_FINALE）→ YOG_1
-		//  · 第二阶段（YogDzewa 改播 CITY_BOSS_FINALE）→ YOG_2
+		//  · 第一阶段（HALLS_BOSS / HALLS_BOSS_FINALE）-> YOG_1
+		//  · 第二阶段（YogDzewa 改播 CITY_BOSS_FINALE）-> YOG_2
 		if (name.equals(Assets.Music.CITY_BOSS_FINALE)) {
 			return Assets.Music.GRIMM_YOG_2;      //二阶段
 		}
@@ -731,9 +731,9 @@ public final class ChallengeSfx {
 					+ (ok ? "  => 已播放"
 						  : "  => **未播放**"));
 			if (!ok && failed.contains(asset)) {
-				System.out.println("          ↑ 原因：该文件**解码失败**（多半是编码格式不被支持）");
+				System.out.println("          ^ 原因：该文件**解码失败**（多半是编码格式不被支持）");
 			} else if (!ok) {
-				System.out.println("          ↑ 原因：Sample 未启用（设置里关掉了音效）");
+				System.out.println("          ^ 原因：Sample 未启用（设置里关掉了音效）");
 			}
 		}
 	}

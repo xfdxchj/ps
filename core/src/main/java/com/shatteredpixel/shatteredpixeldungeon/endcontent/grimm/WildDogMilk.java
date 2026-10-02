@@ -33,7 +33,7 @@ import java.util.ArrayList;
  */
 public class WildDogMilk extends Item {
 
-	/** 属性倍率（降低 75% → 乘 0.25）。 */
+	/** 属性倍率（降低 75% -> 乘 0.25）。 */
 	public static final float STAT_MULT = 0.25f;
 
 	/**
@@ -124,7 +124,7 @@ public class WildDogMilk extends Item {
 		}
 
 		/**
-		 * 永久状态 → 图标不显示"剩余时间"的渐变。
+		 * 永久状态 -> 图标不显示"剩余时间"的渐变。
 		 *
 		 * <p>原实现按 {@code (DURATION - cooldown)/DURATION} 算，
 		 * 而 DURATION 是 99999 时那个值永远是 1.0 —— 图标会一直满格，

@@ -45,7 +45,7 @@ public class ChernobylKeeper extends Actor {
 	/** 每格补气的概率（%）。文档所有者定稿：13%。 */
 	private static final int REFILL_PCT = 13;
 
-	/** 以玩家为中心的半径（格）。9×9 → 半径 4。 */
+	/** 以玩家为中心的半径（格）。9×9 -> 半径 4。 */
 	private static final int RADIUS = 4;
 
 	/** 每格补的量。够撑到下次刷新即可（衰减每回合 -1）。 */
@@ -62,7 +62,7 @@ public class ChernobylKeeper extends Actor {
 	@Override
 	protected boolean act() {
 
-		//规则已关闭 → 停止运行（返回 false 让 Actor 自动移除自己）
+		//规则已关闭 -> 停止运行（返回 false 让 Actor 自动移除自己）
 		if (!ChallengeEffects.chernobylEnabled()) {
 			instance = null;
 			return false;
@@ -137,7 +137,7 @@ public class ChernobylKeeper extends Actor {
 	public static void ensureRunning() {
 		if (!ChallengeEffects.chernobylEnabled()) return;
 
-		//同一层重复调用 → 不重复挂
+		//同一层重复调用 -> 不重复挂
 		if (instance != null && instance.levelRef == System.identityHashCode(Dungeon.level)) {
 			//还要确认它确实还在 Actor 列表里（可能被 Actor.init 清掉了）
 			//判据：重新 add 一次是无害的（Actor.add 会去重）

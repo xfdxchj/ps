@@ -1,6 +1,6 @@
 /*
  * Shattered Pixel Dungeon: End —《破碎的像素地牢：终焉扩展》
- * M2 真机制：WandOfTransfusion → 汲魂法杖（进化新物品 + 独特附魔光泽）。
+ * M2 真机制：WandOfTransfusion -> 汲魂法杖（进化新物品 + 独特附魔光泽）。
  * 对应开发.txt 描述：注魂:获护盾时吸20%生命。
  * 实现：完整复制 onZap/onHit，在玩家获得护盾的分支额外按护盾值 20% 恢复生命。
  */

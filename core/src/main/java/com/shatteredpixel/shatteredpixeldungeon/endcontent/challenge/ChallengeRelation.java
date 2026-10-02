@@ -28,13 +28,13 @@ package com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge;
 public final class ChallengeRelation {
 
 	public enum Type {
-		/** 不能同时启用 → UI 置灰。 */
+		/** 不能同时启用 -> UI 置灰。 */
 		EXCLUSIVE,
-		/** 可同时启用且有特殊交互 → UI 只提示。 */
+		/** 可同时启用且有特殊交互 -> UI 只提示。 */
 		SYNERGY,
-		/** 可同时启用但功能互相无效 → UI 只警告。 */
+		/** 可同时启用但功能互相无效 -> UI 只警告。 */
 		RESTRICTION,
-		/** 必须满足才能勾选 → UI 置灰。 */
+		/** 必须满足才能勾选 -> UI 置灰。 */
 		PREREQUISITE
 	}
 

@@ -71,7 +71,7 @@ public class GrimmText {
 	 *   嘻嘻，你以为这是童话吗？人家可是作者哦。是登场人物，是黑幕，又或者是公主大人。
 	 *   书页正在合拢……这场戏，可得好好演下去才行。
 	 *   原来如此，那就换一个童话吧。
-	 *   ——人家是玛丽·苏，是把那些童话，全都染上绝望的，坏心眼的主凶啦♪
+	 *   ——人家是玛丽·苏，是把那些童话，全都染上绝望的，坏心眼的主凶啦~
 	 * </pre>
 	 */
 	private static String yogOverride(String key, String fallback) {
@@ -116,7 +116,7 @@ public class GrimmText {
 	}
 
 	//==================================================================
-	//132 黑暗之魂：古神护符 → 爱丽丝
+	//132 黑暗之魂：古神护符 -> 爱丽丝
 	//==================================================================
 
 	/** 132 黑暗之魂。 */
@@ -210,7 +210,7 @@ public class GrimmText {
 		}
 	}
 
-	/** END(132): 取护符的贴图索引（护符 → 爱丽丝）。 */
+	/** END(132): 取护符的贴图索引（护符 -> 爱丽丝）。 */
 	public static int amuletImage(int original) {
 		if (!darkSoulEnabled()) return original;
 		return com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet

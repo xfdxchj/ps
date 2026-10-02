@@ -118,7 +118,7 @@ public class Alice extends Mob {
 	/** END: 播第 n 句；说完最后一句才给戒指。 */
 	private static void speakLine(final int index) {
 		if (index < 0 || index >= LINES.length) {
-			//台词说完 → 给戒指并送回原位
+			//台词说完 -> 给戒指并送回原位
 			giveRingAndReturn();
 			return;
 		}
@@ -162,7 +162,7 @@ public class Alice extends Mob {
 				GLog.i("爱丽丝把一枚黑色的戒指放在了地上。");
 			}
 		} else {
-			//已持有 → 折算成经验
+			//已持有 -> 折算成经验
 			hero.earnExp(Math.max(1, hero.lvl), Alice.class);
 			GLog.i("你已经有那枚戒指了。爱丽丝把它化作了一点别的东西。");
 		}

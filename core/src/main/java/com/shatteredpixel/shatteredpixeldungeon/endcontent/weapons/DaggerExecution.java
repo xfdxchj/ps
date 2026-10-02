@@ -41,7 +41,7 @@ public class DaggerExecution extends EmbedDagger {
 	/**
 	 * END(修订·文档所有者定稿): 冷却 **20 回合**。
 	 *
-	 * <p>沿革：50（初版）→ **20**（现在）。
+	 * <p>沿革：50（初版）-> **20**（现在）。
 	 */
 	private static final float EXECUTION_COOLDOWN = 20f;
 
@@ -81,7 +81,7 @@ public class DaggerExecution extends EmbedDagger {
 			spot = behindCell( hero, stuckEnemy );   //敌人背面优先
 		}
 		if (spot == -1 && stuckCell != -1){
-			spot = stuckCell;                        //敌人已离场/落平地 → 落到那一格
+			spot = stuckCell;                        //敌人已离场/落平地 -> 落到那一格
 		}
 
 		boolean moved = false;
@@ -95,7 +95,7 @@ public class DaggerExecution extends EmbedDagger {
 		//---- 传送之后再判定处决 ----
 		Char enemy = stuckEnemy;
 		if (enemy == null || !enemy.isAlive()){
-			//没有可斩的目标 → 只完成传送
+			//没有可斩的目标 -> 只完成传送
 			Buff.prolong( hero, ExecutionCooldown.class, EXECUTION_COOLDOWN );
 			clean( hero );
 			return;

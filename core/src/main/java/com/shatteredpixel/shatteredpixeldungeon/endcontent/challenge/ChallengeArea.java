@@ -13,9 +13,9 @@ import com.shatteredpixel.shatteredpixeldungeon.levels.Level;
  * <h3>机制（多选串联）</h3>
  * 主线 1-25F 走完后，从 26F 起把「选中的区域」按 id 顺序**串联**成一条区间：
  * <pre>
- *   只选 Hollow          → Hollow 占 26..33F（8层）
- *   只选 Galaxy          → 26F 直接进火龙的场地（1层）
- *   Hollow + Galaxy      → Hollow 26..33F，Galaxy 34F（火龙）
+ *   只选 Hollow          -> Hollow 占 26..33F（8层）
+ *   只选 Galaxy          -> 26F 直接进火龙的场地（1层）
+ *   Hollow + Galaxy      -> Hollow 26..33F，Galaxy 34F（火龙）
  * </pre>
  * 每层关卡由 {@link #createAreaLevel(int, int, int)} 按「区内偏移」决定，
  * 因此**单选任意一个区都能独立走通**（层号是动态算的，不是硬编码的）。
@@ -90,13 +90,13 @@ public final class ChallengeArea {
 
 	//==== 注册表（id 顺序 = 进入顺序）====
 	//魔绫 2 区（已实装）
-	public static final ChallengeArea HOLLOW      = new ChallengeArea(1, "空洞遗迹", 8, true, "魔绫的终末之地。共 8 层：26F 入口 → 27-30F 常规 → 31F 冥犬 → 32F 剧院 → 33F 四柱。\n\n提示：这里的楼梯与主线机制不同，建议先清空敌人再下楼。");
+	public static final ChallengeArea HOLLOW      = new ChallengeArea(1, "空洞遗迹", 8, true, "魔绫的终末之地。共 8 层：26F 入口 -> 27-30F 常规 -> 31F 冥犬 -> 32F 剧院 -> 33F 四柱。\n\n提示：这里的楼梯与主线机制不同，建议先清空敌人再下楼。");
 	public static final ChallengeArea GALAXY      = new ChallengeArea(3, "银河深渊·火龙", 1, true, "只有 1 层：直接与火龙在它的巢穴中决战。\n\n没有常规层，进门即战。");
-	//方舟 3 区：按文档所有者要求删掉了常规层，每区只剩 2 层（Boss1 → Boss2）
-	public static final ChallengeArea IBERIA      = new ChallengeArea(4, "伊比利亚·海嗣", 2, true, "方舟·伊比利亚。共 2 层：26F 海嗣 Boss → 27F 深海 Boss。\n\n海嗣会不断增殖，注意清场。");
-	public static final ChallengeArea GAVIAL      = new ChallengeArea(5, "嘉维尔·雨林", 2, true, "方舟·嘉维尔。共 2 层：26F Boss → 27F 大酋长。\n\n雨林中遍布陷阱与召唤师。");
-	public static final ChallengeArea SIESTA      = new ChallengeArea(6, "汐斯塔·海滨", 2, true, "方舟·汐斯塔。共 2 层：26F Boss → 27F 最终 Boss。\n\n海滨度假地的平静只是表象。");
-	//六王：按文档所有者要求删掉 26F 引路人之厅，共 6 层（法术王 → 全能王）
+	//方舟 3 区：按文档所有者要求删掉了常规层，每区只剩 2 层（Boss1 -> Boss2）
+	public static final ChallengeArea IBERIA      = new ChallengeArea(4, "伊比利亚·海嗣", 2, true, "方舟·伊比利亚。共 2 层：26F 海嗣 Boss -> 27F 深海 Boss。\n\n海嗣会不断增殖，注意清场。");
+	public static final ChallengeArea GAVIAL      = new ChallengeArea(5, "嘉维尔·雨林", 2, true, "方舟·嘉维尔。共 2 层：26F Boss -> 27F 大酋长。\n\n雨林中遍布陷阱与召唤师。");
+	public static final ChallengeArea SIESTA      = new ChallengeArea(6, "汐斯塔·海滨", 2, true, "方舟·汐斯塔。共 2 层：26F Boss -> 27F 最终 Boss。\n\n海滨度假地的平静只是表象。");
+	//六王：按文档所有者要求删掉 26F 引路人之厅，共 6 层（法术王 -> 全能王）
 	public static final ChallengeArea SIX_KINGS   = new ChallengeArea(7, "六大天王", 6, true, "六人曾是挚友，如今却分崩离析。\n\n共 6 层：\n  26F 法术王\n  27F 不灭追猎者\n  28F 疫病王\n  29F 远程王\n  30F 召唤王\n  31F 全能王（关底）\n\n建议先收集 9 张笔记残页，了解他们的过去。");
 
 	public static final ChallengeArea[] ALL = {
@@ -179,7 +179,7 @@ public final class ChallengeArea {
 			}
 			cur += a.floors;
 		}
-		return null;   //超出所有已选区 → 终局
+		return null;   //超出所有已选区 -> 终局
 	}
 
 	/**
@@ -260,11 +260,11 @@ public final class ChallengeArea {
 	 * @return 旧的区域掩码（bit = area.id）
 	 */
 	public static int areasFromChallengeMask(int fromMask, int legacyValue) {
-		//新入口有勾选 → 以它为准
+		//新入口有勾选 -> 以它为准
 		if (fromMask != 0) {
 			return firstSelectedOnly(fromMask);
 		}
-		//没有 → 回退到旧键（老存档、或玩家只用了旧窗口）
+		//没有 -> 回退到旧键（老存档、或玩家只用了旧窗口）
 		return firstSelectedOnly(legacyValue);
 	}
 }

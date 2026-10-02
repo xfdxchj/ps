@@ -17,7 +17,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.Item;
  * 原版 {@code Item.quantity(int)} 的实现是：
  * <pre>
  *   public Item quantity( int value ) {
- *       quantity = value;      // ← 只改数字
+ *       quantity = value;      // <- 只改数字
  *       return this;
  *   }
  * </pre>

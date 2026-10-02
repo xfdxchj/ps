@@ -1,7 +1,7 @@
 /*
  * Shattered Pixel Dungeon: End —《破碎的像素地牢：终焉扩展》
  * 炼金配方（盗贼侧）：把 基础刺杀匕首(AssassinDagger) + 邪能碎片(MetalShard) + 方向料
- * → 锻成「刺杀·三叉戟」，一次只产一支。
+ * -> 锻成「刺杀·三叉戟」，一次只产一支。
  *
  * END(修订): 原设计有**三个方向**（三叉/传送/处决），由三种不同材料决定产出。
  * 按文档所有者要求改为**只有一种成品**：任意一种方向料都产出三叉戟。
@@ -25,15 +25,15 @@ import java.util.ArrayList;
 public class EvolveDaggerRecipe extends Recipe {
 
 	/**
-	 * 方向料 → 对应进阶匕首成品。
+	 * 方向料 -> 对应进阶匕首成品。
 	 *
 	 * <h3>END(修订·恢复三方向)</h3>
 	 * 文档所有者定稿："刺杀匕首的进阶全部成了三叉戟，还是一个刺杀匕首变 3 个进阶"
 	 * —— 要的是**三个方向各自产出各自的成品**：
 	 * <pre>
-	 *   加速药水   → 刺杀·三叉戟（DaggerTrident）
-	 *   漂浮药水   → 刺杀·传送（DaggerTeleport）
-	 *   报应卷轴   → 刺杀·处决（DaggerExecution）
+	 *   加速药水   -> 刺杀·三叉戟（DaggerTrident）
+	 *   漂浮药水   -> 刺杀·传送（DaggerTeleport）
+	 *   报应卷轴   -> 刺杀·处决（DaggerExecution）
 	 * </pre>
 	 *
 	 * <p>先前那版把它们统一成三叉戟，是早期的一次误改，现已恢复。

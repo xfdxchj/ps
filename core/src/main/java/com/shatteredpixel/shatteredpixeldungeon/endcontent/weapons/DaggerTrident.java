@@ -31,7 +31,7 @@ import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
  * 原来它继承 {@code MissileWeapon} —— 那是**普通投掷武器**，
  * 掷出后不会"嵌住"，自然也就没有"回收"动作，无法传送。
  * 改继承 {@link EmbedDagger} 之后它就自动获得了
- * "投掷 → 嵌住 → 回收"这一整套（传送正是挂在回收上的）。
+ * "投掷 -> 嵌住 -> 回收"这一整套（传送正是挂在回收上的）。
  */
 public class DaggerTrident extends EmbedDagger {
 
@@ -87,7 +87,7 @@ public class DaggerTrident extends EmbedDagger {
 			spot = behindCell( hero, stuckEnemy );   //敌人背面优先
 		}
 		if (spot == -1 && stuckCell != -1){
-			spot = stuckCell;                        //敌人离场 / 落平地 → 落到那一格
+			spot = stuckCell;                        //敌人离场 / 落平地 -> 落到那一格
 		}
 
 		boolean moved = false;

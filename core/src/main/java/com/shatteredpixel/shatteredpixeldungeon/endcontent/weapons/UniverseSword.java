@@ -135,12 +135,12 @@ public class UniverseSword extends MeleeWeapon {
 	public int damageRoll(Char owner) {
 		int dmg = super.damageRoll(owner);
 
-		//① 自身最大生命的 10%（保留）
+		//1. 自身最大生命的 10%（保留）
 		if (owner != null) {
 			dmg += Math.round(owner.HT * MAX_HP_BONUS);
 		}
 
-		//② 模式
+		//2. 模式
 		if (universeMode) {
 			dmg = Math.round(dmg * UNIVERSE_DAMAGE_MULT);
 		} else if (kills >= KILLS_PER_STACK) {
@@ -154,9 +154,9 @@ public class UniverseSword extends MeleeWeapon {
 	public int proc(Char attacker, Char defender, int damage) {
 		damage = super.proc(attacker, defender, damage);
 
-		//① 已删除「目标最大生命 10%」的额外伤害。
+		//1. 已删除「目标最大生命 10%」的额外伤害。
 
-		//② 寰宇模式：9x9 范围内其它敌人同样吃这次伤害。
+		//2. 寰宇模式：9x9 范围内其它敌人同样吃这次伤害。
 		if (universeMode && attacker != null && defender != null && !splashing) {
 			splashing = true;
 			try {
@@ -171,7 +171,7 @@ public class UniverseSword extends MeleeWeapon {
 			}
 		}
 
-		//③ 支配模式：统计击杀（用于 +1%/5 杀）。
+		//3. 支配模式：统计击杀（用于 +1%/5 杀）。
 		if (!universeMode && attacker != null && defender != null
 				&& defender.isAlive() && defender.HP <= damage) {
 			kills++;

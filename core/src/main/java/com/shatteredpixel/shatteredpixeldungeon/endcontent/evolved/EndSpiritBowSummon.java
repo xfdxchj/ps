@@ -13,7 +13,7 @@ import com.watabou.utils.Random;
 import java.util.ArrayList;
 
 /**
- * END 灵能弓· 成品 ③「唤魔灵弓」。
+ * END 灵能弓· 成品 3.「唤魔灵弓」。
  *
  * 需求（最终要求）：“复刻被杀怪同款当友军，30% 生命，非 Boss”。
  *  被你真正击杀、且非 Boss 的敌人，有 20% 机会在其倒下的身边复制一只同款但我方的它，

@@ -30,8 +30,8 @@ import com.watabou.utils.Bundle;
  *
  * <table border="1">
  *   <tr><th>原版</th><th>格林之心</th></tr>
- *   <tr><td>杀怪得经验 → 自动升级</td><td>杀怪得**魂** → 手动花魂换属性</td></tr>
- *   <tr><td>死亡 = 游戏结束</td><td>死亡 → 得到**黑之魂**并回到上层</td></tr>
+ *   <tr><td>杀怪得经验 -> 自动升级</td><td>杀怪得**魂** -> 手动花魂换属性</td></tr>
+ *   <tr><td>死亡 = 游戏结束</td><td>死亡 -> 得到**黑之魂**并回到上层</td></tr>
  * </dl>
  *
  * <h3>魂从哪来</h3>
@@ -61,7 +61,7 @@ public class BlackSoul {
 	 * 静默模式（**仅供自动化测试**）。
 	 *
 	 * <p>测试环境没有 libGDX 的 {@code Gdx.app}，
-	 * 而 {@code GLog.i()} 内部会调 {@code DeviceCompat.log()} → NPE。
+	 * 而 {@code GLog.i()} 内部会调 {@code DeviceCompat.log()} -> NPE。
 	 * 打开本开关后所有日志调用被跳过，纯逻辑可在无图形环境下验证。
 	 *
 	 * <p>**绝不要在游戏运行时打开它。**
@@ -176,9 +176,9 @@ public class BlackSoul {
 	}
 
 	/**
-	 * END(126): 楼层 → 区域数（1 基）。
+	 * END(126): 楼层 -> 区域数（1 基）。
 	 *
-	 * <p>每 5 层一个区域：1-5 → 1 区、6-10 → 2 区 … 21+ → 5 区。
+	 * <p>每 5 层一个区域：1-5 -> 1 区、6-10 -> 2 区 … 21+ -> 5 区。
 	 * 用**映射后的楼层**（轮回之后 26 层 = 新一轮 1 层），
 	 * 这样"无尽轮回"里区域数也跟着循环，魂量不会无限膨胀。
 	 */
@@ -219,7 +219,7 @@ public class BlackSoul {
 
 		logN("你的心脏停了一瞬，然后又开始跳动。");
 		if (before > 0) {
-			logI("黑之魂散去了一半 —— " + before + " → " + kept + "。");
+			logI("黑之魂散去了一半 —— " + before + " -> " + kept + "。");
 		} else {
 			logI("黑之魂在你体内沉积 —— 但你必须退回去一层。");
 		}
@@ -324,7 +324,7 @@ public class BlackSoul {
 			} else if (have < cost){
 				options[i] = s.title + "（魂不足，需 " + cost + "）";
 			} else {
-				options[i] = s.title + "  ← " + cost + " 魂";
+				options[i] = s.title + "  <- " + cost + " 魂";
 			}
 		}
 		options[GrimmStat.values().length] = "算了";
@@ -335,7 +335,7 @@ public class BlackSoul {
 				if (index < 0 || index >= GrimmStat.values().length) return;
 				GrimmStat s = GrimmStat.values()[index];
 				if (applyStat(hero, s)) {
-					//成功 → 再开一次，方便连续加点
+					//成功 -> 再开一次，方便连续加点
 					openOfferingWindow(hero);
 				}
 			}
@@ -409,8 +409,8 @@ public class BlackSoul {
 				//==== END(修复·126): 伤害类不在这里加字段，由结算时按等级读取 ====
 				//原来的注释指向一个不存在的 "GrimmCombat"，全项目都没有读取代码，
 				//所以这两项从来没生效。现在由以下两个查询真正结算：
-				//  · 近战 → Hero.damageRoll() 调 grimmPhysicalBonus()
-				//  · 法杖 → DamageWand.damageRoll() 调 grimmMagicBonus()
+				//  · 近战 -> Hero.damageRoll() 调 grimmPhysicalBonus()
+				//  · 法杖 -> DamageWand.damageRoll() 调 grimmMagicBonus()
 				break;
 			case ACC:
 			case EVA:

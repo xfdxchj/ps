@@ -29,10 +29,10 @@ import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
  * <h3>公式</h3>
  * <pre>
  *   提供等级 = round( (本戒指等级 + 1) × 2  +  本戒指等级 × 0.5 )
- *              └── 效果提升 100% ──┘   └─ 升级效果提升 50% ─┘
+ *              --- 效果提升 100% ---   -- 升级效果提升 50% --
  * </pre>
  *
- * <p>举例：+0 → 2 级；+3 → 10 级（原版 +3 戒指只给 4 级效果）；+10 → 27 级。
+ * <p>举例：+0 -> 2 级；+3 -> 10 级（原版 +3 戒指只给 4 级效果）；+10 -> 27 级。
  */
 public class ReincarnationRing extends Ring {
 

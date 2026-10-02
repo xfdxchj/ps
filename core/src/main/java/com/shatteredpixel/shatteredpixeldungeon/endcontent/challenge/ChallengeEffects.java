@@ -23,9 +23,9 @@ import com.watabou.utils.Random;
  *                       极致攻哈+20% 黄金蜂蜜酒+50%
  * 第3步 低血倍率        **乘法叠加**：亡者之怒×2(<10%) 怨恨之剑×1~3
  *                       极端状态×2
- * 第4步 特殊替换        等我启动 → 直接替换为 20%/50%/110%（优先级最高）
- * 第5步 目标方减伤      目标护甲减免 → 脆弱+13%
- * 第6步 最终拦截        物极必反(>150%最大生命→免疫) 九九归一(%9==0→1)
+ * 第4步 特殊替换        等我启动 -> 直接替换为 20%/50%/110%（优先级最高）
+ * 第5步 目标方减伤      目标护甲减免 -> 脆弱+13%
+ * 第6步 最终拦截        物极必反(>150%最大生命->免疫) 九九归一(%9==0->1)
  * 第7步 应用伤害
  * </pre>
  *
@@ -192,7 +192,7 @@ public final class ChallengeEffects {
 			//16 大力水手：物理攻击 +25%（攻速惩罚在 speedModifier 里）
 			//"物理"判据：玩家手持近战武器。法杖/投掷物不计入。
 			if (on(POPEYE) && isPhysicalAttacker(attacker)) {
-				bonus += (ChallengeBalance.POPEYE_DMG_MULT - 1f);   // 1.25 → +0.25
+				bonus += (ChallengeBalance.POPEYE_DMG_MULT - 1f);   // 1.25 -> +0.25
 			}
 
 		} else if (attacker instanceof Mob) {
@@ -251,7 +251,7 @@ public final class ChallengeEffects {
 	 * END(11 脆弱): 承伤修饰 —— **玩家与怪物都**受到 +13% 伤害。
 	 *
 	 * <p>调用点：{@code Char.damage()} 里 {@code dmg = Math.round(damage)} 之后。
-	 * 那里护甲减免**已经**完成，正符合"第 5 步：护甲减免 → 脆弱"的顺序。
+	 * 那里护甲减免**已经**完成，正符合"第 5 步：护甲减免 -> 脆弱"的顺序。
 	 *
 	 * @param ch  受伤者
 	 * @param dmg 已算完护甲减免的伤害
@@ -268,7 +268,7 @@ public final class ChallengeEffects {
 	/**
 	 * END(第6步·最终拦截): 伤害生效前的最后判定。
 	 *
-	 * <p>顺序：**先 22 物极必反（免疫）→ 再 69 九九归一（变为 1）**。
+	 * <p>顺序：**先 22 物极必反（免疫）-> 再 69 九九归一（变为 1）**。
 	 * 被完全免疫的伤害不该再走 69 的改写。
 	 *
 	 * <ul>
@@ -284,7 +284,7 @@ public final class ChallengeEffects {
 	 *   <li>其它值 = 正常伤害（可能本来就是 0，那是"没打穿护甲"，不是免疫）</li>
 	 * </ul>
 	 *
-	 * <p>⚠️ 调用方**不能**用 {@code dmg <= 0} 判断"被免疫"：
+	 * <p>! 调用方**不能**用 {@code dmg <= 0} 判断"被免疫"：
 	 * 护甲完全吸收时伤害本来就是 0，那样会误报"无敌"。
 	 * 这正是本类早期版本出现过的问题。
 	 *
@@ -295,7 +295,7 @@ public final class ChallengeEffects {
 	public static int finalIntercept(Char target, int dmg) {
 		if (target == null) return dmg;
 
-		//---- 22 物极必反：超 150% 最大生命 → 完全免疫 ----
+		//---- 22 物极必反：超 150% 最大生命 -> 完全免疫 ----
 		if (on(OVERKILL_REVERSE) && target.HT > 0 && dmg > 0) {
 			//只对怪物生效（Hero 不受此条保护）
 			if (!(target instanceof Hero)) {
@@ -305,7 +305,7 @@ public final class ChallengeEffects {
 			}
 		}
 
-		//---- 69 九九归一：9 的倍数 → 1 ----
+		//---- 69 九九归一：9 的倍数 -> 1 ----
 		//注意只对正伤害生效：0 不是"9 的倍数"意义上的伤害，
 		//否则会把"没打穿护甲"变成 1 点伤害。
 		if (on(NINE_TO_ONE) && dmg > 0 && dmg % 9 == 0) {
@@ -335,13 +335,13 @@ public final class ChallengeEffects {
 		}
 
 		//==== 第五批速度类 ====
-		//16 大力水手：玩家攻速 −20%
+		//16 大力水手：玩家攻速 -20%
 		mult *= popeyeSpeedMultiplier(ch);
 		//19 风驰电掣：玩家 +20%、怪物 +20%
 		mult *= swiftSpeedMultiplier(ch);
 		//13 狂热：怪物攻击命中后叠加攻速（封顶 3 层）
 		mult *= frenzySpeedMultiplier(ch);
-		//121 中世纪骑士：玩家移速 −50%
+		//121 中世纪骑士：玩家移速 -50%
 		mult *= knightSpeedMultiplier(ch);
 
 		return mult;
@@ -364,7 +364,7 @@ public final class ChallengeEffects {
 		//根因：{@code applyExtremeState()} 只在开局调一次，
 		//而 {@code Hero.updateHT()} 每次升级都会把 HT 重算成
 		//{@code 20 + 5*(lvl-1) + HTBoost} —— 那一步会把开局的 10% 覆盖掉，
-		//于是 2 级时 HT 变成 25（而不是 25×0.1 = 2.5 → 取下限 10）。
+		//于是 2 级时 HT 变成 25（而不是 25×0.1 = 2.5 -> 取下限 10）。
 		//
 		//所以把 68 也挂到这个"每次重算 HT 都会经过"的钩子上。
 		//下限 10 由 updateHT 里的 EXTREME_MIN_HP 处理。
@@ -426,7 +426,7 @@ public final class ChallengeEffects {
 
 	/**
 	 * END(25 越战越勇): 按已损失生命计算攻击倍率。
-	 * <p>每损失 20% 给 +10%，最多 4 档（损失 80%+）→ 上限 ×1.4。
+	 * <p>每损失 20% 给 +10%，最多 4 档（损失 80%+）-> 上限 ×1.4。
 	 * 实时按当前 HP 计算，回血后加成自然降低。
 	 *
 	 * <p>同样用**整数**算档数：{@code (int)(lostFrac/0.2f)} 在
@@ -477,7 +477,7 @@ public final class ChallengeEffects {
 	/** 47 稀缺补给：消耗品 ×0.6。 */
 	/** 48 过量补给：消耗品 ×1.5。 */
 	/** 35 丰饶：掉落 +25%。 */
-	/** 36 贫瘠：掉落 −25%。 */
+	/** 36 贫瘠：掉落 -25%。 */
 	/** 62 芙莉莲：宝箱概率/数量 ×1.2。 */
 	/** 64 宝物猎人：普通怪掉落 ×0.7，宝箱物品 +1。 */
 
@@ -683,7 +683,7 @@ public final class ChallengeEffects {
 	 *   <li><b>进度关键物品直接返回 1f</b> —— 见 {@link #isProgressCritical}。</li>
 	 * </ol>
 	 *
-	 * <p>例：36 贫瘠 + 47 稀缺补给 → 消耗品倍率 0.75 × 0.6 = 0.45。
+	 * <p>例：36 贫瘠 + 47 稀缺补给 -> 消耗品倍率 0.75 × 0.6 = 0.45。
 	 */
 	private static float dropMultiplierFor(Class<?> cls) {
 		if (isProgressCritical(cls)) return 1f;
@@ -702,8 +702,8 @@ public final class ChallengeEffects {
 	 * 没有"数量"可供相乘。把倍率 &gt; 1 实现为"再掉一份"会递归调用 drop、
 	 * 有重复触发与死循环风险。所以统一用概率表达：
 	 * <ul>
-	 *   <li>倍率 &lt; 1 → 按该概率**保留**（其余丢弃），等效于减少掉落</li>
-	 *   <li>倍率 &gt; 1 → 保留概率 100%，额外的量由 {@link #extraDropCopy} 处理</li>
+	 *   <li>倍率 &lt; 1 -> 按该概率**保留**（其余丢弃），等效于减少掉落</li>
+	 *   <li>倍率 &gt; 1 -> 保留概率 100%，额外的量由 {@link #extraDropCopy} 处理</li>
 	 * </ul>
 	 *
 	 * @param item 待掉落物品
@@ -727,7 +727,7 @@ public final class ChallengeEffects {
 	 * END(挑战 48/35): 该物品是否应**额外多掉一份**。
 	 *
 	 * <p>倍率 &gt; 1 的部分用"按小数部分追加一次"表达：
-	 * 1.5 → 总是保留 + 50% 概率追加一份；1.25 → 25% 概率追加。
+	 * 1.5 -> 总是保留 + 50% 概率追加一份；1.25 -> 25% 概率追加。
 	 * 这样长期期望掉落量正好等于倍率，且不会递归调用 drop。
 	 */
 	public static boolean extraDropCopy(com.shatteredpixel.shatteredpixeldungeon.items.Item item) {
@@ -830,7 +830,7 @@ public final class ChallengeEffects {
 	//精英体系的重新设计（本 fork 对「116 精英强敌」的改造）
 	//==================================================================
 	//
-	//原版：勾选 116 → 精英怪按 1/8~1/6 概率生成
+	//原版：勾选 116 -> 精英怪按 1/8~1/6 概率生成
 	//本 fork：116 的效果改为「13% 生成**稀有怪**」；
 	//        精英怪改由「精英类规则」自动开启（不需要 116）。
 	//
@@ -908,7 +908,7 @@ public final class ChallengeEffects {
 
 	/** 13 狂热：怪物攻击后攻速 +13%，封顶 3 层。 */
 	public static final int FRENZY          = 13;
-	/** 16 大力水手：物理攻击 +25%，攻速 −20%。 */
+	/** 16 大力水手：物理攻击 +25%，攻速 -20%。 */
 	public static final int POPEYE          = 16;
 	/** 19 风驰电掣：玩家攻速 +20%，怪物移速 +20%。 */
 	public static final int SWIFT           = 19;
@@ -953,7 +953,7 @@ public final class ChallengeEffects {
 	public static final int ADVANCED_ENCHANT = 79;
 	/** 17 情人节：攻击 13% 概率魅惑目标。 */
 	public static final int VALENTINE        = 17;
-	/** 57 残缺装备：13% 概率获得「残缺」附魔（攻击 −20%）。 */
+	/** 57 残缺装备：13% 概率获得「残缺」附魔（攻击 -20%）。 */
 	public static final int BROKEN_EQUIPMENT = 57;
 	/** 59 诅咒装备：获得诅咒的概率 +13%。 */
 	public static final int CURSED_EQUIPMENT = 59;
@@ -973,7 +973,7 @@ public final class ChallengeEffects {
 	public static final int CHERNOBYL         = 49;
 	/** 74 热带雨林：水中 13% 生成食人鱼。 */
 	public static final int RAINFOREST        = 74;
-	/** 141 禁魔空间：所有魔法伤害 −20%。 */
+	/** 141 禁魔空间：所有魔法伤害 -20%。 */
 	public static final int ANTI_MAGIC_ZONE   = 141;
 	/** 149 黏糊蜂蜜：每层刷新 2 只蜜蜂。 */
 	public static final int STICKY_HONEY      = 149;
@@ -1062,7 +1062,7 @@ public final class ChallengeEffects {
 	private static final long SHUFFLE_SEED = 0x5EEDF100L;
 
 	/**
-	 * 构建本局的楼层排列。种子固定 → 结果固定。
+	 * 构建本局的楼层排列。种子固定 -> 结果固定。
 	 *
 	 * <p>END(适配 6 完整地牢): 排列长度与 Boss 间隔**不再是写死的 25/5**，
 	 * 而是取自 {@link #maxMainDepth()} 与 {@link #bossInterval()}：
@@ -1080,7 +1080,7 @@ public final class ChallengeEffects {
 
 		//==== END(修订): 普通层**全局**打乱，不再限制在区域内 ====
 		//文档所有者给出的例子是
-		//   1 → 4 → 21 → 12 → 5 → 9 → 18 → 2 → 6 → 10
+		//   1 -> 4 -> 21 -> 12 -> 5 -> 9 -> 18 -> 2 -> 6 -> 10
 		//其中第 5 步是 5F、第 10 步是 10F，**Boss 固定在原步数**，
 		//而中间的普通层来自各个区域（4、21、12 分属不同区）。
 		//
@@ -1575,7 +1575,7 @@ public final class ChallengeEffects {
 	//1 牢地碎破：区域交叉
 	//==================================================================
 
-	/** 1 牢地碎破：区域倒置（1区↔5区、2区↔4区、3区不变）。 */
+	/** 1 牢地碎破：区域倒置（1区<->5区、2区<->4区、3区不变）。 */
 	public static final int CRUMBLING_DUNGEON = 1;
 
 	/**
@@ -1922,7 +1922,7 @@ public final class ChallengeEffects {
 	/** 146 醍醐灌顶：每个天赋层级额外点数。 */
 	private static final int   ENLIGHTEN_BONUS  = 1;
 	/** 165 神圣之光：触发概率与回复比例。 */
-	/** END(修订): 165 神圣之光每回合触发概率，13% → **3%**。 */
+	/** END(修订): 165 神圣之光每回合触发概率，13% -> **3%**。 */
 	private static final int   HOLY_LIGHT_PCT   = 3;
 	private static final float HOLY_LIGHT_HEAL  = 0.02f;
 
@@ -2242,7 +2242,7 @@ public final class ChallengeEffects {
 
 	/** 23 血流成河 / 24 以牙还牙 / 28 不动如山 / 78 烈火焚身：13%。 */
 	/** 13 狂热：每次 +13%，封顶 3 层。 */
-	/** 16 大力水手：物理 +25%、攻速 −20%。 */
+	/** 16 大力水手：物理 +25%、攻速 -20%。 */
 	/** 19 风驰电掣：玩家攻速 +20%、怪物移速 +20%。 */
 	/**
 	 * 80 冰天雪地：寒冷概率、冰冻概率。
@@ -2252,7 +2252,7 @@ public final class ChallengeEffects {
 	 *
 	 * <p>注意两者是 {@code if / else if} 关系（先判冰冻），所以**总触发率**
 	 * 不是简单相加，而是 {@code 冰冻 + (1-冰冻)×寒冷}：
-	 * 改前 = 2% + 98%×13% ≈ 14.7%，改后 = 2% + 98%×3% ≈ 4.9%。
+	 * 改前 = 2% + 98%×13% ~ 14.7%，改后 = 2% + 98%×3% ~ 4.9%。
 	 */
 	/** 90 雷暴：每回合 5% 概率触发。 */
 	/** 123 大学生：每回合 3% 受 1 点伤害。 */
@@ -2475,8 +2475,8 @@ public final class ChallengeEffects {
 		//文档所有者反馈："雷暴没有 ui 与特效，游戏里显示为突然就着火。"
 		//
 		//这条日志确认"雷击本身有没有触发"，从而区分：
-		//  · 日志完全没有   → 是**触发条件**没满足（概率/冷却/勾选）
-		//  · 日志有但画面没反应 → 是**表现层**缺特效（那要补 sprite/粒子）
+		//  · 日志完全没有   -> 是**触发条件**没满足（概率/冷却/勾选）
+		//  · 日志有但画面没反应 -> 是**表现层**缺特效（那要补 sprite/粒子）
 		com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.log(
 				com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.CHALLENGE,
 				"雷暴：劈中 " + victim.getClass().getSimpleName()
@@ -2530,7 +2530,7 @@ public final class ChallengeEffects {
 		return ChallengeBalance.POPEYE_DMG_MULT;
 	}
 
-	/** END(16 大力水手): 玩家攻速倍率（−20%）。 */
+	/** END(16 大力水手): 玩家攻速倍率（-20%）。 */
 	public static float popeyeSpeedMultiplier(Char ch) {
 		if (!on(POPEYE) || ch == null) return 1f;
 		if (!(ch instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero)) return 1f;
@@ -2633,7 +2633,7 @@ public final class ChallengeEffects {
 	}
 
 	/**
-	 * END(121 中世纪骑士): 玩家移动速度倍率（−50%）。
+	 * END(121 中世纪骑士): 玩家移动速度倍率（-50%）。
 	 * <p>与 16/19/26 等速度规则一并作用。
 	 */
 	public static float knightSpeedMultiplier(Char ch) {
@@ -2805,10 +2805,10 @@ public final class ChallengeEffects {
 	/**
 	 * END(163 古代升级): 每 3 级提升 10% 的固定伤害。
 	 *
-	 * <p>原表："每达到 3 级，提升当前伤害 10% 的固定伤害，例如 15-20 → 16-22"。
+	 * <p>原表："每达到 3 级，提升当前伤害 10% 的固定伤害，例如 15-20 -> 16-22"。
 	 *
 	 * <p>理解：等级每满 3 级为一档，每档把伤害的**下限与上限各 +10%**。
-	 * 例：15-20 且等级 3 时 → 16.5-22 → 取整 16-22（与原表例子一致，
+	 * 例：15-20 且等级 3 时 -> 16.5-22 -> 取整 16-22（与原表例子一致，
 	 * 说明是**先乘再取整**，而不是先取整再乘）。
 	 *
 	 * @param attacker 攻击方
@@ -2930,10 +2930,10 @@ public final class ChallengeEffects {
 		weapon.awakenedOnce = true;
 
 		if (weapon.enchantment == null) {
-			//没有附魔 → 直接给一条随机正面附魔
+			//没有附魔 -> 直接给一条随机正面附魔
 			weapon.enchant();
 		} else {
-			//已有附魔 → 换一条（"每件一次"的意思是只能觉醒一次，不是不能换）
+			//已有附魔 -> 换一条（"每件一次"的意思是只能觉醒一次，不是不能换）
 			weapon.enchant();
 		}
 		weapon.identify();
@@ -3076,7 +3076,7 @@ public final class ChallengeEffects {
 	 * <p>实现：提供一个**相邻区域**的层号，供地图生成时参考。
 	 * 返回 0 表示不启用。
 	 *
-	 * <p>与 1 牢地碎破的区别：碎破是"整个区域对调"（1↔5、2↔4），
+	 * <p>与 1 牢地碎破的区别：碎破是"整个区域对调"（1<->5、2<->4），
 	 * 本条是"局部错位"（与相邻区域混合），程度轻得多。
 	 */
 	public static int regionShiftReference(int depth) {
@@ -3119,7 +3119,7 @@ public final class ChallengeEffects {
 	 *   实际 31-40F (4区) -> 原版 16-20F
 	 *   实际 41-50F (5区) -> 原版 21-25F
 	 * </pre>
-	 * 区内按比例折算：实际区内偏移 0..9 → 原版区内偏移 0..4。
+	 * 区内按比例折算：实际区内偏移 0..9 -> 原版区内偏移 0..4。
 	 * **第 10 层（偏移 9）永远映射到该区的 Boss 层**（原版偏移 4）。
 	 *
 	 * <p>未勾选 6 时原样返回 {@code depth}。
@@ -3225,8 +3225,8 @@ public final class ChallengeEffects {
 	 *
 	 * <p>勾选 6 后主线是 50 层，若继续用 {@code depth/5}：
 	 * <ul>
-	 *   <li>实际 41-50F 会算出段号 8-10，而资源表只有 5 段 → **发放失衡**</li>
-	 *   <li>每段只有 5 层，但玩家要走 10 层 → **资源密度减半**</li>
+	 *   <li>实际 41-50F 会算出段号 8-10，而资源表只有 5 段 -> **发放失衡**</li>
+	 *   <li>每段只有 5 层，但玩家要走 10 层 -> **资源密度减半**</li>
 	 * </ul>
 	 *
 	 * <p>所以统一改成：先折算成原版深度，再除以 5。
@@ -3537,7 +3537,7 @@ public final class ChallengeEffects {
 	public static boolean rollSpellCombo(Char caster) {
 		if (!on(SPELL_COMBO) || caster == null) return false;
 
-		//已经追加过了 → 不再触发
+		//已经追加过了 -> 不再触发
 		if (caster.buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs
 				.SpellComboMark.class) != null) {
 			return false;
@@ -3825,11 +3825,11 @@ public final class ChallengeEffects {
 	 *
 	 * <p><b>区域从 1 开始编号</b>（不是 0）：
 	 * <pre>
-	 *   1 区（1-5 层）   → 12 - 2×1 = 10 金币/点
-	 *   2 区（6-10 层）  → 12 - 2×2 =  8
-	 *   3 区（11-15 层） → 12 - 2×3 =  6
-	 *   4 区（16-20 层） → 12 - 2×4 =  4
-	 *   5 区（21-25 层） → 12 - 2×5 =  2
+	 *   1 区（1-5 层）   -> 12 - 2×1 = 10 金币/点
+	 *   2 区（6-10 层）  -> 12 - 2×2 =  8
+	 *   3 区（11-15 层） -> 12 - 2×3 =  6
+	 *   4 区（16-20 层） -> 12 - 2×4 =  4
+	 *   5 区（21-25 层） -> 12 - 2×5 =  2
 	 * </pre>
 	 * 越往深处走，金币越值钱 —— 这样后期钱多时也不至于完全无敌。
 	 *
@@ -3975,7 +3975,7 @@ public final class ChallengeEffects {
 	 * <p>按文档所有者说明："可以消耗金币，对物品升级"。
 	 *
 	 * <p>费用随当前等级递增 —— 否则后期金币充裕时升级会变成免费的。
-	 * 公式：{@code 100 × (等级 + 1)}，即 +0→100、+1→200、+2→300…
+	 * 公式：{@code 100 × (等级 + 1)}，即 +0->100、+1->200、+2->300…
 	 */
 	public static int whaleUpgradeCost(com.shatteredpixel.shatteredpixeldungeon.items
 			.Item item) {
@@ -4158,10 +4158,10 @@ public final class ChallengeEffects {
 	 * <ul>
 	 *   <li>{@code POTION}/{@code SCROLL}/{@code SEED}/{@code STONE}/{@code WEAPON}/
 	 *       {@code ARMOR}/{@code WAND}/{@code RING}/{@code ARTIFACT}
-	 *       → 对应 {@code Generator.Category}</li>
-	 *   <li>{@code @STR} → 力量药水</li>
-	 *   <li>{@code @SOU} → 升级卷轴</li>
-	 *   <li>{@code @EXP} → 经验药水</li>
+	 *       -> 对应 {@code Generator.Category}</li>
+	 *   <li>{@code @STR} -> 力量药水</li>
+	 *   <li>{@code @SOU} -> 升级卷轴</li>
+	 *   <li>{@code @EXP} -> 经验药水</li>
 	 * </ul>
 	 *
 	 * @return 生成的物品；键无效时返回 null
@@ -4276,7 +4276,7 @@ public final class ChallengeEffects {
 	 * 概率 35% —— 太高会让这条规则纯粹变成惩罚。
 	 */
 	public static void rollAuctionBidUp() {
-		auctionMults.clear();                 //换层 → 重新定价
+		auctionMults.clear();                 //换层 -> 重新定价
 		auctionBidUpThisFloor = on(AUCTION_HOUSE) && Random.Int(100) < 35;
 	}
 	//==================================================================
@@ -4418,7 +4418,7 @@ public final class ChallengeEffects {
 	public static void tryBrokenPowerSummon(Mob boss) {
 		if (!brokenPowerActive(boss)) return;
 
-		//计时器还在 → 没到 5 回合
+		//计时器还在 -> 没到 5 回合
 		if (boss.buff(BrokenPowerTimer.class) != null) return;
 
 		//召唤一只稀有怪
@@ -4676,7 +4676,7 @@ public final class ChallengeEffects {
 	 *
 	 * <h3>为什么照抄原版那段 ebony mimics</h3>
 	 * {@code RegularLevel} 里已经有一段官方写法（MimicTooth 饰品触发的），
-	 * 逻辑是"藏在堆下 → 没有堆就藏门口/出口"。这里复用同一套判据，
+	 * 逻辑是"藏在堆下 -> 没有堆就藏门口/出口"。这里复用同一套判据，
 	 * 只是把触发条件换成固定 20%、并把类型扩到三种。
 	 *
 	 * <h3>RNG 隔离</h3>
@@ -4701,7 +4701,7 @@ public final class ChallengeEffects {
 				}
 			}
 
-			//没有堆 → 退而求其次，藏门口
+			//没有堆 -> 退而求其次，藏门口
 			if (cand.isEmpty()) {
 				for (int i = 0; i < level.length(); i++) {
 					if (level.map[i] == com.shatteredpixel.shatteredpixeldungeon.levels
@@ -4711,7 +4711,7 @@ public final class ChallengeEffects {
 				}
 			}
 
-			//再没有 → 出口
+			//再没有 -> 出口
 			if (cand.isEmpty() && level.findMob(level.exit()) == null) {
 				cand.add(level.exit());
 			}
@@ -4945,7 +4945,7 @@ public final class ChallengeEffects {
 	/**
 	 * END(195 药水永恒): 调整药水带来的 buff 时长。
 	 *
-	 * <p>调用点：所有"喝药水 → 挂 buff"的地方。
+	 * <p>调用点：所有"喝药水 -> 挂 buff"的地方。
 	 * 未勾选 195 时原样返回。
 	 */
 	public static float potionDuration(float base) {
@@ -5242,7 +5242,7 @@ public final class ChallengeEffects {
 	 * <p>文档所有者定稿："获得方式财富/幸运掉落。"
 	 *
 	 * <p>只在高价值档判定（见 {@code RingOfWealth.genConsumableDrop}），
-	 * 所以实际获取率 ≈ 10%（高价值档）× 25% = 2.5% 每次财富掉落。
+	 * 所以实际获取率 ~ 10%（高价值档）× 25% = 2.5% 每次财富掉落。
 	 *
 	 * @return 概率（0 表示不触发）
 	 */
@@ -5402,7 +5402,7 @@ public final class ChallengeEffects {
 
 	/**
 	 * END(修订·登神长阶): 复活次数上限 = 当前区域数 + 1。
-	 * 区域 1 → 2 次，区域 5 → 6 次，与旧版"固定 6 次"在 5 区一致。
+	 * 区域 1 -> 2 次，区域 5 -> 6 次，与旧版"固定 6 次"在 5 区一致。
 	 */
 	public static int ascensionMaxRevives(){
 		return resourceSegment(com.shatteredpixel.shatteredpixeldungeon.Dungeon.depth) + 2;
@@ -5550,7 +5550,7 @@ public final class ChallengeEffects {
 		return Math.round(dmg * (1f + ChallengeBalance.REVENGE_FURY_TAKEN_PER_STACK * b.stacks));
 	}
 
-	/** END(移植·复仇狂怒 79): 有怪死亡 → 它视野内的其它怪叠一层复仇狂怒。 */
+	/** END(移植·复仇狂怒 79): 有怪死亡 -> 它视野内的其它怪叠一层复仇狂怒。 */
 	public static void onMobDeath(Char dead){
 		if (!on(REVENGE_FURY) || !(dead instanceof Mob)) return;
 		Mob mob = (Mob) dead;
@@ -5697,7 +5697,7 @@ public final class ChallengeEffects {
 	}
 
 	//==================================================================
-	//==== END(移植·英烈地牢): 精英强敌(14→升级116) / 全副武装(15) / 现代战争(17) ====
+	//==== END(移植·英烈地牢): 精英强敌(14->升级116) / 全副武装(15) / 现代战争(17) ====
 	//==================================================================
 
 	/** 移植·全副武装（原表 15）。 */
@@ -5723,7 +5723,7 @@ public final class ChallengeEffects {
 		return 0;
 	}
 
-	/** END(移植·15/17): 高阶精英的跟班数量（15→1 只，17→2 只）。 */
+	/** END(移植·15/17): 高阶精英的跟班数量（15->1 只，17->2 只）。 */
 	public static int championMinionCount(){
 		if (on(DUNGEON_OF_CHAMPIONS)) return 2;
 		if (on(ELITE_CHAMPIONS)) return 1;

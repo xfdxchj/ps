@@ -9,7 +9,7 @@
  * 而是 10 个完整的、可单独循环的粒子素材。
  *
  * <p>发射时<u>随机挑一张</u>，让该粒子的子帧按顺序循环播放。
- * 不做横向拼帧、不做全局连续 0→9 动画。
+ * 不做横向拼帧、不做全局连续 0->9 动画。
  *
  * <p>接入方式：在 4 件顶级装备里 override {@code emitter()}，
  * 返回 {@link #equipmentEmitter()}。原版 {@code ItemSprite.view(Item)}

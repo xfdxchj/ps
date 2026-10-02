@@ -1,9 +1,9 @@
 /*
  * Shattered Pixel Dungeon: End —《破碎的像素地牢：终焉扩展》
  * 炼金配方：法杖蜕变。
- * 输入（同一炼金锅里选两样）：1 把干净且 ≥+8 的（已鉴定）法杖  +  1 颗“强化符石”StoneOfAugmentation。
+ * 输入（同一炼金锅里选两样）：1 把干净且 >=+8 的（已鉴定）法杖  +  1 颗“强化符石”StoneOfAugmentation。
  * 输出：该法杖对应的进化法杖（EvolvedXxx），尽量保留强化等级与当前充能。
- * 一条动态配方即可覆盖全部 13 把（来源→其进化）的映射。
+ * 一条动态配方即可覆盖全部 13 把（来源->其进化）的映射。
  */
 package com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved;
 
@@ -28,7 +28,7 @@ public class EvolveWandRecipe extends Recipe {
 		boolean hasScroll  = false;
 		for (Item it : ingredients){
 			if (it instanceof Wand){
-				//干净、已鉴定；无需≥+8（isEligible 已不再查等级）
+				//干净、已鉴定；无需>=+8（isEligible 已不再查等级）
 				hasWand = it.isIdentified() && !it.cursed && EndWandEvolution.isEligible((Wand) it);
 			} else if (it instanceof StoneOfAugmentation){
 				hasStone = true;

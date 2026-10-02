@@ -1,6 +1,6 @@
 /*
  * Shattered Pixel Dungeon: End —《破碎的像素地牢：终焉扩展》
- * M2 真机制：WandOfLightning → 雷髓法杖（进化新物品 + 独特附魔光泽）。
+ * M2 真机制：WandOfLightning -> 雷髓法杖（进化新物品 + 独特附魔光泽）。
  * 对应开发.txt 描述：闪电:受自电伤转化为等量护盾。
  * 实现：完整复制 onZap/fx/arc，将"施法者自身受到电伤"分支改为获得等量护盾。
  */

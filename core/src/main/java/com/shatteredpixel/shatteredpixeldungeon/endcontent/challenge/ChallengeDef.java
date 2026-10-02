@@ -55,9 +55,9 @@ public final class ChallengeDef {
 
 	//==== 实装状态 ====
 
-	public static final int STATE_PENDING = 0;   // ⬜ 待实装
-	public static final int STATE_STUBBED = 1;   // 🔧 在架（有注册项，逻辑待接）
-	public static final int STATE_DONE    = 2;   // ✅ 已实装
+	public static final int STATE_PENDING = 0;   // [ ] 待实装
+	public static final int STATE_STUBBED = 1;   // [/] 在架（有注册项，逻辑待接）
+	public static final int STATE_DONE    = 2;   // [x] 已实装
 
 	//==== 字段 ====
 

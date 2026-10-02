@@ -21,8 +21,8 @@ import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
  * {@link EmbedDagger#onThrow(int)} 已经把落点记进 {@code stuckCell}
  * （命中敌人时记敌人格，落在空地时记空地格）。所以回收时：
  * <pre>
- *   有活着的被嵌敌人 → 传到他**背后**
- *   否则             → 传到**匕首落点那一格**（平地也生效）
+ *   有活着的被嵌敌人 -> 传到他**背后**
+ *   否则             -> 传到**匕首落点那一格**（平地也生效）
  * </pre>
  * 这正是文档所有者要的行为。
  *
@@ -35,7 +35,7 @@ public class DaggerTeleport extends EmbedDagger {
 	/**
 	 * END(修订·文档所有者定稿): 冷却 **10 回合**。
 	 *
-	 * <p>沿革：100（初版）→ 30（第一次修订）→ **10**（现在）。
+	 * <p>沿革：100（初版）-> 30（第一次修订）-> **10**（现在）。
 	 * 这个分支的定位就是"高频位移"，CD 越短手感越好。
 	 */
 	private static final float TELEPORT_COOLDOWN = 10f;
@@ -66,11 +66,11 @@ public class DaggerTeleport extends EmbedDagger {
 
 		int spot = -1;
 
-		//① 有活着的被嵌敌人 → 传到他背后
+		//1. 有活着的被嵌敌人 -> 传到他背后
 		if (stuckEnemy != null && stuckEnemy.isAlive()){
 			spot = behindCell( hero, stuckEnemy );
 		}
-		//② 否则（包括"落在平地"）→ 传到匕首所在的那一格
+		//2. 否则（包括"落在平地"）-> 传到匕首所在的那一格
 		//
 		//==== END(修复·平地不传送) ====
 		//文档所有者定稿："传送可以扔到平地也传送。"
@@ -94,7 +94,7 @@ public class DaggerTeleport extends EmbedDagger {
 		}
 
 		if (moved){
-			//传送成功 → 一小段隐匿
+			//传送成功 -> 一小段隐匿
 			Buff.affect( hero, Invisibility.class, TELEPORT_GUARD );
 		} else {
 			com.shatteredpixel.shatteredpixeldungeon.utils.GLog
@@ -118,8 +118,8 @@ public class DaggerTeleport extends EmbedDagger {
 		String info = super.info();
 		return info + "\n\n" + "掷出后嵌在敌人身上、或插在地上。\n\n" +
 				"回收时：\n" +
-				"-嵌在**敌人**身上 → 传到他**背后**\n" +
-				"-插在**平地**上 → 直接传送到那一格\n\n" +
+				"-嵌在**敌人**身上 -> 传到他**背后**\n" +
+				"-插在**平地**上 -> 直接传送到那一格\n\n" +
 				"传送后获得 1 回合隐匿，冷却 **10 回合**。";
 	}
 }

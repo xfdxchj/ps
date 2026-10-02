@@ -12,13 +12,13 @@ import com.watabou.utils.Bundle;
 import java.util.ArrayList;
 
 /**
- * 「嵌入刺杀」回收模型基类（整条匕首家族共享的 embed→recover 状态机）。
+ * 「嵌入刺杀」回收模型基类（整条匕首家族共享的 embed->recover 状态机）。
  * <p>仿照 AssassinDagger 原始恢复模型：投掷命中后记录到底嵌了谁/落在哪格
  * ({@link #stuckEnemy} / {@link #stuckCell}); 玩家随后从物品的 AC_RECOVER 动作
  * 触发“回收/拔出”分支效果, 形同把刀从目标身上抽回来进行结算。
  * <p>回收动作是否可点由派生类各自的 FlavourBuff 冷却决定:
- * <ul><li>DaggerTeleport  回收→把英雄传送到被嵌敌背后 + 隐匿 + TeleportCooldown;</li>
- *     <li>DaggerExecution 回收→处决残血非 Boss 目标 + ExecutionCooldown。</li></ul>
+ * <ul><li>DaggerTeleport  回收->把英雄传送到被嵌敌背后 + 隐匿 + TeleportCooldown;</li>
+ *     <li>DaggerExecution 回收->处决残血非 Boss 目标 + ExecutionCooldown。</li></ul>
  * 本类为抽象公共基：具体成品均 CONCRETE / 无参构造, 并在派生里给出各自的 name/info。
  */
 public abstract class EmbedDagger extends MissileWeapon {
@@ -79,7 +79,7 @@ public abstract class EmbedDagger extends MissileWeapon {
 	@Override public int max(int lvl){ return 6 + 2*lvl; }
 	@Override public int STRReq(int lvl){ return 10; }
 
-	//无限耐久: 与基底匕首相同, 投掷后不因耐久损坏, 便于重复“投掷→回收”循环
+	//无限耐久: 与基底匕首相同, 投掷后不因耐久损坏, 便于重复“投掷->回收”循环
 	@Override public float durabilityPerUse(int lvl){ return 0f; }
 
 	/** 清空嵌住状态。 */

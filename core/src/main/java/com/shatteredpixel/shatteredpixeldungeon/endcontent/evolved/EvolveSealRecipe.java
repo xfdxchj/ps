@@ -1,11 +1,11 @@
 /*
  * Shattered Pixel Dungeon: End —《破碎的像素地牢：终焉扩展》
- * 炼金配方（战士侧）：把 破印(BrokenSeal) + 邪能碎片(MetalShard) + 其三方向料之一 → 锻成对应的进阶破印成品。
+ * 炼金配方（战士侧）：把 破印(BrokenSeal) + 邪能碎片(MetalShard) + 其三方向料之一 -> 锻成对应的进阶破印成品。
  *
  * “方向料”采用现有物品来区分三支（与灵弓三向配方同构，用户指定三件现成料两族共用）：
- *    ① 血盾 BladeShieldSeal → 速度药水 PotionOfHaste（Survival / 快速护体）
- *    ② 狂暴 BloodRageSeal   → 浮空药水 PotionOfLevitation（mobility? 归于狂态，按需求保留）
- *    ③ 飞掷 FlyWeaponSeal   → 复仇卷轴 ScrollOfRetribution（Toss / 远程回敬）
+ *    1. 血盾 BladeShieldSeal -> 速度药水 PotionOfHaste（Survival / 快速护体）
+ *    2. 狂暴 BloodRageSeal   -> 浮空药水 PotionOfLevitation（mobility? 归于狂态，按需求保留）
+ *    3. 飞掷 FlyWeaponSeal   -> 复仇卷轴 ScrollOfRetribution（Toss / 远程回敬）
  * （映射为“易改注释”：若你想换任意方向料，只改本类 pickClass 一个 switch。）
  *
  * 输入 3 样：1 原版破印(干净/已鉴定/未诅咒)、1 颗 MetalShard、上述三方向料之一。
@@ -26,11 +26,11 @@ import java.util.ArrayList;
 
 public class EvolveSealRecipe extends Recipe {
 
-	/** 方向料（仓库现成物）→ 对应破印成品类型。易改之处就在这。 */
+	/** 方向料（仓库现成物）-> 对应破印成品类型。易改之处就在这。 */
 	private Class<? extends BrokenSeal> pickClass( Item special ){
-		if (special instanceof com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHaste)   return BladeShieldSeal.class; //速度→血盾
-		if (special instanceof com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfLevitation) return BloodRageSeal.class; //浮空→狂暴
-		if (special instanceof com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfRetribution) return FlyWeaponSeal.class; //复仇→飞掷
+		if (special instanceof com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHaste)   return BladeShieldSeal.class; //速度->血盾
+		if (special instanceof com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfLevitation) return BloodRageSeal.class; //浮空->狂暴
+		if (special instanceof com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfRetribution) return FlyWeaponSeal.class; //复仇->飞掷
 		return null;
 	}
 

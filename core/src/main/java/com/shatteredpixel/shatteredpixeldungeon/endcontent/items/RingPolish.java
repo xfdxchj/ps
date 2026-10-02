@@ -16,7 +16,7 @@ import java.util.ArrayList;
 
 /**
  * END(230 原神地牢): 洗练石。
- * 对一枚戒指使用可重掷它的全部词条。炼金：升级卷轴 + 强化符石 → 50 个。
+ * 对一枚戒指使用可重掷它的全部词条。炼金：升级卷轴 + 强化符石 -> 50 个。
  */
 public class RingPolish extends Item {
 
@@ -72,7 +72,7 @@ public class RingPolish extends Item {
 	@Override public boolean isIdentified(){ return true; }
 	@Override public int value(){ return 0; }
 
-	/** 炼金：升级卷轴 + 强化符石 → 50 个洗练石（仅 230 挑战开启时可用）。 */
+	/** 炼金：升级卷轴 + 强化符石 -> 50 个洗练石（仅 230 挑战开启时可用）。 */
 	public static class PolishRecipe extends Recipe.SimpleRecipe {
 		public PolishRecipe(){
 			inputs = new Class[]{ScrollOfUpgrade.class, StoneOfAugmentation.class};

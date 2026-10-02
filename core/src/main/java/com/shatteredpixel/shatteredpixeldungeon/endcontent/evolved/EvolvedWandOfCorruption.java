@@ -1,6 +1,6 @@
 /*
  * Shattered Pixel Dungeon: End —《破碎的像素地牢：终焉扩展》
- * M2 真机制：WandOfCorruption → 腐灵法杖（进化新物品 + 独特附魔光泽）。
+ * M2 真机制：WandOfCorruption -> 腐灵法杖（进化新物品 + 独特附魔光泽）。
  * 对应开发.txt 描述：腐化:触发(腐化/腐化减益)概率 +30%。
  */
 package com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved;

@@ -18,12 +18,12 @@ package com.shatteredpixel.shatteredpixeldungeon.endcontent;
  *
  * <h3>完整流程</h3>
  * <pre>
- *   第 1 轮：打 1-25 层   → 进 26 层  → 怪物吃【诅咒① 不灭】
- *   第 2 轮：打 26-50 层  → 进 51 层  → 怪物吃【诅咒② 疾行】
- *   第 3 轮：打 51-75 层  → 进 76 层  → 怪物吃【诅咒③ 狂乱】
+ *   第 1 轮：打 1-25 层   -> 进 26 层  -> 怪物吃【诅咒1. 不灭】
+ *   第 2 轮：打 26-50 层  -> 进 51 层  -> 怪物吃【诅咒2. 疾行】
+ *   第 3 轮：打 51-75 层  -> 进 76 层  -> 怪物吃【诅咒3. 狂乱】
  *   ...
- *   第 9 轮：打 201-225 层 → 进 226 层 → 怪物吃【诅咒⑨ 铁鳞】
- *   第 10 轮：226-250 层  → 进 251 层 → **原版结局（不再循环）**
+ *   第 9 轮：打 201-225 层 -> 进 226 层 -> 怪物吃【诅咒9. 铁鳞】
+ *   第 10 轮：226-250 层  -> 进 251 层 -> **原版结局（不再循环）**
  * </pre>
  *
  * <p>也就是：**轮回 9 次之后，玩家抵达"原版第 26 层"对应的位置 —— 游戏结束。**
@@ -88,7 +88,7 @@ public final class Reincarnation {
 	/**
 	 * END: 这个"实际楼层"对应原版的第几层。
 	 *
-	 * <p>例（len = 25）：26 → 1、27 → 2、51 → 1。
+	 * <p>例（len = 25）：26 -> 1、27 -> 2、51 -> 1。
 	 */
 	public static int mappedDepth(int depth){
 		int len = loopLength();
@@ -116,7 +116,7 @@ public final class Reincarnation {
 	 * @return true 表示不再循环，应交给原版结局流程
 	 */
 	public static boolean shouldEnd(int depth){
-		if (!enabled()) return false;      //没开挑战 → 不走循环，交给原版流程
+		if (!enabled()) return false;      //没开挑战 -> 不走循环，交给原版流程
 		//==== END(真·无尽): 在护符处选择"陷入无尽轮回"后，永远不再走结局 ====
 		if (trueEndless) return false;
 		int len = loopLength();
@@ -149,7 +149,7 @@ public final class Reincarnation {
 
 		ReincarnationCurse c = ReincarnationCurse.forCycle(cycles - 1);
 		if (c != null){
-			Dbg.log(Dbg.CHALLENGE, "轮回 " + cycles + " → 怪物获得【" + c.title + "】" + c.effect);
+			Dbg.log(Dbg.CHALLENGE, "轮回 " + cycles + " -> 怪物获得【" + c.title + "】" + c.effect);
 		}
 	}
 
@@ -229,7 +229,7 @@ public final class Reincarnation {
 		float base = BASE_RATIO[region];
 		//==== END(修订·无尽轮回数值改为加算) ====
 		//文档所有者定稿："无尽 2 次轮回的为加算，不是乘算。"
-		//原来 base × 2^cycles（1→2→4→8…）；现改为 base × (1 + cycles)（2→3→4→5…）。
+		//原来 base × 2^cycles（1->2->4->8…）；现改为 base × (1 + cycles)（2->3->4->5…）。
 
 		float result = base * mult;
 
@@ -282,57 +282,57 @@ public final class Reincarnation {
 	//九种诅咒的数值出口（全部只作用于怪物）
 	//==================================================================
 
-	/** END(② 疾行): 怪物移速倍率。 */
+	/** END(2. 疾行): 怪物移速倍率。 */
 	public static float mobSpeedMultiplier(){
 		if (!enabled()) return 1f;
 		return active(ReincarnationCurse.SWIFT)
 				? 1f + ReincarnationCurse.SWIFT.value : 1f;
 	}
 
-	/** END(③ 狂乱): 怪物攻速倍率。 */
+	/** END(3. 狂乱): 怪物攻速倍率。 */
 	public static float mobAttackSpeedMultiplier(){
 		if (!enabled()) return 1f;
 		return active(ReincarnationCurse.FRENZY)
 				? 1f + ReincarnationCurse.FRENZY.value : 1f;
 	}
 
-	/** END(⑤ 顽抗): 怪物减伤比例。 */
+	/** END(5. 顽抗): 怪物减伤比例。 */
 	public static float mobDamageReduction(){
 		if (!enabled()) return 0f;
 		return active(ReincarnationCurse.RESILIENCE)
 				? ReincarnationCurse.RESILIENCE.value : 0f;
 	}
 
-	/** END(⑧ 厚躯): 怪物生命上限倍率。 */
+	/** END(8. 厚躯): 怪物生命上限倍率。 */
 	public static float mobMaxHpMultiplier(){
 		if (!enabled()) return 1f;
 		return active(ReincarnationCurse.THICK_HIDE)
 				? 1f + ReincarnationCurse.THICK_HIDE.value : 1f;
 	}
 
-	/** END(⑨ 铁鳞): 怪物护甲倍率。 */
+	/** END(9. 铁鳞): 怪物护甲倍率。 */
 	public static float mobArmorMultiplier(){
 		if (!enabled()) return 1f;
 		return active(ReincarnationCurse.IRON_SCALE)
 				? 1f + ReincarnationCurse.IRON_SCALE.value : 1f;
 	}
 
-	/** END(① 不灭): 致命伤时是否触发一次无敌。 */
+	/** END(1. 不灭): 致命伤时是否触发一次无敌。 */
 	public static boolean mobCanSurviveFatal(){
 		return enabled() && active(ReincarnationCurse.UNDYING);
 	}
 
-	/** END(④ 呼号): 是否呼喊同伴。 */
+	/** END(4. 呼号): 是否呼喊同伴。 */
 	public static boolean mobCanHowl(){
 		return enabled() && active(ReincarnationCurse.HOWL);
 	}
 
-	/** END(⑥ 侵蚀): 是否附带随机负面。 */
+	/** END(6. 侵蚀): 是否附带随机负面。 */
 	public static boolean mobCanErode(){
 		return enabled() && active(ReincarnationCurse.EROSION);
 	}
 
-	/** END(⑦ 爆裂): 死亡是否爆炸。 */
+	/** END(7. 爆裂): 死亡是否爆炸。 */
 	public static boolean mobCanDetonate(){
 		return enabled() && active(ReincarnationCurse.DETONATE);
 	}

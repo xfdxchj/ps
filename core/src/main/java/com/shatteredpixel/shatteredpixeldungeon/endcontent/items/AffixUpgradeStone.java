@@ -23,7 +23,7 @@ import java.util.ArrayList;
  * <p>对一枚已有词条的戒指使用，从它的词条中**选择 1 条**强化：
  * 随机获得 +20% / +35% / +40% 的**乘算**提升，每条词条最多强化 3 次。
  *
- * <p>炼金：升级卷轴 + 强化符石 → 3 个。
+ * <p>炼金：升级卷轴 + 强化符石 -> 3 个。
  */
 public class AffixUpgradeStone extends Item {
 
@@ -123,10 +123,10 @@ public class AffixUpgradeStone extends Item {
 				+ "对一枚已有词条的戒指使用，从它的词条中**选择 1 条**强化："
 				+ "随机获得 **" + RingAffix.upgradeBonusText() + "** 的**乘算**提升，"
 				+ "每条词条最多强化 **" + RingAffix.MAX_UPGRADES + " 次**。\n\n"
-				+ "炼金配方：**升级卷轴 ×1 + 强化符石 ×1 → 3 个**。";
+				+ "炼金配方：**升级卷轴 ×1 + 强化符石 ×1 -> 3 个**。";
 	}
 
-	/** 炼金：升级卷轴 + 强化符石 → 3 个词条强化石（仅 230 挑战开启时可用）。 */
+	/** 炼金：升级卷轴 + 强化符石 -> 3 个词条强化石（仅 230 挑战开启时可用）。 */
 	public static class UpgradeRecipe extends Recipe.SimpleRecipe {
 		public UpgradeRecipe(){
 			inputs = new Class[]{ScrollOfUpgrade.class, StoneOfAugmentation.class};

@@ -47,7 +47,7 @@ public class RabbitRing extends Ring {
 	 * {@code Ring.activate()} 里是这么写的：
 	 * <pre>
 	 *   buff = buff();
-	 *   buff.attachTo( ch );      // ← buff() 返回 null 就在这里 NPE
+	 *   buff.attachTo( ch );      // <- buff() 返回 null 就在这里 NPE
 	 * </pre>
 	 * 而基类的 {@code buff()} 默认返回 {@code null}，
 	 * 子类要么设 {@code buffClass = XXX.class}，要么覆写 {@code buff()}。
@@ -79,9 +79,9 @@ public class RabbitRing extends Ring {
 	//
 	//根因：{@code Ring.reset()} 里是这么写的：
 	//    if (handler != null && handler.contains(this)){
-	//        image = handler.image(this);          // 在表里 → 用它自己的宝石图
+	//        image = handler.image(this);          // 在表里 -> 用它自己的宝石图
 	//    } else {
-	//        image = ItemSpriteSheet.RING_GARNET;  // 不在表里 → 石榴石
+	//        image = ItemSpriteSheet.RING_GARNET;  // 不在表里 -> 石榴石
 	//        gem = "garnet";
 	//    }
 	//而 {@code handler} 的键是 {@code Generator.Category.RING.classes}
@@ -175,7 +175,7 @@ public class RabbitRing extends Ring {
 		//这是原版 Regeneration 那类"常驻、每回合 act()"buff 的标准写法。
 		//
 		//安全性：同一 tick 里英雄(actPriority=HERO_PRIO=0)先于 buff(BUFF_PRIO=-30)行动，
-		//"免费那一击 → 再动一次"期间 tracker 不会抢先 act() 重置计数，
+		//"免费那一击 -> 再动一次"期间 tracker 不会抢先 act() 重置计数，
 		//不会出现一回合无限免费的情况。
 		RabbitRingTracker t = hero.buff(RabbitRingTracker.class);
 		if (t == null) {

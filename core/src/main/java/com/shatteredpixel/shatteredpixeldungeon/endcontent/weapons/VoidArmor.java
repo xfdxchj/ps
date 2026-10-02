@@ -123,12 +123,12 @@ public class VoidArmor extends Armor {
 		if (a == null) return dmg;
 		int lvl = a.buffedLvl();
 
-		//① 概率完全免疫
+		//1. 概率完全免疫
 		if (com.watabou.utils.Random.Float() < immuneChance(lvl)){
 			return -1;
 		}
 
-		//② 免伤
+		//2. 免伤
 		int reduced = Math.max(1, Math.round(dmg * (1f - damageReduction(lvl))));
 		return reduced;
 	}

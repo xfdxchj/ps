@@ -9,7 +9,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfAugmentation
 import java.util.ArrayList;
 
 /**
- * 炼金： 1× 强化符石(StoneOfAugmentation) + 1× 驱邪卷轴(ScrollOfRemoveCurse) → 灵能核心。
+ * 炼金： 1× 强化符石(StoneOfAugmentation) + 1× 驱邪卷轴(ScrollOfRemoveCurse) -> 灵能核心。
  * 动态配方：不限槽数，逐个 Sum 判足即可（variableRecipes 段）。
  */
 public class SpiritBowCoreRecipe extends Recipe {

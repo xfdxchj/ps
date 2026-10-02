@@ -1,6 +1,6 @@
 /*
  * Shattered Pixel Dungeon: End —《破碎的像素地牢：终焉扩展》
- * M2 真机制：WandOfWarding → 灵哨法杖（进化新物品 + 独特附魔光泽）。
+ * M2 真机制：WandOfWarding -> 灵哨法杖（进化新物品 + 独特附魔光泽）。
  * 对应开发.txt 描述：哨戒:消耗额外充能直接生成高阶段哨兵。
  */
 package com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved;

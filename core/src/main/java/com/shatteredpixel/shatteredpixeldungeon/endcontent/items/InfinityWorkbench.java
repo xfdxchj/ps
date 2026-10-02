@@ -45,7 +45,7 @@ public class InfinityWorkbench extends Item {
 	@Override public boolean isIdentified(){ return true; }
 	@Override public int value(){ return 0; }
 
-	/** 炼金：炼金工具箱 + 无尽锭 → 无尽工作台。 */
+	/** 炼金：炼金工具箱 + 无尽锭 -> 无尽工作台。 */
 	public static class BenchRecipe extends Recipe.SimpleRecipe {
 		public BenchRecipe(){
 			inputs = new Class[]{AlchemistsToolkit.class, InfinityMaterials.InfinityIngot.class};

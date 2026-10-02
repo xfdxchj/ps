@@ -29,7 +29,7 @@ import java.util.Map;
 
 public final class EndWandEvolution {
 
-    /** 曾要求 ≥+8；需求改为“无需等级即可进阶”，故 isEligible 不再判该等级(此常量仅留文档)。 */
+    /** 曾要求 >=+8；需求改为“无需等级即可进阶”，故 isEligible 不再判该等级(此常量仅留文档)。 */
     public static final int MIN_EVOLUTION_LEVEL = 8;
 
     /** 由“来源法杖类型”索引到“其进化后所成新法杖”。 */
@@ -59,7 +59,7 @@ public final class EndWandEvolution {
         return wand != null && REGISTRY.containsKey( wand.getClass() );
     }
 
-    /** 一支源法杖是否可进化：只要有进化映射即可，不再要求≥+8。 */
+    /** 一支源法杖是否可进化：只要有进化映射即可，不再要求>=+8。 */
     public static boolean isEligible( Wand wand ){
         return hasEvolution(wand);
     }

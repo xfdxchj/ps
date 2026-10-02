@@ -16,9 +16,9 @@ package com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge;
  * {@code long} 都不够，因此改用 {@code long[]}。
  *
  * <h3>关键设计：位号 = 表 ID，不是数组下标</h3>
- * 原表编号有断层（50/51/53/66/82–85/89/91–94/98/99/102/105–107 是空号），
+ * 原表编号有断层（50/51/53/66/82-85/89/91-94/98/99/102/105-107 是空号），
  * 所以<b>不能用数组下标当位号</b>——否则以后插入新规则会让所有旧存档错位。
- * 这里直接把表 ID 当位号：{@code bit(ID)}，最大需要 139 位 → 3 个 {@code long}。
+ * 这里直接把表 ID 当位号：{@code bit(ID)}，最大需要 139 位 -> 3 个 {@code long}。
  *
  * <h3>存档兼容</h3>
  * 用 {@code long[]} 存储，{@code Bundle} 原生支持。
@@ -179,7 +179,7 @@ public final class ChallengeMask {
 	/**
 	 * END(通过等级): 计算通过等级。
 	 *
-	 * <p>权威清单定义：{@code 通过等级 = ∑ (启用规则的等级数值)}。
+	 * <p>权威清单定义：{@code 通过等级 = sum (启用规则的等级数值)}。
 	 * 只累加 {@link ChallengeDef#countsForLevel} 为 true 的规则。
 	 */
 	public int passLevel() {

@@ -109,7 +109,7 @@ public class EndFloorSkip extends Item {
 
 	@Override
 	public int image() {
-		//END(修复): 原先用 CITY_HOOD（=DOCUMENTS+13），但该槽在图集里是空白 → 图标全透明、看不见。
+		//END(修复): 原先用 CITY_HOOD（=DOCUMENTS+13），但该槽在图集里是空白 -> 图标全透明、看不见。
 		//改用图集中**确实有贴图**的传送石图标（STONES 块，行22）。
 		return ItemSpriteSheet.STONE_BLINK;
 	}

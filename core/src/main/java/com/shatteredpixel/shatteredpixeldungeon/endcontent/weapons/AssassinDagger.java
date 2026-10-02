@@ -33,7 +33,7 @@ public class AssassinDagger extends MissileWeapon {
 	}
 
 	/**
-	 * END(修订·文档所有者定稿): 100 → **30**。
+	 * END(修订·文档所有者定稿): 100 -> **30**。
 	 *
 	 * <p>四个地方共用同一个 {@link TeleportCooldown}：
 	 * <pre>

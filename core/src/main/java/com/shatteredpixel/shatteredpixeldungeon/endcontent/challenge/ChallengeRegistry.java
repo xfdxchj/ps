@@ -23,7 +23,7 @@ import java.util.Map;
  * 权威清单共 108 个槽位（见 {@code docs/CHALLENGE_RULES_AUTHORITATIVE.md}），
  * 本注册表**只登记已实装**的规则：
  * <ul>
- *   <li>经典挑战 9 条（表 ID 109–117，对应 {@code Challenges} 里的原版常量）</li>
+ *   <li>经典挑战 9 条（表 ID 109-117，对应 {@code Challenges} 里的原版常量）</li>
  *   <li>新正式挑战 2 条（表 ID 32 通货膨胀、45 炼金无望）</li>
  *   <li>测试用「便利测试包」1 条（非表内，位号 0，{@code countsForLevel=false}）</li>
  * </ul>
@@ -42,7 +42,7 @@ public final class ChallengeRegistry {
 	static {
 		List<ChallengeDef> all = new ArrayList<>();
 
-		//==== 经典挑战（表 ID 109–117，均已实装）====
+		//==== 经典挑战（表 ID 109-117，均已实装）====
 		//legacyBit = 原版 Challenges.* 常量，用于与 Dungeon.challenges(int) 互转。
 		all.add(ChallengeDef.at(109, "缩餐节食", "no_food")
 				.group("经典").tendency(ChallengeDef.TENDENCY_RESOURCE).level(2)
@@ -437,7 +437,7 @@ public final class ChallengeRegistry {
 		done(all, 138,"荒诞世界",   "absurd_world",     "特殊", T_NEU, 1, T_EASY,   "",
 				"怪物贴图随机变化。纯外观，不影响属性与 AI。");
 
-		//---- 格林系列（125–133、136）· 链式前置 ----
+		//---- 格林系列（125-133、136）· 链式前置 ----
 		done(all, 125,"格林之器",   "grimm_weapon",     "格林", T_BEN, 3, T_SER,    "s:126,127,128,129,130,131,132",
 				"按 5 阶武器在关卡中**掉落**获得**勇剑**：三段循环（3 连击 / 必中 / 4 连击），从第 21 层起有概率出现。");
 		//END(互斥): 126 移除升级系统，而 81 依赖升级卷轴产出 —— 二者功能冲突，必须互斥。
@@ -467,8 +467,8 @@ public final class ChallengeRegistry {
 				"s:128,125,126,127,129,130,131,132,133,136",
 				"使用后获得**发狂**：攻击力 +50%，但每回合扣除最大生命的一半（最低保留 1 点）。与镇魂歌联动。");
 
-		//==== 扩展包：139–147（表内有 ID 的新规则）====
-		//等级 / 倾向 / 关系均按清单给定；ID 139–147 经核实为原表空号，可直接使用。
+		//==== 扩展包：139-147（表内有 ID 的新规则）====
+		//等级 / 倾向 / 关系均按清单给定；ID 139-147 经核实为原表空号，可直接使用。
 		done(all, 139,"紊乱法杖",   "chaos_wand",       "装备", T_TWO, 2, T_MED,    "s:60,21",
 				"任何法杖施法时 **13%** 概率变成**另一种法杖**的效果（不是新物品，是全局规则）。等级沿用当前法杖。");
 		done(all, 140,"枪枪爆头",   "headshot",         "战斗", T_BEN, 2, T_EASY,   "s:103,76",
@@ -488,7 +488,7 @@ public final class ChallengeRegistry {
 		done(all, 147,"就业紧张",   "job_crisis",       "特殊", T_RISK,3, T_EASY,   "x:146",
 				"职业天赋全部失效（所有天赋加成一并无效）。");
 
-		//==== 扩展包：148–168（清单未给 ID，按清单顺序编号）====
+		//==== 扩展包：148-168（清单未给 ID，按清单顺序编号）====
 		done(all, 148,"飞天神偷",   "flying_thief",     "怪物", T_MON, 2, T_MED,    "",
 				"13% 的怪物获得永久隐身（Boss 除外）。");
 		done(all, 149,"黏糊蜂蜜",   "sticky_honey",     "环境", T_MON, 1, T_MED,    "",

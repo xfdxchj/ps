@@ -59,7 +59,7 @@ public class NurturedSword extends MeleeWeapon {
 	 * END: 当前的**有效阶数**。
 	 *
 	 * <p>{@code 1 + 强化等级 / 3}，上限 5。
-	 * 例：+0 → 1 阶、+3 → 2 阶、+6 → 3 阶、+9 → 4 阶、+12 → 5 阶。
+	 * 例：+0 -> 1 阶、+3 -> 2 阶、+6 -> 3 阶、+9 -> 4 阶、+12 -> 5 阶。
 	 */
 	public int effectiveTier(){
 		return Math.min(MAX_TIER, 1 + Math.max(0, buffedLvl()) / LEVELS_PER_TIER);

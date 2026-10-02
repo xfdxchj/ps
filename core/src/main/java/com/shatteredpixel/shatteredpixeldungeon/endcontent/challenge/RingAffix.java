@@ -46,7 +46,7 @@ public enum RingAffix {
 	/** 每次强化的乘算加成档位。 */
 	public static final float[] UPGRADE_BONUSES = { 0.20f, 0.35f, 0.40f };
 
-	/** 供文本使用的 "＋20% / ＋35% / ＋40%" 串，避免说明里再手写数字。 */
+	/** 供文本使用的 "+20% / +35% / +40%" 串，避免说明里再手写数字。 */
 	public static String upgradeBonusText(){
 		StringBuilder sb = new StringBuilder();
 		for (float b : UPGRADE_BONUSES){

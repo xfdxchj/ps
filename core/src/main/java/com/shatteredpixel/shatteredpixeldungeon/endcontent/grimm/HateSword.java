@@ -91,8 +91,8 @@ public class HateSword extends MeleeWeapon {
 	 * @return 伤害倍率（1.0 ~ 3.0）
 	 */
 	public static float hateMultiplier(int hp, int ht) {
-		if (ht <= 1) return BRINK_MULT;          //最大生命为 1 → 直接 3 倍
-		if (hp <= 1) return BRINK_MULT;          //真正进入 1 血 → 跃升
+		if (ht <= 1) return BRINK_MULT;          //最大生命为 1 -> 直接 3 倍
+		if (hp <= 1) return BRINK_MULT;          //真正进入 1 血 -> 跃升
 
 		float pct = hp / (float) ht;             //(0, 1]
 		//线性插值：满血 1.0，趋近 0 血时趋近 NEAR_DEATH_MAX

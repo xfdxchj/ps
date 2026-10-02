@@ -95,12 +95,12 @@ public final class CrumblingStats {
 	 *
 	 * <p>经验不是逐只填的 —— 而是按**区域**给一个统一值：
 	 * 因为"1 区的怪来自原 5 区"，所以它们的经验就是原 5 区怪的经验量级。
-	 * 原版各区域的典型经验是 1/2/3/4/5 区 → 1/3/5/8/12 左右，
+	 * 原版各区域的典型经验是 1/2/3/4/5 区 -> 1/3/5/8/12 左右，
 	 * 这里按**每区域统一**给出，比逐只标更不容易出错。
 	 */
 	public static int expForRegion(int region) {
 		switch (region) {
-			case 1:  return 12;    //1 区用原 5 区的怪 → 给 5 区经验
+			case 1:  return 12;    //1 区用原 5 区的怪 -> 给 5 区经验
 			case 2:  return 8;     //2 区用原 4 区
 			case 3:  return 5;     //3 区用原 3 区（不变）
 			case 4:  return 3;     //4 区用原 2 区
@@ -203,7 +203,7 @@ public final class CrumblingStats {
 		put(3, "FungalNode",     30, 0,  0, 0, 0,  0,  0);  //菌丝节点
 
 		//==================== 七、Boss ====================
-		//⚠️ 命名说明：配置表用的中文名与游戏内**相反**，以 HP 数值为准：
+		//! 命名说明：配置表用的中文名与游戏内**相反**，以 HP 数值为准：
 		//   · 表格"1区 古神 70"  -> 游戏内 Goo（中文名"粘咕"），原 70 HP
 		//   · 表格"5区 黏咕 2500" -> 游戏内 YogDzewa（中文名"古神"），原 2500 HP
 		//
@@ -216,7 +216,7 @@ public final class CrumblingStats {
 		//5 区会出现"很强的 Goo"。这正是"Boss 也跟着改数值"的含义。
 
 		//---- 实际 1 区：YogDzewa（大眼球）----
-		//⚠️ HP 用 100 而非配置表的 70。
+		//! HP 用 100 而非配置表的 70。
 		//原因：YogDzewa 有**三阶段召唤**机制（HT=1000 时每阶段消耗 300 = 最大生命的 30%）。
 		//若 HP=70，每阶段只需打掉 21 血，玩家很可能一个暴击就跳过整个阶段，
 		//三次召唤形同虚设。改为 100 后每阶段 30 血，与拳头自身的 25 血量级匹配，
@@ -233,7 +233,7 @@ public final class CrumblingStats {
 		//不带外类名的短名（Larva / YogRipper / YogEye / YogScorpio），
 		//所以下面的键就用这些短名。
 		//
-		//⚠️ 早先版本只登记了 RipperDemon / Eye / Scorpio，
+		//! 早先版本只登记了 RipperDemon / Eye / Scorpio，
 		//而实际召唤出来的是 YogRipper / YogEye / YogScorpio ——
 		//**查表会失败，仆从保持原版数值**。这里补上正确的键。
 		//
@@ -249,7 +249,7 @@ public final class CrumblingStats {
 		put(5, "YogEye",        96, 12, 30, 0, 4, 40, 12);
 
 		//---- YogScorpio（古神版巨蝎）：对应各区的"巨蝎" ----
-		//⚠️ 早先 r4 填成 {60, 7-16}（照抄 DM100），但其伤害上限 16
+		//! 早先 r4 填成 {60, 7-16}（照抄 DM100），但其伤害上限 16
 		//小于 r3 的 18，出现"越深越弱"的非单调。这里改为单调递增。
 		put(1, "YogScorpio",     9,  2,  4, 0, 2,  7,  4);
 		put(2, "YogScorpio",    25,  5,  8, 0, 2, 10,  6);
@@ -258,7 +258,7 @@ public final class CrumblingStats {
 		put(5, "YogScorpio",   144, 22, 36, 0, 8, 45, 16);
 
 		//---- YogRipper（古神版恶魔撕裂者）：对应各区的"恶魔撕裂者" ----
-		//⚠️ 早先 r3 填成 30，小于 r2 的 35，出现 HP 非单调。这里改为递增。
+		//! 早先 r3 填成 30，小于 r2 的 35，出现 HP 非单调。这里改为递增。
 		put(1, "YogRipper",     10,  2,  4, 0, 1,  7,  5);
 		put(2, "YogRipper",     35,  5,  9, 0, 2, 13, 10);
 		put(3, "YogRipper",     60, 12, 24, 0, 4, 35, 22);

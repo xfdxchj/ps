@@ -115,7 +115,7 @@ public final class Dbg {
 	/** END: 打一行错误（永远输出）。 */
 	public static void err(String tag, String msg, Throwable t){
 		System.out.println("[END·" + tag + "·错误] " + msg
-				+ (t == null ? "" : ("  → " + t)));
+				+ (t == null ? "" : ("  -> " + t)));
 		if (t != null) t.printStackTrace();
 	}
 }

@@ -163,7 +163,7 @@ public class AngelSword extends MeleeWeapon
 			c.attackedThisTurn = false;
 		}
 
-		//本回合已经叠过 → 不再叠加
+		//本回合已经叠过 -> 不再叠加
 		if (c.attackedThisTurn) return false;
 
 		c.attackedThisTurn = true;
@@ -205,13 +205,13 @@ public class AngelSword extends MeleeWeapon
 		 * END(133): 每回合检查是否"中断"。
 		 *
 		 * <p>{@code act()} 在该 buff 轮到时执行一次（约等于英雄的一个回合）。
-		 * 若上一回合**没有攻击过**，说明连击链断了 → 计数清零。
+		 * 若上一回合**没有攻击过**，说明连击链断了 -> 计数清零。
 		 * 然后把标记复位，供下一回合使用。
 		 */
 		@Override
 		public boolean act() {
 			if (!attackedThisTurn) {
-				//上一回合没打 → 链断了
+				//上一回合没打 -> 链断了
 				hits = 0;
 			}
 			attackedThisTurn = false;
