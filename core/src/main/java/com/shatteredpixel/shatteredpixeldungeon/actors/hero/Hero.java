@@ -997,6 +997,10 @@ public class Hero extends Char {
 	@Override
 	public boolean act() {
 		
+		//END(233 是我赢了): 低血量切《雨爱》，回到 60% 时恢复
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeSfx.updateWinningMusic(this);
+
 		//calls to dungeon.observe will also update hero's local FOV.
 		fieldOfView = Dungeon.level.heroFOV;
 

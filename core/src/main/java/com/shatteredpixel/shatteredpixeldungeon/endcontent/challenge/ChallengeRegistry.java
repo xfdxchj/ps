@@ -428,6 +428,10 @@ public final class ChallengeRegistry {
 		//且被 135 亡者之怒 联动引用。归入格林组后，UI 上与其它格林规则一起展示。
 		done(all, 137,"奶龙大笑",   "milk_dragon",      "音乐", T_NEU, 1, T_MED,    "",
 				"每回合 3% 概率触发奶龙大笑音效。");
+		done(all, 232,"大地复苏",   "dadi_revival",     "音乐", T_NEU, 2, T_MED,    "",
+				"常规层与 Boss 层的 BGM 全部替换：每层从 31 首常规 + 12 首 Boss 曲目里随机抽 1 首。同一层的曲子固定，上下楼不会改变。");
+		done(all, 233,"是我赢了",   "winning",          "音乐", T_TWO, 2, T_MED,    "",
+				"生命值低于 30% 时把 BGM 换成《雨爱》；回到 60% 以上后恢复本层音乐。");
 		done(all, 138,"荒诞世界",   "absurd_world",     "特殊", T_NEU, 1, T_EASY,   "",
 				"怪物贴图随机变化。纯外观，不影响属性与 AI。");
 

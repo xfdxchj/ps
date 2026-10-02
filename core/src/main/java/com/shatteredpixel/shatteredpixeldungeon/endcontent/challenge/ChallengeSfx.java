@@ -60,6 +60,10 @@ public final class ChallengeSfx {
 	public static final int PROVIDENCE      = 118;
 	/** 130 格林之音。 */
 	public static final int GRIMM_MUSIC     = 130;
+	/** 232 大地复苏：每层随机一首常规/boss 曲，且同层固定。 */
+	public static final int DADI_REVIVAL    = 232;
+	/** 233 是我赢了：低血量切《雨爱》，回到 60% 淡出。 */
+	public static final int WINNING         = 233;
 	/** 137 奶龙大笑。 */
 	public static final int MILK_DRAGON     = 137;
 
@@ -362,6 +366,109 @@ public final class ChallengeSfx {
 
 	//==== 130 格林之音：BGM 替换 ====
 
+	//==== 232 大地复苏 / 233 是我赢了：BGM 替换 ====
+
+	/** 大地复苏曲库：31 首常规 + 12 首 Boss。 */
+	private static final String[] DADI_TRACKS = {
+			"music/dadi_01.ogg",
+			"music/dadi_02.ogg",
+			"music/dadi_03.ogg",
+			"music/dadi_04.ogg",
+			"music/dadi_05.ogg",
+			"music/dadi_06.ogg",
+			"music/dadi_07.ogg",
+			"music/dadi_08.ogg",
+			"music/dadi_09.ogg",
+			"music/dadi_10.ogg",
+			"music/dadi_11.ogg",
+			"music/dadi_12.ogg",
+			"music/dadi_13.ogg",
+			"music/dadi_14.ogg",
+			"music/dadi_15.ogg",
+			"music/dadi_16.ogg",
+			"music/dadi_17.ogg",
+			"music/dadi_18.ogg",
+			"music/dadi_19.ogg",
+			"music/dadi_20.ogg",
+			"music/dadi_21.ogg",
+			"music/dadi_22.ogg",
+			"music/dadi_23.ogg",
+			"music/dadi_24.ogg",
+			"music/dadi_25.ogg",
+			"music/dadi_26.ogg",
+			"music/dadi_27.ogg",
+			"music/dadi_28.ogg",
+			"music/dadi_29.ogg",
+			"music/dadi_30.ogg",
+			"music/dadi_31.ogg",
+			"music/dadi_boss_01.ogg",
+			"music/dadi_boss_02.ogg",
+			"music/dadi_boss_03.ogg",
+			"music/dadi_boss_04.ogg",
+			"music/dadi_boss_05.ogg",
+			"music/dadi_boss_06.ogg",
+			"music/dadi_boss_07.ogg",
+			"music/dadi_boss_08.ogg",
+			"music/dadi_boss_09.ogg",
+			"music/dadi_boss_10.ogg",
+			"music/dadi_boss_11.ogg",
+			"music/dadi_boss_12.ogg",
+			"music/rain.mp3"
+	};
+
+	/** 《雨爱》。 */
+	public static final String WINNING_TRACK = "music/rain.mp3";
+
+	/** 是否是常规/Boss 层 BGM（不含菜单、格林、静谧、无尽等替换曲）。 */
+	private static boolean isLevelMusic(String original){
+		if (original == null) return false;
+		if (original.startsWith("music/grimm/") || original.startsWith("music/jingmi/")
+				|| original.startsWith("music/dadi") || original.startsWith("music/rain")) return false;
+		return original.startsWith("music/sewers") || original.startsWith("music/prison")
+				|| original.startsWith("music/caves") || original.startsWith("music/city")
+				|| original.startsWith("music/halls");
+	}
+
+	/** 本层固定的随机曲：由本局种子 + 层数决定，上下楼不会重掷。 */
+	public static String dadiTrackForDepth(int depth){
+		long h = Dungeon.seed * 1103515245L + depth * 12345L;
+		int i = (int)(h % DADI_TRACKS.length);
+		if (i < 0) i += DADI_TRACKS.length;
+		return DADI_TRACKS[i];
+	}
+
+	/** 232：把常规/Boss BGM 换成大地复苏的随机曲。 */
+	public static String dadiTrackFor(String original){
+		if (!on(DADI_REVIVAL)) return null;
+		if (!isLevelMusic(original)) return null;
+		return dadiTrackForDepth(Dungeon.depth);
+	}
+
+	/** 233：低血量时是否应切到《雨爱》。 */
+	public static String winningTrackFor(String original){
+		if (!on(WINNING) || Dungeon.hero == null) return null;
+		if (Dungeon.hero.HP < Dungeon.hero.HT * 0.30f) return WINNING_TRACK;
+		return null;
+	}
+
+	private static boolean winningPlaying = false;
+	/** 由 Hero.act() 每回合调用：处理进入/退出低血量音乐。 */
+	public static void updateWinningMusic(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero hero){
+		if (!on(WINNING) || hero == null || !hero.isAlive()){
+			winningPlaying = false;
+			return;
+		}
+		boolean low = hero.HP < hero.HT * 0.30f;
+		boolean high = hero.HP >= hero.HT * 0.60f;
+		if (low && !winningPlaying){
+			winningPlaying = true;
+			com.watabou.noosa.audio.Music.INSTANCE.play(WINNING_TRACK, true);
+		} else if (high && winningPlaying){
+			winningPlaying = false;
+			if (Dungeon.level != null) Dungeon.level.playLevelMusic();
+		}
+	}
+
 	/**
 	 * END(130 格林之音): 把原版曲目映射到格林主题。
 	 *
@@ -399,6 +506,12 @@ public final class ChallengeSfx {
 		//不再有 130，就把当前正在播的格林曲换成它对应的原版曲。
 		//见 reconcileGrimmMusic()（由 Music.play 的入口每帧调用一次）。
 		reconcileGrimmMusic();
+
+		//==== END(232/233): 我赢了 / 大地复苏，优先于格林与静谧 ====
+		String winning = winningTrackFor(original);
+		if (winning != null) return winning;
+		String dadi = dadiTrackFor(original);
+		if (dadi != null) return dadi;
 
 		//==== END(移植·我的世界 228): 静谧花园的 BGM 整体替换 ====
 		//放在 130 的提前 return 之前 —— 两条替换互不干扰：
