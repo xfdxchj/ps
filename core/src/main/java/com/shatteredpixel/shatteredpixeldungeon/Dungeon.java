@@ -876,6 +876,10 @@ public class Dungeon {
 		
 		level.create();
 
+		//==== END(234 仰望虚空): 删除内部墙体 ====
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.collapseWalls(level);
+
 		//==== END(挑战 61 炸弹狂魔): 每层额外掉落 1 个炸弹 ====
 		//放在 level.create() 之后、level 正式启用之前 ——
 		//此时地图与既有掉落都已就位，再补一个炸弹不会打乱关卡的 RNG 序列。

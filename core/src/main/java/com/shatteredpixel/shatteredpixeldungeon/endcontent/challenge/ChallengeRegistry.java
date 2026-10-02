@@ -171,6 +171,8 @@ public final class ChallengeRegistry {
 			"**古神与古神之拳**会适应你造成伤害最多的方式（近战 / 投掷 / 法术）。"
 			+ "以最大生命的 **20%** 为一个区域：每在一个区域内累计受到你足够伤害，就适应一次，"
 			+ "适应该区域中你伤害最高的方式，获得对该方式的减伤：**10% -> 25% -> 43% -> 70%**，最多 **4 层**。");
+		done(all, 234, "仰望虚空", "open_sky", "地图", ChallengeDef.TENDENCY_TWOSIDED, 2, ChallengeDef.TIER_MEDIUM, "",
+				"除 Boss 层、挑战区与隐藏房外，所有常规层的内部墙体全部取消，地图四周边界保留。");
 
 		registerChallengeAreas(all);
 

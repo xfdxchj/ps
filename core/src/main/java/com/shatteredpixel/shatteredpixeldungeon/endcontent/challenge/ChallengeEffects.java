@@ -2444,6 +2444,10 @@ public final class ChallengeEffects {
 			com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w(
 					com.shatteredpixel.shatteredpixeldungeon.messages.Messages.get(
 							ChallengeEffects.class, "drunk_stun"));
+			if (hero.sprite != null){
+				hero.sprite.showStatus(
+						com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite.WARNING, "喝大了");
+			}
 		}
 	}
 
@@ -3329,6 +3333,11 @@ public final class ChallengeEffects {
 
 		//每次命中都推进计数（无论伤害是否被减到 0）
 		int stacks = bumpMomentum(attacker, target);
+		if (target.sprite != null){
+			target.sprite.showStatus(
+					com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite.WARNING,
+					"连击 x" + stacks);
+		}
 
 		float mult;
 		if (stacks <= 1)      mult = 0.20f;   //第一次
@@ -5433,6 +5442,10 @@ public final class ChallengeEffects {
 			mob.HT *= 2;
 		}
 		mob.HP = mob.HT;
+		if (mob.sprite != null){
+			mob.sprite.showStatus(
+					com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite.POSITIVE, "复活");
+		}
 		com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHealing.cure(mob);
 		com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.detach(mob,
 			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Paralysis.class);
@@ -5550,7 +5563,14 @@ public final class ChallengeEffects {
 			if (!mob.fieldOfView[ch.pos]) continue;
 			RevengeFuryBuff b = com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff
 				.prolong(ch, RevengeFuryBuff.class, ChallengeBalance.REVENGE_FURY_DURATION);
-			if (b != null) { b.addStack(); n++; }
+			if (b != null) {
+				b.addStack(); n++;
+				if (ch.sprite != null){
+					ch.sprite.showStatus(
+							com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite.WARNING,
+							"复仇狂怒");
+				}
+			}
 		}
 		if (n > 0){
 			com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.log(
@@ -5916,4 +5936,48 @@ public final class ChallengeEffects {
 	public static final int MAHORAGA = 231;
 
 	public static boolean mahoragaEnabled(){ return on(MAHORAGA); }
+
+	/** 234 仰望虚空：常规层删除内部墙体。 */
+	public static final int OPEN_SKY = 234;
+
+	public static boolean openSkyEnabled(){ return on(OPEN_SKY); }
+
+	/**
+	 * END(234 仰望虚空): 除 Boss 层、挑战区与隐藏房外，删除内部墙体。
+	 * 地图最外圈保留，避免走出地图。
+	 */
+	public static void collapseWalls(com.shatteredpixel.shatteredpixeldungeon.levels.Level level){
+		if (!on(OPEN_SKY) || level == null) return;
+		if (Dungeon.bossLevel()) return;
+		if (com.shatteredpixel.shatteredpixeldungeon.actors.mobs.MobRotation
+				.handles(Dungeon.depth)) return;
+
+		int w = level.width(), h = level.height();
+		boolean[] keep = new boolean[level.length()];
+		if (level instanceof com.shatteredpixel.shatteredpixeldungeon.levels.RegularLevel){
+			for (com.shatteredpixel.shatteredpixeldungeon.levels.rooms.Room r
+					: ((com.shatteredpixel.shatteredpixeldungeon.levels.RegularLevel) level).rooms()){
+				if (r instanceof com.shatteredpixel.shatteredpixeldungeon.levels.rooms.secret.SecretRoom){
+					for (int y = Math.max(0, r.top-1); y <= Math.min(h-1, r.bottom+1); y++){
+						for (int x = Math.max(0, r.left-1); x <= Math.min(w-1, r.right+1); x++){
+							keep[x + y*w] = true;
+						}
+					}
+				}
+			}
+		}
+
+		for (int y = 1; y < h-1; y++){
+			for (int x = 1; x < w-1; x++){
+				int cell = x + y*w;
+				if (keep[cell]) continue;
+				int t = level.map[cell];
+				if (t == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.WALL
+						|| t == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.WALL_DECO){
+					level.map[cell] = com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.EMPTY;
+				}
+			}
+		}
+		level.buildFlagMaps();
+	}
 }
