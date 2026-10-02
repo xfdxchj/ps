@@ -2474,7 +2474,21 @@ public final class ChallengeEffects {
 					"雷暴：一道闪电劈中了 " + victim.name() + "！");
 		} catch (Throwable ignored) { }
 
-		//视觉与音效（沿用雷击类效果的既有资源）
+		//视觉与音效：从天而降的闪电 + 雷声 + 闪光
+		try {
+			com.watabou.utils.PointF center =
+					com.shatteredpixel.shatteredpixeldungeon.tiles.DungeonTilemap.tileToWorld(victim.pos);
+			com.watabou.utils.PointF from = new com.watabou.utils.PointF(
+					center.x + 8, center.y - 80);
+			if (victim.sprite != null && victim.sprite.parent != null) {
+				victim.sprite.parent.add(new com.shatteredpixel.shatteredpixeldungeon.effects
+						.Lightning(from, victim.pos, null));
+			}
+		} catch (Throwable ignored) { }
+		try {
+			com.watabou.noosa.audio.Sample.INSTANCE.play(
+					com.shatteredpixel.shatteredpixeldungeon.Assets.Sounds.LIGHTNING);
+		} catch (Throwable ignored) { }
 		if (victim.sprite != null) {
 			victim.sprite.flash();
 		}
