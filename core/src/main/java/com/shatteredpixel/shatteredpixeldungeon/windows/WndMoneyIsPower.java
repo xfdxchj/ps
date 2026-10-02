@@ -7,6 +7,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.windows;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Shopkeeper;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene;
 import com.shatteredpixel.shatteredpixeldungeon.ui.RedButton;
@@ -21,11 +22,11 @@ import java.util.ArrayList;
 /**
  * END(挑战 41 等价交换): 「等价交换」采购窗口。
  *
- * <p>列出可购买的物品类别，点一下随机给该类别的一件物品，
- * **按该物品的真实价值（item.value()）支付金币**，所以神器不会
- * 再出现"只要 400 金"的情况。
- *
- * <p>与 160 氪金大佬的区别：41 是购买，160 是给已有物品升级。
+ * <h3>定价</h3>
+ * <ul>
+ *   <li>药水/卷轴/种子/符石/法杖/戒指/神器/特殊：固定价格</li>
+ *   <li>武器/护甲：不固定，按商店真实售价（随价值与阶数增长）</li>
+ * </ul>
  */
 public class WndMoneyIsPower extends Window {
 
@@ -34,20 +35,20 @@ public class WndMoneyIsPower extends Window {
 	private static final int BTN_HEIGHT = 18;
 	private static final int GAP        = 1;
 
-	/** 可购买的项目：{显示名, 类别}。价格在点选后按物品实际价值算。 */
-	private static final String[][] STOCK = {
-			{ "随机药水",   "POTION"   },
-			{ "随机卷轴",   "SCROLL"   },
-			{ "随机种子",   "SEED"     },
-			{ "随机符石",   "STONE"    },
-			{ "随机武器",   "WEAPON"   },
-			{ "随机护甲",   "ARMOR"    },
-			{ "随机法杖",   "WAND"     },
-			{ "随机戒指",   "RING"     },
-			{ "随机神器",   "ARTIFACT" },
-			{ "力量药水",   "@STR"     },
-			{ "升级卷轴",   "@SOU"     },
-			{ "经验药水",   "@EXP"     },
+	/** {显示名, 类别, 固定价格}；固定价格为 0 表示按商店真实售价。 */
+	private static final Object[][] STOCK = {
+			{ "随机药水",   "POTION",   200  },
+			{ "随机卷轴",   "SCROLL",   200  },
+			{ "随机种子",   "SEED",     80   },
+			{ "随机符石",   "STONE",    150  },
+			{ "随机武器",   "WEAPON",   0    },
+			{ "随机护甲",   "ARMOR",    0    },
+			{ "随机法杖",   "WAND",     600  },
+			{ "随机戒指",   "RING",     600  },
+			{ "随机神器",   "ARTIFACT", 1200 },
+			{ "力量药水",   "@STR",     1500 },
+			{ "升级卷轴",   "@SOU",     1800 },
+			{ "经验药水",   "@EXP",     1000 },
 	};
 
 	private ScrollPane pane;
@@ -74,11 +75,13 @@ public class WndMoneyIsPower extends Window {
 		Component content = new Component();
 		float cPos = 0;
 
-		for (final String[] entry : STOCK) {
-			final String label = entry[0];
-			final String key   = entry[1];
-			final Runnable action = () -> buy(label, key);
-			RedButton btn = new RedButton(label + "  （按商店价）") {
+		for (Object[] entry : STOCK) {
+			final String label = (String) entry[0];
+			final String key   = (String) entry[1];
+			final int    price = (Integer) entry[2];
+			final Runnable action = () -> buy(label, key, price);
+			String text = price > 0 ? label + "  " + price + "G" : label + "  （按阶数）";
+			RedButton btn = new RedButton(text) {
 				@Override
 				protected void onClick() {
 					action.run();
@@ -93,7 +96,6 @@ public class WndMoneyIsPower extends Window {
 
 		content.setSize(WIDTH - 12, cPos);
 
-		//先 add 再接父链，避免 ScrollPane.camera() 为 null
 		pane = new ScrollPane(content) {
 			@Override
 			public void onClick(float x, float y) {
@@ -135,16 +137,15 @@ public class WndMoneyIsPower extends Window {
 		}
 	}
 
-	/** END(41): 先取物品，再按它的真实价值收费。 */
-	private void buy(String label, String key) {
+	/** END(41): 固定价格直接收；武器/护甲按商店真实售价。 */
+	private void buy(String label, String key, int fixedPrice) {
 		Item item = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 				.ChallengeEffects.purchaseItem(key);
 		if (item == null) {
 			GLog.w("这件东西暂时缺货。");
 			return;
 		}
-		int price = Math.max(1, com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs
-				.Shopkeeper.sellPrice(item)); //END: 按商店真实售价
+		int price = fixedPrice > 0 ? fixedPrice : Math.max(1, Shopkeeper.sellPrice(item));
 		if (Dungeon.gold < price) {
 			GLog.w("金币不够，需要 " + price + " 金币。");
 			return;
