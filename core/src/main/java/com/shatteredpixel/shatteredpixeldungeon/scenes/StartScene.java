@@ -260,7 +260,7 @@ public class StartScene extends PixelScene {
 				level.text(Integer.toString(info.level));
 				level.measure();
 				
-				if (info.challenges > 0){
+				if (info.challenges > 0 || (info.challengeMask != null && !info.challengeMask.isEmpty())){
 					name.hardlight(Window.TITLE_COLOR);
 					lastPlayed.hardlight(Window.TITLE_COLOR);
 					depth.hardlight(Window.TITLE_COLOR);

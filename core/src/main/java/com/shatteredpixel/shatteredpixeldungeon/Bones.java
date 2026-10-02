@@ -196,7 +196,7 @@ public class Bones {
 				depth = 0;
 
 				//challenged or seeded runs don't get items from prior runs
-				if (Dungeon.challenges != 0 || !Dungeon.customSeedText.isEmpty()){
+				if (Dungeon.challenges != 0 || (Dungeon.challengeMask != null && !Dungeon.challengeMask.isEmpty()) || !Dungeon.customSeedText.isEmpty()){
 					item = null;
 				}
 

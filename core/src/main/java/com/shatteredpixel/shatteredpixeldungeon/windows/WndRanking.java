@@ -113,7 +113,7 @@ public class WndRanking extends WndTabbed {
 			Group[] pages =
 					{new StatsTab(), new TalentsTab(), new ItemsTab(), new BadgesTab(), null};
 
-			if (Dungeon.challenges != 0) pages[4] = new ChallengesTab();
+			if (Dungeon.challenges != 0 || (Dungeon.challengeMask != null && !Dungeon.challengeMask.isEmpty())) pages[4] = new ChallengesTab();
 
 			for (int i = 0; i < pages.length; i++) {
 
