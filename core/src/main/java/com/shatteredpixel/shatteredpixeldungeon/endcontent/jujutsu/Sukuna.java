@@ -41,7 +41,6 @@ public class Sukuna extends Mob {
 	private int phase = 1;
 	private int abilityCd = 3;
 	private int domainTurns = 0;
-	private int coresLeft = 0;
 	private int domainCd = 0;
 
 	public boolean immuneToDomainStun(){ return true; }
@@ -150,8 +149,6 @@ public class Sukuna extends Mob {
 		domainTurns = 5;
 		Jujutsu.sukunaDomainTurns = 5;
 		JujutsuOverlay.castFlash(false);
-		coresLeft = 4;
-		spawnCores();
 		CellEmitter.get(pos).burst(Speck.factory(Speck.LIGHT), 12);
 	}
 
@@ -168,24 +165,12 @@ public class Sukuna extends Mob {
 		}
 		domainTurns--;
 		Jujutsu.sukunaDomainTurns = Math.max(0, domainTurns);
-		if (domainTurns <= 0 || coresLeft <= 0){
+		if (domainTurns <= 0){
 			domainTurns = 0;
 			Jujutsu.sukunaDomainTurns = 0;
-			coresLeft = 0;
 			GLog.i("伏魔御厨子消散了。");
 			domainCd = 20; //END: 20 回合领域 CD
 			abilityCd = 2;
-		}
-	}
-
-	public void onCoreKilled(){
-		if (domainTurns > 0){
-			coresLeft--;
-			if (coresLeft <= 0){
-				domainTurns = 0;
-				domainCd = 20;
-				GLog.i("四核尽毁。伏魔御厨子崩解。");
-			}
 		}
 	}
 
@@ -275,7 +260,6 @@ public class Sukuna extends Mob {
 
 	private static final String PHASE = "phase";
 	private static final String DOMAIN = "domain_turns";
-	private static final String CORES = "cores_left";
 	private static final String ABILITY = "ability_cd";
 
 	@Override
@@ -283,7 +267,6 @@ public class Sukuna extends Mob {
 		super.storeInBundle(bundle);
 		bundle.put(PHASE, phase);
 		bundle.put(DOMAIN, domainTurns);
-		bundle.put(CORES, coresLeft);
 		bundle.put(ABILITY, abilityCd);
 		bundle.put("domain_cd", domainCd);
 	}
@@ -293,7 +276,6 @@ public class Sukuna extends Mob {
 		super.restoreFromBundle(bundle);
 		phase = bundle.getInt(PHASE);
 		domainTurns = bundle.getInt(DOMAIN);
-		coresLeft = bundle.getInt(CORES);
 		abilityCd = bundle.getInt(ABILITY);
 		domainCd = bundle.getInt("domain_cd");
 	}

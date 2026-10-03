@@ -47,13 +47,6 @@ public class SukunaMinion extends Mob {
 
 	@Override
 	public void die(Object cause){
-		if (isCore){
-			Sukuna boss = null;
-			for (Mob m : Dungeon.level.mobs.toArray(new Mob[0])){
-				if (m instanceof Sukuna){ boss = (Sukuna) m; break; }
-			}
-			if (boss != null) boss.onCoreKilled();
-		}
 		super.die(cause);
 	}
 }
