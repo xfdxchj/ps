@@ -232,36 +232,45 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 		Item.updateQuickslot();
 	}
 
-	/** 向落点移动 1 格。 */
+	/** 向落点移动 1 格（带原版 Pushing 滑动动画）。 */
 	private static void pullToCell(Mob m, int base){
 		if (m == null || !m.isAlive()) return;
 		int cur = Dungeon.level.distance(m.pos, base);
-		int best = -1;
+		if (cur <= 0) return;
+		int best = -1, bestD = cur;
 		for (int i : PathFinder.NEIGHBOURS8){
 			int cell = m.pos + i;
 			if (!Dungeon.level.insideMap(cell)) continue;
 			if (!Dungeon.level.passable[cell] && !Dungeon.level.avoid[cell]) continue;
 			if (Actor.findChar(cell) != null) continue;
-			if (Dungeon.level.distance(cell, base) >= cur) continue;
-			best = cell; break;
+			int d = Dungeon.level.distance(cell, base);
+			if (d < bestD){ bestD = d; best = cell; }
 		}
-		if (best != -1) m.move(best, false);
+		displace(m, best);
 	}
 
-	/** 远离落点移动 1 格。 */
+	/** 远离落点移动 1 格（带原版 Pushing 滑动动画）。 */
 	private static void pushFromCell(Mob m, int base){
 		if (m == null || !m.isAlive()) return;
 		int cur = Dungeon.level.distance(m.pos, base);
-		int best = -1;
+		int best = -1, bestD = cur;
 		for (int i : PathFinder.NEIGHBOURS8){
 			int cell = m.pos + i;
 			if (!Dungeon.level.insideMap(cell)) continue;
 			if (!Dungeon.level.passable[cell] && !Dungeon.level.avoid[cell]) continue;
 			if (Actor.findChar(cell) != null) continue;
-			if (Dungeon.level.distance(cell, base) <= cur) continue;
-			best = cell; break;
+			int d = Dungeon.level.distance(cell, base);
+			if (d > bestD){ bestD = d; best = cell; }
 		}
-		if (best != -1) m.move(best, false);
+		displace(m, best);
+	}
+
+	/** END(修复·苍赫看不见位移): Char.move() 不会动 sprite，必须加 Pushing 才有滑动效果。 */
+	private static void displace(Mob m, int cell){
+		if (cell == -1) return;
+		int old = m.pos;
+		m.move(cell, false);
+		Actor.add(new com.shatteredpixel.shatteredpixeldungeon.effects.Pushing(m, old, cell));
 	}
 
 	/** 落点半径内的敌人。 */
