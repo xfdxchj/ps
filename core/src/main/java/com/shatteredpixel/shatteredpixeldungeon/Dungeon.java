@@ -698,7 +698,9 @@ public class Dungeon {
 				.AliceRealm.DEPTH) {
 			level = new com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
 					.AliceRealm();
-			//直接返回，跳过下方的所有常规生成逻辑（Boss 判定、挑战区调度等）
+			//END(修复·999层崩溃): 必须手动 create() 才能初始化 transitions/map 等；
+			//否则 InterlevelScene.descend 里 getTransition() 会 NPE。
+			level.create();
 			return level;
 		}
 

@@ -488,7 +488,7 @@ public final class ChallengeSfx {
 		if (on(DADI_REVIVAL) && !track.equals(lastDadiLogged)){
 			lastDadiLogged = track;
 			String name = (i < DADI_NAMES.length) ? DADI_NAMES[i] : track;
-			com.shatteredpixel.shatteredpixeldungeon.utils.GLog.i("大地复苏：" + name);
+			com.shatteredpixel.shatteredpixeldungeon.utils.GLog.i("现在播放：" + name);
 		}
 		return track;
 	}
