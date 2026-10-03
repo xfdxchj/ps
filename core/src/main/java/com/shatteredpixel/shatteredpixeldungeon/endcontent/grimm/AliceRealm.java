@@ -108,9 +108,11 @@ public class AliceRealm extends Level {
 
 	@Override
 	protected void createMobs() {
-		//爱丽丝站在平台中心
+		//END(修复): 爱丽丝不能站在入口格上 —— 那正是玩家落点，
+		//两人同格会导致 findChar 取到错误对象、点击/交互异常、走动被卡。
+		//放在入口正下方一格（同属平台）。
 		Alice alice = new Alice();
-		alice.pos = 7 * W + 7;
+		alice.pos = 8 * W + 7;
 		mobs.add(alice);
 	}
 
