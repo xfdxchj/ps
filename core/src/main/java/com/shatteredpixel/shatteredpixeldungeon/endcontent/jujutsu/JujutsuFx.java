@@ -17,6 +17,7 @@ import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.tiles.DungeonTilemap;
 import com.watabou.noosa.Group;
+import com.watabou.utils.Callback;
 import com.watabou.utils.PointF;
 import com.watabou.utils.Random;
 
@@ -47,67 +48,43 @@ public final class JujutsuFx {
 		return DungeonTilemap.tileToWorld(cell);
 	}
 
-	/** 苍：蓝球从敌人飞向玩家，到达后蓝爆。 */
-	public static void cang(Hero hero, Mob m){
-		if (hero == null || m == null) return;
-		if (m.sprite == null || m.sprite.parent == null){
-			cellBurst(m.pos, Speck.BLUE_LIGHT, 8);
-			return;
-		}
-		JujutsuBolt bolt = (JujutsuBolt) m.sprite.parent.recycle(JujutsuBolt.class);
-		bolt.reset(m.pos, hero.pos, JujutsuBolt.CANG, () -> {
-			burst(hero, hero.pos, JujutsuBolt.CANG);
-		});
-	}
-
-	/** 赫：红球从玩家飞向敌人，到达后红爆 + 震屏。 */
-	public static void he(Hero hero, Mob m){
-		if (hero == null || m == null) return;
+	/** 苍：蓝球飞向指定位置，到达后回调（拉怪+伤害）。 */
+	public static void cang(Hero hero, int cell, Callback onArrive){
+		if (hero == null) return;
 		if (hero.sprite == null || hero.sprite.parent == null){
-			cellBurst(m.pos, Speck.RED_LIGHT, 10);
+			cellBurst(cell, Speck.BLUE_LIGHT, 10);
+			if (onArrive != null) onArrive.call();
 			return;
 		}
 		JujutsuBolt bolt = (JujutsuBolt) hero.sprite.parent.recycle(JujutsuBolt.class);
-		bolt.reset(hero.pos, m.pos, JujutsuBolt.HE, () -> {
-			burst(m, m.pos, JujutsuBolt.HE);
-			GameScene.flash(0x40FF2200);
-			if (com.watabou.noosa.Camera.main != null) com.watabou.noosa.Camera.main.shake(0.15f, 0.6f);
+		bolt.reset(hero.pos, cell, JujutsuBolt.CANG, () -> {
+			burst(hero, cell, JujutsuBolt.CANG);
+			if (onArrive != null) onArrive.call();
 		});
 	}
 
-	/** 茈：苍球与赫球在目标处重叠 -> 直接大爆炸，没有小紫球。 */
-	public static void zi(Hero hero, Mob m){
-		if (hero == null || m == null) return;
+	/** 赫：红球飞向指定位置，到达后回调（推怪+伤害）。 */
+	public static void he(Hero hero, int cell, Callback onArrive){
+		if (hero == null) return;
 		if (hero.sprite == null || hero.sprite.parent == null){
-			burst(m, m.pos, 2);
+			cellBurst(cell, Speck.RED_LIGHT, 10);
+			if (onArrive != null) onArrive.call();
 			return;
 		}
-		final int[] arrived = {0};
-		final Runnable explosion = () -> {
-			if (++arrived[0] < 2) return;
-			//END(范围): 单团紫色大爆炸，靠尺寸覆盖范围，而不是多团叠加
-			burst(m, m.pos, 2);
-			GameScene.flash(0xC080D0FF);
-			if (com.watabou.noosa.Camera.main != null) com.watabou.noosa.Camera.main.shake(0.5f, 3.0f);
-		};
+		JujutsuBolt bolt = (JujutsuBolt) hero.sprite.parent.recycle(JujutsuBolt.class);
+		bolt.reset(hero.pos, cell, JujutsuBolt.HE, () -> {
+			burst(hero, cell, JujutsuBolt.HE);
+			GameScene.flash(0x40FF2200);
+			if (com.watabou.noosa.Camera.main != null) com.watabou.noosa.Camera.main.shake(0.15f, 0.6f);
+			if (onArrive != null) onArrive.call();
+		});
+	}
 
-		// 苍球：从玩家飞向目标
-		JujutsuBolt blue = (JujutsuBolt) hero.sprite.parent.recycle(JujutsuBolt.class);
-		blue.reset(hero.pos, m.pos, JujutsuBolt.CANG, () -> explosion.run());
-
-		// 赫球：从目标另一侧飞来，与苍球在目标点重叠
-		int w = Dungeon.level.width();
-		int dx = Integer.signum((m.pos % w) - (hero.pos % w));
-		int dy = Integer.signum((m.pos / w) - (hero.pos / w));
-		int from = m.pos;
-		for (int i = 0; i < 3; i++){
-			int c = from + dx + dy * w;
-			if (!Dungeon.level.insideMap(c)) break;
-			from = c;
-		}
-		if (from == m.pos) from = hero.pos;
-		JujutsuBolt red = (JujutsuBolt) hero.sprite.parent.recycle(JujutsuBolt.class);
-		red.reset(from, m.pos, JujutsuBolt.HE, () -> explosion.run());
+	/** 茈：苍赫落点重叠时的紫色大爆炸。 */
+	public static void ziAt(int cell){
+		burst(Dungeon.hero, cell, 2);
+		GameScene.flash(0xC080D0FF);
+		if (com.watabou.noosa.Camera.main != null) com.watabou.noosa.Camera.main.shake(0.5f, 3.0f);
 	}
 
 	/** 在角色所在格生成对应颜色的爆炸。 */

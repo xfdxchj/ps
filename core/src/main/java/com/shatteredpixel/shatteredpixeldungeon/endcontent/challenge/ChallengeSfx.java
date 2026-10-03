@@ -478,17 +478,28 @@ public final class ChallengeSfx {
 	/** 最近一次为大地复苏打出的曲目（去重，避免同一首反复刷日志）。 */
 	private static String lastDadiLogged = null;
 
+	/** 待显示的曲目日志（进层后由 Hero.act 打出）。 */
+	private static String pendingMusicLog = null;
+
+	public static void flushPendingMusicLog(){
+		if (pendingMusicLog != null){
+			com.shatteredpixel.shatteredpixeldungeon.utils.GLog.i(pendingMusicLog);
+			pendingMusicLog = null;
+		}
+	}
+
 	/** 本层固定的随机曲：由本局种子 + 层数决定，上下楼不会重掷。 */
 	public static String dadiTrackForDepth(int depth){
 		long h = Dungeon.seed * 1103515245L + depth * 12345L;
 		int i = (int)(h % DADI_TRACKS.length);
 		if (i < 0) i += DADI_TRACKS.length;
 		String track = DADI_TRACKS[i];
-		//END(232 日志): 播放时在游戏日志里显示曲名。
+		//END(232 日志): 先记下来，等玩家真正进入本层（Hero.act）再显示，
+		//否则会在 GameScene.create 阶段就打印、进层时已被清掉。
 		if (on(DADI_REVIVAL) && !track.equals(lastDadiLogged)){
 			lastDadiLogged = track;
 			String name = (i < DADI_NAMES.length) ? DADI_NAMES[i] : track;
-			com.shatteredpixel.shatteredpixeldungeon.utils.GLog.i("现在播放：" + name);
+			pendingMusicLog = "现在播放：" + name;
 		}
 		return track;
 	}

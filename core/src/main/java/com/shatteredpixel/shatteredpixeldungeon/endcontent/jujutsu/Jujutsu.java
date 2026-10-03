@@ -167,6 +167,20 @@ public final class Jujutsu {
 	/** 伏魔御厨子剩余回合。 */
 	public static int sukunaDomainTurns = 0;
 
+	//==== 苍/赫 落点：重合时自动触发茈 ====
+	public static int lastCangCell = -1;
+	public static float lastCangAt = Float.NEGATIVE_INFINITY;
+
+	public static void noteCangLanded(int cell){
+		lastCangCell = cell;
+		lastCangAt = com.shatteredpixel.shatteredpixeldungeon.actors.Actor.now();
+	}
+
+	public static boolean canZiAt(int cell){
+		return cell == lastCangCell
+				&& (com.shatteredpixel.shatteredpixeldungeon.actors.Actor.now() - lastCangAt) <= 3f;
+	}
+
 	/** 两个领域同时存在 -> 互相抵消，双方都失效。 */
 	public static boolean domainClash(){
 		return playerDomainTurns > 0 && sukunaDomainTurns > 0;
@@ -177,5 +191,7 @@ public final class Jujutsu {
 		usedCang = false;
 		usedHe = false;
 		domainDepth = -1;
+		lastCangCell = -1;
+		lastCangAt = Float.NEGATIVE_INFINITY;
 	}
 }

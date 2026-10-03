@@ -1013,6 +1013,10 @@ public class Hero extends Char {
 		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 				.ChallengeSfx.updateWinningMusic(this);
 
+		//END(232): 进层后把“现在播放”日志打出来
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeSfx.flushPendingMusicLog();
+
 		//calls to dungeon.observe will also update hero's local FOV.
 		fieldOfView = Dungeon.level.heroFOV;
 
