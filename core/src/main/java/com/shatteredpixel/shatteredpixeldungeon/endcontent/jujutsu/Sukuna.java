@@ -83,13 +83,13 @@ public class Sukuna extends Mob {
 				if (Random.Int(2) == 0){
 					JujutsuSfx.play(JujutsuSfx.KAI);
 					GLog.w("宿傩：「解。」");
-					JujutsuFx.slash(enemy.pos, false);
+					JujutsuFx.slash(this, enemy, false);
 					enemy.damage(Math.round(damageRoll() * 1.2f), this);
 				} else {
 					//捌：多段范围斩击
 					JujutsuSfx.play(JujutsuSfx.BACHI);
 					GLog.w("宿傩：「捌。」");
-					JujutsuFx.slash(enemy.pos, true);
+					JujutsuFx.slash(this, enemy, true);
 					for (int i = 0; i < 3 && enemy.isAlive(); i++){
 						enemy.damage(Math.round(damageRoll() * 0.6f), this);
 					}
@@ -108,14 +108,14 @@ public class Sukuna extends Mob {
 				//空间斩：无视防御与闪避
 				JujutsuSfx.play(JujutsuSfx.SPACE);
 				GLog.w("宿傩：「空间斩。」");
-				JujutsuFx.slash(enemy.pos, true);
+				JujutsuFx.slash(this, enemy, true);
 				dealDirect(enemy, Math.round(damageRoll() * 1.8f));
 				break;
 			case 5:
 				//灶开：终局火焰
 				JujutsuSfx.play(JujutsuSfx.FUGA);
 				GLog.w("宿傩：「灶开。」");
-				JujutsuFx.fuga(enemy.pos);
+				JujutsuFx.fuga(this, enemy);
 				dealDirect(enemy, Math.round(damageRoll() * 3.0f));
 				if (enemy.isAlive()) Buff.affect(enemy, Burning.class).reignite(enemy, 5f);
 				break;

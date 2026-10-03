@@ -88,7 +88,7 @@ public class TechniqueBook extends Item {
 				int dmg = Math.round(hero.damageRoll() * cangMult());
 				ArrayList<Mob> targets = Jujutsu.visibleEnemies(hero);
 				JujutsuSfx.play(JujutsuSfx.CANG);
-				for (Mob m : targets) JujutsuFx.cang(hero.pos, m.pos);
+				for (Mob m : targets) JujutsuFx.cang(hero, m);
 				for (Mob m : targets) pullToHero(hero, m);
 				for (Mob m : targets) m.damage(dmg, hero);
 				Jujutsu.noteCang();
@@ -102,7 +102,7 @@ public class TechniqueBook extends Item {
 				int dmg = Math.round(hero.damageRoll() * heMult());
 				ArrayList<Mob> targets = Jujutsu.visibleEnemies(hero);
 				JujutsuSfx.play(JujutsuSfx.HE);
-				for (Mob m : targets) JujutsuFx.he(m.pos);
+				for (Mob m : targets) JujutsuFx.he(hero, m);
 				for (Mob m : targets) pushFromHero(hero, m);
 				for (Mob m : targets) m.damage(dmg, hero);
 				Jujutsu.noteHe();
@@ -116,7 +116,7 @@ public class TechniqueBook extends Item {
 				int dmg = Math.round(hero.damageRoll() * ziMult());
 				JujutsuSfx.play(JujutsuSfx.ZI);
 				for (Mob m : Jujutsu.visibleEnemies(hero)){
-					JujutsuFx.zi(m.pos);
+					JujutsuFx.zi(hero, m);
 					dealDirect(m, dmg, hero);
 				}
 				Buff.affect(hero, Jujutsu.CangCd.class, 10f);
@@ -131,7 +131,7 @@ public class TechniqueBook extends Item {
 				int dmg = Math.round(hero.damageRoll() * domainMult());
 				Buff.affect(hero, DomainBuff.class).set(dmg);
 				JujutsuSfx.play(JujutsuSfx.DOMAIN);
-				JujutsuFx.domain(hero.pos);
+				JujutsuFx.domain(hero);
 				GLog.i("领域展开——无量空处。");
 			}
 		}
