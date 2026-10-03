@@ -463,7 +463,7 @@ public final class ChallengeSfx {
 	};
 
 	/** 《雨爱》。 */
-	public static final String WINNING_TRACK = "music/rain.mp3";
+	public static final String WINNING_TRACK = "music/rain.ogg";
 
 	/** 是否是常规/Boss 层 BGM（不含菜单、格林、静谧、无尽等替换曲）。 */
 	private static boolean isLevelMusic(String original){
@@ -562,7 +562,7 @@ public final class ChallengeSfx {
 	private static void maybeWinningLine(){
 		if (!isWinningPlaying()) return;
 		if (Random.Float() >= 0.35f) return;
-		int n = 4;
+		int n = 5;
 		int idx = Random.Int(n);
 		if (idx == lastWinningLine) idx = (idx + 1) % n;
 		lastWinningLine = idx;

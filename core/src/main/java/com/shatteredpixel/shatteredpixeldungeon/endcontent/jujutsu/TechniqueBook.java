@@ -35,6 +35,13 @@ public class TechniqueBook extends Item {
 		bones = false;
 	}
 
+	@Override public String actionName(String action, Hero hero){
+		if (AC_CANG.equals(action)) return "苍";
+		if (AC_HE.equals(action)) return "赫";
+		if (AC_DOMAIN.equals(action)) return "无量空处";
+		return super.actionName(action, hero);
+	}
+
 	@Override public String name(){ return "术式之书"; }
 	@Override public String desc(){ return info(); }
 
@@ -64,10 +71,10 @@ public class TechniqueBook extends Item {
 	private static String fmt(float v){ return String.format(java.util.Locale.US, "%.2f", v); }
 
 	private float lvl(){ return level(); }
-	private float cangMult(){ return 1.5f + 0.15f * lvl(); }
-	private float heMult(){ return 2.0f + 0.20f * lvl(); }
-	private float ziMult(){ return 4.0f + 0.40f * lvl(); }
-	private float domainMult(){ return 2.0f + 0.20f * lvl(); }
+	private float cangMult(){ return (1.5f + 0.15f * lvl()) * 0.7f; }
+	private float heMult(){ return (2.0f + 0.20f * lvl()) * 0.7f; }
+	private float ziMult(){ return (4.0f + 0.40f * lvl()) * 0.7f; }
+	private float domainMult(){ return (2.0f + 0.20f * lvl()) * 0.7f; }
 
 	@Override
 	public ArrayList<String> actions(Hero hero){

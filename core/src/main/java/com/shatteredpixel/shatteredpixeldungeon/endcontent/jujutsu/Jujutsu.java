@@ -97,7 +97,10 @@ public final class Jujutsu {
 		if (hero == null || Dungeon.level == null) return out;
 		for (Mob m : Dungeon.level.mobs.toArray(new Mob[0])){
 			if (m == null || !m.isAlive() || m.alignment != Char.Alignment.ENEMY) continue;
-			if (!Dungeon.level.heroFOV[m.pos]) continue;
+			//视野内，或被灵视药水标记的敌人也算（可全图拉）
+			boolean seen = Dungeon.level.heroFOV[m.pos]
+					|| hero.mindVisionEnemies.contains(m);
+			if (!seen) continue;
 			out.add(m);
 		}
 		return out;
