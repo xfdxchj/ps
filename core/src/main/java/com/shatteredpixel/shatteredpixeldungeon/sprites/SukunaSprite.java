@@ -13,21 +13,20 @@ public class SukunaSprite extends MobSprite {
 	public SukunaSprite() {
 		super();
 		perspectiveRaise = 5 / 16f;
-		texture( Assets.Sprites.SUKUNA_YOG );
+		texture( Assets.Sprites.SUKUNA_NEW );
 
-		TextureFilm frames = new TextureFilm( texture, 16, 16 );
+		TextureFilm frames = new TextureFilm( texture, 50, 42 );
 
 		idle = new Animation( 10, true );
-		idle.frames( frames, 0, 1, 2, 1 );
+		idle.frames( frames, 0, 1, 2 );
 
-		run = new Animation( 10, true );
-		run.frames( frames, 0 );
+		run = idle.clone();
 
 		attack = new Animation( 12, false );
 		attack.frames( frames, 3, 4, 5, 0 );
 
 		die = new Animation( 10, false );
-		die.frames( frames, 6, 7, 8, 9 );
+		die.frames( frames, 6, 7, 8 );
 
 		play( idle );
 	}
