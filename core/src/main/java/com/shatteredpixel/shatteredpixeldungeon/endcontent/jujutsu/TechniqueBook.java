@@ -185,33 +185,48 @@ public class TechniqueBook extends Item {
 			type = buffType.POSITIVE;
 			announced = false;
 		}
-		public void set(int d){ dmg = d; }
+		public void set(int d){
+			dmg = d;
+			Jujutsu.playerDomainTurns = 3;
+			JujutsuOverlay.ensure();
+		}
 		@Override
 		public boolean act(){
 			Hero hero = Dungeon.hero;
 			if (hero == null || !hero.isAlive()){ detach(); return true; }
-			for (Mob m : Jujutsu.visibleEnemies(hero)){
-				if (!(m instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs
-						.YogDzewa) && !(m instanceof com.shatteredpixel.shatteredpixeldungeon
-						.endcontent.jujutsu.Sukuna)){
-					Buff.affect(m, Paralysis.class, 1f);
-				}
-				m.damage(dmg, hero);
-			}
-			turns++;
-			if (turns >= 3){
-				detach();
+			boolean clash = Jujutsu.domainClash();
+			if (!clash){
 				for (Mob m : Jujutsu.visibleEnemies(hero)){
-					if (!(m instanceof com.shatteredpixel.shatteredpixeldungeon.endcontent
-							.jujutsu.Sukuna)){
+					if (!(m instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs
+							.YogDzewa) && !(m instanceof com.shatteredpixel.shatteredpixeldungeon
+							.endcontent.jujutsu.Sukuna)){
 						Buff.affect(m, Paralysis.class, 1f);
 					}
+					m.damage(dmg, hero);
 				}
-				GLog.i("领域收束。");
+			}
+			turns++;
+			Jujutsu.playerDomainTurns = Math.max(0, 3 - turns);
+			if (turns >= 3){
+				detach();
+				if (!clash){
+					for (Mob m : Jujutsu.visibleEnemies(hero)){
+						if (!(m instanceof com.shatteredpixel.shatteredpixeldungeon.endcontent
+								.jujutsu.Sukuna)){
+							Buff.affect(m, Paralysis.class, 1f);
+						}
+					}
+				}
+				GLog.i(clash ? "领域互相抵消。" : "领域收束。");
 				return true;
 			}
 			spend(TICK);
 			return true;
+		}
+		@Override
+		public void detach(){
+			super.detach();
+			Jujutsu.playerDomainTurns = 0;
 		}
 		@Override public int icon(){ return com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator.MIND_VISION; }
 		@Override public String name(){ return "无量空处"; }

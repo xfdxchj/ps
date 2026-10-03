@@ -137,20 +137,29 @@ public class Sukuna extends Mob {
 		GLog.w("宿傩展开领域——伏魔御厨子。");
 		JujutsuFx.shrine();
 		domainTurns = 5;
+		Jujutsu.sukunaDomainTurns = 5;
+		JujutsuOverlay.ensure();
 		coresLeft = 4;
 		spawnCores();
 		CellEmitter.get(pos).burst(Speck.factory(Speck.LIGHT), 12);
 	}
 
 	private void domainTick(){
-		GLog.w("伏魔御厨子：斩击不断。");
-		if (enemy != null && enemy.isAlive()){
-			try { com.shatteredpixel.shatteredpixeldungeon.effects.Wound.hit(enemy, Random.Float()*360f); } catch (Throwable ignored) {}
-			enemy.damage(Math.round(damageRoll() * 0.8f), this);
+		boolean clash = Jujutsu.domainClash();
+		if (clash){
+			GLog.i("领域互相抵消。");
+		} else {
+			GLog.w("伏魔御厨子：斩击不断。");
+			if (enemy != null && enemy.isAlive()){
+				try { com.shatteredpixel.shatteredpixeldungeon.effects.Wound.hit(enemy, Random.Float()*360f); } catch (Throwable ignored) {}
+				enemy.damage(Math.round(damageRoll() * 0.8f), this);
+			}
 		}
 		domainTurns--;
+		Jujutsu.sukunaDomainTurns = Math.max(0, domainTurns);
 		if (domainTurns <= 0 || coresLeft <= 0){
 			domainTurns = 0;
+			Jujutsu.sukunaDomainTurns = 0;
 			coresLeft = 0;
 			GLog.i("伏魔御厨子消散了。");
 			abilityCd = 2;
@@ -247,6 +256,7 @@ public class Sukuna extends Mob {
 	@Override
 	public void die(Object cause){
 		GLog.w("宿傩：「不错。」");
+		Jujutsu.sukunaDomainTurns = 0;
 		super.die(cause);
 	}
 

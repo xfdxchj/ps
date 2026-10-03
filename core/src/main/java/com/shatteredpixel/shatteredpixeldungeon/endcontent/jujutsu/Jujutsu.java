@@ -158,6 +158,17 @@ public final class Jujutsu {
 		if (usedCang) purpleUnlocked = true;
 	}
 
+	//==== 领域展开：剩余回合 + 对撞 ====
+	/** 无量空处剩余回合。 */
+	public static int playerDomainTurns = 0;
+	/** 伏魔御厨子剩余回合。 */
+	public static int sukunaDomainTurns = 0;
+
+	/** 两个领域同时存在 -> 互相抵消，双方都失效。 */
+	public static boolean domainClash(){
+		return playerDomainTurns > 0 && sukunaDomainTurns > 0;
+	}
+
 	public static void resetRun(){
 		purpleUnlocked = false;
 		usedCang = false;
