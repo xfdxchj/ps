@@ -81,14 +81,22 @@ public class Sukuna extends Mob {
 		switch (phase){
 			case 1:
 				if (Random.Int(2) == 0){
+					JujutsuSfx.play(JujutsuSfx.KAI);
 					GLog.w("宿傩：「解。」");
+					JujutsuFx.slash(enemy.pos, false);
 					enemy.damage(Math.round(damageRoll() * 1.2f), this);
 				} else {
+					//捌：多段范围斩击
+					JujutsuSfx.play(JujutsuSfx.BACHI);
 					GLog.w("宿傩：「捌。」");
-					enemy.damage(Math.round(damageRoll() * 1.8f), this);
+					JujutsuFx.slash(enemy.pos, true);
+					for (int i = 0; i < 3 && enemy.isAlive(); i++){
+						enemy.damage(Math.round(damageRoll() * 0.6f), this);
+					}
 				}
 				break;
 			case 2:
+				JujutsuSfx.play(JujutsuSfx.FIRE);
 				GLog.w("宿傩：「开。」");
 				enemy.damage(Math.round(damageRoll() * 1.5f), this);
 				Buff.affect(enemy, Burning.class).reignite(enemy, 3f);
@@ -98,12 +106,16 @@ public class Sukuna extends Mob {
 				break;
 			case 4:
 				//空间斩：无视防御与闪避
+				JujutsuSfx.play(JujutsuSfx.SPACE);
 				GLog.w("宿傩：「空间斩。」");
+				JujutsuFx.slash(enemy.pos, true);
 				dealDirect(enemy, Math.round(damageRoll() * 1.8f));
 				break;
 			case 5:
 				//灶开：终局火焰
+				JujutsuSfx.play(JujutsuSfx.FUGA);
 				GLog.w("宿傩：「灶开。」");
+				JujutsuFx.fuga(enemy.pos);
 				dealDirect(enemy, Math.round(damageRoll() * 3.0f));
 				if (enemy.isAlive()) Buff.affect(enemy, Burning.class).reignite(enemy, 5f);
 				break;
@@ -120,7 +132,9 @@ public class Sukuna extends Mob {
 	}
 
 	private void startDomain(){
+		JujutsuSfx.play(JujutsuSfx.SHRINE);
 		GLog.w("宿傩展开领域——伏魔御厨子。");
+		JujutsuFx.shrine();
 		domainTurns = 5;
 		coresLeft = 4;
 		spawnCores();
@@ -157,8 +171,8 @@ public class Sukuna extends Mob {
 			if (cell == -1) continue;
 			SukunaMinion core = new SukunaMinion();
 			core.isCore = true;
+			core.makeCore();
 			core.pos = cell;
-			core.HP = core.HT = 80;
 			com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.add(core);
 		}
 	}
@@ -187,6 +201,13 @@ public class Sukuna extends Mob {
 	}
 
 	@Override
+	public void onAdd(){
+		super.onAdd();
+		JujutsuSfx.play(JujutsuSfx.SUKUNA_INTRO);
+		GLog.w("宿傩：「让我看看你能撑多久。」");
+	}
+
+	@Override
 	public void damage(int dmg, Object src){
 		super.damage(dmg, src);
 		checkPhase();
@@ -203,6 +224,7 @@ public class Sukuna extends Mob {
 		if (target > phase){
 			phase = target;
 			abilityCd = 1;
+			JujutsuSfx.play(JujutsuSfx.SUKUNA_PHASE);
 			switch (phase){
 				case 2:
 					summonShikigami(2);

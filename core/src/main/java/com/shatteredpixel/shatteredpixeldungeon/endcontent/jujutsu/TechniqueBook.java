@@ -87,6 +87,8 @@ public class TechniqueBook extends Item {
 			} else {
 				int dmg = Math.round(hero.damageRoll() * cangMult());
 				ArrayList<Mob> targets = Jujutsu.visibleEnemies(hero);
+				JujutsuSfx.play(JujutsuSfx.CANG);
+				for (Mob m : targets) JujutsuFx.cang(hero.pos, m.pos);
 				for (Mob m : targets) pullToHero(hero, m);
 				for (Mob m : targets) m.damage(dmg, hero);
 				Jujutsu.noteCang();
@@ -99,6 +101,8 @@ public class TechniqueBook extends Item {
 			} else {
 				int dmg = Math.round(hero.damageRoll() * heMult());
 				ArrayList<Mob> targets = Jujutsu.visibleEnemies(hero);
+				JujutsuSfx.play(JujutsuSfx.HE);
+				for (Mob m : targets) JujutsuFx.he(m.pos);
 				for (Mob m : targets) pushFromHero(hero, m);
 				for (Mob m : targets) m.damage(dmg, hero);
 				Jujutsu.noteHe();
@@ -110,7 +114,11 @@ public class TechniqueBook extends Item {
 				GLog.w("还需要先用苍再用赫。");
 			} else {
 				int dmg = Math.round(hero.damageRoll() * ziMult());
-				for (Mob m : Jujutsu.visibleEnemies(hero)) dealDirect(m, dmg, hero);
+				JujutsuSfx.play(JujutsuSfx.ZI);
+				for (Mob m : Jujutsu.visibleEnemies(hero)){
+					JujutsuFx.zi(m.pos);
+					dealDirect(m, dmg, hero);
+				}
 				Buff.affect(hero, Jujutsu.CangCd.class, 10f);
 				Buff.affect(hero, Jujutsu.HeCd.class, 10f);
 				GLog.i("茈。虚式贯穿。");
@@ -122,6 +130,8 @@ public class TechniqueBook extends Item {
 				Jujutsu.domainDepth = Dungeon.depth;
 				int dmg = Math.round(hero.damageRoll() * domainMult());
 				Buff.affect(hero, DomainBuff.class).set(dmg);
+				JujutsuSfx.play(JujutsuSfx.DOMAIN);
+				JujutsuFx.domain(hero.pos);
 				GLog.i("领域展开——无量空处。");
 			}
 		}

@@ -25,6 +25,24 @@ public class SukunaMinion extends Mob {
 	@Override public int attackSkill(Char target){ return 28; }
 	@Override public int drRoll(){ return 0; }
 
+	/** 领域核心：不可移动、不主动追击，只等玩家来拆。 */
+	public void makeCore(){
+		properties.add(Char.Property.IMMOVABLE);
+		state = PASSIVE;
+		HP = HT = 80;
+	}
+
+	@Override
+	public int attackProc(Char enemy, int damage){
+		//式神：命中有 20% 概率点燃
+		if (!isCore && Random.Int(5) == 0){
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff
+					.affect(enemy, com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+						.Burning.class).reignite(enemy, 2f);
+		}
+		return super.attackProc(enemy, damage);
+	}
+
 	@Override
 	public void die(Object cause){
 		if (isCore){
