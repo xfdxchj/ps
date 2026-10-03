@@ -94,7 +94,8 @@ public class AdaptiveResistance extends FlavourBuff {
 						com.shatteredpixel.shatteredpixeldungeon.Assets.Sounds.UNLOCK);
 			} catch (Throwable ignored) { }
 			if (target.sprite != null){
-				target.sprite.showStatus(CharSprite.WARNING, "适应·" + typeName(dominant));
+				target.sprite.showStatus(CharSprite.WARNING,
+						"适应·" + typeName(dominant) + " " + stacks + "/" + MAX_STACKS);
 			}
 		}
 	}
@@ -133,7 +134,9 @@ public class AdaptiveResistance extends FlavourBuff {
 				|| ch instanceof com.shatteredpixel.shatteredpixeldungeon.endcontent.jujutsu.Sukuna;
 	}
 
-	@Override public int icon(){ return BuffIndicator.NONE; }
+	@Override public int icon(){ return BuffIndicator.ARMOR; }
+	@Override public String name(){ return "魔虚罗·适应"; }
+	@Override public String toString(){ return name(); }
 
 	//——持久化 ——//
 	private static final String DMG = "dmg";

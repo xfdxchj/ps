@@ -41,6 +41,7 @@ public class Assets {
 		public static final String JUJUTSU_BURST_RED  = "effects/jujutsu_burst_red.png";
 		public static final String JUJUTSU_RIFT  = "effects/jujutsu_rift.png";
 		public static final String JUJUTSU_DOMAIN_PARTICLE = "effects/jujutsu_domain_particle.png";
+		public static final String JUJUTSU_WULIANG = "effects/jujutsu_wuliang.png";
 		public static final String JUJUTSU_FUGA_ARROW  = "effects/jujutsu_fuga_arrow.png";
 		public static final String JUJUTSU_SLASH_BLADE = "effects/jujutsu_slash_blade.png";
 		public static final String SPELL_ICONS  = "effects/spell_icons.png";

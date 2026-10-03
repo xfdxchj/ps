@@ -10,7 +10,13 @@ public class WndJujutsuSpells extends WndOptions {
 	private final Hero hero;
 
 	public WndJujutsuSpells(TechniqueBook book, Hero hero){
-		super("术式之书", "选择要释放的术式：", "苍", "赫", "无量空处", "取消");
+		super("术式之书",
+				"选择要释放的术式：\n充能 " + book.chargeNow() + "/" + book.chargeCapNow() + "（苍 " + TechniqueBook.COST_CANG
+						+ " / 赫 " + TechniqueBook.COST_HE + " / 无量空处 " + TechniqueBook.COST_DOMAIN + "）",
+				"苍（" + TechniqueBook.COST_CANG + " 充能）",
+				"赫（" + TechniqueBook.COST_HE + " 充能）",
+				"无量空处（" + TechniqueBook.COST_DOMAIN + " 充能）",
+				"取消");
 		this.book = book;
 		this.hero = hero;
 	}

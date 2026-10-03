@@ -9,18 +9,17 @@ import com.watabou.utils.Random;
 
 public class JujutsuDomainParticle extends Image {
 
-	private static final int SIZE = 7;
+	/** 默认（无量空处）粒子工厂，使用 wuliang 贴图。 */
+	public static final Emitter.Factory FACTORY = factory(0xFFFFFFFF, Assets.Effects.JUJUTSU_WULIANG);
+	/** 伏魔御厨子用的红色粒子工厂，使用原星形贴图。 */
+	public static final Emitter.Factory FACTORY_RED = factory(0xFFFF5555, Assets.Effects.JUJUTSU_DOMAIN_PARTICLE);
 
-	/** 默认（无量空处）白色粒子工厂。 */
-	public static final Emitter.Factory FACTORY = factory(0xFFFFFFFF);
-	/** 伏魔御厨子用的红色粒子工厂。 */
-	public static final Emitter.Factory FACTORY_RED = factory(0xFFFF5555);
-
-	public static Emitter.Factory factory(final int tint){
+	public static Emitter.Factory factory(final int tint, final String tex){
 		return new Emitter.Factory() {
 			@Override
 			public void emit( Emitter emitter, int index, float x, float y ) {
-				((JujutsuDomainParticle)emitter.recycle( JujutsuDomainParticle.class )).reset( x, y, tint );
+				((JujutsuDomainParticle)emitter.recycle( JujutsuDomainParticle.class ))
+						.reset( x, y, tint, tex );
 			}
 		};
 	}
@@ -30,11 +29,11 @@ public class JujutsuDomainParticle extends Image {
 
 	public JujutsuDomainParticle() {
 		super();
-		texture( Assets.Effects.JUJUTSU_DOMAIN_PARTICLE );
-		origin.set( SIZE / 2f );
 	}
 
-	public void reset( float x, float y, int tintColor ) {
+	public void reset( float x, float y, int tintColor, String tex ) {
+		texture( tex );
+		origin.set( width / 2f, height / 2f );
 		revive();
 		this.x = x;
 		this.y = y;

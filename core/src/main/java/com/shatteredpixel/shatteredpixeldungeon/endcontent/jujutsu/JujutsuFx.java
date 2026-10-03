@@ -55,6 +55,21 @@ public final class JujutsuFx {
 		}
 	}
 
+	/** 把粒子撒在**当前屏幕画面**上（不是按格子），坐标取相机可视区。 */
+	public static void scatterScreen(int speckType, int n){
+		scatterScreen(Speck.factory(speckType), n);
+	}
+
+	/** 通用版本：粒子在相机视野内随机世界坐标生成。 */
+	public static void scatterScreen(com.watabou.noosa.particles.Emitter.Factory f, int n){
+		if (n <= 0 || com.watabou.noosa.Camera.main == null) return;
+		com.watabou.noosa.particles.Emitter e = GameScene.emitter();
+		if (e == null) return;
+		e.pos(com.watabou.noosa.Camera.main.x, com.watabou.noosa.Camera.main.y,
+				com.watabou.noosa.Camera.main.width, com.watabou.noosa.Camera.main.height);
+		e.burst(f, n);
+	}
+
 	private static Group groupOf(Char ch){
 		if (ch == null || ch.sprite == null) return null;
 		return ch.sprite.parent;
@@ -143,8 +158,8 @@ public final class JujutsuFx {
 	/** 无量空处：星空白领域展开。 */
 	public static void domain(Hero hero){
 		if (hero == null) return;
-		//END(修订): 去掉展开时的星星，只保留白光；持续粒子在 JujutsuOverlay
-		scatter(Speck.LIGHT, 18 * FX_MULT);
+		//END(修订): 去掉展开星星，白光撒在屏幕上；持续粒子在 JujutsuOverlay
+		scatterScreen(Speck.LIGHT, 18 * FX_MULT);
 		//从玩家向外拉几道白光
 		for (Mob m : Jujutsu.visibleEnemies(hero)){
 			beam(hero, m, 0.85f, 0.9f, 1f);

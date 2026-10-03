@@ -43,10 +43,10 @@ public class JujutsuOverlay extends Image {
 		alpha(0f);
 	}
 
-	/** 领域：粒子随机撒满视野（每批 PARTICLES_PER_TICK 个，分布在约 40 格上）。 */
+	/** 领域：粒子撒在**当前屏幕画面**上（不按格子）。 */
 	private void spawnDomainParticles(com.watabou.noosa.particles.Emitter.Factory factory){
-		//END(修订): 不再所有粒子堆在同一格，改为随机分布在视野内的多格
-		JujutsuFx.scatter(factory, PARTICLES_PER_TICK, 40);
+		//END(修订): 改为按屏幕随机分布，不再按格子
+		JujutsuFx.scatterScreen(factory, PARTICLES_PER_TICK);
 	}
 
 	/** 伏魔御厨子：在视野内随机多格刷斩击（不再堆在单个角色身上）。 */
@@ -89,7 +89,6 @@ public class JujutsuOverlay extends Image {
 			if (particleTimer <= 0f){
 				particleTimer = DOMAIN_TICK;
 				spawnDomainParticles(JujutsuDomainParticle.FACTORY);
-				spawnDomainParticles(JujutsuDomainParticle.FACTORY_RED);
 				spawnSukunaSlashes();
 			}
 		} else if (player){
@@ -101,12 +100,11 @@ public class JujutsuOverlay extends Image {
 				spawnDomainParticles(JujutsuDomainParticle.FACTORY);
 			}
 		} else if (sukuna){
-			//END(修订): 伏魔御厨子不遮罩，改为红色粒子 + 持续斩击（0.2 秒一批）
+			//END(修订): 伏魔御厨子不遮罩，改为持续红色斩击（不撒星形粒子）
 			target = 0f; color = 0xFFFFFF;
 			particleTimer -= Game.elapsed;
 			if (particleTimer <= 0f){
 				particleTimer = DOMAIN_TICK;
-				spawnDomainParticles(JujutsuDomainParticle.FACTORY_RED);
 				spawnSukunaSlashes();
 			}
 		} else {

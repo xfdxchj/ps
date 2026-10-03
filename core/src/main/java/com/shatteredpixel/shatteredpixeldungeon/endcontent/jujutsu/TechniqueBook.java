@@ -65,6 +65,7 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 				"赫：选一个位置，球飞过去，把视野内敌人推离该位置并造成攻击力 x" + fmt(heMult()) + " 伤害；之后留下 5 回合斥力场。\n" +
 				"茈：苍与赫的落点重合时自动触发，造成攻击力 x" + fmt(ziMult()) + " 无视护甲伤害。\n" +
 				"无量空处：展开领域 20 回合，敌人无法行动并持续受伤；300 回合冷却。\n\n" +
+				"消耗：苍 " + COST_CANG + " / 赫 " + COST_HE + " / 无量空处 " + COST_DOMAIN + " 充能。\n" +
 				"充能 " + charge + "/" + chargeCap + "，每 20 回合回 1 点；释放技能会提升伤害等级。";
 	}
 
@@ -108,6 +109,10 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 		return true;
 	}
 
+	/** 供术式菜单显示当前充能。 */
+	public int chargeNow(){ return charge; }
+	public int chargeCapNow(){ return chargeCap; }
+
 	@Override
 	public void execute(Hero hero, String action){
 		super.execute(hero, action);
@@ -127,16 +132,13 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 				hero.spendAndNext(1f);
 				return;
 			}
-			if (!spendCharge(COST_CANG)){
-				GLog.w("充能不足。");
-				hero.spendAndNext(1f);
-				return;
-			}
 			com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.selectCell(
 					new com.shatteredpixel.shatteredpixeldungeon.scenes.CellSelector.Listener(){
 				@Override public String prompt(){ return "选择苍的落点…"; }
 				@Override public void onSelect(Integer cell){
-					if (cell == null || cell < 0) return;
+					if (cell == null || cell < 0) return; //取消不消耗充能
+					if (!spendCharge(COST_CANG)){ GLog.w("充能不足。"); return; }
+					Item.updateQuickslot();
 					final int target = cell;
 					final int dmg = Math.round(hero.damageRoll() * cangMult());
 					JujutsuSfx.play(JujutsuSfx.CANG);
@@ -165,16 +167,13 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 				hero.spendAndNext(1f);
 				return;
 			}
-			if (!spendCharge(COST_HE)){
-				GLog.w("充能不足。");
-				hero.spendAndNext(1f);
-				return;
-			}
 			com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.selectCell(
 					new com.shatteredpixel.shatteredpixeldungeon.scenes.CellSelector.Listener(){
 				@Override public String prompt(){ return "选择赫的落点…"; }
 				@Override public void onSelect(Integer cell){
-					if (cell == null || cell < 0) return;
+					if (cell == null || cell < 0) return; //取消不消耗充能
+					if (!spendCharge(COST_HE)){ GLog.w("充能不足。"); return; }
+					Item.updateQuickslot();
 					final int target = cell;
 					final int dmg = Math.round(hero.damageRoll() * heMult());
 					JujutsuSfx.play(JujutsuSfx.HE);
