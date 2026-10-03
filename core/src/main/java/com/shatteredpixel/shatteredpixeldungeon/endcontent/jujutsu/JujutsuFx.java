@@ -118,8 +118,20 @@ public final class JujutsuFx {
 			JujutsuBurst b = (JujutsuBurst) Dungeon.hero.sprite.parent.recycle(JujutsuBurst.class);
 			b.reset(cell, type);
 		}
-		cellBurst(cell, type == JujutsuBolt.CANG ? Speck.BLUE_LIGHT
-				: type == JujutsuBolt.HE ? Speck.RED_LIGHT : Speck.STAR, 12);
+		//END(按早期预览的粒子爆发风格): 大量星点/光点
+		if (type == JujutsuBolt.CANG){
+			cellBurst(cell, Speck.BLUE_LIGHT, 24);
+			cellBurst(cell, Speck.STAR, 16);
+			cellBurst(cell, Speck.LIGHT, 12);
+		} else if (type == JujutsuBolt.HE){
+			cellBurst(cell, Speck.RED_LIGHT, 24);
+			cellBurst(cell, Speck.WOOL, 14);
+			cellBurst(cell, Speck.STAR, 12);
+		} else {
+			cellBurst(cell, Speck.STAR, 28);
+			cellBurst(cell, Speck.SMOKE, 18);
+			cellBurst(cell, Speck.LIGHT, 14);
+		}
 	}
 
 	/** 无量空处：星空白领域展开。 */
