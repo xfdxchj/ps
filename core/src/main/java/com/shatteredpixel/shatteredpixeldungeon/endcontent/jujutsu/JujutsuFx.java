@@ -162,7 +162,7 @@ public final class JujutsuFx {
 		if (to == null) return;
 		if (to.sprite != null && to.sprite.parent != null){
 			JujutsuSlash sl = (JujutsuSlash) to.sprite.parent.recycle(JujutsuSlash.class);
-			sl.reset(to.pos, Random.Float()*180f - 90f);
+			sl.reset(to.pos, Random.Int(2) == 0 ? 45f : -45f); //斜着斩
 		}
 		cellBurst(to.pos, Speck.LIGHT, 16);
 		GameScene.flash(0x80FFFFFF);
