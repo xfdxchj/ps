@@ -48,7 +48,13 @@ public class TechniqueBook extends Item {
 	@Override public String desc(){ return info(); }
 
 
-	@Override public boolean isUpgradable(){ return false; }
+	@Override
+	public Item upgrade(){
+		if (level() < MAX_LEVEL) super.upgrade();
+		return this;
+	}
+
+	@Override public boolean isUpgradable(){ return true; }
 	@Override public boolean isIdentified(){ return true; }
 	@Override public int value(){ return 0; }
 
@@ -59,15 +65,16 @@ public class TechniqueBook extends Item {
 				"赫：选一个位置，球飞过去，把视野内敌人推离该位置并造成攻击力 x" + fmt(heMult()) + " 伤害；之后留下 5 回合斥力场。\n" +
 				"茈：苍与赫的落点重合时自动触发，造成攻击力 x" + fmt(ziMult()) + " 无视护甲伤害。\n" +
 				"无量空处：展开领域 20 回合，敌人无法行动并持续受伤；300 回合冷却。\n\n" +
-				"该物品无法升级。";
+				"当前等级 +" + level() + "（上限 +" + MAX_LEVEL + "）。";
 	}
 
 	private static String fmt(float v){ return String.format(java.util.Locale.US, "%.2f", v); }
 
-		private float cangMult(){ return 1.0f; }
-	private float heMult(){ return 1.0f; }
-	private float ziMult(){ return 2.8f; }
-	private float domainMult(){ return 1.4f; }
+		private float lvl(){ return level(); }
+	private float cangMult(){ return 1.0f + 0.15f * lvl(); }
+	private float heMult(){ return 1.0f + 0.20f * lvl(); }
+	private float ziMult(){ return (4.0f + 0.40f * lvl()) * 0.7f; }
+	private float domainMult(){ return (2.0f + 0.20f * lvl()) * 0.7f; }
 
 	@Override
 	public ArrayList<String> actions(Hero hero){
