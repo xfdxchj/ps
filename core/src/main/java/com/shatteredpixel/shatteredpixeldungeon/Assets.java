@@ -556,6 +556,7 @@ public class Assets {
 		public static final String SUKUNA_NEW    = "sprites/sukuna_new.png";
 		public static final String SUKUNA_USER   = "sprites/sukuna_user.png";
 		public static final String SUKUNA_USER2  = "sprites/sukuna_user2.png";
+		public static final String SUKUNA_USER3  = "sprites/sukuna_user3.png";
 		/** 式神 / 领域核心：4 帧单行。 */
 		public static final String SHIKIGAMI     = "sprites/shikigami.png";
 	}
