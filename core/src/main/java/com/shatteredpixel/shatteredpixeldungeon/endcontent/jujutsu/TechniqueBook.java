@@ -31,6 +31,7 @@ public class TechniqueBook extends Item {
 
 	{
 		image = ItemSpriteSheet.TECHNIQUE_BOOK;
+		defaultAction = AC_CANG; //可放快捷栏，点击直接进入苍的选点
 		unique = true;
 		bones = false;
 	}
@@ -45,8 +46,6 @@ public class TechniqueBook extends Item {
 	@Override public String name(){ return "术式之书"; }
 	@Override public String desc(){ return info(); }
 
-
-	@Override public String defaultAction(){ return null; } //不能放快捷栏
 
 	@Override public boolean isUpgradable(){ return true; }
 	@Override public boolean isIdentified(){ return true; }
