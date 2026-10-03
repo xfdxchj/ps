@@ -134,9 +134,19 @@ public class AdaptiveResistance extends FlavourBuff {
 				|| ch instanceof com.shatteredpixel.shatteredpixeldungeon.endcontent.jujutsu.Sukuna;
 	}
 
+	/** END(修复·适应不生效): FlavourBuff 的 act() 会立刻 detach，
+	 *  这里必须覆写成常驻，否则适应刚挂上就掉，减伤/图标全没。 */
+	@Override
+	public boolean act(){
+		spend(TICK);
+		return true;
+	}
+
 	@Override public int icon(){ return BuffIndicator.ARMOR; }
 	@Override public String name(){ return "魔虚罗·适应"; }
 	@Override public String toString(){ return name(); }
+	/** Boss 血条上的 buff 图标会显示这个数字（大界面下可见），即适应层数。 */
+	@Override public String iconTextDisplay(){ return Integer.toString(stacks); }
 
 	//——持久化 ——//
 	private static final String DMG = "dmg";
