@@ -23,8 +23,12 @@ public class FrostBurst extends FlavourBuff {
 	{
 		type = buffType.NEGATIVE;
 		announced = false;
-		//END: 比 Frost 晚一步行动，冻结在同一回合解除时能立刻引爆
-		actPriority = BUFF_PRIO - 1;
+		//END(修复·冰爆优先级): 必须**排在怪物之前**行动。
+		//原为 BUFF_PRIO - 1（比怪物还晚），于是冻结解除的那一回合：
+		//怪物先行动（打玩家一下），冰爆才结算 —— 会在爆死前多挨一次伤害。
+		//MOB_PRIO + 1 让冰爆在怪物行动前结算；仍排在小团块(blob)之后，
+		//保证气体当回合挂上的冰爆能参与判定。
+		actPriority = MOB_PRIO + 1;
 	}
 
 	/** 冰爆主伤害（面板 150%，由法杖写入）。 */

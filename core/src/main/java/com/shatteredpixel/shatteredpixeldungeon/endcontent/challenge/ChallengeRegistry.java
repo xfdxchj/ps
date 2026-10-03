@@ -128,26 +128,26 @@ public final class ChallengeRegistry {
 		//**单选**：与原设计一致（同时勾多个区会串接层号、剧情分支冲突）。
 		//互斥关系用 x: 声明，由注册表统一处理。
 		//==== END(移植·英烈地牢): 第一批 ====
-		done(all, 218, "登神长阶", "ascension", "英烈", ChallengeDef.TENDENCY_MONSTER, 3, ChallengeDef.TIER_MEDIUM, "",
+		done(all, 218, "登神长阶", "ascension", "怪物", ChallengeDef.TENDENCY_MONSTER, 3, ChallengeDef.TIER_MEDIUM, "",
 			"怪物死亡时 **13%** 概率原地复活（最多 **区域数+1** 次）：每次复活生命上限翻倍、回满生命并净化负面状态。");
 
-		done(all, 219, "惊喜礼物", "mimics", "英烈", ChallengeDef.TENDENCY_MONSTER, 2, ChallengeDef.TIER_EASY, "",
+		done(all, 219, "惊喜礼物", "mimics", "怪物", ChallengeDef.TENDENCY_MONSTER, 2, ChallengeDef.TIER_EASY, "",
 			"地牢里**所有普通宝箱都变成宝箱怪**（击杀后掉落原本该在箱里的东西）。");
 
-		done(all, 220, "同仇敌忾", "revenge", "英烈", ChallengeDef.TENDENCY_MONSTER, 1, ChallengeDef.TIER_MEDIUM, "",
+		done(all, 220, "同仇敌忾", "revenge", "怪物", ChallengeDef.TENDENCY_MONSTER, 1, ChallengeDef.TIER_MEDIUM, "",
 			"怪物受到**致死伤害**时，把**过量伤害**转嫁给它视野内的其它怪物。");
-		done(all, 221, "复仇狂怒", "revenge_fury", "英烈", ChallengeDef.TENDENCY_MONSTER, 2, ChallengeDef.TIER_MEDIUM, "s:220",
+		done(all, 221, "复仇狂怒", "revenge_fury", "怪物", ChallengeDef.TENDENCY_MONSTER, 2, ChallengeDef.TIER_MEDIUM, "s:220",
 			"同伴在它眼前死亡时，怪物进入**复仇狂怒**：造成的伤害**翻倍**、受到的伤害 **+20%×层**（可叠加，Boss 免疫）。");
 
-		done(all, 222, "集体荣誉", "stacking_champions", "英烈", ChallengeDef.TENDENCY_MONSTER, 2, ChallengeDef.TIER_MEDIUM, "",
+		done(all, 222, "集体荣誉", "stacking_champions", "怪物", ChallengeDef.TENDENCY_MONSTER, 2, ChallengeDef.TIER_MEDIUM, "",
 			"怪物会**以堆的形式**出现；同堆的怪物**共享精英词条**，并且可以多带一个词条。");
-		done(all, 223, "堆积威胁", "stacking", "英烈", ChallengeDef.TENDENCY_MONSTER, 1, ChallengeDef.TIER_MEDIUM, "s:222,224",
+		done(all, 223, "堆积威胁", "stacking", "怪物", ChallengeDef.TENDENCY_MONSTER, 1, ChallengeDef.TIER_MEDIUM, "s:222,224",
 			"怪物以**堆积**方式生成（同格 2~3 只，发现目标后散开）；怪物数量 **+50%**。");
-		done(all, 224, "成群结队", "stacking_spawn", "英烈", ChallengeDef.TENDENCY_MONSTER, 1, ChallengeDef.TIER_EASY, "s:223",
+		done(all, 224, "成群结队", "stacking_spawn", "怪物", ChallengeDef.TENDENCY_MONSTER, 1, ChallengeDef.TIER_EASY, "s:223",
 			"重新生成的怪物**至少 2 只成堆**出现。");
-		done(all, 225, "全副武装", "elite_champions", "英烈", ChallengeDef.TENDENCY_MONSTER, 3, ChallengeDef.TIER_MEDIUM, "s:116",
+		done(all, 225, "全副武装", "elite_champions", "怪物", ChallengeDef.TENDENCY_MONSTER, 3, ChallengeDef.TIER_MEDIUM, "s:116",
 			"精英出现率提升；精英有 **1/3** 概率成为**高阶精英**（多带一个词条 + 1 个跟班）。");
-		done(all, 226, "现代战争", "dungeon_of_champions", "英烈", ChallengeDef.TENDENCY_MONSTER, 3, ChallengeDef.TIER_HARD, "p:116;s:225",
+		done(all, 226, "现代战争", "dungeon_of_champions", "怪物", ChallengeDef.TENDENCY_MONSTER, 3, ChallengeDef.TIER_HARD, "p:116;s:225",
 			"精英出现率进一步提高；精英**必定多带一个词条**；高阶精英带 **2 个跟班**。");
 
 		done(all, 228, "我的世界", "jingmi", "音乐", ChallengeDef.TENDENCY_NEUTRAL, 2, ChallengeDef.TIER_SERIES, "",
@@ -167,7 +167,7 @@ public final class ChallengeRegistry {
 			+ "同一配方还可炼出 **3 个词条强化石**：对戒指使用后**选择 1 条词条**强化，随机获得 **+20% / +35% / +40%**（乘算），每条最多 **3 次**。");
 
 		//==== END(231 魔虚罗): 古神 / 古神之拳适应 ====
-		done(all, 231, "魔虚罗", "mahoraga", "怪物", ChallengeDef.TENDENCY_MONSTER, 3, ChallengeDef.TIER_HARD, "",
+		done(all, 231, "魔虚罗", "mahoraga", "咒会", ChallengeDef.TENDENCY_MONSTER, 3, ChallengeDef.TIER_HARD, "",
 			"**古神与古神之拳**会适应你造成伤害最多的方式（近战 / 投掷 / 法术）。"
 			+ "以最大生命的 **20%** 为一个区域：每在一个区域内累计受到你足够伤害，就适应一次，"
 			+ "适应该区域中你伤害最高的方式，获得对该方式的减伤：**10% -> 25% -> 43% -> 70%**，最多 **4 层**。");
@@ -432,7 +432,7 @@ public final class ChallengeRegistry {
 				"每回合 3% 概率触发奶龙大笑音效。");
 		done(all, 232,"大地复苏",   "dadi_revival",     "音乐", T_NEU, 2, T_MED,    "",
 				"常规层与 Boss 层的 BGM 全部替换：每层从 31 首常规 + 12 首 Boss 曲目里随机抽 1 首。同一层的曲子固定，上下楼不会改变。");
-		done(all, 233,"是我赢了",   "winning",          "音乐", T_TWO, 2, T_MED,    "",
+		done(all, 233,"是我赢了",   "winning",          "咒会", T_TWO, 2, T_MED,    "",
 				"生命值低于 30% 时把 BGM 换成《雨爱》；回到 60% 以上后恢复本层音乐。");
 		done(all, 138,"荒诞世界",   "absurd_world",     "特殊", T_NEU, 1, T_EASY,   "",
 				"怪物贴图随机变化。纯外观，不影响属性与 AI。");
@@ -475,7 +475,7 @@ public final class ChallengeRegistry {
 				"玩家与目标距离 5 格以上时，远程攻击伤害必定为最大值。");
 		done(all, 141,"禁魔空间",   "anti_magic_zone",  "环境", T_MON, 2, T_EASY,   "x:139,21,60",
 				"所有魔法伤害降低 20%（玩家与怪物都受影响）。");
-		done(all, 142,"无下限术士", "no_lower_limit",   "怪物", T_MON, 2, T_MED,    "s:140",
+		done(all, 142,"无下限术士", "no_lower_limit",   "咒会", T_MON, 2, T_MED,    "s:140",
 				"怪物受到远程攻击时，13% 概率完全免疫该次伤害。");
 		done(all, 143,"吾为王者",   "i_am_king",        "怪物", T_MON, 3, T_MED,    "s:117,15",
 				"所有 Boss 的命中与闪避提升 20%。");

@@ -54,6 +54,21 @@ public enum Music {
 	private final ArrayList<String> trackQueue = new ArrayList<>();
 	boolean shuffle = false;
 
+	//==== END(233 是我赢了 / 雨爱): 叠层音乐与交叉淡入淡出 ====
+	//主音乐（player）照常播放关卡 BGM；雨爱作为**第二路** music 叠上去，
+	//同时把主音乐音量压低。两边的音量每帧向目标值靠拢，得到渐入/渐出。
+	private com.badlogic.gdx.audio.Music overlayPlayer;
+	private String overlayTrack;
+	private float overlayVolume = 0f;
+	private float overlayTarget = 0f;
+	/** 主音乐音量倍率（被雨爱压低时 < 1）。 */
+	private float duck = 1f;
+	private float duckTarget = 1f;
+	/** 交叉淡入淡出时长（秒）。 */
+	private static final float XFADE_SECONDS = 1.5f;
+	/** 雨爱播放时主音乐降到的基础音量倍率。 */
+	private static final float DUCK_LEVEL = 0.25f;
+
 	//END(移植自魔绫): 桌面端高质量 ogg 的线程安全闪退规避——所有 BGM 切换统一走这个入口。
 	public static void playModeBGM(String name, boolean loop) {
 		if (DeviceCompat.isDesktop()) {
@@ -163,6 +178,22 @@ public enum Music {
 			return;
 		}
 
+		//==== END(232/130 修复): playTracks 也必须走曲目映射 ====
+		//原实现只在 public play() 里替换曲目，而常规层走的是 playTracks，
+		//于是：格林/大地复苏在常规层不生效；同区域的曲目列表被判定为相同后
+		//直接 return，换层后仍播上一层的曲子。
+		//这里逐首映射，且不修改调用方传入的数组（那些是 static 曲目表）。
+		if (trackMapper != null){
+			String[] mappedTracks = new String[tracks.length];
+			boolean changed = false;
+			for (int i = 0; i < tracks.length; i++){
+				String m = trackMapper.map(tracks[i]);
+				mappedTracks[i] = (m != null) ? m : tracks[i];
+				if (!mappedTracks[i].equals(tracks[i])) changed = true;
+			}
+			if (changed) tracks = mappedTracks;
+		}
+
 		//iOS cannot play ogg, so we use an mp3 alternative instead
 		if (tracks != null && DeviceCompat.isiOS()){
 			for (int i = 0; i < tracks.length; i ++){
@@ -257,6 +288,87 @@ public enum Music {
 				}
 			}
 		}
+
+		//==== END(233 雨爱交叉淡入淡出): 每帧推进叠层与压低音量 ====
+		if (!paused && Game.elapsed > 0f){
+			float rate = Game.elapsed / XFADE_SECONDS;
+
+			if (overlayPlayer != null){
+				if (overlayVolume < overlayTarget) {
+					overlayVolume = Math.min(overlayTarget, overlayVolume + rate);
+				} else if (overlayVolume > overlayTarget) {
+					overlayVolume = Math.max(overlayTarget, overlayVolume - rate);
+				}
+				overlayPlayer.setVolume(Math.max(0f, overlayVolume));
+
+				if (overlayTarget <= 0f && overlayVolume <= 0f){
+					overlayPlayer.stop();
+					overlayPlayer.dispose();
+					overlayPlayer = null;
+					overlayTrack = null;
+				}
+			}
+
+			if (duck < duckTarget) {
+				duck = Math.min(duckTarget, duck + rate);
+			} else if (duck > duckTarget) {
+				duck = Math.max(duckTarget, duck - rate);
+			}
+			if (player != null) {
+				player.setVolume(volumeWithFade());
+			}
+		}
+	}
+
+	//==== END(233 是我赢了): 叠层音乐 API（由 core 的 ChallengeSfx 调用）====
+
+	/**
+	 * 在现有 BGM 之上叠一层循环音乐（雨爱）。
+	 * 主音乐会被压到 {@link #DUCK_LEVEL}，叠层从 0 渐入到 1；重复调用同一首不会重头播。
+	 */
+	public synchronized void playOverlay( String track, boolean looping ){
+		if (track == null){
+			stopOverlay();
+			return;
+		}
+		if (overlayPlayer != null && track.equals(overlayTrack)){
+			overlayTarget = 1f;
+			duckTarget = DUCK_LEVEL;
+			return;
+		}
+		if (overlayPlayer != null){
+			overlayPlayer.stop();
+			overlayPlayer.dispose();
+			overlayPlayer = null;
+			overlayTrack = null;
+		}
+		try {
+			overlayPlayer = Gdx.audio.newMusic(Gdx.files.internal(track));
+			overlayPlayer.setLooping(looping);
+			overlayPlayer.setVolume(0f);
+			overlayTrack = track;
+			if (!paused && enabled) overlayPlayer.play();
+		} catch (Exception e){
+			Game.reportException(e);
+			overlayPlayer = null;
+			overlayTrack = null;
+			return;
+		}
+		overlayVolume = 0f;
+		overlayTarget = 1f;
+		duckTarget = DUCK_LEVEL;
+	}
+
+	/** 渐出并释放叠层音乐，主音乐音量渐回 1。 */
+	public synchronized void stopOverlay(){
+		if (overlayPlayer == null) return;
+		overlayTarget = 0f;
+		duckTarget = 1f;
+	}
+
+	/** 叠层音乐是否仍在播放或正在渐出。 */
+	public synchronized boolean isOverlayPlaying(){
+		return overlayPlayer != null;
 	}
 
 	private com.badlogic.gdx.audio.Music.OnCompletionListener trackLooper = new com.badlogic.gdx.audio.Music.OnCompletionListener() {
@@ -344,6 +456,7 @@ public enum Music {
 		lastPlayed = null;
 		trackList = null;
 		stop();
+		disposeOverlay();
 	}
 
 	private boolean paused = false;
@@ -357,6 +470,9 @@ public enum Music {
 		if (player != null) {
 			player.pause();
 		}
+		if (overlayPlayer != null) {
+			overlayPlayer.pause();
+		}
 	}
 	
 	public synchronized void resume() {
@@ -365,6 +481,10 @@ public enum Music {
 			player.play();
 			player.setLooping(looping);
 		}
+		if (overlayPlayer != null) {
+			overlayPlayer.play();
+			overlayPlayer.setLooping(true);
+		}
 	}
 
 	public synchronized void stop() {
@@ -372,6 +492,18 @@ public enum Music {
 			player.dispose();
 			player = null;
 		}
+	}
+
+	/** 立即释放叠层音乐（切场景/退出游戏时用）。 */
+	private synchronized void disposeOverlay(){
+		if (overlayPlayer != null) {
+			overlayPlayer.stop();
+			overlayPlayer.dispose();
+			overlayPlayer = null;
+		}
+		overlayTrack = null;
+		overlayVolume = overlayTarget = 0f;
+		duck = duckTarget = 1f;
 	}
 	
 	public synchronized void volume( float value ) {
@@ -382,10 +514,11 @@ public enum Music {
 	}
 
 	private synchronized float volumeWithFade(){
+		float base = volume * duck;
 		if (fadeTotal > 0f){
-			return Math.max(0, volume * ((fadeTotal - fadeTime) / fadeTotal));
+			return Math.max(0, base * ((fadeTotal - fadeTime) / fadeTotal));
 		} else {
-			return volume;
+			return base;
 		}
 	}
 	
@@ -397,6 +530,9 @@ public enum Music {
 		enabled = value;
 		if (isPlaying() && !value) {
 			stop();
+		} else
+		if (!value) {
+			disposeOverlay();
 		} else
 		if (!isPlaying() && value) {
 			if (trackList != null){

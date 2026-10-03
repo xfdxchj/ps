@@ -601,6 +601,11 @@ public class Hero extends Char {
 	@Override
 	public boolean attack(Char enemy, float dmgMulti, float dmgBonus, float accMulti) {
 		boolean result = super.attack(enemy, dmgMulti, dmgBonus, accMulti);
+		//END(233 是我赢了): 雨爱期间攻击概率弹出咒术台词
+		if (result){
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeSfx.onWinningAttack();
+		}
 		if (!(belongings.attackingWeapon() instanceof MissileWeapon)){
 			if (buff(Talent.PreciseAssaultTracker.class) != null){
 				buff(Talent.PreciseAssaultTracker.class).detach();
@@ -1881,7 +1886,9 @@ public class Hero extends Char {
 
 		//regular damage interrupt, triggers on any damage except specific mild DOT effects
 		// unless the player recently hit 'continue moving', in which case this is ignored
-		if (!(src instanceof Hunger || src instanceof Viscosity.DeferedDamage) && damageInterrupt) {
+		//END(124/128 不死): 狗奶/镇魂歌等不死状态期间，伤害不打断行动
+		if (!(src instanceof Hunger || src instanceof Viscosity.DeferedDamage)
+				&& damageInterrupt && !undyingNoInterrupt()) {
 			interrupt();
 		}
 
@@ -1960,12 +1967,27 @@ public class Hero extends Char {
 					Sample.INSTANCE.play(Assets.Sounds.HEALTH_WARN, 1/3f + flashIntensity * 4f);
 				}
 				//hero gets interrupted on taking serious damage, regardless of any other factor
-				interrupt();
+				//END(124/128 不死): 不死状态期间不打断
+				if (!undyingNoInterrupt()) interrupt();
 				damageInterrupt = true;
 			}
 		}
+
+		//END(233 是我赢了): 雨爱期间受到攻击命中，35% 弹一句台词
+		if (src instanceof Char){
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+					.ChallengeSfx.onWinningHurt();
+		}
 	}
 	
+	/** END(124/128): 不死状态期间伤害不打断行动。 */
+	private boolean undyingNoInterrupt(){
+		return buff(com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+				.WildDogMilk.DogMilkBuff.class) != null
+				|| buff(com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+				.SoulRequiem.SoulRequiemBuff.class) != null;
+	}
+
 	public void checkVisibleMobs() {
 		ArrayList<Mob> visible = new ArrayList<>();
 
@@ -2461,6 +2483,10 @@ public class Hero extends Char {
 	@Override
 	public void die( Object cause ) {
 		
+		//END(233 是我赢了): 雨爱状态死亡前的台词
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeSfx.onWinningDeath();
+
 		curAction = null;
 
 		//==== END(挑战 126 格林之心): 死亡 → 得黑之魂 + 退回上层 ====

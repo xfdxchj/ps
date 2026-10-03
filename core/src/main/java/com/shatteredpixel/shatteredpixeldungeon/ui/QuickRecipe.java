@@ -372,10 +372,10 @@ public class QuickRecipe extends Component {
 						if (outD != null) result.add(new QuickRecipe(rd, in, outD));
 					}
 
-					//破印:原版破印 + 邪能 + 方向料 → 血盾/狂暴/飞掷
+					//破印:原版破印 + 邪能 + 分支特殊物品 → 血盾/狂暴/飞掷
 					Object[][] sealDirs = new Object[][]{
-							{ new com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHaste() },
-							{ new com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfLevitation() },
+							{ new com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHealing() },
+							{ new com.shatteredpixel.shatteredpixeldungeon.items.LiquidMetal().quantity(50) },
 							{ new com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfRetribution() },
 					};
 					for (Object[] d : sealDirs){

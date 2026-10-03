@@ -5943,12 +5943,17 @@ public final class ChallengeEffects {
 	public static boolean openSkyEnabled(){ return on(OPEN_SKY); }
 
 	/**
-	 * END(234 仰望虚空): 除 Boss 层、挑战区与隐藏房外，删除内部墙体。
-	 * 地图最外圈保留，避免走出地图。
+	 * END(234 仰望虚空): 除 Boss 层、挑战区与隐藏房外，把所有墙体变成虚空。
+	 *
+	 * <p>修订：不再是"删成空地"，而是"除了原地板都是虚空" —— 墙与地图外圈
+	 * 一律落成 CHASM（有黑影的深渊），只有原始地板保留。门也一并移除，
+	 * 上锁门直接打开，钥匙从地面上清掉，除 Boss 层外所有锁房可自由进入。
+	 *
+	 * <p>Boss 层默认跳过；但若勾选 210 永无止境，轮回后的 Boss 层同样处理。
 	 */
 	public static void collapseWalls(com.shatteredpixel.shatteredpixeldungeon.levels.Level level){
 		if (!on(OPEN_SKY) || level == null) return;
-		if (Dungeon.bossLevel()) return;
+		if (Dungeon.bossLevel() && !endlessEnabled()) return;
 		if (com.shatteredpixel.shatteredpixeldungeon.actors.mobs.MobRotation
 				.handles(Dungeon.depth)) return;
 
@@ -5967,14 +5972,35 @@ public final class ChallengeEffects {
 			}
 		}
 
-		for (int y = 1; y < h-1; y++){
-			for (int x = 1; x < w-1; x++){
+		//包括最外圈：地图外也是虚空
+		for (int y = 0; y < h; y++){
+			for (int x = 0; x < w; x++){
 				int cell = x + y*w;
 				if (keep[cell]) continue;
 				int t = level.map[cell];
 				if (t == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.WALL
 						|| t == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.WALL_DECO){
+					level.map[cell] = com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.CHASM;
+				} else if (t == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.DOOR
+						|| t == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.OPEN_DOOR
+						|| t == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.LOCKED_DOOR
+						|| t == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.HERO_LKD_DR
+						|| t == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.CRYSTAL_DOOR){
+					//门也消失；上锁/水晶门等同已开，锁房可直接进入
 					level.map[cell] = com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.EMPTY;
+				}
+			}
+		}
+
+		//钥匙不再有用，从地面上清掉（保留剧情/神器类钥匙）
+		if (level.heaps != null){
+			for (com.shatteredpixel.shatteredpixeldungeon.items.Heap heap
+					: new java.util.ArrayList<>(level.heaps.valueList())){
+				for (com.shatteredpixel.shatteredpixeldungeon.items.Item it
+						: new java.util.ArrayList<>(heap.items)){
+					if (it instanceof com.shatteredpixel.shatteredpixeldungeon.items.keys.Key){
+						heap.remove(it);
+					}
 				}
 			}
 		}

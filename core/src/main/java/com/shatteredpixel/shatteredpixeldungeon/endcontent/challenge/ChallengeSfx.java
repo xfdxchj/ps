@@ -412,8 +412,54 @@ public final class ChallengeSfx {
 			"music/dadi_boss_09.ogg",
 			"music/dadi_boss_10.ogg",
 			"music/dadi_boss_11.ogg",
-			"music/dadi_boss_12.ogg",
-			"music/rain.mp3"
+			"music/dadi_boss_12.ogg"
+	};
+
+	/** 与 {@link #DADI_TRACKS} 一一对应的曲名（日志展示用）。 */
+	private static final String[] DADI_NAMES = {
+			"Absolution",
+			"Regality",
+			"Village Theme",
+			"Dreams",
+			"Endless Skies",
+			"Haunted Forest",
+			"Sorcery Temple",
+			"Isolating the Variable",
+			"A Summers Day",
+			"Absolution",
+			"Ancient Gateway",
+			"Era of Peace",
+			"A Radiance Forlorn",
+			"Among the Griffons",
+			"Calling",
+			"Determination",
+			"Rancor",
+			"The Basics",
+			"The Griffon Kingdom",
+			"The Path of Darkness",
+			"Through the Woods",
+			"Vast Valley",
+			"Flamescale Mountain",
+			"The Edge",
+			"Redemption",
+			"Rising Sun",
+			"Ruins of Harmony",
+			"Outpost",
+			"Shooting for the Stars",
+			"The Crystal Kingdom",
+			"Winterglade",
+			"Imminent Threat",
+			"Invasion",
+			"Firecastle",
+			"Riverbed Circuit Snippet",
+			"Riverbed Circuit",
+			"An Army of One",
+			"Rising Sun",
+			"Daring",
+			"Chaos Arranged",
+			"Bad Juju",
+			"Bad Juju Snippet",
+			"Dregs of a Bitter Cup"
 	};
 
 	/** 《雨爱》。 */
@@ -429,12 +475,22 @@ public final class ChallengeSfx {
 				|| original.startsWith("music/halls");
 	}
 
+	/** 最近一次为大地复苏打出的曲目（去重，避免同一首反复刷日志）。 */
+	private static String lastDadiLogged = null;
+
 	/** 本层固定的随机曲：由本局种子 + 层数决定，上下楼不会重掷。 */
 	public static String dadiTrackForDepth(int depth){
 		long h = Dungeon.seed * 1103515245L + depth * 12345L;
 		int i = (int)(h % DADI_TRACKS.length);
 		if (i < 0) i += DADI_TRACKS.length;
-		return DADI_TRACKS[i];
+		String track = DADI_TRACKS[i];
+		//END(232 日志): 播放时在游戏日志里显示曲名。
+		if (on(DADI_REVIVAL) && !track.equals(lastDadiLogged)){
+			lastDadiLogged = track;
+			String name = (i < DADI_NAMES.length) ? DADI_NAMES[i] : track;
+			com.shatteredpixel.shatteredpixeldungeon.utils.GLog.i("大地复苏：" + name);
+		}
+		return track;
 	}
 
 	/** 232：把常规/Boss BGM 换成大地复苏的随机曲。 */
@@ -444,28 +500,69 @@ public final class ChallengeSfx {
 		return dadiTrackForDepth(Dungeon.depth);
 	}
 
-	/** 233：低血量时是否应切到《雨爱》。 */
-	public static String winningTrackFor(String original){
-		if (!on(WINNING) || Dungeon.hero == null) return null;
-		if (Dungeon.hero.HP < Dungeon.hero.HT * 0.30f) return WINNING_TRACK;
-		return null;
+	//==== END(233 是我赢了): 雨爱作为叠层音乐，交叉淡入淡出 ====
+	//优先级最高：它不替换主曲目，而是让 Music 额外播一路《雨爱》并把主音量压低，
+	//所以即使换层/换曲，雨爱也不会被打断。
+	private static boolean winningPlaying = false;
+
+	/** 是否正处于低血量《雨爱》状态（供攻击/死亡台词判定）。 */
+	public static boolean isWinningPlaying(){
+		return on(WINNING) && winningPlaying;
 	}
 
-	private static boolean winningPlaying = false;
 	/** 由 Hero.act() 每回合调用：处理进入/退出低血量音乐。 */
 	public static void updateWinningMusic(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero hero){
 		if (!on(WINNING) || hero == null || !hero.isAlive()){
-			winningPlaying = false;
+			if (winningPlaying){
+				winningPlaying = false;
+				com.watabou.noosa.audio.Music.INSTANCE.stopOverlay();
+			}
 			return;
 		}
 		boolean low = hero.HP < hero.HT * 0.30f;
 		boolean high = hero.HP >= hero.HT * 0.60f;
 		if (low && !winningPlaying){
 			winningPlaying = true;
-			com.watabou.noosa.audio.Music.INSTANCE.play(WINNING_TRACK, true);
+			//叠层播雨爱；主 BGM 继续播但被压低，形成渐入渐出。
+			com.watabou.noosa.audio.Music.INSTANCE.playOverlay(WINNING_TRACK, true);
 		} else if (high && winningPlaying){
 			winningPlaying = false;
-			if (Dungeon.level != null) Dungeon.level.playLevelMusic();
+			com.watabou.noosa.audio.Music.INSTANCE.stopOverlay();
+		}
+	}
+
+	//==== END(233 是我赢了): 雨爱期间的咒术台词 ====
+
+	/** 攻击时随机弹出的一句台词 key（不重复上一句）。 */
+	private static int lastWinningLine = -1;
+
+	/** Hero.attack() 命中后调用：雨爱期间概率弹出咒术台词。 */
+	public static void onWinningAttack(){
+		maybeWinningLine();
+	}
+
+	/** Hero.damage() 受到攻击命中后调用：雨爱期间同样概率弹出咒术台词。 */
+	public static void onWinningHurt(){
+		maybeWinningLine();
+	}
+
+	private static void maybeWinningLine(){
+		if (!isWinningPlaying()) return;
+		if (Random.Float() >= 0.35f) return;
+		int n = 4;
+		int idx = Random.Int(n);
+		if (idx == lastWinningLine) idx = (idx + 1) % n;
+		lastWinningLine = idx;
+		if (Dungeon.hero != null){
+			say(Dungeon.hero, "winning_line_" + (idx + 1));
+		}
+	}
+
+	/** Hero.die() 开头调用：雨爱状态死亡前的一句台词。 */
+	public static void onWinningDeath(){
+		if (!isWinningPlaying()) return;
+		if (Dungeon.hero != null){
+			say(Dungeon.hero, "winning_death");
 		}
 	}
 
@@ -507,9 +604,8 @@ public final class ChallengeSfx {
 		//见 reconcileGrimmMusic()（由 Music.play 的入口每帧调用一次）。
 		reconcileGrimmMusic();
 
-		//==== END(232/233): 我赢了 / 大地复苏，优先于格林与静谧 ====
-		String winning = winningTrackFor(original);
-		if (winning != null) return winning;
+		//==== END(232): 大地复苏，优先于格林与静谧 ====
+		//233 雨爱改为 Music 的叠层音乐（见 updateWinningMusic），不在这里替换主曲目。
 		String dadi = dadiTrackFor(original);
 		if (dadi != null) return dadi;
 

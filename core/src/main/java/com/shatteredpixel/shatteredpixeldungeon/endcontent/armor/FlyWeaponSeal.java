@@ -21,7 +21,7 @@ import com.watabou.utils.Callback;
  * 破印·进阶 「飞掷武器」。
  * 贴到护甲并穿戴后，护甲右键出现“飞掷武器”技能键（键无论在冷却或资源不足时都保留，
  * 点击若不可用只提示，不消失）。<br>
- * 不消耗邪能碎片：用一次冷却 20 回合；作用=把你装备的近战武器单程掷向指定敌人,造成其 80% 面板伤害。
+ * 用一次冷却 20 回合；作用=把你装备的近战武器单程掷向指定敌人,造成其 80% 面板伤害。
  */
 public class FlyWeaponSeal extends BrokenSeal {
 
@@ -32,7 +32,7 @@ public class FlyWeaponSeal extends BrokenSeal {
 
 	@Override public String armorSkillKey(){ return KEY; }
 
-	/** 是否“真正可用”：只需不在飞掷冷却 + 当前装备着近战武器(不耗邪能)。 */
+	/** 是否“真正可用”：只需不在飞掷冷却 + 当前装备着近战武器。 */
 	@Override public boolean armorSkillUsable(Hero hero){
 		if (hero == null) return false;
 		if (hero.buff(ThrowWeaponCooldown.class) != null) return false;
@@ -76,7 +76,7 @@ public class FlyWeaponSeal extends BrokenSeal {
 
 	@Override public String info(){
 		return "念力附刃：把当前装备的近战武器单程掷向目标,造成其 80% 伤害。" +
-				"\n不消耗邪能碎片;冷却 20 回合。" +
+				"\n冷却 20 回合。" +
 				"\n贴附到护甲并穿戴，即可在护甲上使用此技能。";
 	}
 }
