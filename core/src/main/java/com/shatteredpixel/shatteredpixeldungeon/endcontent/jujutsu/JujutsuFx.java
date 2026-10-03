@@ -33,6 +33,28 @@ public final class JujutsuFx {
 		CellEmitter.get(cell).burst(Speck.factory(speckType), n);
 	}
 
+	/** 把粒子随机撒到视野内的若干格，避免像原来那样全堆在同一格。 */
+	public static void scatter(int speckType, int n){
+		scatter(Speck.factory(speckType), n, 40);
+	}
+
+	/** 通用版本：最多撒到 cells 个不同的视野格，每格均分。 */
+	public static void scatter(com.watabou.noosa.particles.Emitter.Factory f, int n, int cells){
+		if (Dungeon.level == null || n <= 0) return;
+		int per = Math.max(1, n / Math.max(1, cells));
+		int placed = 0;
+		int attempts = 0;
+		int maxAttempts = cells * 8 + 8;
+		while (placed < n && attempts < maxAttempts){
+			attempts++;
+			int cell = Random.Int(Dungeon.level.length());
+			if (!Dungeon.level.insideMap(cell) || !Dungeon.level.heroFOV[cell]) continue;
+			int c = Math.min(per, n - placed);
+			CellEmitter.get(cell).burst(f, c);
+			placed += c;
+		}
+	}
+
 	private static Group groupOf(Char ch){
 		if (ch == null || ch.sprite == null) return null;
 		return ch.sprite.parent;
@@ -121,13 +143,14 @@ public final class JujutsuFx {
 	/** 无量空处：星空白领域展开。 */
 	public static void domain(Hero hero){
 		if (hero == null) return;
-		cellBurst(hero.pos, Speck.STAR, 28 * FX_MULT);
-		cellBurst(hero.pos, Speck.LIGHT, 18 * FX_MULT);
+		//END(修订): 粒子要随机铺开，不是 50 个叠在同一格
+		scatter(Speck.STAR, 28 * FX_MULT);
+		scatter(Speck.LIGHT, 18 * FX_MULT);
 		//从玩家向外拉几道白光
 		for (Mob m : Jujutsu.visibleEnemies(hero)){
 			beam(hero, m, 0.85f, 0.9f, 1f);
-			cellBurst(m.pos, Speck.STAR, 6 * FX_MULT);
 		}
+		cellBurst(hero.pos, Speck.STAR, 24);
 		GameScene.flash(0x80FFFFFF);
 	}
 
@@ -135,13 +158,10 @@ public final class JujutsuFx {
 	public static void slash(Char from, Char to, boolean big){
 		if (from == null || to == null) return;
 		//END(修复·红色激光): 不再画红色光束，改用刺客斩击特效
-		//END(×50): 斩击数量放大
-		for (int i = 0; i < FX_MULT; i++){
-			try {
-				com.shatteredpixel.shatteredpixeldungeon.effects.Wound.hit(to, Random.Float()*360f);
-			} catch (Throwable ignored) {}
-		}
-		cellBurst(to.pos, big ? Speck.RED_LIGHT : Speck.LIGHT, (big ? 16 : 8) * FX_MULT);
+		try {
+			com.shatteredpixel.shatteredpixeldungeon.effects.Wound.hit(to, Random.Float()*360f);
+		} catch (Throwable ignored) {}
+		cellBurst(to.pos, big ? Speck.RED_LIGHT : Speck.LIGHT, big ? 16 : 8);
 		if (big) GameScene.flash(0x40FF0000);
 	}
 
@@ -151,12 +171,12 @@ public final class JujutsuFx {
 		if (from.sprite != null && from.sprite.parent != null){
 			JujutsuSlash sl = (JujutsuSlash) from.sprite.parent.recycle(JujutsuSlash.class);
 			sl.reset(from.pos, to.pos, () -> {
-				cellBurst(to.pos, Speck.LIGHT, 16 * FX_MULT);
+				cellBurst(to.pos, Speck.LIGHT, 16);
 				GameScene.flash(0x80FFFFFF);
 				if (com.watabou.noosa.Camera.main != null) com.watabou.noosa.Camera.main.shake(0.25f, 1.5f);
 			});
 		} else {
-			cellBurst(to.pos, Speck.LIGHT, 12 * FX_MULT);
+			cellBurst(to.pos, Speck.LIGHT, 12);
 		}
 	}
 
@@ -171,12 +191,12 @@ public final class JujutsuFx {
 		if (from.sprite != null && from.sprite.parent != null){
 			JujutsuArrow arrow = (JujutsuArrow) from.sprite.parent.recycle(JujutsuArrow.class);
 			arrow.reset(from.pos, to.pos, () -> {
-				cellBurst(to.pos, Speck.BLUE_LIGHT, 26 * FX_MULT);
-				cellBurst(to.pos, Speck.STAR, 14 * FX_MULT);
+				cellBurst(to.pos, Speck.BLUE_LIGHT, 26);
+				cellBurst(to.pos, Speck.STAR, 14);
 				GameScene.flash(0x80AAD4FF);
 			});
 		} else {
-			cellBurst(to.pos, Speck.BLUE_LIGHT, 20 * FX_MULT);
+			cellBurst(to.pos, Speck.BLUE_LIGHT, 20);
 		}
 	}
 }

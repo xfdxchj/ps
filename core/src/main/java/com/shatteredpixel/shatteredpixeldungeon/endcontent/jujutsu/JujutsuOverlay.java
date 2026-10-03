@@ -37,16 +37,10 @@ public class JujutsuOverlay extends Image {
 		alpha(0f);
 	}
 
-	/** 领域：在视野内随机格撒粒子，铺满画面（每格 ×FX_MULT）。 */
+	/** 领域：粒子随机撒满视野（每批 FX_MULT*4 个，分布在约 40 格上）。 */
 	private void spawnDomainParticles(com.watabou.noosa.particles.Emitter.Factory factory){
-		if (Dungeon.level == null) return;
-		for (int i = 0; i < 4; i++){
-			int cell = com.watabou.utils.Random.Int(Dungeon.level.length());
-			if (!Dungeon.level.insideMap(cell)) continue;
-			if (!Dungeon.level.heroFOV[cell]) continue;
-			com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter.get(cell)
-					.burst(factory, JujutsuFx.FX_MULT);
-		}
+		//END(修订): 不再所有粒子堆在同一格，改为随机分布在视野内的多格
+		JujutsuFx.scatter(factory, JujutsuFx.FX_MULT * 4, 40);
 	}
 
 	/** 伏魔御厨子：在视野内角色身上刷斩击（×FX_MULT）。 */
