@@ -178,7 +178,6 @@ public class TechniqueBook extends Item {
 	/** 把目标拉到指定落点旁边最近的空格。 */
 	private static void pullToCell(Mob m, int base){
 		if (m == null || !m.isAlive()) return;
-		if (Dungeon.level.distance(m.pos, base) > 8) return;
 		int best = -1;
 		for (int i : PathFinder.NEIGHBOURS8){
 			int cell = base + i;
