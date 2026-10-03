@@ -46,40 +46,61 @@ public final class JujutsuFx {
 		return DungeonTilemap.tileToWorld(cell);
 	}
 
-	/** 苍：从每个敌人射向玩家的蓝色引力弹 + 目标处内旋蓝光。 */
+	/** 苍：蓝球从敌人飞向玩家，到达后释放。 */
 	public static void cang(Hero hero, Mob m){
 		if (hero == null || m == null) return;
-		if (m.sprite != null && m.sprite.parent != null){
-			MagicMissile.boltFromChar(m.sprite.parent, MagicMissile.SHAMAN_BLUE,
-					m.sprite, hero.pos, null);
+		if (m.sprite == null || m.sprite.parent == null){
+			cellBurst(m.pos, Speck.BLUE_LIGHT, 8);
+			return;
 		}
-		beam(m, hero, 0.45f, 0.7f, 1f);
-		cellBurst(m.pos, Speck.BLUE_LIGHT, 8);
+		JujutsuBolt bolt = (JujutsuBolt) m.sprite.parent.recycle(JujutsuBolt.class);
+		bolt.reset(m.pos, hero.pos, JujutsuBolt.CANG, () -> {
+			if (hero.sprite != null && hero.sprite.parent != null){
+				JujutsuRing ring = (JujutsuRing) hero.sprite.parent.recycle(JujutsuRing.class);
+				ring.reset(hero.pos, JujutsuBolt.CANG);
+			}
+			cellBurst(hero.pos, Speck.BLUE_LIGHT, 10);
+		});
 	}
 
-	/** 赫：从玩家射向每个敌人的红色斥力弹 + 冲击波。 */
+	/** 赫：红球从玩家飞向敌人，到达后冲击释放。 */
 	public static void he(Hero hero, Mob m){
 		if (hero == null || m == null) return;
-		if (hero.sprite != null && hero.sprite.parent != null){
-			MagicMissile.boltFromChar(hero.sprite.parent, MagicMissile.SHAMAN_RED,
-					hero.sprite, m.pos, null);
+		if (hero.sprite == null || hero.sprite.parent == null){
+			cellBurst(m.pos, Speck.RED_LIGHT, 10);
+			return;
 		}
-		beam(hero, m, 1f, 0.35f, 0.25f);
-		cellBurst(m.pos, Speck.RED_LIGHT, 10);
-		cellBurst(m.pos, Speck.WOOL, 6);
+		JujutsuBolt bolt = (JujutsuBolt) hero.sprite.parent.recycle(JujutsuBolt.class);
+		bolt.reset(hero.pos, m.pos, JujutsuBolt.HE, () -> {
+			if (m.sprite != null && m.sprite.parent != null){
+				JujutsuRing ring = (JujutsuRing) m.sprite.parent.recycle(JujutsuRing.class);
+				ring.reset(m.pos, JujutsuBolt.HE);
+			}
+			cellBurst(m.pos, Speck.RED_LIGHT, 14);
+			cellBurst(m.pos, Speck.WOOL, 8);
+			GameScene.flash(0x40FF2200);
+			if (com.watabou.noosa.Camera.main != null) com.watabou.noosa.Camera.main.shake(0.15f, 0.6f);
+		});
 	}
 
-	/** 茈：紫黑吞噬 + 空间撕裂。 */
+	/** 茈：小紫球飞向敌人，到达后空间撕裂。 */
 	public static void zi(Hero hero, Mob m){
 		if (hero == null || m == null) return;
-		if (m.sprite != null && m.sprite.parent != null){
-			MagicMissile.boltFromChar(m.sprite.parent, MagicMissile.SHADOW,
-					m.sprite, hero.pos, null);
+		if (hero.sprite == null || hero.sprite.parent == null){
+			cellBurst(m.pos, Speck.STAR, 12);
+			return;
 		}
-		beam(hero, m, 0.75f, 0.35f, 1f);
-		cellBurst(m.pos, Speck.STAR, 12);
-		cellBurst(m.pos, Speck.SMOKE, 8);
-		GameScene.flash(0x6030A060);
+		JujutsuBolt bolt = (JujutsuBolt) hero.sprite.parent.recycle(JujutsuBolt.class);
+		bolt.reset(hero.pos, m.pos, JujutsuBolt.ZI, () -> {
+			if (m.sprite != null && m.sprite.parent != null){
+				JujutsuRing ring = (JujutsuRing) m.sprite.parent.recycle(JujutsuRing.class);
+				ring.reset(m.pos, JujutsuBolt.ZI);
+			}
+			cellBurst(m.pos, Speck.STAR, 16);
+			cellBurst(m.pos, Speck.SMOKE, 10);
+			GameScene.flash(0x6030A060);
+			if (com.watabou.noosa.Camera.main != null) com.watabou.noosa.Camera.main.shake(0.25f, 1.2f);
+		});
 	}
 
 	/** 无量空处：星空白领域展开。 */

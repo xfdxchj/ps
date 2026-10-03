@@ -27,6 +27,14 @@ public class Assets {
 		public static final String EFFECTS      = "effects/effects.png";
 		public static final String FIREBALL     = "effects/fireball.png";
 		public static final String SPECKS       = "effects/specks.png";
+
+		//==== END(236 咒术回战): 苍/赫/茈专属特效 ====
+		public static final String JUJUTSU_CANG = "effects/jujutsu_cang.png";
+		public static final String JUJUTSU_HE   = "effects/jujutsu_he.png";
+		public static final String JUJUTSU_ZI   = "effects/jujutsu_zi.png";
+		public static final String JUJUTSU_RING_BLUE   = "effects/jujutsu_ring_blue.png";
+		public static final String JUJUTSU_RING_RED    = "effects/jujutsu_ring_red.png";
+		public static final String JUJUTSU_RING_PURPLE = "effects/jujutsu_ring_purple.png";
 		public static final String SPELL_ICONS  = "effects/spell_icons.png";
 		public static final String TEXT_ICONS   = "effects/text_icons.png";
 	}
