@@ -32,8 +32,8 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 
 	{
 		image = ItemSpriteSheet.TECHNIQUE_BOOK;
-		chargeCap = 100;
-		charge = 100;
+		chargeCap = 10;
+		charge = 10;
 		defaultAction = AC_OPEN; //快捷栏使用打开术式菜单
 		unique = true;
 		bones = false;
@@ -50,13 +50,7 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 	@Override public String desc(){ return info(); }
 
 
-	@Override
-	public Item upgrade(){
-		if (level() < MAX_LEVEL) super.upgrade();
-		return this;
-	}
-
-	@Override public boolean isUpgradable(){ return true; }
+	@Override public boolean isUpgradable(){ return false; }
 	@Override public boolean isIdentified(){ return true; }
 	@Override public int value(){ return 0; }
 
@@ -67,12 +61,22 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 				"赫：选一个位置，球飞过去，把视野内敌人推离该位置并造成攻击力 x" + fmt(heMult()) + " 伤害；之后留下 5 回合斥力场。\n" +
 				"茈：苍与赫的落点重合时自动触发，造成攻击力 x" + fmt(ziMult()) + " 无视护甲伤害。\n" +
 				"无量空处：展开领域 20 回合，敌人无法行动并持续受伤；300 回合冷却。\n\n" +
-				"当前等级 +" + level() + "（上限 +" + MAX_LEVEL + "）。";
+				"充能 " + charge + "/" + chargeCap + "，每 20 回合回 1 点；释放技能会提升伤害等级。";
 	}
 
 	private static String fmt(float v){ return String.format(java.util.Locale.US, "%.2f", v); }
 
-		private float lvl(){ return level(); }
+		/** 技能释放次数决定等级：每 5 次 +1 级，上限 +10。 */
+	@Override public int level(){
+		return Math.min(MAX_LEVEL, exp / 5);
+	}
+
+	private float lvl(){ return level(); }
+
+	/** 每次释放技能 +1 经验。 */
+	private void gainUse(){
+		exp++;
+	}
 	private float cangMult(){ return 1.0f + 0.15f * lvl(); }
 	private float heMult(){ return 1.0f + 0.20f * lvl(); }
 	private float ziMult(){ return (4.0f + 0.40f * lvl()) * 0.7f; }
@@ -90,9 +94,9 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 	}
 
 	//充能消耗
-	public static final int COST_CANG = 15;
-	public static final int COST_HE = 15;
-	public static final int COST_DOMAIN = 50;
+	public static final int COST_CANG = 2;
+	public static final int COST_HE = 2;
+	public static final int COST_DOMAIN = 5;
 
 	private boolean spendCharge(int cost){
 		if (charge < cost) return false;
@@ -132,6 +136,7 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 					final int target = cell;
 					final int dmg = Math.round(hero.damageRoll() * cangMult());
 					JujutsuSfx.play(JujutsuSfx.CANG);
+					gainUse();
 					//END(修复·牵引无效): 立即结算移动/伤害，不依赖特效到达回调
 					for (Mob m : Jujutsu.visibleEnemies(hero)){
 						pullToCell(m, target);
@@ -168,6 +173,7 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 					final int target = cell;
 					final int dmg = Math.round(hero.damageRoll() * heMult());
 					JujutsuSfx.play(JujutsuSfx.HE);
+					gainUse();
 					//立即结算推开/伤害
 					for (Mob m : Jujutsu.visibleEnemies(hero)){
 						pushFromCell(m, target);
@@ -205,6 +211,7 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 				Buff.affect(hero, DomainBuff.class).set(dmg);
 				Buff.affect(hero, Jujutsu.DomainCd.class, 300f);
 				JujutsuSfx.play(JujutsuSfx.DOMAIN);
+				gainUse();
 				JujutsuFx.domain(hero);
 				GLog.i("领域展开——无量空处。");
 			}
@@ -273,7 +280,7 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 	public class Recharge extends com.shatteredpixel.shatteredpixeldungeon.items.artifacts.Artifact.ArtifactBuff {
 		@Override
 		public boolean act(){
-			partialCharge += 0.5f;
+			partialCharge += 0.05f; //20 回合 1 点
 			if (partialCharge >= 1f){
 				partialCharge -= 1f;
 				charge = Math.min(chargeCap, charge + 1);
