@@ -532,5 +532,11 @@ public class Assets {
 		 * <p>`AliceSprite` 只用**第一行的 3 帧**做循环（文档所有者指定）。
 		 */
 		public static final String ALICE         = "sprites/alice.png";
+
+		//==== END(237 宿傩): 来自 grok-workspace 的像素素材（128x128/帧）====
+		/** 宿傩：9 帧单行。 */
+		public static final String SUKUNA        = "sprites/sukuna.png";
+		/** 式神 / 领域核心：4 帧单行。 */
+		public static final String SHIKIGAMI     = "sprites/shikigami.png";
 	}
 }

@@ -14,7 +14,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
-import com.shatteredpixel.shatteredpixeldungeon.sprites.YogSprite;
+import com.shatteredpixel.shatteredpixeldungeon.sprites.SukunaSprite;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.PathFinder;
@@ -23,7 +23,7 @@ import com.watabou.utils.Random;
 public class Sukuna extends Mob {
 
 	{
-		spriteClass = YogSprite.class;
+		spriteClass = SukunaSprite.class;
 
 		HP = HT = 1400;
 		EXP = 50;

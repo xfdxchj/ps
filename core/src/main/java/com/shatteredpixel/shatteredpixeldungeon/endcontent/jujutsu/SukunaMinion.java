@@ -6,7 +6,7 @@ package com.shatteredpixel.shatteredpixeldungeon.endcontent.jujutsu;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
-import com.shatteredpixel.shatteredpixeldungeon.sprites.SkeletonSprite;
+import com.shatteredpixel.shatteredpixeldungeon.sprites.ShikigamiSprite;
 import com.watabou.utils.Random;
 
 public class SukunaMinion extends Mob {
@@ -14,7 +14,7 @@ public class SukunaMinion extends Mob {
 	public boolean isCore = false;
 
 	{
-		spriteClass = SkeletonSprite.class;
+		spriteClass = ShikigamiSprite.class;
 		HP = HT = 60;
 		EXP = 0;
 		defenseSkill = 18;
