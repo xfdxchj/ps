@@ -33,9 +33,7 @@ public class Sukuna extends Mob {
 		viewDistance = 20;
 
 		properties.add(Property.BOSS);
-		properties.add(Property.IMMOVABLE);
 		properties.add(Property.DEMONIC);
-		properties.add(Property.STATIC);
 	}
 
 	private int phase = 1;
@@ -77,9 +75,7 @@ public class Sukuna extends Mob {
 			return true;
 		}
 
-		//不普攻：站着等技能 CD
-		spend(1f);
-		return true;
+		return super.act();
 	}
 
 	private void useSkill(){

@@ -43,6 +43,7 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 		if (AC_CANG.equals(action)) return "苍";
 		if (AC_HE.equals(action)) return "赫";
 		if (AC_DOMAIN.equals(action)) return "无量空处";
+		if (AC_OPEN.equals(action)) return "术式";
 		return super.actionName(action, hero);
 	}
 
@@ -137,16 +138,16 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 					final int dmg = Math.round(hero.damageRoll() * cangMult());
 					JujutsuSfx.play(JujutsuSfx.CANG);
 					gainUse();
-					//END(修复·牵引无效): 立即结算移动/伤害，不依赖特效到达回调
-					for (Mob m : Jujutsu.visibleEnemies(hero)){
-						pullToCell(m, target);
-						m.damage(dmg, hero);
-					}
-					Jujutsu.noteCangLanded(target);
-					JujutsuFx.cang(hero, target, null);
-					//持续 5 回合的引力场
-					Field f = Buff.affect(hero, Field.class);
-					f.reset(target, 0);
+					//END(修订): 球到达落点后才产生牵引与 5 回合引力场
+					JujutsuFx.cang(hero, target, () -> {
+						for (Mob m : Jujutsu.visibleEnemies(hero)){
+							pullToCell(m, target);
+							m.damage(dmg, hero);
+						}
+						Jujutsu.noteCangLanded(target);
+						Field f = Buff.affect(hero, Field.class);
+						f.reset(target, 0);
+					});
 					Buff.affect(hero, Jujutsu.CangCd.class, 15f);
 					hero.spendAndNext(1f);
 				}
@@ -174,26 +175,25 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 					final int dmg = Math.round(hero.damageRoll() * heMult());
 					JujutsuSfx.play(JujutsuSfx.HE);
 					gainUse();
-					//立即结算推开/伤害
-					for (Mob m : Jujutsu.visibleEnemies(hero)){
-						pushFromCell(m, target);
-						m.damage(dmg, hero);
-					}
-					//落点与最近一次苍重合 -> 触发茈
-					if (Jujutsu.canZiAt(target)){
-						int zi = Math.round(hero.damageRoll() * ziMult());
-						JujutsuSfx.play(JujutsuSfx.ZI);
-						JujutsuFx.ziAt(target);
-						for (Mob m : enemiesNear(target, 2)){
-							dealDirect(m, zi, hero);
+					//END(修订): 球到达后才推开；若与苍落点重合，此时才触发茈
+					JujutsuFx.he(hero, target, () -> {
+						for (Mob m : Jujutsu.visibleEnemies(hero)){
+							pushFromCell(m, target);
+							m.damage(dmg, hero);
 						}
-						Jujutsu.lastCangCell = -1;
-						GLog.i("苍赫重叠——虚式·茈。");
-					}
-					JujutsuFx.he(hero, target, null);
-					//持续 5 回合的斥力场
-					Field f = Buff.affect(hero, Field.class);
-					f.reset(target, 1);
+						if (Jujutsu.canZiAt(target)){
+							int zi = Math.round(hero.damageRoll() * ziMult());
+							JujutsuSfx.play(JujutsuSfx.ZI);
+							JujutsuFx.ziAt(target);
+							for (Mob m : enemiesNear(target, 2)){
+								dealDirect(m, zi, hero);
+							}
+							Jujutsu.lastCangCell = -1;
+							GLog.i("苍赫重叠——虚式·茈。");
+						}
+						Field f = Buff.affect(hero, Field.class);
+						f.reset(target, 1);
+					});
 					Buff.affect(hero, Jujutsu.HeCd.class, 15f);
 					hero.spendAndNext(1f);
 				}

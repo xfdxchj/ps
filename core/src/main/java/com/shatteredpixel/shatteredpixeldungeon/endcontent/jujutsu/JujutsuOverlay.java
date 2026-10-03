@@ -21,7 +21,6 @@ public class JujutsuOverlay extends Image {
 	/** 领域展开瞬间的黑->白/红过渡。 */
 	public static void castFlash(boolean player){
 		castPlayer = player;
-		castTimer = CAST_TIME;
 		ensure();
 	}
 
@@ -60,23 +59,6 @@ public class JujutsuOverlay extends Image {
 			x = Camera.main.x;
 			y = Camera.main.y;
 			scale.set(Camera.main.width / width, Camera.main.height / height);
-		}
-
-		//展开瞬间：先黑，再白/红，然后落到领域底色
-		if (castTimer > 0f){
-			castTimer -= Game.elapsed;
-			float p = 1f - Math.max(0f, castTimer) / CAST_TIME;
-			int c; float a;
-			if (p < 0.35f){
-				c = 0xFF000000; a = p / 0.35f;
-			} else if (p < 0.65f){
-				c = 0xFFFFFFFF; a = 0.85f;
-			} else {
-				c = castPlayer ? 0xFF08182E : 0xFF520808;
-				a = 0.85f * (1f - (p - 0.65f) / 0.35f);
-			}
-			tint(c); alpha(Math.min(1f, Math.max(0f, a)));
-			return;
 		}
 
 		boolean player = Jujutsu.playerDomainTurns > 0;
