@@ -148,7 +148,7 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 					//到达前不在落点预生成球；到达后才结算牵引/伤害。
 					JujutsuFx.cang(hero, target, () -> {
 						for (Mob m : Jujutsu.visibleEnemies(hero)){
-							pullToCell(m, target);
+							impulsePull(m, target);
 							m.damage(dmg, hero);
 						}
 						Jujutsu.noteCangLanded(target);
@@ -183,7 +183,7 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 					//若与苍的球停在同格：两球一起消失并触发茈。
 					JujutsuFx.he(hero, target, () -> {
 						for (Mob m : Jujutsu.visibleEnemies(hero)){
-							pushFromCell(m, target);
+							impulsePush(m, target);
 							m.damage(dmg, hero);
 						}
 						if (Jujutsu.canZiAt(target)){
@@ -232,45 +232,37 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 		Item.updateQuickslot();
 	}
 
-	/** 向落点移动 1 格（带原版 Pushing 滑动动画）。 */
-	private static void pullToCell(Mob m, int base){
-		if (m == null || !m.isAlive()) return;
-		int cur = Dungeon.level.distance(m.pos, base);
-		if (cur <= 0) return;
-		int best = -1, bestD = cur;
-		for (int i : PathFinder.NEIGHBOURS8){
-			int cell = m.pos + i;
-			if (!Dungeon.level.insideMap(cell)) continue;
-			if (!Dungeon.level.passable[cell] && !Dungeon.level.avoid[cell]) continue;
-			if (Actor.findChar(cell) != null) continue;
-			int d = Dungeon.level.distance(cell, base);
-			if (d < bestD){ bestD = d; best = cell; }
-		}
-		displace(m, best);
-	}
+	/** 引力场：每回合向落点拉 1 格。 */
+	private static void pullToCell(Mob m, int base){ moveSteps(m, base, 1, true); }
+	/** 斥力场：每回合远离落点推 1 格。 */
+	private static void pushFromCell(Mob m, int base){ moveSteps(m, base, 1, false); }
+	/** END(冲击波): 命中瞬间把敌人朝落点猛拉多格。 */
+	private static void impulsePull(Mob m, int base){ moveSteps(m, base, 4, true); }
+	/** END(冲击波): 命中瞬间把敌人打离落点多格。 */
+	private static void impulsePush(Mob m, int base){ moveSteps(m, base, 4, false); }
 
-	/** 远离落点移动 1 格（带原版 Pushing 滑动动画）。 */
-	private static void pushFromCell(Mob m, int base){
+	/** 逐格移动到最近/最远合法格（带 Pushing 滑移，不是走路动画）。 */
+	private static void moveSteps(Mob m, int base, int steps, boolean toward){
 		if (m == null || !m.isAlive()) return;
-		int cur = Dungeon.level.distance(m.pos, base);
-		int best = -1, bestD = cur;
-		for (int i : PathFinder.NEIGHBOURS8){
-			int cell = m.pos + i;
-			if (!Dungeon.level.insideMap(cell)) continue;
-			if (!Dungeon.level.passable[cell] && !Dungeon.level.avoid[cell]) continue;
-			if (Actor.findChar(cell) != null) continue;
-			int d = Dungeon.level.distance(cell, base);
-			if (d > bestD){ bestD = d; best = cell; }
-		}
-		displace(m, best);
-	}
-
-	/** END(修复·苍赫看不见位移): Char.move() 不会动 sprite，必须加 Pushing 才有滑动效果。 */
-	private static void displace(Mob m, int cell){
-		if (cell == -1) return;
 		int old = m.pos;
-		m.move(cell, false);
-		Actor.add(new com.shatteredpixel.shatteredpixeldungeon.effects.Pushing(m, old, cell));
+		boolean moved = false;
+		for (int s = 0; s < steps; s++){
+			int cur = Dungeon.level.distance(m.pos, base);
+			if (toward && cur <= 0) break;
+			int best = -1, bestD = cur;
+			for (int i : PathFinder.NEIGHBOURS8){
+				int cell = m.pos + i;
+				if (!Dungeon.level.insideMap(cell)) continue;
+				if (!Dungeon.level.passable[cell] && !Dungeon.level.avoid[cell]) continue;
+				if (Actor.findChar(cell) != null) continue;
+				int d = Dungeon.level.distance(cell, base);
+				if (toward ? d < bestD : d > bestD){ bestD = d; best = cell; }
+			}
+			if (best == -1) break;
+			m.move(best, false);
+			moved = true;
+		}
+		if (moved) Actor.add(new com.shatteredpixel.shatteredpixeldungeon.effects.Pushing(m, old, m.pos));
 	}
 
 	/** 落点半径内的敌人。 */
