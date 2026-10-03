@@ -50,7 +50,7 @@ public class JujutsuBolt extends Image {
 		if (films[type] == null){
 			String tex = type == CANG ? Assets.Effects.JUJUTSU_CANG
 					: type == HE ? Assets.Effects.JUJUTSU_HE : Assets.Effects.JUJUTSU_ZI;
-			int size = type == ZI ? 40 : 32;
+			int size = 48;
 			films[type] = new TextureFilm(tex, size, size);
 		}
 		return films[type];
