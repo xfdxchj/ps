@@ -45,8 +45,7 @@ public class JujutsuOverlay extends Image {
 			if (!Dungeon.level.insideMap(cell)) continue;
 			if (!Dungeon.level.heroFOV[cell]) continue;
 			com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter.get(cell)
-					.burst(com.shatteredpixel.shatteredpixeldungeon.effects.Speck
-							.factory(com.shatteredpixel.shatteredpixeldungeon.effects.Speck.STAR), 1);
+					.burst(JujutsuDomainParticle.FACTORY, 1);
 		}
 	}
 
