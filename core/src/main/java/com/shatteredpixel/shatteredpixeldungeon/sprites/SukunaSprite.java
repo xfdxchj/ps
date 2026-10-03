@@ -15,7 +15,7 @@ public class SukunaSprite extends MobSprite {
 		perspectiveRaise = 5 / 16f;
 		texture( Assets.Sprites.SUKUNA_USER3 );
 
-		TextureFilm frames = new TextureFilm( texture, 37, 64 );
+		TextureFilm frames = new TextureFilm( texture, 46, 80 );
 
 		idle = new Animation( 14, true );
 		idle.frames( frames, 0, 0, 1, 1 );
