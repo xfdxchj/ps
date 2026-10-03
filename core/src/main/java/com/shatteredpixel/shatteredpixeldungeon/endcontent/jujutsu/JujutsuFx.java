@@ -84,18 +84,9 @@ public final class JujutsuFx {
 		final int[] arrived = {0};
 		final Runnable explosion = () -> {
 			if (++arrived[0] < 2) return;
-			//END(范围): 以目标为中心 5x5 铺多团紫爆，做出大范围吞噬
-			int w = Dungeon.level.width();
-			for (int dy = -2; dy <= 2; dy++){
-				for (int dx = -2; dx <= 2; dx++){
-					int cell = m.pos + dx + dy * w;
-					if (!Dungeon.level.insideMap(cell)) continue;
-					if (Math.abs(dx) + Math.abs(dy) > 3) continue;
-					burst(m, cell, 2);
-					cellBurst(cell, Speck.STAR, 6);
-				}
-			}
-			GameScene.flash(0xC0FFFFFF);
+			//END(范围): 单团紫色大爆炸，靠尺寸覆盖范围，而不是多团叠加
+			burst(m, m.pos, 2);
+			GameScene.flash(0xC080D0FF);
 			if (com.watabou.noosa.Camera.main != null) com.watabou.noosa.Camera.main.shake(0.5f, 3.0f);
 		};
 

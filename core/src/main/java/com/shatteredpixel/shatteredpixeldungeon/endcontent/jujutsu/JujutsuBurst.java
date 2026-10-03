@@ -39,7 +39,7 @@ public class JujutsuBurst extends Image {
 		life += Game.elapsed;
 		float p = life / MAX;
 		if (p >= 1f){ killAndErase(); return; }
-		scale.set(0.4f + p * 2.8f);
+		scale.set(0.35f + p * 3.4f);
 		alpha(1f - p * p);
 		frame(films[type].get(Math.min(5, (int)(p * 6))));
 	}
