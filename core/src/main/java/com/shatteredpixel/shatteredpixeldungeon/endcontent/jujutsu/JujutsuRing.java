@@ -34,7 +34,7 @@ public class JujutsuRing extends Image {
 			String tex = type == JujutsuBolt.CANG ? Assets.Effects.JUJUTSU_RING_BLUE
 					: type == JujutsuBolt.HE ? Assets.Effects.JUJUTSU_RING_RED
 					: Assets.Effects.JUJUTSU_RING_PURPLE;
-			films[type] = new TextureFilm(tex, 48, 48);
+			films[type] = new TextureFilm(tex, 56, 56);
 		}
 		return films[type];
 	}
