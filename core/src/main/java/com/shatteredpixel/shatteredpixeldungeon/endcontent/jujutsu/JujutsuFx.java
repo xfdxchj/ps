@@ -18,6 +18,7 @@ import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.tiles.DungeonTilemap;
 import com.watabou.noosa.Group;
 import com.watabou.utils.PointF;
+import com.watabou.utils.Random;
 
 public final class JujutsuFx {
 
@@ -156,13 +157,14 @@ public final class JujutsuFx {
 		if (big) GameScene.flash(0x40FF0000);
 	}
 
-	/** 空间斩：黑色裂缝 + 白闪。 */
+	/** 空间斩：一道刀光掠过 + 白闪。 */
 	public static void spaceSlash(Char to){
 		if (to == null) return;
 		if (to.sprite != null && to.sprite.parent != null){
-			JujutsuRift rift = (JujutsuRift) to.sprite.parent.recycle(JujutsuRift.class);
-			rift.reset(to.pos);
+			JujutsuSlash sl = (JujutsuSlash) to.sprite.parent.recycle(JujutsuSlash.class);
+			sl.reset(to.pos, Random.Float()*180f - 90f);
 		}
+		cellBurst(to.pos, Speck.LIGHT, 16);
 		GameScene.flash(0x80FFFFFF);
 		if (com.watabou.noosa.Camera.main != null) com.watabou.noosa.Camera.main.shake(0.25f, 1.5f);
 	}
@@ -172,13 +174,18 @@ public final class JujutsuFx {
 		GameScene.flash(0x60FF0000);
 	}
 
-	/** 灶开：火焰喷射。 */
+	/** 灶开：一支火焰箭飞向目标，命中后蓝白爆开。 */
 	public static void fuga(Char from, Char to){
-		if (from != null && to != null){
-			beam(from, to, 0.6f, 0.85f, 1f);
-			cellBurst(to.pos, Speck.BLUE_LIGHT, 22);
-			cellBurst(to.pos, Speck.STAR, 12);
+		if (from == null || to == null) return;
+		if (from.sprite != null && from.sprite.parent != null){
+			JujutsuArrow arrow = (JujutsuArrow) from.sprite.parent.recycle(JujutsuArrow.class);
+			arrow.reset(from.pos, to.pos, () -> {
+				cellBurst(to.pos, Speck.BLUE_LIGHT, 26);
+				cellBurst(to.pos, Speck.STAR, 14);
+				GameScene.flash(0x80AAD4FF);
+			});
+		} else {
+			cellBurst(to.pos, Speck.BLUE_LIGHT, 20);
 		}
-		GameScene.flash(0x80AAD4FF);
 	}
 }
