@@ -298,6 +298,14 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 		{ type = buffType.POSITIVE; announced = false; }
 		public void reset(int cell){
 			this.cell = cell; this.turns = 5;
+			JujutsuFieldFx.show(cell, fieldKind());
+			JujutsuOverlay.ensure();
+		}
+		protected abstract int fieldKind();
+		@Override
+		public void detach(){
+			super.detach();
+			JujutsuFieldFx.hide(fieldKind());
 		}
 		@Override public boolean act(){
 			if (cell < 0 || Dungeon.hero == null){ detach(); return true; }
@@ -318,12 +326,14 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 	/** 苍：每回合拉 1 格。 */
 	public static class CangField extends Field {
 		@Override protected void move(Mob m, int cell){ pullToCell(m, cell); }
+		@Override protected int fieldKind(){ return 0; }
 		@Override public String name(){ return "苍·引力场"; }
 	}
 
 	/** 赫：每回合推 1 格。 */
 	public static class HeField extends Field {
 		@Override protected void move(Mob m, int cell){ pushFromCell(m, cell); }
+		@Override protected int fieldKind(){ return 1; }
 		@Override public String name(){ return "赫·斥力场"; }
 	}
 
