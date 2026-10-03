@@ -95,7 +95,10 @@ public class EvolvedWandOfRegrowth extends WandOfRegrowth {
 						Statistics.qualifiedForBossChallengeBadge = false;
 					}
 					wandProc(ch, chargesPerCast());
-					Buff.prolong( ch, Roots.class, 4f * chrgUsed );
+					//END(修复·缠绕自己): 只缠敌人，不缠玩家/队友
+					if (ch != Dungeon.hero && ch.alignment == Char.Alignment.ENEMY){
+						Buff.prolong( ch, Roots.class, 4f * chrgUsed );
+					}
 				}
 			}
 		}
