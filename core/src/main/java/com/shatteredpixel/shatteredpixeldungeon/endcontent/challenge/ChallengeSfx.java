@@ -521,26 +521,26 @@ public final class ChallengeSfx {
 		return on(WINNING) && winningPlaying;
 	}
 
-	/** 由 Hero.act() 每回合调用：处理进入/退出低血量音乐。 */
+	/** 由 Hero.act() 每回合调用：处理进入/退出低血量音乐。
+	 *
+	 * <p>END(修订): 改回**主音乐播放器**播放《雨爱》。
+	 * 之前用叠层播放器（Music.playOverlay）能渐入渐出，但实测在某些后端没有声音；
+	 * 主播放器是验证过有声音的。每回合调用 play() 是幂等的（同一首正在播会直接返回），
+	 * 所以即使换层被关卡 BGM 顶掉，下一回合也会立刻切回雨爱。
+	 */
 	public static void updateWinningMusic(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero hero){
 		if (!on(WINNING) || hero == null || !hero.isAlive()){
-			if (winningPlaying){
-				winningPlaying = false;
-				com.watabou.noosa.audio.Music.INSTANCE.stopOverlay();
-			}
+			winningPlaying = false;
 			return;
 		}
 		boolean low = hero.HP < hero.HT * 0.30f;
 		boolean high = hero.HP >= hero.HT * 0.60f;
-		if (low && !winningPlaying){
+		if (low){
 			winningPlaying = true;
-			System.out.println("[雨爱] 触发：HP=" + hero.HP + "/" + hero.HT
-					+ " musicEnabled=" + com.watabou.noosa.audio.Music.INSTANCE.isEnabled());
-			//叠层播雨爱；主 BGM 继续播但被压低，形成渐入渐出。
-			com.watabou.noosa.audio.Music.INSTANCE.playOverlay(WINNING_TRACK, true);
+			com.watabou.noosa.audio.Music.INSTANCE.play(WINNING_TRACK, true);
 		} else if (high && winningPlaying){
 			winningPlaying = false;
-			com.watabou.noosa.audio.Music.INSTANCE.stopOverlay();
+			if (Dungeon.level != null) Dungeon.level.playLevelMusic();
 		}
 	}
 
