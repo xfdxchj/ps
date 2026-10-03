@@ -45,6 +45,9 @@ public class Sukuna extends Mob {
 
 	@Override public String name(){ return "两面宿傩"; }
 
+	/** 不走古神的多阶段存活判定，死了就是死了。 */
+	@Override public boolean isAlive(){ return HP > 0; }
+
 	@Override public int damageRoll(){ return Random.NormalIntRange(28, 42); }
 	@Override public int attackSkill(Char target){ return 45; }
 	@Override public int drRoll(){ return Random.NormalIntRange(0, 18); }
