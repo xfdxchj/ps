@@ -554,6 +554,7 @@ public class Assets {
 		/** 宿傩改用原版古神贴图。 */
 		public static final String SUKUNA_YOG    = "sprites/sukuna_yog.png";
 		public static final String SUKUNA_NEW    = "sprites/sukuna_new.png";
+		public static final String SUKUNA_USER   = "sprites/sukuna_user.png";
 		/** 式神 / 领域核心：4 帧单行。 */
 		public static final String SHIKIGAMI     = "sprites/shikigami.png";
 	}

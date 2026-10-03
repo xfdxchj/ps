@@ -13,9 +13,9 @@ public class SukunaSprite extends MobSprite {
 	public SukunaSprite() {
 		super();
 		perspectiveRaise = 5 / 16f;
-		texture( Assets.Sprites.SUKUNA_NEW );
+		texture( Assets.Sprites.SUKUNA_USER );
 
-		TextureFilm frames = new TextureFilm( texture, 50, 42 );
+		TextureFilm frames = new TextureFilm( texture, 151, 177 );
 
 		idle = new Animation( 10, true );
 		idle.frames( frames, 0, 1, 2 );
@@ -26,7 +26,7 @@ public class SukunaSprite extends MobSprite {
 		attack.frames( frames, 3, 4, 5, 0 );
 
 		die = new Animation( 10, false );
-		die.frames( frames, 6, 7, 8 );
+		die.frames( frames, 6, 7 );
 
 		play( idle );
 	}
