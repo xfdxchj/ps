@@ -78,7 +78,11 @@ public class Alice extends Mob {
 		if (!(c instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero)) {
 			return false;
 		}
-		talk((com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) c);
+		//END(修复·actor线程建窗口崩溃): interact 在 actor 线程调用，
+		//WndOptions 构造时就会测量字体，必须在渲染线程创建。
+		final com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero h =
+				(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) c;
+		com.watabou.noosa.Game.runOnRenderThread(() -> talk(h));
 		return true;
 	}
 
