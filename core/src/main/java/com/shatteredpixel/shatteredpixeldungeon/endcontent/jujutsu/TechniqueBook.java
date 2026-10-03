@@ -145,8 +145,8 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 							m.damage(dmg, hero);
 						}
 						Jujutsu.noteCangLanded(target);
-						Field f = Buff.affect(hero, Field.class);
-						f.reset(target, 0);
+						CangField f = Buff.affect(hero, CangField.class);
+						f.reset(target);
 					});
 					Buff.affect(hero, Jujutsu.CangCd.class, 15f);
 					hero.spendAndNext(1f);
@@ -191,8 +191,8 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 							Jujutsu.lastCangCell = -1;
 							GLog.i("苍赫重叠——虚式·茈。");
 						}
-						Field f = Buff.affect(hero, Field.class);
-						f.reset(target, 1);
+						HeField f = Buff.affect(hero, HeField.class);
+						f.reset(target);
 					});
 					Buff.affect(hero, Jujutsu.HeCd.class, 15f);
 					hero.spendAndNext(1f);
@@ -221,31 +221,33 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 		Item.updateQuickslot();
 	}
 
-	/** 把目标拉到指定落点旁边最近的空格。 */
+	/** 向落点移动 1 格。 */
 	private static void pullToCell(Mob m, int base){
 		if (m == null || !m.isAlive()) return;
+		int cur = Dungeon.level.distance(m.pos, base);
 		int best = -1;
 		for (int i : PathFinder.NEIGHBOURS8){
-			int cell = base + i;
+			int cell = m.pos + i;
 			if (!Dungeon.level.insideMap(cell)) continue;
 			if (!Dungeon.level.passable[cell] && !Dungeon.level.avoid[cell]) continue;
 			if (Actor.findChar(cell) != null) continue;
+			if (Dungeon.level.distance(cell, base) >= cur) continue;
 			best = cell; break;
 		}
 		if (best != -1) m.move(best, false);
 	}
 
-	/** 把目标推离指定落点。 */
+	/** 远离落点移动 1 格。 */
 	private static void pushFromCell(Mob m, int base){
 		if (m == null || !m.isAlive()) return;
+		int cur = Dungeon.level.distance(m.pos, base);
 		int best = -1;
-		int cur = Dungeon.level.distance(base, m.pos);
 		for (int i : PathFinder.NEIGHBOURS8){
 			int cell = m.pos + i;
 			if (!Dungeon.level.insideMap(cell)) continue;
 			if (!Dungeon.level.passable[cell] && !Dungeon.level.avoid[cell]) continue;
-			if (Dungeon.level.distance(base, cell) <= cur) continue;
 			if (Actor.findChar(cell) != null) continue;
+			if (Dungeon.level.distance(cell, base) <= cur) continue;
 			best = cell; break;
 		}
 		if (best != -1) m.move(best, false);
@@ -292,28 +294,39 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 	}
 
 	/** 苍/赫 的持续牵引/推移场，5 回合，每回合拉/推 1 格。 */
-	public static class Field extends Buff {
+	public abstract static class Field extends Buff {
 		public int cell = -1;
-		public int fieldType = 0; // 0=苍(拉), 1=赫(推)
 		private int turns = 5;
 		{ type = buffType.POSITIVE; announced = false; }
-		public void reset(int cell, int fieldType){
-			this.cell = cell; this.fieldType = fieldType; this.turns = 5;
+		public void reset(int cell){
+			this.cell = cell; this.turns = 5;
 		}
 		@Override public boolean act(){
 			if (cell < 0 || Dungeon.hero == null){ detach(); return true; }
 			for (Mob m : Jujutsu.visibleEnemies(Dungeon.hero)){
-				if (fieldType == 0) pullToCell(m, cell); else pushFromCell(m, cell);
+				move(m, cell);
 			}
 			turns--;
 			if (turns <= 0){ detach(); return true; }
 			spend(TICK);
 			return true;
 		}
+		protected abstract void move(Mob m, int cell);
 		@Override public int icon(){ return com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator.MIND_VISION; }
-		@Override public String name(){ return fieldType == 0 ? "苍·引力场" : "赫·斥力场"; }
 		@Override public String toString(){ return name(); }
-		@Override public String desc(){ return (fieldType == 0 ? "每回合将视野内敌人拉向落点。" : "每回合将视野内敌人推离落点。") + " 剩余 " + turns + " 回合。"; }
+		@Override public String desc(){ return "剩余 " + turns + " 回合。"; }
+	}
+
+	/** 苍：每回合拉 1 格。 */
+	public static class CangField extends Field {
+		@Override protected void move(Mob m, int cell){ pullToCell(m, cell); }
+		@Override public String name(){ return "苍·引力场"; }
+	}
+
+	/** 赫：每回合推 1 格。 */
+	public static class HeField extends Field {
+		@Override protected void move(Mob m, int cell){ pushFromCell(m, cell); }
+		@Override public String name(){ return "赫·斥力场"; }
 	}
 
 	/** 无量空处：3 回合领域。 */

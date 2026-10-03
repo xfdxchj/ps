@@ -78,6 +78,12 @@ public class HallsBossLevel extends Level {
 
 	@Override
 	public void playLevelMusic() {
+		//END(修复·宿傩没音乐): 宿傩不是古神，原版判定会失败；直接保底播 Boss BGM
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.jujutsu.Jujutsu
+				.sukunaActive()){
+			Music.INSTANCE.play(Assets.Music.HALLS_BOSS, true);
+			return;
+		}
 		if (locked && BossHealthBar.isAssigned()){
 			if (BossHealthBar.isBleeding()){
 				Music.INSTANCE.play(Assets.Music.HALLS_BOSS_FINALE, true);
