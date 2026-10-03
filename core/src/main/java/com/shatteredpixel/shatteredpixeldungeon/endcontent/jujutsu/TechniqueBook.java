@@ -20,7 +20,7 @@ import com.watabou.utils.PathFinder;
 
 import java.util.ArrayList;
 
-public class TechniqueBook extends Item {
+public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.items.artifacts.Artifact {
 
 	public static final String AC_CANG = "苍";
 	public static final String AC_HE   = "赫";
@@ -32,6 +32,8 @@ public class TechniqueBook extends Item {
 
 	{
 		image = ItemSpriteSheet.TECHNIQUE_BOOK;
+		chargeCap = 100;
+		charge = 100;
 		defaultAction = AC_OPEN; //快捷栏使用打开术式菜单
 		unique = true;
 		bones = false;
@@ -87,6 +89,17 @@ public class TechniqueBook extends Item {
 		return actions;
 	}
 
+	//充能消耗
+	public static final int COST_CANG = 15;
+	public static final int COST_HE = 15;
+	public static final int COST_DOMAIN = 50;
+
+	private boolean spendCharge(int cost){
+		if (charge < cost) return false;
+		charge -= cost;
+		return true;
+	}
+
 	@Override
 	public void execute(Hero hero, String action){
 		super.execute(hero, action);
@@ -103,6 +116,11 @@ public class TechniqueBook extends Item {
 		if (AC_CANG.equals(action)){
 			if (hero.buff(Jujutsu.CangCd.class) != null){
 				GLog.w("苍还在冷却。");
+				hero.spendAndNext(1f);
+				return;
+			}
+			if (!spendCharge(COST_CANG)){
+				GLog.w("充能不足。");
 				hero.spendAndNext(1f);
 				return;
 			}
@@ -134,6 +152,11 @@ public class TechniqueBook extends Item {
 		if (AC_HE.equals(action)){
 			if (hero.buff(Jujutsu.HeCd.class) != null){
 				GLog.w("赫还在冷却。");
+				hero.spendAndNext(1f);
+				return;
+			}
+			if (!spendCharge(COST_HE)){
+				GLog.w("充能不足。");
 				hero.spendAndNext(1f);
 				return;
 			}
@@ -175,6 +198,8 @@ public class TechniqueBook extends Item {
 		if (AC_DOMAIN.equals(action)){
 			if (hero.buff(Jujutsu.DomainCd.class) != null){
 				GLog.w("无量空处还在冷却。");
+			} else if (!spendCharge(COST_DOMAIN)){
+				GLog.w("充能不足。");
 			} else {
 				int dmg = Math.round(hero.damageRoll() * domainMult());
 				Buff.affect(hero, DomainBuff.class).set(dmg);
@@ -237,6 +262,25 @@ public class TechniqueBook extends Item {
 		if (m.sprite != null) m.sprite.showStatus(CharSprite.NEGATIVE, Integer.toString(dmg));
 		m.HP -= dmg;
 		if (m.HP <= 0) m.die(src);
+	}
+
+	@Override
+	protected com.shatteredpixel.shatteredpixeldungeon.items.artifacts.Artifact.ArtifactBuff passiveBuff(){
+		return new Recharge();
+	}
+
+	/** 自动充能：每回合 +0.5，2 回合 1 点。 */
+	public class Recharge extends com.shatteredpixel.shatteredpixeldungeon.items.artifacts.Artifact.ArtifactBuff {
+		@Override
+		public boolean act(){
+			partialCharge += 0.5f;
+			if (partialCharge >= 1f){
+				partialCharge -= 1f;
+				charge = Math.min(chargeCap, charge + 1);
+			}
+			spend(TICK);
+			return true;
+		}
 	}
 
 	/** 苍/赫 的持续牵引/推移场，5 回合，每回合拉/推 1 格。 */
