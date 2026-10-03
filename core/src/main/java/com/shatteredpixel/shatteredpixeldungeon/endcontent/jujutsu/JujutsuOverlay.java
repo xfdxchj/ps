@@ -12,6 +12,12 @@ public class JujutsuOverlay extends Image {
 
 	private static JujutsuOverlay instance;
 
+	/** END(修订): 刷新/消失都加快 —— 原 0.2s 一波、斩击 1s 才消失，太慢。 */
+	private static final float DOMAIN_TICK = 0.08f;
+	private static final int PARTICLES_PER_TICK = 80;
+	private static final int SLASH_PER_TICK = 16;
+	private static final float SLASH_FADE = 0.3f;
+
 	/** 展开瞬间的黑->白/红过渡计时。 */
 	private static float castTimer = 0f;
 	private static boolean castPlayer = true;
@@ -37,32 +43,26 @@ public class JujutsuOverlay extends Image {
 		alpha(0f);
 	}
 
-	/** 领域：粒子随机撒满视野（每批 FX_MULT*4 个，分布在约 40 格上）。 */
+	/** 领域：粒子随机撒满视野（每批 PARTICLES_PER_TICK 个，分布在约 40 格上）。 */
 	private void spawnDomainParticles(com.watabou.noosa.particles.Emitter.Factory factory){
 		//END(修订): 不再所有粒子堆在同一格，改为随机分布在视野内的多格
-		JujutsuFx.scatter(factory, JujutsuFx.FX_MULT * 4, 40);
+		JujutsuFx.scatter(factory, PARTICLES_PER_TICK, 40);
 	}
 
-	/** 伏魔御厨子：在视野内角色身上刷斩击（×FX_MULT）。 */
+	/** 伏魔御厨子：在视野内随机多格刷斩击（不再堆在单个角色身上）。 */
 	private void spawnSukunaSlashes(){
 		if (Dungeon.level == null) return;
-		java.util.ArrayList<com.shatteredpixel.shatteredpixeldungeon.actors.Char> pool =
-				new java.util.ArrayList<>();
-		for (com.shatteredpixel.shatteredpixeldungeon.actors.Char ch
-				: com.shatteredpixel.shatteredpixeldungeon.actors.Actor.chars()){
-			if (ch == null || ch.sprite == null) continue;
-			if (!Dungeon.level.insideMap(ch.pos)) continue;
-			if (!Dungeon.level.heroFOV[ch.pos]) continue;
-			pool.add(ch);
-		}
-		if (pool.isEmpty()) return;
-		for (int i = 0; i < JujutsuFx.FX_MULT; i++){
-			com.shatteredpixel.shatteredpixeldungeon.actors.Char ch =
-					pool.get(com.watabou.utils.Random.Int(pool.size()));
+		int placed = 0;
+		int attempts = 0;
+		while (placed < SLASH_PER_TICK && attempts < SLASH_PER_TICK * 8){
+			attempts++;
+			int cell = com.watabou.utils.Random.Int(Dungeon.level.length());
+			if (!Dungeon.level.insideMap(cell) || !Dungeon.level.heroFOV[cell]) continue;
 			try {
 				com.shatteredpixel.shatteredpixeldungeon.effects.Wound.hit(
-						ch, com.watabou.utils.Random.Float() * 360f);
+						cell, com.watabou.utils.Random.Float() * 360f, SLASH_FADE);
 			} catch (Throwable ignored) {}
+			placed++;
 		}
 	}
 
@@ -87,7 +87,7 @@ public class JujutsuOverlay extends Image {
 			target = 0f; color = 0xFFFFFF;   //对撞也不遮罩
 			particleTimer -= Game.elapsed;
 			if (particleTimer <= 0f){
-				particleTimer = 0.2f;
+				particleTimer = DOMAIN_TICK;
 				spawnDomainParticles(JujutsuDomainParticle.FACTORY);
 				spawnDomainParticles(JujutsuDomainParticle.FACTORY_RED);
 				spawnSukunaSlashes();
@@ -97,7 +97,7 @@ public class JujutsuOverlay extends Image {
 			target = 0f; color = 0xFFFFFF;
 			particleTimer -= Game.elapsed;
 			if (particleTimer <= 0f){
-				particleTimer = 0.2f;
+				particleTimer = DOMAIN_TICK;
 				spawnDomainParticles(JujutsuDomainParticle.FACTORY);
 			}
 		} else if (sukuna){
@@ -105,7 +105,7 @@ public class JujutsuOverlay extends Image {
 			target = 0f; color = 0xFFFFFF;
 			particleTimer -= Game.elapsed;
 			if (particleTimer <= 0f){
-				particleTimer = 0.2f;
+				particleTimer = DOMAIN_TICK;
 				spawnDomainParticles(JujutsuDomainParticle.FACTORY_RED);
 				spawnSukunaSlashes();
 			}

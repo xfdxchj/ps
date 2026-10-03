@@ -34,28 +34,41 @@ public class Wound extends Image {
 	private static final float TIME_TO_FADE = 1f;
 	
 	private float time;
+	private float lifespan = TIME_TO_FADE;
 	
 	public Wound() {
 		super( Effects.get( Effects.Type.WOUND ) );
-		hardlight(1f, 0f, 0f);
+		hardlight(1f, 0f, 0f );
 		origin.set( width / 2, height / 2 );
 	}
 	
 	public void reset( int p ) {
+		reset( p, TIME_TO_FADE );
+	}
+
+	/** END(宿傩领域): 允许自定义淡出时长，让斩击消失更快。 */
+	public void reset( int p, float lifespan ) {
 		revive();
 
 		x = (p % Dungeon.level.width()) * DungeonTilemap.SIZE + (DungeonTilemap.SIZE - width) / 2;
 		y = (p / Dungeon.level.width()) * DungeonTilemap.SIZE + (DungeonTilemap.SIZE - height) / 2;
 		
-		time = TIME_TO_FADE;
+		this.lifespan = Math.max(0.05f, lifespan);
+		time = this.lifespan;
 	}
 
 	public void reset(Visual v) {
+		reset( v, TIME_TO_FADE );
+	}
+
+	/** END(宿傩领域): 允许自定义淡出时长。 */
+	public void reset(Visual v, float lifespan) {
 		revive();
 
 		point(v.center(this));
 
-		time = TIME_TO_FADE;
+		this.lifespan = Math.max(0.05f, lifespan);
+		time = this.lifespan;
 	}
 	
 	@Override
@@ -65,7 +78,7 @@ public class Wound extends Image {
 		if ((time -= Game.elapsed) <= 0) {
 			kill();
 		} else {
-			float p = time / TIME_TO_FADE;
+			float p = time / lifespan;
 			alpha((float) Math.sqrt(p));
 			scale.x = 1 + p;
 		}
@@ -89,10 +102,17 @@ public class Wound extends Image {
 	}
 	
 	public static void hit( int pos, float angle ) {
+		hit( pos, angle, TIME_TO_FADE );
+	}
+
+	/** END(宿傩领域): 在指定格生成一道可自定义淡出时长的斩痕。 */
+	public static void hit( int pos, float angle, float lifespan ) {
+		if (Dungeon.level == null || Dungeon.hero == null || Dungeon.hero.sprite == null
+				|| Dungeon.hero.sprite.parent == null) return;
 		Group parent = Dungeon.hero.sprite.parent;
 		Wound w = (Wound)parent.recycle( Wound.class );
 		parent.bringToFront( w );
-		w.reset( pos );
+		w.reset( pos, lifespan );
 		w.angle = angle;
 	}
 }

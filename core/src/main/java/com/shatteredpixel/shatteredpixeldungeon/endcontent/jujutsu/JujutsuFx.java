@@ -143,14 +143,12 @@ public final class JujutsuFx {
 	/** 无量空处：星空白领域展开。 */
 	public static void domain(Hero hero){
 		if (hero == null) return;
-		//END(修订): 粒子要随机铺开，不是 50 个叠在同一格
-		scatter(Speck.STAR, 28 * FX_MULT);
+		//END(修订): 去掉展开时的星星，只保留白光；持续粒子在 JujutsuOverlay
 		scatter(Speck.LIGHT, 18 * FX_MULT);
 		//从玩家向外拉几道白光
 		for (Mob m : Jujutsu.visibleEnemies(hero)){
 			beam(hero, m, 0.85f, 0.9f, 1f);
 		}
-		cellBurst(hero.pos, Speck.STAR, 24);
 		GameScene.flash(0x80FFFFFF);
 	}
 
