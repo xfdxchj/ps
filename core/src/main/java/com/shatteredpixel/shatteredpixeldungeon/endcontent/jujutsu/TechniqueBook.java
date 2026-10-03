@@ -36,6 +36,8 @@ public class TechniqueBook extends Item {
 	}
 
 	@Override public String name(){ return "术式之书"; }
+	@Override public String desc(){ return info(); }
+
 
 	@Override public boolean isUpgradable(){ return true; }
 	@Override public boolean isIdentified(){ return true; }
