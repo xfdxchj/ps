@@ -18,6 +18,10 @@ public class JujutsuBurst extends Image {
 
 	public void reset(int cell, int type){
 		this.type = type;
+		String tex0 = type == 0 ? Assets.Effects.JUJUTSU_BURST_BLUE
+				: type == 1 ? Assets.Effects.JUJUTSU_BURST_RED
+				: Assets.Effects.JUJUTSU_BURST;
+		texture(tex0);
 		if (films[type] == null){
 			String tex = type == 0 ? Assets.Effects.JUJUTSU_BURST_BLUE
 					: type == 1 ? Assets.Effects.JUJUTSU_BURST_RED

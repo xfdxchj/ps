@@ -119,6 +119,9 @@ public final class Jujutsu {
 			return true;
 		}
 		@Override public int icon(){ return com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator.HEALING; }
+		@Override public String name(){ return "反转术式"; }
+		@Override public String toString(){ return name(); }
+		@Override public String desc(){ return "每回合回复 2% 最大生命。"; }
 	}
 
 	//==== 无下限弹开冷却 ====

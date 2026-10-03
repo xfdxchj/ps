@@ -18,6 +18,7 @@ public class JujutsuArrow extends Image {
 	private float dur = 0.35f;
 
 	public void reset(int fromCell, int toCell, Callback cb){
+		texture(Assets.Effects.JUJUTSU_FUGA_ARROW);
 		if (film == null) film = new TextureFilm(Assets.Effects.JUJUTSU_FUGA_ARROW, 64, 24);
 		frame(film.get(0));
 		origin.set(width/2f, height/2f);

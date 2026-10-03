@@ -29,6 +29,7 @@ public class JujutsuBolt extends Image {
 
 	public void reset(int fromCell, int toCell, int type, Callback cb){
 		this.type = type;
+		texture(texFor(type));
 		TextureFilm film = filmFor(type);
 		frame(film.get(0));
 		origin.set(width/2f, height/2f);
@@ -46,12 +47,14 @@ public class JujutsuBolt extends Image {
 		revive();
 	}
 
+	private static String texFor(int type){
+		return type == CANG ? Assets.Effects.JUJUTSU_CANG
+				: type == HE ? Assets.Effects.JUJUTSU_HE : Assets.Effects.JUJUTSU_ZI;
+	}
+
 	private static TextureFilm filmFor(int type){
 		if (films[type] == null){
-			String tex = type == CANG ? Assets.Effects.JUJUTSU_CANG
-					: type == HE ? Assets.Effects.JUJUTSU_HE : Assets.Effects.JUJUTSU_ZI;
-			int size = 52;
-			films[type] = new TextureFilm(tex, size, size);
+			films[type] = new TextureFilm(texFor(type), 52, 52);
 		}
 		return films[type];
 	}

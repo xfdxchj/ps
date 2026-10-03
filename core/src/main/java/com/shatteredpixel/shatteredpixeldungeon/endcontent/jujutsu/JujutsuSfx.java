@@ -35,14 +35,17 @@ public final class JujutsuSfx {
 
 	public static void play(String key){
 		String fallback = fallbackFor(key);
-		String custom = DIR + key + ".ogg";
-		if (!failed.contains(custom)){
-			try {
-				Sample.INSTANCE.load(custom);
-				Sample.INSTANCE.play(custom);
-				return;
-			} catch (Throwable t){
-				failed.add(custom);
+		//只有领域音效有素材；其余 10 条已放弃，直接用原版兜底，避免刷 File not found
+		if (DOMAIN.equals(key) || SHRINE.equals(key)){
+			String custom = DIR + key + ".ogg";
+			if (!failed.contains(custom)){
+				try {
+					Sample.INSTANCE.load(custom);
+					Sample.INSTANCE.play(custom);
+					return;
+				} catch (Throwable t){
+					failed.add(custom);
+				}
 			}
 		}
 		if (fallback != null) Sample.INSTANCE.play(fallback);

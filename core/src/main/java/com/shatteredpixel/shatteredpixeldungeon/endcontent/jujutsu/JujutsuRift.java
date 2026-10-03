@@ -14,6 +14,7 @@ public class JujutsuRift extends Image {
 	private static final float MAX = 0.6f;
 
 	public void reset(int cell){
+		texture(Assets.Effects.JUJUTSU_RIFT);
 		if (film == null) film = new TextureFilm(Assets.Effects.JUJUTSU_RIFT, 64, 64);
 		frame(film.get(0));
 		origin.set(width/2f, height/2f);

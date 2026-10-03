@@ -18,6 +18,7 @@ public class JujutsuSlash extends Image {
 	private float dur = 0.28f;
 
 	public void reset(int fromCell, int toCell, Callback cb){
+		texture(Assets.Effects.JUJUTSU_SLASH_BLADE);
 		if (film == null) film = new TextureFilm(Assets.Effects.JUJUTSU_SLASH_BLADE, 128, 64);
 		frame(film.get(0));
 		origin.set(width/2f, height/2f);

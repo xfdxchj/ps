@@ -45,6 +45,8 @@ public class Sukuna extends Mob {
 
 	public boolean immuneToDomainStun(){ return true; }
 
+	@Override public String name(){ return "两面宿傩"; }
+
 	@Override public int damageRoll(){ return Random.NormalIntRange(28, 42); }
 	@Override public int attackSkill(Char target){ return 45; }
 	@Override public int drRoll(){ return Random.NormalIntRange(0, 18); }

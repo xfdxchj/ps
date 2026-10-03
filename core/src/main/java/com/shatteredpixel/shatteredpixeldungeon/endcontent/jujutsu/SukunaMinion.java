@@ -21,6 +21,8 @@ public class SukunaMinion extends Mob {
 		state = HUNTING;
 	}
 
+	@Override public String name(){ return isCore ? "领域核心" : "宿傩式神"; }
+
 	@Override public int damageRoll(){ return Random.NormalIntRange(10, 16); }
 	@Override public int attackSkill(Char target){ return 28; }
 	@Override public int drRoll(){ return 0; }

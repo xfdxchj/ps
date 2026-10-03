@@ -16,6 +16,9 @@ public class JujutsuRing extends Image {
 
 	public void reset(int cell, int type){
 		this.type = type;
+		texture(type == JujutsuBolt.CANG ? Assets.Effects.JUJUTSU_RING_BLUE
+				: type == JujutsuBolt.HE ? Assets.Effects.JUJUTSU_RING_RED
+				: Assets.Effects.JUJUTSU_RING_PURPLE);
 		TextureFilm film = filmFor(type);
 		frame(film.get(0));
 		origin.set(width/2f, height/2f);
