@@ -9,12 +9,22 @@ import com.watabou.noosa.TextureFilm;
 
 public class JujutsuBurst extends Image {
 
-	private static TextureFilm film;
+	private static TextureFilm[] films = new TextureFilm[3];
+	private int type = 2;
 	private float life = 0f;
 	private static final float MAX = 0.55f;
 
-	public void reset(int cell){
-		if (film == null) film = new TextureFilm(Assets.Effects.JUJUTSU_BURST, 96, 96);
+	public void reset(int cell){ reset(cell, 2); }
+
+	public void reset(int cell, int type){
+		this.type = type;
+		if (films[type] == null){
+			String tex = type == 0 ? Assets.Effects.JUJUTSU_BURST_BLUE
+					: type == 1 ? Assets.Effects.JUJUTSU_BURST_RED
+					: Assets.Effects.JUJUTSU_BURST;
+			films[type] = new TextureFilm(tex, 96, 96);
+		}
+		TextureFilm film = films[type];
 		frame(film.get(0));
 		origin.set(width/2f, height/2f);
 		com.watabou.utils.PointF p = DungeonTilemap.tileToWorld(cell);
@@ -31,6 +41,6 @@ public class JujutsuBurst extends Image {
 		if (p >= 1f){ killAndErase(); return; }
 		scale.set(0.3f + p * 1.6f);
 		alpha(1f - p * p);
-		frame(film.get(Math.min(5, (int)(p * 6))));
+		frame(films[type].get(Math.min(5, (int)(p * 6))));
 	}
 }

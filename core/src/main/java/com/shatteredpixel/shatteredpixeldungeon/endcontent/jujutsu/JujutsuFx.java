@@ -46,7 +46,7 @@ public final class JujutsuFx {
 		return DungeonTilemap.tileToWorld(cell);
 	}
 
-	/** 苍：蓝球从敌人飞向玩家，到达后释放。 */
+	/** 苍：蓝球从敌人飞向玩家，到达后蓝爆。 */
 	public static void cang(Hero hero, Mob m){
 		if (hero == null || m == null) return;
 		if (m.sprite == null || m.sprite.parent == null){
@@ -55,15 +55,11 @@ public final class JujutsuFx {
 		}
 		JujutsuBolt bolt = (JujutsuBolt) m.sprite.parent.recycle(JujutsuBolt.class);
 		bolt.reset(m.pos, hero.pos, JujutsuBolt.CANG, () -> {
-			if (hero.sprite != null && hero.sprite.parent != null){
-				JujutsuRing ring = (JujutsuRing) hero.sprite.parent.recycle(JujutsuRing.class);
-				ring.reset(hero.pos, JujutsuBolt.CANG);
-			}
-			cellBurst(hero.pos, Speck.BLUE_LIGHT, 10);
+			burst(hero, hero.pos, JujutsuBolt.CANG);
 		});
 	}
 
-	/** 赫：红球从玩家飞向敌人，到达后冲击释放。 */
+	/** 赫：红球从玩家飞向敌人，到达后红爆 + 震屏。 */
 	public static void he(Hero hero, Mob m){
 		if (hero == null || m == null) return;
 		if (hero.sprite == null || hero.sprite.parent == null){
@@ -72,35 +68,58 @@ public final class JujutsuFx {
 		}
 		JujutsuBolt bolt = (JujutsuBolt) hero.sprite.parent.recycle(JujutsuBolt.class);
 		bolt.reset(hero.pos, m.pos, JujutsuBolt.HE, () -> {
-			if (m.sprite != null && m.sprite.parent != null){
-				JujutsuRing ring = (JujutsuRing) m.sprite.parent.recycle(JujutsuRing.class);
-				ring.reset(m.pos, JujutsuBolt.HE);
-			}
-			cellBurst(m.pos, Speck.RED_LIGHT, 14);
-			cellBurst(m.pos, Speck.WOOL, 8);
+			burst(m, m.pos, JujutsuBolt.HE);
 			GameScene.flash(0x40FF2200);
 			if (com.watabou.noosa.Camera.main != null) com.watabou.noosa.Camera.main.shake(0.15f, 0.6f);
 		});
 	}
 
-	/** 茈：小紫球飞向敌人，到达后空间撕裂。 */
+	/** 茈：苍球与赫球在目标处重叠 -> 直接大爆炸，没有小紫球。 */
 	public static void zi(Hero hero, Mob m){
 		if (hero == null || m == null) return;
 		if (hero.sprite == null || hero.sprite.parent == null){
-			cellBurst(m.pos, Speck.STAR, 12);
+			burst(m, m.pos, 2);
 			return;
 		}
-		JujutsuBolt bolt = (JujutsuBolt) hero.sprite.parent.recycle(JujutsuBolt.class);
-		bolt.reset(hero.pos, m.pos, JujutsuBolt.ZI, () -> {
-			if (m.sprite != null && m.sprite.parent != null){
-				JujutsuBurst burst = (JujutsuBurst) m.sprite.parent.recycle(JujutsuBurst.class);
-				burst.reset(m.pos);
-			}
-			cellBurst(m.pos, Speck.STAR, 24);
-			cellBurst(m.pos, Speck.SMOKE, 12);
+		final int[] arrived = {0};
+		final Runnable explosion = () -> {
+			if (++arrived[0] < 2) return;
+			burst(m, m.pos, 2);
 			GameScene.flash(0xA0FFFFFF);
 			if (com.watabou.noosa.Camera.main != null) com.watabou.noosa.Camera.main.shake(0.35f, 2.0f);
-		});
+		};
+
+		// 苍球：从玩家飞向目标
+		JujutsuBolt blue = (JujutsuBolt) hero.sprite.parent.recycle(JujutsuBolt.class);
+		blue.reset(hero.pos, m.pos, JujutsuBolt.CANG, () -> explosion.run());
+
+		// 赫球：从目标另一侧飞来，与苍球在目标点重叠
+		int w = Dungeon.level.width();
+		int dx = Integer.signum((m.pos % w) - (hero.pos % w));
+		int dy = Integer.signum((m.pos / w) - (hero.pos / w));
+		int from = m.pos;
+		for (int i = 0; i < 3; i++){
+			int c = from + dx + dy * w;
+			if (!Dungeon.level.insideMap(c)) break;
+			from = c;
+		}
+		if (from == m.pos) from = hero.pos;
+		JujutsuBolt red = (JujutsuBolt) hero.sprite.parent.recycle(JujutsuBolt.class);
+		red.reset(from, m.pos, JujutsuBolt.HE, () -> explosion.run());
+	}
+
+	/** 在角色所在格生成对应颜色的爆炸。 */
+	private static void burst(Char at, int cell, int type){
+		if (at != null && at.sprite != null && at.sprite.parent != null){
+			JujutsuBurst b = (JujutsuBurst) at.sprite.parent.recycle(JujutsuBurst.class);
+			b.reset(cell, type);
+		} else if (Dungeon.hero != null && Dungeon.hero.sprite != null
+				&& Dungeon.hero.sprite.parent != null){
+			JujutsuBurst b = (JujutsuBurst) Dungeon.hero.sprite.parent.recycle(JujutsuBurst.class);
+			b.reset(cell, type);
+		}
+		cellBurst(cell, type == JujutsuBolt.CANG ? Speck.BLUE_LIGHT
+				: type == JujutsuBolt.HE ? Speck.RED_LIGHT : Speck.STAR, 12);
 	}
 
 	/** 无量空处：星空白领域展开。 */
@@ -131,7 +150,6 @@ public final class JujutsuFx {
 			JujutsuRift rift = (JujutsuRift) to.sprite.parent.recycle(JujutsuRift.class);
 			rift.reset(to.pos);
 		}
-		beam(to, to, 1f, 1f, 1f);
 		GameScene.flash(0x80FFFFFF);
 		if (com.watabou.noosa.Camera.main != null) com.watabou.noosa.Camera.main.shake(0.25f, 1.5f);
 	}
