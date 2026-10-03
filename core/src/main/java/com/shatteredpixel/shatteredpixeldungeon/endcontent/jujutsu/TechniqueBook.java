@@ -26,12 +26,13 @@ public class TechniqueBook extends Item {
 	public static final String AC_HE   = "赫";
 	public static final String AC_ZI   = "茈";
 	public static final String AC_DOMAIN = "无量空处";
+	public static final String AC_OPEN = "术式";
 
 	public static final int MAX_LEVEL = 10;
 
 	{
 		image = ItemSpriteSheet.TECHNIQUE_BOOK;
-		defaultAction = AC_CANG; //可放快捷栏，点击直接进入苍的选点
+		defaultAction = AC_OPEN; //快捷栏使用打开术式菜单
 		unique = true;
 		bones = false;
 	}
@@ -79,6 +80,7 @@ public class TechniqueBook extends Item {
 	public ArrayList<String> actions(Hero hero){
 		ArrayList<String> actions = super.actions(hero);
 		if (actions.isEmpty()) return actions;
+		actions.add(AC_OPEN);
 		actions.add(AC_CANG);
 		actions.add(AC_HE);
 		if (hero.buff(Jujutsu.DomainCd.class) == null) actions.add(AC_DOMAIN);
@@ -89,6 +91,12 @@ public class TechniqueBook extends Item {
 	public void execute(Hero hero, String action){
 		super.execute(hero, action);
 		if (hero == null) return;
+
+		if (AC_OPEN.equals(action)){
+			com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.show(
+					new WndJujutsuSpells(this, hero));
+			return;
+		}
 
 		//END(修订): 苍/赫 都改成"选一个位置"，球飞过去再释放。
 		//苍的落点由 Jujutsu 记下；赫落在同一格时自动触发茈。
