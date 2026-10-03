@@ -327,6 +327,11 @@ public enum Music {
 	 * 主音乐会被压到 {@link #DUCK_LEVEL}，叠层从 0 渐入到 1；重复调用同一首不会重头播。
 	 */
 	public synchronized void playOverlay( String track, boolean looping ){
+		if (DEBUG_MUSIC){
+			System.out.println("[雨爱] playOverlay 请求=" + track
+					+ " enabled=" + enabled + " paused=" + paused
+					+ " 已有叠层=" + (overlayPlayer != null));
+		}
 		if (track == null){
 			stopOverlay();
 			return;
@@ -347,7 +352,13 @@ public enum Music {
 			overlayPlayer.setLooping(looping);
 			overlayPlayer.setVolume(0f);
 			overlayTrack = track;
-			if (!paused && enabled) overlayPlayer.play();
+			if (!paused && enabled){
+				overlayPlayer.play();
+				if (DEBUG_MUSIC) System.out.println("[雨爱] newMusic 成功，isPlaying="
+						+ overlayPlayer.isPlaying() + " volume=" + overlayPlayer.getVolume());
+			} else if (DEBUG_MUSIC){
+				System.out.println("[雨爱] newMusic 成功但未播放（paused/enabled 拦截）");
+			}
 		} catch (Exception e){
 			Game.reportException(e);
 			overlayPlayer = null;

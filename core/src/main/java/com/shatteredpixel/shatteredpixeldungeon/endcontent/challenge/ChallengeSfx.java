@@ -523,6 +523,8 @@ public final class ChallengeSfx {
 		boolean high = hero.HP >= hero.HT * 0.60f;
 		if (low && !winningPlaying){
 			winningPlaying = true;
+			System.out.println("[雨爱] 触发：HP=" + hero.HP + "/" + hero.HT
+					+ " musicEnabled=" + com.watabou.noosa.audio.Music.INSTANCE.isEnabled());
 			//叠层播雨爱；主 BGM 继续播但被压低，形成渐入渐出。
 			com.watabou.noosa.audio.Music.INSTANCE.playOverlay(WINNING_TRACK, true);
 		} else if (high && winningPlaying){
