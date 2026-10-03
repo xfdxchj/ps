@@ -298,6 +298,9 @@ public class Dungeon {
 		//END(挑战·音频): 只加载已勾选挑战用到的音频（31 个文件不全量预载）。
 		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeSfx.init();
 
+		//END(235 无量空处): 重置本局状态
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.jujutsu.Jujutsu.resetRun();
+
 		//END(便利挑战): 激活便利挑战时解锁全部炼金配方页
 		if (isChallenged(Challenges.CONVENIENCE)) {
 			Document.unlockAllAlchemyPages();

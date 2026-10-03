@@ -1804,6 +1804,9 @@ public abstract class Char extends Actor {
 			//==== END(移植·同仇敌忾 78): 过量伤害转嫁 ====
 			com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 				.ChallengeEffects.revengeSpread(this, overkillDamage, src);
+			//END(235 无量空处): 反转术式——击杀回复
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.jujutsu.Jujutsu
+				.onKill(this, src);
 			die( src );
 		} else if (HP == 0 && buff(DeathMark.DeathMarkTracker.class) != null){
 			DeathMark.processFearTheReaper(this);
@@ -1953,6 +1956,13 @@ public abstract class Char extends Actor {
 	}
 
 	public synchronized boolean add( Buff buff ) {
+
+		//END(235 无量空处): 六眼——免疫致盲
+		if (this == Dungeon.hero && buff instanceof com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Blindness
+				&& com.shatteredpixel.shatteredpixeldungeon.endcontent.jujutsu.Jujutsu
+				.blindImmune()){
+			return false;
+		}
 
 		if (buff(PotionOfCleansing.Cleanse.class) != null) { //cleansing buff
 			if (buff.type == Buff.buffType.NEGATIVE

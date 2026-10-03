@@ -1989,6 +1989,12 @@ public final class ChallengeEffects {
 		java.util.ArrayList<com.shatteredpixel.shatteredpixeldungeon.items.Item> out =
 				new java.util.ArrayList<>();
 
+		//235 无量空处：术式之书
+		if (on(235)) {
+			out.add(new com.shatteredpixel.shatteredpixeldungeon.endcontent.jujutsu
+					.TechniqueBook());
+		}
+
 		//155 家传戒指：神射戒指
 		if (on(HEIRLOOM_RING)) {
 			out.add(new com.shatteredpixel.shatteredpixeldungeon.items.rings.RingOfSharpshooting());

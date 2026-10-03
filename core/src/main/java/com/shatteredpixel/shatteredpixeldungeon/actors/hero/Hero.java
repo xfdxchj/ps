@@ -1002,6 +1002,13 @@ public class Hero extends Char {
 	@Override
 	public boolean act() {
 		
+		//END(235 无量空处): 反转术式常驻回复
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.jujutsu.Jujutsu.active()
+				&& buff(com.shatteredpixel.shatteredpixeldungeon.endcontent.jujutsu.Jujutsu
+				.ReverseTechnique.class) == null){
+			Buff.affect(this, com.shatteredpixel.shatteredpixeldungeon.endcontent.jujutsu
+				.Jujutsu.ReverseTechnique.class);
+		}
 		//END(233 是我赢了): 低血量切《雨爱》，回到 60% 时恢复
 		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 				.ChallengeSfx.updateWinningMusic(this);
@@ -1938,6 +1945,9 @@ public class Hero extends Char {
 		dmg = (int)Math.ceil(dmg * RingOfTenacity.damageMultiplier( this )
 				* com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.RingAffix.defenseMultiplier( this ));
 
+		//END(235 无量空处): 无下限——受到伤害降低 30%
+		dmg = com.shatteredpixel.shatteredpixeldungeon.endcontent.jujutsu.Jujutsu.reduceDamage(dmg);
+
 		int preHP = HP + shielding();
 		if (src instanceof Hunger) preHP -= shielding();
 		super.damage( dmg, src );
@@ -1946,6 +1956,12 @@ public class Hero extends Char {
 		int effectiveDamage = preHP - postHP;
 
 		if (effectiveDamage <= 0) return;
+
+		//END(235 无量空处): 无下限——近战攻击者弹开 1 格
+		if (src instanceof Char){
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.jujutsu.Jujutsu
+					.knockback(this, (Char) src);
+		}
 
 		if (buff(Challenge.DuelParticipant.class) != null){
 			buff(Challenge.DuelParticipant.class).addDamage(effectiveDamage);

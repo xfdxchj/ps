@@ -260,7 +260,13 @@ public class HallsBossLevel extends Level {
 
 		Dungeon.observe();
 
-		YogDzewa boss = new YogDzewa();
+		//END(235 无量空处): 古神替换为四阶段宿傩
+		com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob boss;
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.jujutsu.Jujutsu.active()){
+			boss = new com.shatteredpixel.shatteredpixeldungeon.endcontent.jujutsu.Sukuna();
+		} else {
+			boss = new YogDzewa();
+		}
 		boss.pos = exit() + width*3;
 
 		//push any char that is already here away

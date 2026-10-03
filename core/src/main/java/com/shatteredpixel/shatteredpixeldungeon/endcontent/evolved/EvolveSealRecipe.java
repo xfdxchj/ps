@@ -4,8 +4,8 @@
  *
  * END(修订): 文档所有者定稿的三支特殊物品：
  *    1. 血盾 BladeShieldSeal -> 治疗药水 PotionOfHealing
- *    2. 狂暴 BloodRageSeal   -> 50 液金 LiquidMetal
- *    3. 飞掷 FlyWeaponSeal   -> 复仇卷轴 ScrollOfRetribution
+ *    2. 狂暴 BloodRageSeal   -> 复仇卷轴 ScrollOfRetribution
+ *    3. 飞掷 FlyWeaponSeal   -> 50 液金 LiquidMetal
  * 基底固定为：破碎纹章(BrokenSeal) + 邪能碎片(MetalShard)。
  */
 package com.shatteredpixel.shatteredpixeldungeon.endcontent.evolved;
@@ -28,14 +28,14 @@ import java.util.ArrayList;
 
 public class EvolveSealRecipe extends Recipe {
 
-	/** 狂暴分支需要的液金数量。 */
+	/** 飞掷分支需要的液金数量。 */
 	public static final int LIQUID_METAL_COST = 50;
 
 	/** 分支特殊物品 -> 对应破印成品类型。 */
 	private Class<? extends BrokenSeal> pickClass( Item special ){
 		if (special instanceof PotionOfHealing)     return BladeShieldSeal.class;
-		if (special instanceof LiquidMetal)         return BloodRageSeal.class;
-		if (special instanceof ScrollOfRetribution) return FlyWeaponSeal.class;
+		if (special instanceof ScrollOfRetribution) return BloodRageSeal.class;
+		if (special instanceof LiquidMetal)         return FlyWeaponSeal.class;
 		return null;
 	}
 
