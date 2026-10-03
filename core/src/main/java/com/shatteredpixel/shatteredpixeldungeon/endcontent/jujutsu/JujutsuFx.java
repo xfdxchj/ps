@@ -56,11 +56,12 @@ public final class JujutsuFx {
 			if (onArrive != null) onArrive.call();
 			return;
 		}
-		JujutsuBolt bolt = (JujutsuBolt) hero.sprite.parent.recycle(JujutsuBolt.class);
+		JujutsuBolt bolt = new JujutsuBolt();
 		bolt.reset(hero.pos, cell, JujutsuBolt.CANG, () -> {
 			burst(hero, cell, JujutsuBolt.CANG);
 			if (onArrive != null) onArrive.call();
 		});
+		GameScene.effect(bolt);
 	}
 
 	/** 赫：红球飞向指定位置，到达后回调（推怪+伤害）。 */
@@ -71,13 +72,14 @@ public final class JujutsuFx {
 			if (onArrive != null) onArrive.call();
 			return;
 		}
-		JujutsuBolt bolt = (JujutsuBolt) hero.sprite.parent.recycle(JujutsuBolt.class);
+		JujutsuBolt bolt = new JujutsuBolt();
 		bolt.reset(hero.pos, cell, JujutsuBolt.HE, () -> {
 			burst(hero, cell, JujutsuBolt.HE);
 			GameScene.flash(0x40FF2200);
 			if (com.watabou.noosa.Camera.main != null) com.watabou.noosa.Camera.main.shake(0.15f, 0.6f);
 			if (onArrive != null) onArrive.call();
 		});
+		GameScene.effect(bolt);
 	}
 
 	/** 茈：苍赫落点重叠时的紫色大爆炸。 */

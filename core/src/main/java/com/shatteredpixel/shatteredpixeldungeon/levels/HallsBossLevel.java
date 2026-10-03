@@ -287,6 +287,13 @@ public class HallsBossLevel extends Level {
 		}
 
 		GameScene.add( boss );
+
+		//END(修复·25层没音乐): Boss 进入战场后没地方触发 BGM，这里主动播一次
+		com.watabou.noosa.Game.runOnRenderThread(new com.watabou.utils.Callback() {
+			@Override public void call(){
+				playLevelMusic();
+			}
+		});
 	}
 
 	@Override

@@ -231,7 +231,7 @@ public class Sukuna extends Mob {
 		int target = phase;
 		if (HP <= HT * 0.10f)      target = 5;
 		else if (HP <= HT * 0.40f) target = 4;
-		else if (HP <= HT * 0.60f) target = 3;
+		else if (HP <= HT * 0.50f) target = 3;
 		else if (HP <= HT * 0.75f) target = 2;
 
 		if (target > phase){
