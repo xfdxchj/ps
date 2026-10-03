@@ -5999,14 +5999,20 @@ public final class ChallengeEffects {
 		}
 
 		//钥匙不再有用，从地面上清掉（保留剧情/神器类钥匙）
+		//注意：不能在关卡生成阶段调用 Heap.remove() —— 它会走 destroy()，
+		//而 destroy() 会读 Dungeon.level（此时还是 null），导致切层崩溃。
+		//这里直接操作 level.heaps，不碰 Dungeon.level。
 		if (level.heaps != null){
 			for (com.shatteredpixel.shatteredpixeldungeon.items.Heap heap
 					: new java.util.ArrayList<>(level.heaps.valueList())){
 				for (com.shatteredpixel.shatteredpixeldungeon.items.Item it
 						: new java.util.ArrayList<>(heap.items)){
 					if (it instanceof com.shatteredpixel.shatteredpixeldungeon.items.keys.Key){
-						heap.remove(it);
+						heap.items.remove(it);
 					}
+				}
+				if (heap.items.isEmpty()){
+					level.heaps.remove(heap.pos);
 				}
 			}
 		}
