@@ -109,7 +109,7 @@ public class Sukuna extends Mob {
 				//空间斩：无视防御与闪避
 				JujutsuSfx.play(JujutsuSfx.SPACE);
 				GLog.w("宿傩：「空间斩。」");
-				JujutsuFx.spaceSlash(enemy);
+				JujutsuFx.spaceSlash(this, enemy);
 				dealDirect(enemy, Math.round(damageRoll() * 1.8f));
 				break;
 			case 5:

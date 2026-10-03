@@ -157,16 +157,19 @@ public final class JujutsuFx {
 		if (big) GameScene.flash(0x40FF0000);
 	}
 
-	/** 空间斩：一道刀光掠过 + 白闪。 */
-	public static void spaceSlash(Char to){
-		if (to == null) return;
-		if (to.sprite != null && to.sprite.parent != null){
-			JujutsuSlash sl = (JujutsuSlash) to.sprite.parent.recycle(JujutsuSlash.class);
-			sl.reset(to.pos, Random.Float()*180f - 90f);
+	/** 空间斩：一道刀光从宿傩飞向目标。 */
+	public static void spaceSlash(Char from, Char to){
+		if (from == null || to == null) return;
+		if (from.sprite != null && from.sprite.parent != null){
+			JujutsuSlash sl = (JujutsuSlash) from.sprite.parent.recycle(JujutsuSlash.class);
+			sl.reset(from.pos, to.pos, () -> {
+				cellBurst(to.pos, Speck.LIGHT, 16);
+				GameScene.flash(0x80FFFFFF);
+				if (com.watabou.noosa.Camera.main != null) com.watabou.noosa.Camera.main.shake(0.25f, 1.5f);
+			});
+		} else {
+			cellBurst(to.pos, Speck.LIGHT, 12);
 		}
-		cellBurst(to.pos, Speck.LIGHT, 16);
-		GameScene.flash(0x80FFFFFF);
-		if (com.watabou.noosa.Camera.main != null) com.watabou.noosa.Camera.main.shake(0.25f, 1.5f);
 	}
 
 	/** 伏魔御厨子：全屏血色。 */
