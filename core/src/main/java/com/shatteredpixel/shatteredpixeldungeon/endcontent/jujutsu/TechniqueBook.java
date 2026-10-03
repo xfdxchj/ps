@@ -232,10 +232,10 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 		Item.updateQuickslot();
 	}
 
-	/** 引力场：每回合向落点拉 1 格。 */
-	private static void pullToCell(Mob m, int base){ moveSteps(m, base, 1, true); }
-	/** 斥力场：每回合远离落点推 1 格。 */
-	private static void pushFromCell(Mob m, int base){ moveSteps(m, base, 1, false); }
+	/** 引力场：每回合向落点拉 4 格。 */
+	private static void pullToCell(Mob m, int base){ moveSteps(m, base, 4, true); }
+	/** 斥力场：每回合远离落点推 4 格。 */
+	private static void pushFromCell(Mob m, int base){ moveSteps(m, base, 4, false); }
 	/** END(冲击波): 命中瞬间把敌人朝落点猛拉多格。 */
 	private static void impulsePull(Mob m, int base){ moveSteps(m, base, 4, true); }
 	/** END(冲击波): 命中瞬间把敌人打离落点多格。 */
