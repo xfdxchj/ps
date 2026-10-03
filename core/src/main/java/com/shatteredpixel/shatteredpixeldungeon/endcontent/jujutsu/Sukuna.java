@@ -145,6 +145,7 @@ public class Sukuna extends Mob {
 		domainTurns = 5;
 		Jujutsu.sukunaDomainTurns = 5;
 		JujutsuOverlay.castFlash(false);
+		com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.flash(0x80FF0000);
 		CellEmitter.get(pos).burst(Speck.factory(Speck.LIGHT), 12);
 	}
 

@@ -212,6 +212,7 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 				Buff.affect(hero, Jujutsu.DomainCd.class, 300f);
 				JujutsuSfx.play(JujutsuSfx.DOMAIN);
 				gainUse();
+				com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.flash(0x80FFFFFF);
 				JujutsuFx.domain(hero);
 				GLog.i("领域展开——无量空处。");
 			}

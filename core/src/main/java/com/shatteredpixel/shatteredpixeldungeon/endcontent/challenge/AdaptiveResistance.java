@@ -129,7 +129,8 @@ public class AdaptiveResistance extends FlavourBuff {
 	/** 该 buff 是否应该挂在目标身上（古神 / 古神之拳）。 */
 	public static boolean isAdaptiveTarget(Char ch){
 		return ch instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.YogDzewa
-				|| ch instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.YogFist;
+				|| ch instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.YogFist
+				|| ch instanceof com.shatteredpixel.shatteredpixeldungeon.endcontent.jujutsu.Sukuna;
 	}
 
 	@Override public int icon(){ return BuffIndicator.NONE; }
