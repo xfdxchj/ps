@@ -209,6 +209,9 @@ public class Sukuna extends Mob {
 	@Override
 	public void onAdd(){
 		super.onAdd();
+		//END(修复·古神替换判定): 注册到 Boss 血条，让 25 层把它当 Boss
+		try { com.shatteredpixel.shatteredpixeldungeon.ui.BossHealthBar.assignBoss(this); }
+		catch (Throwable ignored) {}
 		JujutsuSfx.play(JujutsuSfx.SUKUNA_INTRO);
 		GLog.w("宿傩：「让我看看你能撑多久。」");
 	}

@@ -139,15 +139,14 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 					JujutsuSfx.play(JujutsuSfx.CANG);
 					gainUse();
 					//END(修订): 球到达落点后才产生牵引与 5 回合引力场
-					JujutsuFx.cang(hero, target, () -> {
-						for (Mob m : Jujutsu.visibleEnemies(hero)){
-							pullToCell(m, target);
-							m.damage(dmg, hero);
-						}
-						Jujutsu.noteCangLanded(target);
-						CangField f = Buff.affect(hero, CangField.class);
-						f.reset(target);
-					});
+					JujutsuFx.cang(hero, target, null);
+					for (Mob m : Jujutsu.visibleEnemies(hero)){
+						pullToCell(m, target);
+						m.damage(dmg, hero);
+					}
+					Jujutsu.noteCangLanded(target);
+					CangField f = Buff.affect(hero, CangField.class);
+					f.reset(target);
 					Buff.affect(hero, Jujutsu.CangCd.class, 15f);
 					hero.spendAndNext(1f);
 				}
@@ -176,24 +175,23 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 					JujutsuSfx.play(JujutsuSfx.HE);
 					gainUse();
 					//END(修订): 球到达后才推开；若与苍落点重合，此时才触发茈
-					JujutsuFx.he(hero, target, () -> {
-						for (Mob m : Jujutsu.visibleEnemies(hero)){
-							pushFromCell(m, target);
-							m.damage(dmg, hero);
+					JujutsuFx.he(hero, target, null);
+					for (Mob m : Jujutsu.visibleEnemies(hero)){
+						pushFromCell(m, target);
+						m.damage(dmg, hero);
+					}
+					if (Jujutsu.canZiAt(target)){
+						int zi = Math.round(hero.damageRoll() * ziMult());
+						JujutsuSfx.play(JujutsuSfx.ZI);
+						JujutsuFx.ziAt(target);
+						for (Mob m : enemiesNear(target, 2)){
+							dealDirect(m, zi, hero);
 						}
-						if (Jujutsu.canZiAt(target)){
-							int zi = Math.round(hero.damageRoll() * ziMult());
-							JujutsuSfx.play(JujutsuSfx.ZI);
-							JujutsuFx.ziAt(target);
-							for (Mob m : enemiesNear(target, 2)){
-								dealDirect(m, zi, hero);
-							}
-							Jujutsu.lastCangCell = -1;
-							GLog.i("苍赫重叠——虚式·茈。");
-						}
-						HeField f = Buff.affect(hero, HeField.class);
-						f.reset(target);
-					});
+						Jujutsu.lastCangCell = -1;
+						GLog.i("苍赫重叠——虚式·茈。");
+					}
+					HeField f = Buff.affect(hero, HeField.class);
+					f.reset(target);
 					Buff.affect(hero, Jujutsu.HeCd.class, 15f);
 					hero.spendAndNext(1f);
 				}
