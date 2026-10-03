@@ -27,26 +27,34 @@ public final class Jujutsu {
 	private Jujutsu() {}
 
 	/** 注册表位号（= 表 ID）。 */
-	public static final int CHALLENGE = 235;
+	public static final int BOOK = 235;
+	public static final int GOJO = 236;
+	public static final int SUKUNA = 237;
+	public static final int KAISEN = 238;
 
-	public static boolean active(){
-		return Dungeon.challengeMask != null && Dungeon.challengeMask.has(CHALLENGE);
+	private static boolean on(int id){
+		return Dungeon.challengeMask != null && Dungeon.challengeMask.has(id);
+	}
+
+	public static boolean bookActive(){ return on(BOOK); }
+	public static boolean gojoActive(){ return on(GOJO); }
+	public static boolean sukunaActive(){ return on(SUKUNA); }
+	public static boolean kaisenActive(){ return on(KAISEN); }
+
+	/** 六眼：法杖充能效率 +100%。 */
+	public static float chargeMultiplier(){
+		return gojoActive() ? 2f : 1f;
 	}
 
 	/** 无下限减伤：受到伤害 x0.70。 */
 	public static int reduceDamage(int dmg){
-		if (!active()) return dmg;
+		if (!gojoActive()) return dmg;
 		return Math.max(1, Math.round(dmg * 0.70f));
-	}
-
-	/** 六眼：免疫致盲。 */
-	public static boolean blindImmune(){
-		return active();
 	}
 
 	/** 反转术式：击杀回复 5% 最大生命。 */
 	public static void onKill(Char target, Object src){
-		if (!active()) return;
+		if (!gojoActive()) return;
 		Hero hero = Dungeon.hero;
 		if (hero == null || target == null || target.alignment == Char.Alignment.ALLY) return;
 		if (!(src instanceof Hero) && src != hero) return;
@@ -59,7 +67,7 @@ public final class Jujutsu {
 	 * 返回 true 表示真的弹开了。
 	 */
 	public static boolean knockback(Hero hero, Char attacker){
-		if (!active() || hero == null || attacker == null) return false;
+		if (!gojoActive() || hero == null || attacker == null) return false;
 		if (attacker.buff(LimitlessCd.class) != null) return false;
 		if (Dungeon.level.distance(hero.pos, attacker.pos) > 1) return false;
 

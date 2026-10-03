@@ -898,6 +898,8 @@ public abstract class Wand extends Item {
 
 			if (Regeneration.regenOn())
 				partialCharge += (1f/turnsToCharge) * RingOfEnergy.wandChargeMultiplier(target)
+						//END(236 五条悟·六眼): 充能效率 +100%
+						* com.shatteredpixel.shatteredpixeldungeon.endcontent.jujutsu.Jujutsu.chargeMultiplier()
 						* com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.RingAffix.chargeMultiplier(target)
 						//END(二.5): 进阶法杖充能速度 +20%
 						* ((getClass().getName().contains(".endcontent.evolved.EvolvedWandOf")) ? 1.2f : 1f);

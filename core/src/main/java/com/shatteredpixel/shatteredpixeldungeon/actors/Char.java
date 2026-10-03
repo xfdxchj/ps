@@ -624,6 +624,13 @@ public abstract class Char extends Actor {
 			dmg = com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
 					.ChallengeEffects.crumblingDamage(this, dmg);
 
+			//END(238 咒术回战): 怪物攻击属性 +100%
+			if (this instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob
+					&& com.shatteredpixel.shatteredpixeldungeon.endcontent.jujutsu.Jujutsu
+					.kaisenActive()){
+				dmg *= 2f;
+			}
+
 			//==== END(二.1 永无止境): 攻击倍率 = 生命倍率 ====
 			if (this instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob){
 				dmg *= com.shatteredpixel.shatteredpixeldungeon.endcontent
@@ -1956,13 +1963,6 @@ public abstract class Char extends Actor {
 	}
 
 	public synchronized boolean add( Buff buff ) {
-
-		//END(235 无量空处): 六眼——免疫致盲
-		if (this == Dungeon.hero && buff instanceof com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Blindness
-				&& com.shatteredpixel.shatteredpixeldungeon.endcontent.jujutsu.Jujutsu
-				.blindImmune()){
-			return false;
-		}
 
 		if (buff(PotionOfCleansing.Cleanse.class) != null) { //cleansing buff
 			if (buff.type == Buff.buffType.NEGATIVE

@@ -171,10 +171,15 @@ public final class ChallengeRegistry {
 			"**古神与古神之拳**会适应你造成伤害最多的方式（近战 / 投掷 / 法术）。"
 			+ "以最大生命的 **20%** 为一个区域：每在一个区域内累计受到你足够伤害，就适应一次，"
 			+ "适应该区域中你伤害最高的方式，获得对该方式的减伤：**10% -> 25% -> 43% -> 70%**，最多 **4 层**。");
-		//==== END(235 无量空处): 五条悟能力包 + 四阶段宿傩 ====
-		done(all, 235, "无量空处", "unlimited_void", "咒会", ChallengeDef.TENDENCY_MONSTER, 3, ChallengeDef.TIER_HARD, "",
-			"选择后获得五条悟的全部能力：六眼、无下限、反转术式，以及可升级的术式之书（苍/赫/茈/无量空处）。最终 Boss 古神替换为四阶段宿傩。"
-			+ "宿傩无适应机制，并免疫无量空处的眩晕。");
+		//==== END(235-238 咒术回战系列): 拆成 4 条独立挑战 ====
+		done(all, 235, "术式之书", "technique_book", "咒会", ChallengeDef.TENDENCY_BENEFIT, 2, ChallengeDef.TIER_MEDIUM, "",
+			"开局获得《术式之书》：苍 / 赫 / 茈 / 无量空处。可用升级卷轴强化（上限 +10），每级按技能各自成长。");
+		done(all, 236, "五条悟", "gojo", "咒会", ChallengeDef.TENDENCY_BENEFIT, 3, ChallengeDef.TIER_MEDIUM, "",
+			"获得五条悟的被动：六眼（充能效率 +100%）、无下限（受到伤害 -30%，近战攻击者弹开 1 格，2 回合 CD）、反转术式（每回合回复 2% 最大生命，击杀额外 +5%）。");
+		done(all, 237, "宿傩", "sukuna", "咒会", ChallengeDef.TENDENCY_MONSTER, 3, ChallengeDef.TIER_HARD, "",
+			"最终 Boss 古神替换为四阶段宿傩：75% 召唤式神、60% 领域（5 回合，4 个核心）、40% 四臂（空间斩无视防御、攻速提升）、10% 灶开。无适应机制。");
+		done(all, 238, "咒术回战", "jujutsu_kaisen", "咒会", ChallengeDef.TENDENCY_MONSTER, 3, ChallengeDef.TIER_EASY, "",
+			"所有怪物生命上限与攻击属性 +100%。");
 		done(all, 234, "仰望虚空", "open_sky", "地图", ChallengeDef.TENDENCY_TWOSIDED, 2, ChallengeDef.TIER_MEDIUM, "",
 				"除 Boss 层、挑战区与隐藏房外，所有常规层的内部墙体全部取消，地图四周边界保留。");
 

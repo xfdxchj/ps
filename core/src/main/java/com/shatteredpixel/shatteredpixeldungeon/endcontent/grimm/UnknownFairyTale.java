@@ -240,6 +240,8 @@ public class UnknownFairyTale extends Item {
 		} catch (Throwable ignored) { }
 
 		UnknownFairyTale book = new UnknownFairyTale();
+		//END(测试/文档所有者要求): 开局书直接补满九页，方便测试 999 层
+		for (int i = 0; i < PAGES; i++) book.pages[i] = true;
 		book.identify();
 		if (!book.collect()) {
 			//背包满了就丢在脚下

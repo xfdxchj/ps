@@ -1003,7 +1003,7 @@ public class Hero extends Char {
 	public boolean act() {
 		
 		//END(235 无量空处): 反转术式常驻回复
-		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.jujutsu.Jujutsu.active()
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.jujutsu.Jujutsu.gojoActive()
 				&& buff(com.shatteredpixel.shatteredpixeldungeon.endcontent.jujutsu.Jujutsu
 				.ReverseTechnique.class) == null){
 			Buff.affect(this, com.shatteredpixel.shatteredpixeldungeon.endcontent.jujutsu

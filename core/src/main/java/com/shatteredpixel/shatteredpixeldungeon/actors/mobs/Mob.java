@@ -267,6 +267,14 @@ public abstract class Mob extends Char {
 				HT = ratioHt;
 				HP = Math.max(1, Math.round(HT * pct));
 			}
+
+			//==== END(238 咒术回战): 怪物生命上限 +100% ====
+			if (com.shatteredpixel.shatteredpixeldungeon.endcontent.jujutsu.Jujutsu
+					.kaisenActive()){
+				float pct = HP / (float) HT;
+				HT = Math.max(1, Math.round(HT * 2f));
+				HP = Math.max(1, Math.round(HT * pct));
+			}
 		}
 		//==== END(移植·15/17): 高阶精英的跟班 ====
 		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge

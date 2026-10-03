@@ -1,7 +1,8 @@
 /*
- * 破碎的地牢 (End fork) — 挑战「无量空处」的最终 Boss：两面宿傩（四阶段）。
+ * 破碎的地牢 (End fork) — 挑战「宿傩」的最终 Boss：两面宿傩（四阶段）。
  *
  * 替换 25 层的古神。无「适应」机制；免疫无量空处的眩晕。
+ * 阶段：75% 召唤式神 / 60% 领域 / 40% 四臂 / 10% 灶开。
  */
 package com.shatteredpixel.shatteredpixeldungeon.endcontent.jujutsu;
 
@@ -10,7 +11,6 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Burning;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Paralysis;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
@@ -42,7 +42,6 @@ public class Sukuna extends Mob {
 	private int abilityCd = 3;
 	private int domainTurns = 0;
 	private int coresLeft = 0;
-	private boolean phaseTransitioned = false;
 
 	public boolean immuneToDomainStun(){ return true; }
 
@@ -50,8 +49,11 @@ public class Sukuna extends Mob {
 	@Override public int attackSkill(Char target){ return 45; }
 	@Override public int drRoll(){ return Random.NormalIntRange(0, 18); }
 
-	@Override
-	public boolean isAlive(){ return super.isAlive(); }
+	/** 四臂全开：攻速 +50%。 */
+	@Override public float attackDelay(){
+		float base = super.attackDelay();
+		return phase >= 4 ? Math.max(0.1f, base / 1.5f) : base;
+	}
 
 	@Override
 	protected boolean act(){
@@ -67,7 +69,7 @@ public class Sukuna extends Mob {
 
 		if (abilityCd <= 0 && enemy != null && enemy.isAlive()){
 			useSkill();
-			abilityCd = phase == 4 ? 1 : 2;
+			abilityCd = (phase >= 4) ? 1 : 2;
 			spend(1f);
 			return true;
 		}
@@ -78,16 +80,18 @@ public class Sukuna extends Mob {
 	private void useSkill(){
 		switch (phase){
 			case 1:
-				//解：单体远程斩击
-				GLog.w("宿傩：「解。」");
-				enemy.damage(Math.round(damageRoll() * 1.2f), this);
+				if (Random.Int(2) == 0){
+					GLog.w("宿傩：「解。」");
+					enemy.damage(Math.round(damageRoll() * 1.2f), this);
+				} else {
+					GLog.w("宿傩：「捌。」");
+					enemy.damage(Math.round(damageRoll() * 1.8f), this);
+				}
 				break;
 			case 2:
-				//开：直线火焰 + 燃烧
 				GLog.w("宿傩：「开。」");
 				enemy.damage(Math.round(damageRoll() * 1.5f), this);
 				Buff.affect(enemy, Burning.class).reignite(enemy, 3f);
-				if (Random.Int(2) == 0) summonShikigami(2);
 				break;
 			case 3:
 				startDomain();
@@ -95,14 +99,24 @@ public class Sukuna extends Mob {
 			case 4:
 				//空间斩：无视防御与闪避
 				GLog.w("宿傩：「空间斩。」");
-				int dmg = Math.round(damageRoll() * 1.8f);
-				if (enemy.sprite != null) enemy.sprite.showStatus(
-						com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite.NEGATIVE,
-						Integer.toString(dmg));
-				enemy.HP -= dmg;
-				if (enemy.HP <= 0) enemy.die(this);
+				dealDirect(enemy, Math.round(damageRoll() * 1.8f));
+				break;
+			case 5:
+				//灶开：终局火焰
+				GLog.w("宿傩：「灶开。」");
+				dealDirect(enemy, Math.round(damageRoll() * 3.0f));
+				if (enemy.isAlive()) Buff.affect(enemy, Burning.class).reignite(enemy, 5f);
 				break;
 		}
+	}
+
+	private void dealDirect(Char target, int dmg){
+		if (target == null || !target.isAlive()) return;
+		if (target.sprite != null) target.sprite.showStatus(
+				com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite.NEGATIVE,
+				Integer.toString(dmg));
+		target.HP -= dmg;
+		if (target.HP <= 0) target.die(this);
 	}
 
 	private void startDomain(){
@@ -150,6 +164,7 @@ public class Sukuna extends Mob {
 	}
 
 	private void summonShikigami(int n){
+		GLog.w("宿傩召来式神。");
 		for (int i = 0; i < n; i++){
 			int cell = findSpawnCell();
 			if (cell == -1) continue;
@@ -174,22 +189,34 @@ public class Sukuna extends Mob {
 	@Override
 	public void damage(int dmg, Object src){
 		super.damage(dmg, src);
+		checkPhase();
+	}
+
+	private void checkPhase(){
 		if (!isAlive()) return;
-		if (!phaseTransitioned){
-			if (phase == 1 && HP <= HT * 0.75f){
-				phase = 2; phaseTransitioned = true;
-				GLog.w("宿傩切换形态：火焰。");
-				abilityCd = 1;
-			} else if (phase == 2 && HP <= HT * 0.50f){
-				phase = 3; phaseTransitioned = true;
-				GLog.w("宿傩切换形态：领域。");
-				abilityCd = 1;
-			} else if (phase == 3 && HP <= HT * 0.25f){
-				phase = 4; phaseTransitioned = true;
-				GLog.w("宿傩四臂全开。");
-				abilityCd = 1;
+		int target = phase;
+		if (HP <= HT * 0.10f)      target = 5;
+		else if (HP <= HT * 0.40f) target = 4;
+		else if (HP <= HT * 0.60f) target = 3;
+		else if (HP <= HT * 0.75f) target = 2;
+
+		if (target > phase){
+			phase = target;
+			abilityCd = 1;
+			switch (phase){
+				case 2:
+					summonShikigami(2);
+					break;
+				case 3:
+					startDomain();
+					break;
+				case 4:
+					GLog.w("宿傩四臂全开。");
+					break;
+				case 5:
+					GLog.w("宿傩：「灶开。」");
+					break;
 			}
-			if (phaseTransitioned && phase > 1) phaseTransitioned = false;
 		}
 	}
 
