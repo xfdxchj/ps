@@ -71,8 +71,8 @@ public class TechniqueBook extends Item {
 	private static String fmt(float v){ return String.format(java.util.Locale.US, "%.2f", v); }
 
 	private float lvl(){ return level(); }
-	private float cangMult(){ return (1.5f + 0.15f * lvl()) * 0.7f; }
-	private float heMult(){ return (2.0f + 0.20f * lvl()) * 0.7f; }
+	private float cangMult(){ return 1.0f; }
+	private float heMult(){ return 1.0f; }
 	private float ziMult(){ return (4.0f + 0.40f * lvl()) * 0.7f; }
 	private float domainMult(){ return (2.0f + 0.20f * lvl()) * 0.7f; }
 
@@ -82,7 +82,7 @@ public class TechniqueBook extends Item {
 		if (actions.isEmpty()) return actions;
 		actions.add(AC_CANG);
 		actions.add(AC_HE);
-		if (Jujutsu.domainDepth != Dungeon.depth) actions.add(AC_DOMAIN);
+		if (hero.buff(Jujutsu.DomainCd.class) == null) actions.add(AC_DOMAIN);
 		return actions;
 	}
 
@@ -107,14 +107,17 @@ public class TechniqueBook extends Item {
 					final int target = cell;
 					final int dmg = Math.round(hero.damageRoll() * cangMult());
 					JujutsuSfx.play(JujutsuSfx.CANG);
-					JujutsuFx.cang(hero, target, () -> {
-						for (Mob m : Jujutsu.visibleEnemies(hero)){
-							pullToCell(m, target);
-							m.damage(dmg, hero);
-						}
-						Jujutsu.noteCangLanded(target);
-					});
-					Buff.affect(hero, Jujutsu.CangCd.class, 5f);
+					//END(修复·牵引无效): 立即结算移动/伤害，不依赖特效到达回调
+					for (Mob m : Jujutsu.visibleEnemies(hero)){
+						pullToCell(m, target);
+						m.damage(dmg, hero);
+					}
+					Jujutsu.noteCangLanded(target);
+					JujutsuFx.cang(hero, target, null);
+					//持续 5 回合的引力场
+					Field f = Buff.affect(hero, Field.class);
+					f.reset(target, 0);
+					Buff.affect(hero, Jujutsu.CangCd.class, 15f);
 					hero.spendAndNext(1f);
 				}
 			});
@@ -135,24 +138,27 @@ public class TechniqueBook extends Item {
 					final int target = cell;
 					final int dmg = Math.round(hero.damageRoll() * heMult());
 					JujutsuSfx.play(JujutsuSfx.HE);
-					JujutsuFx.he(hero, target, () -> {
-						for (Mob m : Jujutsu.visibleEnemies(hero)){
-							pushFromCell(m, target);
-							m.damage(dmg, hero);
+					//立即结算推开/伤害
+					for (Mob m : Jujutsu.visibleEnemies(hero)){
+						pushFromCell(m, target);
+						m.damage(dmg, hero);
+					}
+					//落点与最近一次苍重合 -> 触发茈
+					if (Jujutsu.canZiAt(target)){
+						int zi = Math.round(hero.damageRoll() * ziMult());
+						JujutsuSfx.play(JujutsuSfx.ZI);
+						JujutsuFx.ziAt(target);
+						for (Mob m : enemiesNear(target, 2)){
+							dealDirect(m, zi, hero);
 						}
-						//落点与最近一次苍重合 -> 触发茈
-						if (Jujutsu.canZiAt(target)){
-							int zi = Math.round(hero.damageRoll() * ziMult());
-							JujutsuSfx.play(JujutsuSfx.ZI);
-							JujutsuFx.ziAt(target);
-							for (Mob m : enemiesNear(target, 2)){
-								dealDirect(m, zi, hero);
-							}
-							Jujutsu.lastCangCell = -1;
-							GLog.i("苍赫重叠——虚式·茈。");
-						}
-					});
-					Buff.affect(hero, Jujutsu.HeCd.class, 5f);
+						Jujutsu.lastCangCell = -1;
+						GLog.i("苍赫重叠——虚式·茈。");
+					}
+					JujutsuFx.he(hero, target, null);
+					//持续 5 回合的斥力场
+					Field f = Buff.affect(hero, Field.class);
+					f.reset(target, 1);
+					Buff.affect(hero, Jujutsu.HeCd.class, 15f);
 					hero.spendAndNext(1f);
 				}
 			});
@@ -160,12 +166,12 @@ public class TechniqueBook extends Item {
 		}
 
 		if (AC_DOMAIN.equals(action)){
-			if (Jujutsu.domainDepth == Dungeon.depth){
-				GLog.w("这一层已经展开过无量空处了。");
+			if (hero.buff(Jujutsu.DomainCd.class) != null){
+				GLog.w("无量空处还在冷却。");
 			} else {
-				Jujutsu.domainDepth = Dungeon.depth;
 				int dmg = Math.round(hero.damageRoll() * domainMult());
 				Buff.affect(hero, DomainBuff.class).set(dmg);
+				Buff.affect(hero, Jujutsu.DomainCd.class, 300f);
 				JujutsuSfx.play(JujutsuSfx.DOMAIN);
 				JujutsuFx.domain(hero);
 				GLog.i("领域展开——无量空处。");
@@ -226,6 +232,31 @@ public class TechniqueBook extends Item {
 		if (m.HP <= 0) m.die(src);
 	}
 
+	/** 苍/赫 的持续牵引/推移场，5 回合，每回合拉/推 1 格。 */
+	public static class Field extends Buff {
+		public int cell = -1;
+		public int fieldType = 0; // 0=苍(拉), 1=赫(推)
+		private int turns = 5;
+		{ type = buffType.POSITIVE; announced = false; }
+		public void reset(int cell, int fieldType){
+			this.cell = cell; this.fieldType = fieldType; this.turns = 5;
+		}
+		@Override public boolean act(){
+			if (cell < 0 || Dungeon.hero == null){ detach(); return true; }
+			for (Mob m : Jujutsu.visibleEnemies(Dungeon.hero)){
+				if (fieldType == 0) pullToCell(m, cell); else pushFromCell(m, cell);
+			}
+			turns--;
+			if (turns <= 0){ detach(); return true; }
+			spend(TICK);
+			return true;
+		}
+		@Override public int icon(){ return com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator.MIND_VISION; }
+		@Override public String name(){ return fieldType == 0 ? "苍·引力场" : "赫·斥力场"; }
+		@Override public String toString(){ return name(); }
+		@Override public String desc(){ return (fieldType == 0 ? "每回合将视野内敌人拉向落点。" : "每回合将视野内敌人推离落点。") + " 剩余 " + turns + " 回合。"; }
+	}
+
 	/** 无量空处：3 回合领域。 */
 	public static class DomainBuff extends Buff {
 		private int turns = 0;
@@ -236,7 +267,7 @@ public class TechniqueBook extends Item {
 		}
 		public void set(int d){
 			dmg = d;
-			Jujutsu.playerDomainTurns = 3;
+			Jujutsu.playerDomainTurns = 20;
 			JujutsuOverlay.castFlash(true);
 		}
 		@Override
@@ -255,8 +286,8 @@ public class TechniqueBook extends Item {
 				}
 			}
 			turns++;
-			Jujutsu.playerDomainTurns = Math.max(0, 3 - turns);
-			if (turns >= 3){
+			Jujutsu.playerDomainTurns = Math.max(0, 20 - turns);
+			if (turns >= 20){
 				detach();
 				if (!clash){
 					for (Mob m : Jujutsu.visibleEnemies(hero)){
@@ -280,6 +311,6 @@ public class TechniqueBook extends Item {
 		@Override public int icon(){ return com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator.MIND_VISION; }
 		@Override public String name(){ return "无量空处"; }
 		@Override public String toString(){ return name(); }
-		@Override public String desc(){ return "领域还剩 " + (3 - turns) + " 回合。"; }
+		@Override public String desc(){ return "领域还剩 " + (20 - turns) + " 回合。"; }
 	}
 }

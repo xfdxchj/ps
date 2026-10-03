@@ -164,9 +164,8 @@ public class UnknownFairyTale extends Item {
 		//记下当前位置，供对话结束后返回
 		BelovedGirl.AliceReturn.setReturnPoint(hero);
 
-		//书**不消耗** —— 它与《心爱的少女》不同：
-		//那条路是"一次性道具"，这条是"通关凭证"，用掉就没了反而奇怪。
-		//而且它已经写满了，留着也不会破坏什么。
+		//END(修复·无限进 999): 使用后消耗，和《心爱的少女》一样一次性。
+		detach(hero.belongings.backpack);
 
 		com.shatteredpixel.shatteredpixeldungeon.utils.GLog
 				.i("书页翻动的声音。你被带往了某个不该存在的地方。");
@@ -240,8 +239,6 @@ public class UnknownFairyTale extends Item {
 		} catch (Throwable ignored) { }
 
 		UnknownFairyTale book = new UnknownFairyTale();
-		//END(测试/文档所有者要求): 开局书直接补满九页，方便测试 999 层
-		for (int i = 0; i < PAGES; i++) book.pages[i] = true;
 		book.identify();
 		if (!book.collect()) {
 			//背包满了就丢在脚下

@@ -129,7 +129,10 @@ public final class JujutsuFx {
 	/** 宿傩斩击：从宿傩射向目标的红色斩线。 */
 	public static void slash(Char from, Char to, boolean big){
 		if (from == null || to == null) return;
-		beam(from, to, 1f, 0.2f, 0.2f);
+		//END(修复·红色激光): 不再画红色光束，改用刺客斩击特效
+		try {
+			com.shatteredpixel.shatteredpixeldungeon.effects.Wound.hit(to, Random.Float()*360f);
+		} catch (Throwable ignored) {}
 		cellBurst(to.pos, big ? Speck.RED_LIGHT : Speck.LIGHT, big ? 16 : 8);
 		if (big) GameScene.flash(0x40FF0000);
 	}

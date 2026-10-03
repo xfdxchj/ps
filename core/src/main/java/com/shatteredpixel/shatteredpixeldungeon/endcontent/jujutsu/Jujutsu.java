@@ -135,6 +135,14 @@ public final class Jujutsu {
 		@Override public String desc(){ return "近战弹开还需 " + dispTurns() + " 回合冷却。"; }
 	}
 
+	/** 无量空处：300 回合冷却。 */
+	public static class DomainCd extends FlavourBuff {
+		@Override public int icon(){ return com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator.MIND_VISION; }
+		@Override public String name(){ return "无量空处·冷却"; }
+		@Override public String toString(){ return name(); }
+		@Override public String desc(){ return "无量空处还需 " + dispTurns() + " 回合冷却。"; }
+	}
+
 	//==== 术式冷却（苍 / 赫）====
 	public static class CangCd extends FlavourBuff {
 		@Override public int icon(){ return com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator.MARK; }

@@ -44,7 +44,7 @@ public class JujutsuOverlay extends Image {
 		if (Camera.main != null){
 			x = Camera.main.x;
 			y = Camera.main.y;
-			scale.set(Camera.main.width, Camera.main.height);
+			scale.set(Camera.main.width / width, Camera.main.height / height);
 		}
 
 		//展开瞬间：先黑，再白/红，然后落到领域底色
