@@ -37,6 +37,18 @@ public class Roots extends FlavourBuff {
 	public boolean attachTo( Char target ) {
 		if (!target.flying && super.attachTo( target )) {
 			target.rooted = true;
+			//END(DEBUG·酸蚀缠绕自己): 临时定位，英雄被缠时打印调用来源
+			if (target instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero){
+				StringBuilder sb = new StringBuilder("Roots on HERO:");
+				for (StackTraceElement e : new Throwable().getStackTrace()){
+					if (e.getClassName().contains("shatteredpixeldungeon")){
+						sb.append(" | ").append(e.getClassName()).append('.')
+								.append(e.getMethodName()).append(':').append(e.getLineNumber());
+					}
+				}
+				try { com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w(sb.toString()); }
+				catch (Throwable ignored) {}
+			}
 			return true;
 		} else {
 			return false;
