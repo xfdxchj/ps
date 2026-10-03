@@ -537,10 +537,16 @@ public final class ChallengeSfx {
 		boolean high = hero.HP >= hero.HT * 0.60f;
 		if (low){
 			winningPlaying = true;
-			com.watabou.noosa.audio.Music.INSTANCE.play(WINNING_TRACK, true);
+			//单播放器：关掉当前 BGM 再渐入雨爱（若已在播则幂等返回）
+			com.watabou.noosa.audio.Music.INSTANCE.fadeTo(WINNING_TRACK, true, 0.7f);
 		} else if (high && winningPlaying){
 			winningPlaying = false;
-			if (Dungeon.level != null) Dungeon.level.playLevelMusic();
+			//雨爱渐出后再恢复本层 BGM
+			com.watabou.noosa.audio.Music.INSTANCE.fadeOut(0.7f, new com.watabou.utils.Callback() {
+				@Override public void call(){
+					if (Dungeon.level != null) Dungeon.level.playLevelMusic();
+				}
+			});
 		}
 	}
 

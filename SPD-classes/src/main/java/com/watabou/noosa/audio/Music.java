@@ -49,6 +49,10 @@ public enum Music {
 	private float fadeTotal = -1f;
 	private Callback onFadeOut = null;
 
+	//END(233 单播放器渐入): 主播放器切入新曲后从 0 渐到 1
+	private float fadeInTime = 0f;
+	private float fadeInTotal = 0f;
+
 	String[] trackList;
 	float[] trackChances;
 	private final ArrayList<String> trackQueue = new ArrayList<>();
@@ -274,6 +278,15 @@ public enum Music {
 	}
 
 	public synchronized void update(){
+		//END(233): 渐入推进
+		if (fadeInTotal > 0f && !paused){
+			fadeInTime += Game.elapsed;
+			if (fadeInTime >= fadeInTotal){
+				fadeInTime = fadeInTotal = 0f;
+			}
+			if (player != null) player.setVolume(volumeWithFade());
+		}
+
 		if (fadeTotal > 0f && !paused){
 			fadeTime += Game.elapsed;
 
@@ -517,6 +530,18 @@ public enum Music {
 		duck = duckTarget = 1f;
 	}
 	
+	/** END(233): 单播放器淡出当前曲 -> 切到新曲 -> 从 0 渐入。 */
+	public synchronized void fadeTo( String track, boolean looping, float duration ){
+		if (track == null) return;
+		if (isPlaying() && lastPlayed != null && lastPlayed.equals(track)) return;
+		fadeOut(duration, () -> {
+			play(track, looping);
+			fadeInTotal = Math.max(0.01f, duration);
+			fadeInTime = 0f;
+			if (player != null) player.setVolume(0f);
+		});
+	}
+
 	public synchronized void volume( float value ) {
 		volume = value;
 		if (player != null) {
@@ -526,6 +551,9 @@ public enum Music {
 
 	private synchronized float volumeWithFade(){
 		float base = volume * duck;
+		if (fadeInTotal > 0f){
+			base *= Math.min(1f, Math.max(0f, fadeInTime / fadeInTotal));
+		}
 		if (fadeTotal > 0f){
 			return Math.max(0, base * ((fadeTotal - fadeTime) / fadeTotal));
 		} else {
