@@ -30,7 +30,7 @@ public class TechniqueBook extends Item {
 	public static final int MAX_LEVEL = 10;
 
 	{
-		image = ItemSpriteSheet.GRIMM_BELOVED_GIRL; //占位贴图，后续可换
+		image = ItemSpriteSheet.TECHNIQUE_BOOK;
 		unique = true;
 		bones = false;
 	}

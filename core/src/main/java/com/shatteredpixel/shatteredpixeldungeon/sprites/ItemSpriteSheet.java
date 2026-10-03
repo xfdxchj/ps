@@ -1456,6 +1456,8 @@ public class ItemSpriteSheet {
 	public static final int GRIMM_PURSE      = 850;
 	public static final int GRIMM_DOG_MILK   = 851;
 	public static final int GRIMM_DICE       = 852;
+	//END(235 术式之书)
+	public static final int TECHNIQUE_BOOK  = 853;
 
 	static {
 
@@ -1497,6 +1499,7 @@ public class ItemSpriteSheet {
 		assignItemRect(GRIMM_PURSE,      16, 16);
 		assignItemRect(GRIMM_DOG_MILK,   16, 16);
 		assignItemRect(GRIMM_DICE,       16, 16);
+		assignItemRect(TECHNIQUE_BOOK,   16, 16);
 	}
 	public static final int EVOLUTION = 832;
 	public static final int UPGRADE_DUST = 833;
