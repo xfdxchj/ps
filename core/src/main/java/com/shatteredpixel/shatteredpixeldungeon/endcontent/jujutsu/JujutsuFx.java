@@ -93,13 +93,13 @@ public final class JujutsuFx {
 		JujutsuBolt bolt = (JujutsuBolt) hero.sprite.parent.recycle(JujutsuBolt.class);
 		bolt.reset(hero.pos, m.pos, JujutsuBolt.ZI, () -> {
 			if (m.sprite != null && m.sprite.parent != null){
-				JujutsuRing ring = (JujutsuRing) m.sprite.parent.recycle(JujutsuRing.class);
-				ring.reset(m.pos, JujutsuBolt.ZI);
+				JujutsuBurst burst = (JujutsuBurst) m.sprite.parent.recycle(JujutsuBurst.class);
+				burst.reset(m.pos);
 			}
-			cellBurst(m.pos, Speck.STAR, 16);
-			cellBurst(m.pos, Speck.SMOKE, 10);
-			GameScene.flash(0x6030A060);
-			if (com.watabou.noosa.Camera.main != null) com.watabou.noosa.Camera.main.shake(0.25f, 1.2f);
+			cellBurst(m.pos, Speck.STAR, 24);
+			cellBurst(m.pos, Speck.SMOKE, 12);
+			GameScene.flash(0xA0FFFFFF);
+			if (com.watabou.noosa.Camera.main != null) com.watabou.noosa.Camera.main.shake(0.35f, 2.0f);
 		});
 	}
 
@@ -124,6 +124,18 @@ public final class JujutsuFx {
 		if (big) GameScene.flash(0x40FF0000);
 	}
 
+	/** 空间斩：黑色裂缝 + 白闪。 */
+	public static void spaceSlash(Char to){
+		if (to == null) return;
+		if (to.sprite != null && to.sprite.parent != null){
+			JujutsuRift rift = (JujutsuRift) to.sprite.parent.recycle(JujutsuRift.class);
+			rift.reset(to.pos);
+		}
+		beam(to, to, 1f, 1f, 1f);
+		GameScene.flash(0x80FFFFFF);
+		if (com.watabou.noosa.Camera.main != null) com.watabou.noosa.Camera.main.shake(0.25f, 1.5f);
+	}
+
 	/** 伏魔御厨子：全屏血色。 */
 	public static void shrine(){
 		GameScene.flash(0x60FF0000);
@@ -132,9 +144,10 @@ public final class JujutsuFx {
 	/** 灶开：火焰喷射。 */
 	public static void fuga(Char from, Char to){
 		if (from != null && to != null){
-			beam(from, to, 1f, 0.5f, 0.1f);
-			cellBurst(to.pos, Speck.INFERNO, 20);
+			beam(from, to, 0.6f, 0.85f, 1f);
+			cellBurst(to.pos, Speck.BLUE_LIGHT, 22);
+			cellBurst(to.pos, Speck.STAR, 12);
 		}
-		GameScene.flash(0x60FF4400);
+		GameScene.flash(0x80AAD4FF);
 	}
 }

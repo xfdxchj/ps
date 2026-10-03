@@ -91,6 +91,7 @@ public class Sukuna extends Mob {
 					GLog.w("宿傩：「捌。」");
 					JujutsuFx.slash(this, enemy, true);
 					for (int i = 0; i < 3 && enemy.isAlive(); i++){
+						try { com.shatteredpixel.shatteredpixeldungeon.effects.Wound.hit(enemy, Random.Float()*360f); } catch (Throwable ignored) {}
 						enemy.damage(Math.round(damageRoll() * 0.6f), this);
 					}
 				}
@@ -108,7 +109,7 @@ public class Sukuna extends Mob {
 				//空间斩：无视防御与闪避
 				JujutsuSfx.play(JujutsuSfx.SPACE);
 				GLog.w("宿傩：「空间斩。」");
-				JujutsuFx.slash(this, enemy, true);
+				JujutsuFx.spaceSlash(enemy);
 				dealDirect(enemy, Math.round(damageRoll() * 1.8f));
 				break;
 			case 5:
@@ -144,6 +145,7 @@ public class Sukuna extends Mob {
 	private void domainTick(){
 		GLog.w("伏魔御厨子：斩击不断。");
 		if (enemy != null && enemy.isAlive()){
+			try { com.shatteredpixel.shatteredpixeldungeon.effects.Wound.hit(enemy, Random.Float()*360f); } catch (Throwable ignored) {}
 			enemy.damage(Math.round(damageRoll() * 0.8f), this);
 		}
 		domainTurns--;
