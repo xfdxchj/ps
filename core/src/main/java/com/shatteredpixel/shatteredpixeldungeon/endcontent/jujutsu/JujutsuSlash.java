@@ -30,6 +30,8 @@ public class JujutsuSlash extends Image {
 		float travel = (float)(Math.atan2(b.y-a.y, b.x-a.x) * 180 / Math.PI);
 		// 弧形刃口朝飞行方向
 		this.angle = travel - 90f;
+		//END(修复·空间斩贴图上下翻转): 素材本身上下颠倒，渲染时翻回来
+		this.flipVertical = true;
 		x = a.x - origin.x; y = a.y - origin.y;
 		alpha(1f); scale.set(1f); revive();
 	}

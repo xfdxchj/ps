@@ -177,7 +177,7 @@ public final class ChallengeRegistry {
 		done(all, 236, "五条悟", "gojo", "咒会", ChallengeDef.TENDENCY_BENEFIT, 3, ChallengeDef.TIER_MEDIUM, "",
 			"获得五条悟的被动：六眼（充能效率 +100%）、无下限（受到伤害 -30%，近战攻击者弹开 1 格，2 回合 CD）、反转术式（每回合回复 2% 最大生命，击杀额外 +5%）。");
 		done(all, 237, "宿傩", "sukuna", "咒会", ChallengeDef.TENDENCY_MONSTER, 3, ChallengeDef.TIER_HARD, "",
-			"最终 Boss 古神替换为四阶段宿傩：75% 召唤式神、60% 领域（5 回合，4 个核心）、40% 四臂（空间斩无视防御、攻速提升）、10% 灶开。无适应机制。");
+			"最终 Boss 古神替换为宿傩：60% 领域·伏魔御厨子（5 回合，无核心）、40% 四臂（空间斩无视防御、攻速提升）、10% 灶开。无适应机制，不召唤式神。");
 		done(all, 238, "咒术回战", "jujutsu_kaisen", "咒会", ChallengeDef.TENDENCY_MONSTER, 3, ChallengeDef.TIER_EASY, "",
 			"所有怪物生命上限与攻击属性 +100%。");
 		done(all, 234, "仰望虚空", "open_sky", "地图", ChallengeDef.TENDENCY_TWOSIDED, 2, ChallengeDef.TIER_MEDIUM, "",

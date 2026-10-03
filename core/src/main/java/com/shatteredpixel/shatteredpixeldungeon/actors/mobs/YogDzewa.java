@@ -157,6 +157,11 @@ public class YogDzewa extends Mob {
 		return INFINITE_ACCURACY;
 	}
 
+	/** END(宿傩替换): 供子类复用 Mob 的常规 AI，而不触发古神的阶段逻辑。 */
+	protected boolean mobAct(){
+		return super.act();
+	}
+
 	@Override
 	protected boolean act() {
 		//char logic

@@ -2,7 +2,7 @@
  * 破碎的地牢 (End fork) — 挑战「宿傩」的最终 Boss：两面宿傩（四阶段）。
  *
  * 替换 25 层的古神。无「适应」机制；免疫无量空处的眩晕。
- * 阶段：75% 召唤式神 / 60% 领域 / 40% 四臂 / 10% 灶开。
+ * 阶段：60% 领域 / 40% 四臂 / 10% 灶开。
  */
 package com.shatteredpixel.shatteredpixeldungeon.endcontent.jujutsu;
 
@@ -20,7 +20,7 @@ import com.watabou.utils.Bundle;
 import com.watabou.utils.PathFinder;
 import com.watabou.utils.Random;
 
-public class Sukuna extends Mob {
+public class Sukuna extends com.shatteredpixel.shatteredpixeldungeon.actors.mobs.YogDzewa {
 
 	{
 		spriteClass = SukunaSprite.class;
@@ -48,6 +48,22 @@ public class Sukuna extends Mob {
 	/** 不走古神的多阶段存活判定，死了就是死了。 */
 	@Override public boolean isAlive(){ return HP > 0; }
 
+	/** 不能走古神的 phase==0 无敌判定，否则宿傩会打不死。 */
+	@Override public boolean isInvulnerable(Class effect){
+		return buff(com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.duelist
+				.Challenge.SpectatorFreeze.class) != null
+				|| buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs
+				.Invulnerability.class) != null;
+	}
+
+	/** 不走古神的 notice()：它会把古神 phase 设成 1，进而触发召唤拳头。 */
+	@Override public void notice(){
+		if (!com.shatteredpixel.shatteredpixeldungeon.ui.BossHealthBar.isAssigned()){
+			com.shatteredpixel.shatteredpixeldungeon.ui.BossHealthBar.assignBoss(this);
+			yell("「让我看看你能撑多久。」");
+		}
+	}
+
 	@Override public int damageRoll(){ return Random.NormalIntRange(28, 42); }
 	@Override public int attackSkill(Char target){ return 45; }
 	@Override public int drRoll(){ return Random.NormalIntRange(0, 18); }
@@ -55,7 +71,7 @@ public class Sukuna extends Mob {
 	/** 四臂全开：攻速 +50%。 */
 	@Override public float attackDelay(){
 		float base = super.attackDelay();
-		return phase >= 4 ? Math.max(0.1f, base / 1.5f) : base;
+		return phase >= 3 ? Math.max(0.1f, base / 1.5f) : base;
 	}
 
 	@Override
@@ -65,7 +81,7 @@ public class Sukuna extends Mob {
 		if (abilityCd > 0) abilityCd--;
 		if (domainCd > 0) domainCd--;
 
-		if (phase == 3 && domainTurns > 0){
+		if (phase == 2 && domainTurns > 0){
 			domainTick();
 			spend(1f);
 			return true;
@@ -73,12 +89,12 @@ public class Sukuna extends Mob {
 
 		if (abilityCd <= 0 && enemy != null && enemy.isAlive()){
 			useSkill();
-			abilityCd = (phase >= 4) ? 2 : 3; //END: 技能 CD，不再每回合无限打
+			abilityCd = (phase >= 3) ? 2 : 3; //END: 技能 CD，不再每回合无限打
 			spend(1f);
 			return true;
 		}
 
-		return super.act();
+		return mobAct();
 	}
 
 	private void useSkill(){
@@ -101,27 +117,22 @@ public class Sukuna extends Mob {
 				}
 				break;
 			case 2:
-				JujutsuSfx.play(JujutsuSfx.FIRE);
-				GLog.w("宿傩：「开。」");
-				enemy.damage(Math.round(damageRoll() * 1.5f), this);
-				Buff.affect(enemy, Burning.class).reignite(enemy, 3f);
-				break;
-			case 3:
 				if (domainCd <= 0) startDomain();
 				else {
+					JujutsuSfx.play(JujutsuSfx.FIRE);
 					GLog.w("宿傩：「开。」");
 					enemy.damage(Math.round(damageRoll() * 1.5f), this);
 					Buff.affect(enemy, Burning.class).reignite(enemy, 3f);
 				}
 				break;
-			case 4:
+			case 3:
 				//空间斩：无视防御与闪避
 				JujutsuSfx.play(JujutsuSfx.SPACE);
 				GLog.w("宿傩：「空间斩。」");
 				JujutsuFx.spaceSlash(this, enemy);
 				dealDirect(enemy, Math.round(damageRoll() * 1.8f));
 				break;
-			case 5:
+			case 4:
 				//灶开：终局火焰
 				JujutsuSfx.play(JujutsuSfx.FUGA);
 				GLog.w("宿傩：「灶开。」");
@@ -174,41 +185,6 @@ public class Sukuna extends Mob {
 		}
 	}
 
-	private void spawnCores(){
-		for (int i = 0; i < 4; i++){
-			int cell = findSpawnCell();
-			if (cell == -1) continue;
-			SukunaMinion core = new SukunaMinion();
-			core.isCore = true;
-			core.makeCore();
-			core.pos = cell;
-			com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.add(core);
-		}
-	}
-
-	private void summonShikigami(int n){
-		GLog.w("宿傩召来式神。");
-		for (int i = 0; i < n; i++){
-			int cell = findSpawnCell();
-			if (cell == -1) continue;
-			SukunaMinion m = new SukunaMinion();
-			m.isCore = false;
-			m.pos = cell;
-			com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene.add(m);
-		}
-	}
-
-	private int findSpawnCell(){
-		for (int i = 0; i < 40; i++){
-			int cell = pos + PathFinder.NEIGHBOURS8[Random.Int(8)] * (1 + Random.Int(4));
-			if (!Dungeon.level.insideMap(cell)) continue;
-			if (!Dungeon.level.passable[cell]) continue;
-			if (Actor.findChar(cell) != null) continue;
-			return cell;
-		}
-		return -1;
-	}
-
 	@Override
 	public void onAdd(){
 		super.onAdd();
@@ -228,10 +204,9 @@ public class Sukuna extends Mob {
 	private void checkPhase(){
 		if (!isAlive()) return;
 		int target = phase;
-		if (HP <= HT * 0.10f)      target = 5;
-		else if (HP <= HT * 0.40f) target = 4;
-		else if (HP <= HT * 0.60f) target = 3;
-		else if (HP <= HT * 0.75f) target = 2;
+		if (HP <= HT * 0.10f)      target = 4;
+		else if (HP <= HT * 0.40f) target = 3;
+		else if (HP <= HT * 0.60f) target = 2;
 
 		if (target > phase){
 			phase = target;
@@ -239,15 +214,12 @@ public class Sukuna extends Mob {
 			JujutsuSfx.play(JujutsuSfx.SUKUNA_PHASE);
 			switch (phase){
 				case 2:
-					summonShikigami(2);
-					break;
-				case 3:
 					startDomain();
 					break;
-				case 4:
+				case 3:
 					GLog.w("宿傩四臂全开。");
 					break;
-				case 5:
+				case 4:
 					GLog.w("宿傩：「灶开。」");
 					break;
 			}
@@ -258,12 +230,15 @@ public class Sukuna extends Mob {
 	public void die(Object cause){
 		GLog.w("宿傩：「不错。」");
 		Jujutsu.sukunaDomainTurns = 0;
+		//END(真替换): 继承 YogDzewa.die()，解封 / bossSlain / 图鉴都由古神那套走完
 		super.die(cause);
 	}
 
-	private static final String PHASE = "phase";
-	private static final String DOMAIN = "domain_turns";
-	private static final String ABILITY = "ability_cd";
+	//END(真替换): 键名避开古神自己的 "phase"/"ability_cd" 等，
+	//否则同一个 Bundle 键会被双方覆写，读档后古神 phase 变成宿傩的阶段。
+	private static final String PHASE = "sukuna_phase";
+	private static final String DOMAIN = "sukuna_domain_turns";
+	private static final String ABILITY = "sukuna_ability_cd";
 
 	@Override
 	public void storeInBundle(Bundle bundle){
@@ -271,7 +246,7 @@ public class Sukuna extends Mob {
 		bundle.put(PHASE, phase);
 		bundle.put(DOMAIN, domainTurns);
 		bundle.put(ABILITY, abilityCd);
-		bundle.put("domain_cd", domainCd);
+		bundle.put("sukuna_domain_cd", domainCd);
 	}
 
 	@Override
@@ -280,7 +255,9 @@ public class Sukuna extends Mob {
 		phase = bundle.getInt(PHASE);
 		domainTurns = bundle.getInt(DOMAIN);
 		abilityCd = bundle.getInt(ABILITY);
-		domainCd = bundle.getInt("domain_cd");
+		domainCd = bundle.getInt("sukuna_domain_cd");
+		try { com.shatteredpixel.shatteredpixeldungeon.ui.BossHealthBar.assignBoss(this); }
+		catch (Throwable ignored) {}
 	}
 
 	public int phase(){ return phase; }

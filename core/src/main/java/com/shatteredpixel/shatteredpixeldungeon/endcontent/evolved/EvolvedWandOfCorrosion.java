@@ -54,7 +54,10 @@ public class EvolvedWandOfCorrosion extends WandOfCorrosion {
 			Char ch = Actor.findChar(bolt.collisionPos + i);
 			if (ch != null) {
 				wandProc(ch, chargesPerCast());
-				Buff.affect(ch, Roots.class, 1f);
+				//END(修复·蚀骨法杖缠绕自己): 只缠敌人，不缠玩家
+				if (ch != Dungeon.hero && ch.alignment == Char.Alignment.ENEMY){
+					Buff.affect(ch, Roots.class, 1f);
+				}
 
 				if (i == 0 && ch instanceof DwarfKing){
 					Statistics.qualifiedForBossChallengeBadge = false;

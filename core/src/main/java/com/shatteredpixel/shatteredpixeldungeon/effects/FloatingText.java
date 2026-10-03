@@ -270,6 +270,23 @@ public class FloatingText extends RenderedTextBlock {
 			}
 		});
 	}
+
+	/** END(233 是我赢了): 放大字号的浮动文字（在角色头顶显示台词）。 */
+	public static void showScaled( float x, float y, String text, int color, float scale ) {
+		Game.runOnRenderThread(new Callback() {
+			@Override
+			public void call() {
+				FloatingText txt = GameScene.status();
+				if (txt != null){
+					txt.reset(x, y, text, color, NO_ICON, false);
+					txt.zoom( scale / (float)PixelScene.defaultZoom );
+					txt.setPos(
+							PixelScene.align( Camera.main, x - txt.width() / 2f ),
+							PixelScene.align( Camera.main, y - txt.height() ) );
+				}
+			}
+		});
+	}
 	
 	private static void push( FloatingText txt, int key ) {
 		

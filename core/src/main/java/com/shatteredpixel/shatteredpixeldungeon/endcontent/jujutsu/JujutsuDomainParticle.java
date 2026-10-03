@@ -11,18 +11,22 @@ public class JujutsuDomainParticle extends Image {
 
 	private static final int SIZE = 7;
 
-	public static final Emitter.Factory FACTORY = new Emitter.Factory() {
-		@Override
-		public void emit( Emitter emitter, int index, float x, float y ) {
-			((JujutsuDomainParticle)emitter.recycle( JujutsuDomainParticle.class )).reset( x, y );
-		}
-	};
+	/** 默认（无量空处）白色粒子工厂。 */
+	public static final Emitter.Factory FACTORY = factory(0xFFFFFFFF);
+	/** 伏魔御厨子用的红色粒子工厂。 */
+	public static final Emitter.Factory FACTORY_RED = factory(0xFFFF5555);
+
+	public static Emitter.Factory factory(final int tint){
+		return new Emitter.Factory() {
+			@Override
+			public void emit( Emitter emitter, int index, float x, float y ) {
+				((JujutsuDomainParticle)emitter.recycle( JujutsuDomainParticle.class )).reset( x, y, tint );
+			}
+		};
+	}
 
 	private float lifespan;
 	private float left;
-	private int tintColor = 0xFFFFFFFF;
-
-	public void setTint(int color){ tintColor = color; }
 
 	public JujutsuDomainParticle() {
 		super();
@@ -30,7 +34,7 @@ public class JujutsuDomainParticle extends Image {
 		origin.set( SIZE / 2f );
 	}
 
-	public void reset( float x, float y ) {
+	public void reset( float x, float y, int tintColor ) {
 		revive();
 		this.x = x;
 		this.y = y;

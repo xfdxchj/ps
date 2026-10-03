@@ -853,11 +853,17 @@ public final class ChallengeSfx {
 		}
 	}
 
-	/** 在角色头顶显示一句台词（走 GLog，与仓内其它提示一致）。 */
+	/** END(233): 台词既进日志，也放大显示在角色头顶。 */
 	private static void say(com.shatteredpixel.shatteredpixeldungeon.actors.Char ch, String key) {
 		String text = com.shatteredpixel.shatteredpixeldungeon.messages.Messages.get(
 				ChallengeSfx.class, key);
 		com.shatteredpixel.shatteredpixeldungeon.utils.GLog.i(text);
+		if (ch != null && ch.sprite != null){
+			float x = ch.sprite.center().x;
+			float y = ch.sprite.y - 2f;
+			com.shatteredpixel.shatteredpixeldungeon.effects.FloatingText.showScaled(
+					x, y, text, 0xFFFFE066, 1.6f);
+		}
 	}
 
 	/**

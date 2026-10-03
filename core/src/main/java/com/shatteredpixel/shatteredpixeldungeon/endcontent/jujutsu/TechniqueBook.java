@@ -34,6 +34,9 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 		image = ItemSpriteSheet.TECHNIQUE_BOOK;
 		chargeCap = 10;
 		charge = 10;
+		//END(修复·英雄变成 21 亿): Artifact.visiblyUpgraded() 用 levelCap 当除数，
+		//levelCap 默认 0 时 level()>0 会得到 +Infinity -> Math.round = Integer.MAX_VALUE。
+		levelCap = MAX_LEVEL;
 		defaultAction = AC_OPEN; //快捷栏使用打开术式菜单
 		unique = true;
 		bones = false;
@@ -138,16 +141,18 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 					final int dmg = Math.round(hero.damageRoll() * cangMult());
 					JujutsuSfx.play(JujutsuSfx.CANG);
 					gainUse();
-					//END(修订): 球到达落点后才产生牵引与 5 回合引力场
-					JujutsuFx.cang(hero, target, null);
-					for (Mob m : Jujutsu.visibleEnemies(hero)){
-						pullToCell(m, target);
-						m.damage(dmg, hero);
-					}
-					Jujutsu.noteCangLanded(target);
-					CangField f = Buff.affect(hero, CangField.class);
-					f.reset(target);
 					Buff.affect(hero, Jujutsu.CangCd.class, 15f);
+					//END(修订): 球飞过去 -> 停在那一格 -> 成为 5 回合引力场。
+					//到达前不在落点预生成球；到达后才结算牵引/伤害。
+					JujutsuFx.cang(hero, target, () -> {
+						for (Mob m : Jujutsu.visibleEnemies(hero)){
+							pullToCell(m, target);
+							m.damage(dmg, hero);
+						}
+						Jujutsu.noteCangLanded(target);
+						CangField f = Buff.affect(hero, CangField.class);
+						f.reset(target);
+					});
 					hero.spendAndNext(1f);
 				}
 			});
@@ -174,25 +179,34 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 					final int dmg = Math.round(hero.damageRoll() * heMult());
 					JujutsuSfx.play(JujutsuSfx.HE);
 					gainUse();
-					//END(修订): 球到达后才推开；若与苍落点重合，此时才触发茈
-					JujutsuFx.he(hero, target, null);
-					for (Mob m : Jujutsu.visibleEnemies(hero)){
-						pushFromCell(m, target);
-						m.damage(dmg, hero);
-					}
-					if (Jujutsu.canZiAt(target)){
-						int zi = Math.round(hero.damageRoll() * ziMult());
-						JujutsuSfx.play(JujutsuSfx.ZI);
-						JujutsuFx.ziAt(target);
-						for (Mob m : enemiesNear(target, 2)){
-							dealDirect(m, zi, hero);
-						}
-						Jujutsu.lastCangCell = -1;
-						GLog.i("苍赫重叠——虚式·茈。");
-					}
-					HeField f = Buff.affect(hero, HeField.class);
-					f.reset(target);
 					Buff.affect(hero, Jujutsu.HeCd.class, 15f);
+					//END(修订): 球飞过去 -> 到达后才推开；
+					//若与苍的球停在同格：两球一起消失并触发茈。
+					JujutsuFx.he(hero, target, () -> {
+						for (Mob m : Jujutsu.visibleEnemies(hero)){
+							pushFromCell(m, target);
+							m.damage(dmg, hero);
+						}
+						if (Jujutsu.canZiAt(target)){
+							//碰撞：赫球也不停留，苍球消失
+							JujutsuBolt.cancelPersist(JujutsuBolt.HE);
+							JujutsuBolt.dismiss(JujutsuBolt.CANG);
+							CangField cf = hero.buff(CangField.class);
+							if (cf != null) cf.detach();
+
+							int zi = Math.round(hero.damageRoll() * ziMult());
+							JujutsuSfx.play(JujutsuSfx.ZI);
+							JujutsuFx.ziAt(target);
+							for (Mob m : enemiesNear(target, 2)){
+								dealDirect(m, zi, hero);
+							}
+							Jujutsu.lastCangCell = -1;
+							GLog.i("苍赫重叠——虚式·茈。");
+						} else {
+							HeField f = Buff.affect(hero, HeField.class);
+							f.reset(target);
+						}
+					});
 					hero.spendAndNext(1f);
 				}
 			});
@@ -298,14 +312,15 @@ public class TechniqueBook extends com.shatteredpixel.shatteredpixeldungeon.item
 		{ type = buffType.POSITIVE; announced = false; }
 		public void reset(int cell){
 			this.cell = cell; this.turns = 5;
-			JujutsuFieldFx.show(cell, fieldKind());
-			JujutsuOverlay.ensure();
+			//END(修订): 视觉球由 JujutsuBolt 自己负责（飞到落点后停留），
+			//这里只记录牵引/推移位置与回合数。
 		}
 		protected abstract int fieldKind();
 		@Override
 		public void detach(){
 			super.detach();
-			JujutsuFieldFx.hide(fieldKind());
+			//场结束时让停留的光球消失
+			JujutsuBolt.dismiss(fieldKind());
 		}
 		@Override public boolean act(){
 			if (cell < 0 || Dungeon.hero == null){ detach(); return true; }
