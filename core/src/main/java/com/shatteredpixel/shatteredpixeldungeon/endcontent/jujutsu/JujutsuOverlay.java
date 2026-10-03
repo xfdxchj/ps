@@ -86,17 +86,30 @@ public class JujutsuOverlay extends Image {
 		float target;
 		int color;
 		if (clash){
-			target = 0.30f; color = 0xFF6A20B0;   //对撞：紫
+			target = 0f; color = 0xFFFFFF;   //对撞也不遮罩
+			particleTimer -= Game.elapsed;
+			if (particleTimer <= 0f){ particleTimer = 0.2f; spawnDomainParticles(); }
 		} else if (player){
-			//END(修订): 无量空处**不要遮罩层**，改为画面持续粒子
+			//END(修订): 无量空处**不要遮罩层**，改为画面持续粒子（0.2 秒一批）
 			target = 0f; color = 0xFFFFFF;
 			particleTimer -= Game.elapsed;
 			if (particleTimer <= 0f){
-				particleTimer = 0.06f;
+				particleTimer = 0.2f;
 				spawnDomainParticles();
 			}
 		} else if (sukuna){
-			target = 0.45f; color = 0xFF520808;   //伏魔御厨子：血红
+			//END(修订): 伏魔御厨子也不遮罩，改为持续刺客斩击特效（0.2 秒）
+			target = 0f; color = 0xFFFFFF;
+			particleTimer -= Game.elapsed;
+			if (particleTimer <= 0f){
+				particleTimer = 0.2f;
+				if (Dungeon.hero != null){
+					try {
+						com.shatteredpixel.shatteredpixeldungeon.effects.Wound.hit(
+								Dungeon.hero, com.watabou.utils.Random.Float() * 360f);
+					} catch (Throwable ignored) {}
+				}
+			}
 		} else {
 			target = 0f; color = 0xFFFFFF;
 		}

@@ -42,6 +42,7 @@ public class Sukuna extends Mob {
 	private int abilityCd = 3;
 	private int domainTurns = 0;
 	private int coresLeft = 0;
+	private int domainCd = 0;
 
 	public boolean immuneToDomainStun(){ return true; }
 
@@ -62,6 +63,7 @@ public class Sukuna extends Mob {
 		if (!isAlive()) return true;
 
 		if (abilityCd > 0) abilityCd--;
+		if (domainCd > 0) domainCd--;
 
 		if (phase == 3 && domainTurns > 0){
 			domainTick();
@@ -107,7 +109,12 @@ public class Sukuna extends Mob {
 				Buff.affect(enemy, Burning.class).reignite(enemy, 3f);
 				break;
 			case 3:
-				startDomain();
+				if (domainCd <= 0) startDomain();
+				else {
+					GLog.w("宿傩：「开。」");
+					enemy.damage(Math.round(damageRoll() * 1.5f), this);
+					Buff.affect(enemy, Burning.class).reignite(enemy, 3f);
+				}
 				break;
 			case 4:
 				//空间斩：无视防御与闪避
@@ -166,6 +173,7 @@ public class Sukuna extends Mob {
 			Jujutsu.sukunaDomainTurns = 0;
 			coresLeft = 0;
 			GLog.i("伏魔御厨子消散了。");
+			domainCd = 20; //END: 20 回合领域 CD
 			abilityCd = 2;
 		}
 	}
@@ -175,6 +183,7 @@ public class Sukuna extends Mob {
 			coresLeft--;
 			if (coresLeft <= 0){
 				domainTurns = 0;
+				domainCd = 20;
 				GLog.i("四核尽毁。伏魔御厨子崩解。");
 			}
 		}
@@ -276,6 +285,7 @@ public class Sukuna extends Mob {
 		bundle.put(DOMAIN, domainTurns);
 		bundle.put(CORES, coresLeft);
 		bundle.put(ABILITY, abilityCd);
+		bundle.put("domain_cd", domainCd);
 	}
 
 	@Override
@@ -285,6 +295,7 @@ public class Sukuna extends Mob {
 		domainTurns = bundle.getInt(DOMAIN);
 		coresLeft = bundle.getInt(CORES);
 		abilityCd = bundle.getInt(ABILITY);
+		domainCd = bundle.getInt("domain_cd");
 	}
 
 	public int phase(){ return phase; }
