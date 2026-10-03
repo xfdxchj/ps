@@ -188,7 +188,7 @@ public class TechniqueBook extends Item {
 		public void set(int d){
 			dmg = d;
 			Jujutsu.playerDomainTurns = 3;
-			JujutsuOverlay.ensure();
+			JujutsuOverlay.castFlash(true);
 		}
 		@Override
 		public boolean act(){

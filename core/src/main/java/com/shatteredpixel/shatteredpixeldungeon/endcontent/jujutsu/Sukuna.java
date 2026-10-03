@@ -138,7 +138,7 @@ public class Sukuna extends Mob {
 		JujutsuFx.shrine();
 		domainTurns = 5;
 		Jujutsu.sukunaDomainTurns = 5;
-		JujutsuOverlay.ensure();
+		JujutsuOverlay.castFlash(false);
 		coresLeft = 4;
 		spawnCores();
 		CellEmitter.get(pos).burst(Speck.factory(Speck.LIGHT), 12);
