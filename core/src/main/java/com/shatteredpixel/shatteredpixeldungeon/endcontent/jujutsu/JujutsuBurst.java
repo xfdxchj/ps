@@ -30,7 +30,7 @@ public class JujutsuBurst extends Image {
 		com.watabou.utils.PointF p = DungeonTilemap.tileToWorld(cell);
 		x = p.x + DungeonTilemap.SIZE/2f - origin.x;
 		y = p.y + DungeonTilemap.SIZE/2f - origin.y;
-		life = 0f; scale.set(0.3f); alpha(1f); revive();
+		life = 0f; scale.set(0.4f); alpha(1f); revive();
 	}
 
 	@Override
@@ -39,7 +39,7 @@ public class JujutsuBurst extends Image {
 		life += Game.elapsed;
 		float p = life / MAX;
 		if (p >= 1f){ killAndErase(); return; }
-		scale.set(0.3f + p * 1.6f);
+		scale.set(0.4f + p * 2.8f);
 		alpha(1f - p * p);
 		frame(films[type].get(Math.min(5, (int)(p * 6))));
 	}
