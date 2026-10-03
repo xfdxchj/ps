@@ -14,7 +14,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
-import com.shatteredpixel.shatteredpixeldungeon.sprites.YogSprite;
+import com.shatteredpixel.shatteredpixeldungeon.sprites.SukunaSprite;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.PathFinder;
@@ -23,7 +23,7 @@ import com.watabou.utils.Random;
 public class Sukuna extends Mob {
 
 	{
-		spriteClass = YogSprite.class;
+		spriteClass = SukunaSprite.class;
 
 		HP = HT = 1400;
 		EXP = 50;
@@ -71,12 +71,14 @@ public class Sukuna extends Mob {
 
 		if (abilityCd <= 0 && enemy != null && enemy.isAlive()){
 			useSkill();
-			abilityCd = (phase >= 4) ? 1 : 2;
+			abilityCd = (phase >= 4) ? 2 : 3; //END: 技能 CD，不再每回合无限打
 			spend(1f);
 			return true;
 		}
 
-		return super.act();
+		//不普攻：站着等技能 CD
+		spend(1f);
+		return true;
 	}
 
 	private void useSkill(){
@@ -231,7 +233,7 @@ public class Sukuna extends Mob {
 		int target = phase;
 		if (HP <= HT * 0.10f)      target = 5;
 		else if (HP <= HT * 0.40f) target = 4;
-		else if (HP <= HT * 0.50f) target = 3;
+		else if (HP <= HT * 0.60f) target = 3;
 		else if (HP <= HT * 0.75f) target = 2;
 
 		if (target > phase){

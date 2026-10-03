@@ -2,6 +2,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.endcontent.jujutsu;
 
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
+import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.watabou.noosa.Camera;
 import com.watabou.noosa.Game;
@@ -15,6 +16,7 @@ public class JujutsuOverlay extends Image {
 	private static float castTimer = 0f;
 	private static boolean castPlayer = true;
 	private static final float CAST_TIME = 0.9f;
+	private float particleTimer = 0f;
 
 	/** 领域展开瞬间的黑->白/红过渡。 */
 	public static void castFlash(boolean player){
@@ -34,6 +36,19 @@ public class JujutsuOverlay extends Image {
 	public JujutsuOverlay(){
 		super(Assets.Interfaces.WHITE_RECT);
 		alpha(0f);
+	}
+
+	/** 无量空处：在视野内随机格撒粒子，铺满画面。 */
+	private void spawnDomainParticles(){
+		if (Dungeon.level == null) return;
+		for (int i = 0; i < 4; i++){
+			int cell = com.watabou.utils.Random.Int(Dungeon.level.length());
+			if (!Dungeon.level.insideMap(cell)) continue;
+			if (!Dungeon.level.heroFOV[cell]) continue;
+			com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter.get(cell)
+					.burst(com.shatteredpixel.shatteredpixeldungeon.effects.Speck
+							.factory(com.shatteredpixel.shatteredpixeldungeon.effects.Speck.STAR), 1);
+		}
 	}
 
 	@Override
@@ -71,9 +86,15 @@ public class JujutsuOverlay extends Image {
 		float target;
 		int color;
 		if (clash){
-			target = 0.38f; color = 0xFF6A20B0;   //对撞：紫
+			target = 0.30f; color = 0xFF6A20B0;   //对撞：紫
 		} else if (player){
-			target = 0.42f; color = 0xFF08182E;   //无量空处：深海蓝黑
+			//END(修订): 无量空处**不要遮罩层**，改为画面持续粒子
+			target = 0f; color = 0xFFFFFF;
+			particleTimer -= Game.elapsed;
+			if (particleTimer <= 0f){
+				particleTimer = 0.06f;
+				spawnDomainParticles();
+			}
 		} else if (sukuna){
 			target = 0.45f; color = 0xFF520808;   //伏魔御厨子：血红
 		} else {

@@ -551,6 +551,8 @@ public class Assets {
 		//==== END(237 宿傩): 来自 grok-workspace 的像素素材（128x128/帧）====
 		/** 宿傩：9 帧单行。 */
 		public static final String SUKUNA        = "sprites/sukuna.png";
+		/** 宿傩改用原版古神贴图。 */
+		public static final String SUKUNA_YOG    = "sprites/sukuna_yog.png";
 		/** 式神 / 领域核心：4 帧单行。 */
 		public static final String SHIKIGAMI     = "sprites/shikigami.png";
 	}
