@@ -5959,7 +5959,10 @@ public final class ChallengeEffects {
 	 */
 	public static void collapseWalls(com.shatteredpixel.shatteredpixeldungeon.levels.Level level){
 		if (!on(OPEN_SKY) || level == null) return;
-		if (Dungeon.bossLevel() && !endlessEnabled()) return;
+		//END(修复·Boss 层清墙): Boss 层一律不清墙（不再受 210 永无止境影响）
+		if (Dungeon.bossLevel()) return;
+		//END(修复·矿工/铁匠事件): 事件层的墙不能被清
+		if (level instanceof com.shatteredpixel.shatteredpixeldungeon.levels.MiningLevel) return;
 		if (com.shatteredpixel.shatteredpixeldungeon.actors.mobs.MobRotation
 				.handles(Dungeon.depth)) return;
 
@@ -5968,7 +5971,9 @@ public final class ChallengeEffects {
 		if (level instanceof com.shatteredpixel.shatteredpixeldungeon.levels.RegularLevel){
 			for (com.shatteredpixel.shatteredpixeldungeon.levels.rooms.Room r
 					: ((com.shatteredpixel.shatteredpixeldungeon.levels.RegularLevel) level).rooms()){
-				if (r instanceof com.shatteredpixel.shatteredpixeldungeon.levels.rooms.secret.SecretRoom){
+				//END(修复): 隐藏房 + 特殊房（迷宫等）保留自己的墙
+				if (r instanceof com.shatteredpixel.shatteredpixeldungeon.levels.rooms.secret.SecretRoom
+						|| r instanceof com.shatteredpixel.shatteredpixeldungeon.levels.rooms.special.SpecialRoom){
 					for (int y = Math.max(0, r.top-1); y <= Math.min(h-1, r.bottom+1); y++){
 						for (int x = Math.max(0, r.left-1); x <= Math.min(w-1, r.right+1); x++){
 							keep[x + y*w] = true;
@@ -5978,7 +5983,6 @@ public final class ChallengeEffects {
 			}
 		}
 
-		//包括最外圈：地图外也是虚空
 		for (int y = 0; y < h; y++){
 			for (int x = 0; x < w; x++){
 				int cell = x + y*w;
@@ -5987,33 +5991,40 @@ public final class ChallengeEffects {
 				if (t == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.WALL
 						|| t == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.WALL_DECO){
 					level.map[cell] = com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.CHASM;
-				} else if (t == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.SECRET_DOOR){
-					//END(修复·隐藏门不显): 隐藏门直接显出来
-					level.map[cell] = com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.DOOR;
-				} else if (t == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.DOOR
+				} else if (t == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.SECRET_DOOR
+						|| t == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.DOOR
 						|| t == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.OPEN_DOOR
 						|| t == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.LOCKED_DOOR
 						|| t == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.HERO_LKD_DR
 						|| t == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.CRYSTAL_DOOR){
-					//门也消失；上锁/水晶门等同已开，锁房可直接进入
+					//END(修复): 隐藏门也一并清除；锁门/水晶门等同已开
 					level.map[cell] = com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.EMPTY;
 				}
 			}
 		}
 
-		//钥匙不再有用，从地面上清掉（保留剧情/神器类钥匙）
-		//注意：不能在关卡生成阶段调用 Heap.remove() —— 它会走 destroy()，
-		//而 destroy() 会读 Dungeon.level（此时还是 null），导致切层崩溃。
-		//这里直接操作 level.heaps，不碰 Dungeon.level。
+		//END(修复·水晶箱钥匙): 只保留"开箱子所需数量"的水晶钥匙，铁门钥匙全清，
+		//金钥匙与剧情钥匙保留。
+		int crystalChests = 0;
 		if (level.heaps != null){
+			for (com.shatteredpixel.shatteredpixeldungeon.items.Heap heap
+					: level.heaps.valueList()){
+				if (heap.type == com.shatteredpixel.shatteredpixeldungeon.items.Heap.Type.CRYSTAL_CHEST){
+					crystalChests++;
+				}
+			}
+			int keptCrystal = 0;
 			for (com.shatteredpixel.shatteredpixeldungeon.items.Heap heap
 					: new java.util.ArrayList<>(level.heaps.valueList())){
 				for (com.shatteredpixel.shatteredpixeldungeon.items.Item it
 						: new java.util.ArrayList<>(heap.items)){
-					//END(修复·水晶箱子开不了): 只清锁门用的铁钥匙，
-					//水晶钥匙/金钥匙/剧情钥匙要留下（水晶箱子、金箱子、Boss 门还要用）
-					if (it instanceof com.shatteredpixel.shatteredpixeldungeon.items.keys.Key
-							&& !(it instanceof com.shatteredpixel.shatteredpixeldungeon.items.keys.CrystalKey)
+					if (it instanceof com.shatteredpixel.shatteredpixeldungeon.items.keys.CrystalKey){
+						if (keptCrystal < crystalChests){
+							keptCrystal++;
+						} else {
+							heap.items.remove(it);
+						}
+					} else if (it instanceof com.shatteredpixel.shatteredpixeldungeon.items.keys.Key
 							&& !(it instanceof com.shatteredpixel.shatteredpixeldungeon.items.keys.GoldenKey)
 							&& !(it instanceof com.shatteredpixel.shatteredpixeldungeon.items.keys.WornKey)){
 						heap.items.remove(it);
@@ -6024,6 +6035,7 @@ public final class ChallengeEffects {
 				}
 			}
 		}
+
 		//END(修复·234 视野): 视野 +50%
 		level.viewDistance = Math.round(level.viewDistance * 1.5f);
 		level.buildFlagMaps();
