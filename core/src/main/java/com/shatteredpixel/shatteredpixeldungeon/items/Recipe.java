@@ -201,7 +201,9 @@ public abstract class Recipe {
 					.InfinityRecipes.ToEquipment(),
 			//END(无尽炼金·戒指): 6 枚不同原版戒指 → 1 戒指碎片
 			new com.shatteredpixel.shatteredpixeldungeon.endcontent.items
-					.RingFragment.FragmentRecipe()
+					.RingFragment.FragmentRecipe(),
+			//END(破碎之刃): 碎片 + 液金 [+ 材料] -> 重铸原武器
+			new com.shatteredpixel.shatteredpixeldungeon.endcontent.items.BladeReforge()
 	};
 	
 	private static Recipe[] oneIngredientRecipes = new Recipe[]{

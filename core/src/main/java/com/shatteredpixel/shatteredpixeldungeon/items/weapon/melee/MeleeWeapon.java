@@ -270,8 +270,11 @@ public class MeleeWeapon extends Weapon {
             return 0;
         }
 
-		return  tier +  //base
+		int base = tier +  //base
 				lvl;    //level scaling
+		//END(破碎之刃): 重铸下限伤害 +20%
+		if (brittleMinBonus) base = Math.round(base * 1.2f);
+		return base;
 	}
 
 	@Override

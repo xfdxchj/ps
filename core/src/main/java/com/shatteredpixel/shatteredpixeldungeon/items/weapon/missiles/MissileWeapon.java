@@ -106,8 +106,11 @@ abstract public class MissileWeapon extends Weapon {
 	
 	@Override
 	public int min(int lvl) {
-		return  2 * tier +                      //base
+		int base = 2 * tier +                   //base
 				lvl;                            //level scaling
+		//END(破碎之刃): 重铸下限伤害 +20%
+		if (brittleMinBonus) base = Math.round(base * 1.2f);
+		return base;
 	}
 	
 	@Override

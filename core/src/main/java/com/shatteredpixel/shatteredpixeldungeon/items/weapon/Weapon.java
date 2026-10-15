@@ -151,6 +151,10 @@ abstract public class Weapon extends KindOfWeapon {
 
 	//END(后缀系统): 武器后缀（WeaponSuffix 名，null = 无）
 	public String suffix = null;
+	//END(破碎之刃): 耐久 / 无限耐久 / 下限伤害加成
+	public int durability = 100;
+	public boolean infiniteDurability = false;
+	public boolean brittleMinBonus = false;
 
 
 	@Override
@@ -221,6 +225,14 @@ abstract public class Weapon extends KindOfWeapon {
 			}
 		}
 
+		//END(破碎之刃): 命中消耗耐久
+		if (!infiniteDurability && attacker instanceof com.shatteredpixel.shatteredpixeldungeon
+				.actors.hero.Hero && attacker == com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero
+				&& isEquipped((com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) attacker)){
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons.BrittleBlade.wear(this,
+					(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) attacker);
+		}
+
 		//do not progress toward ID in the specific case of a missile weapon with no parent using
 		// up it's last shot, as in this case there's nothing left to ID anyway
 		if (this instanceof MissileWeapon
@@ -277,6 +289,9 @@ abstract public class Weapon extends KindOfWeapon {
 		bundle.put( CURSE_INFUSION_BONUS, curseInfusionBonus );
 		bundle.put( MASTERY_POTION_BONUS, masteryPotionBonus );
 		if (suffix != null) bundle.put( "suffix", suffix );
+		bundle.put( "durability", durability );
+		bundle.put( "infinite_durability", infiniteDurability );
+		bundle.put( "brittle_min", brittleMinBonus );
 		bundle.put( AUGMENT, augment );
 	}
 	
@@ -291,6 +306,10 @@ abstract public class Weapon extends KindOfWeapon {
 		masteryPotionBonus = bundle.getBoolean( MASTERY_POTION_BONUS );
 		//END(后缀系统): 读回后缀
 		suffix = bundle.getString( "suffix" );
+		durability = bundle.getInt( "durability" );
+		infiniteDurability = bundle.getBoolean( "infinite_durability" );
+		brittleMinBonus = bundle.getBoolean( "brittle_min" );
+		if (durability <= 0) durability = 100;
 		if (suffix == null || suffix.isEmpty()
 				|| com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons.WeaponSuffix
 						.byName(suffix) == null){
