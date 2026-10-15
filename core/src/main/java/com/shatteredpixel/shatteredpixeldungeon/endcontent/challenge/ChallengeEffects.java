@@ -5987,6 +5987,9 @@ public final class ChallengeEffects {
 				if (t == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.WALL
 						|| t == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.WALL_DECO){
 					level.map[cell] = com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.CHASM;
+				} else if (t == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.SECRET_DOOR){
+					//END(修复·隐藏门不显): 隐藏门直接显出来
+					level.map[cell] = com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.DOOR;
 				} else if (t == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.DOOR
 						|| t == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.OPEN_DOOR
 						|| t == com.shatteredpixel.shatteredpixeldungeon.levels.Terrain.LOCKED_DOOR
@@ -6007,7 +6010,12 @@ public final class ChallengeEffects {
 					: new java.util.ArrayList<>(level.heaps.valueList())){
 				for (com.shatteredpixel.shatteredpixeldungeon.items.Item it
 						: new java.util.ArrayList<>(heap.items)){
-					if (it instanceof com.shatteredpixel.shatteredpixeldungeon.items.keys.Key){
+					//END(修复·水晶箱子开不了): 只清锁门用的铁钥匙，
+					//水晶钥匙/金钥匙/剧情钥匙要留下（水晶箱子、金箱子、Boss 门还要用）
+					if (it instanceof com.shatteredpixel.shatteredpixeldungeon.items.keys.Key
+							&& !(it instanceof com.shatteredpixel.shatteredpixeldungeon.items.keys.CrystalKey)
+							&& !(it instanceof com.shatteredpixel.shatteredpixeldungeon.items.keys.GoldenKey)
+							&& !(it instanceof com.shatteredpixel.shatteredpixeldungeon.items.keys.WornKey)){
 						heap.items.remove(it);
 					}
 				}
@@ -6016,6 +6024,8 @@ public final class ChallengeEffects {
 				}
 			}
 		}
+		//END(修复·234 视野): 视野 +50%
+		level.viewDistance = Math.round(level.viewDistance * 1.5f);
 		level.buildFlagMaps();
 	}
 }
