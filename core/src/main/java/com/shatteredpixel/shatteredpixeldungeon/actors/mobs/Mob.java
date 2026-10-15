@@ -1374,6 +1374,8 @@ public abstract class Mob extends Char {
 			}
 		}
 		
+		//END(239 嗡嗡嗡嗡): 受伤时按苍蝇逻辑分裂（在扣血前，与苍蝇 defenseProc 时机一致）
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.FlySplit.trySplit(this, dmg);
 		super.damage( dmg, src );
 
 		//==== END(挑战 9 狂暴): 怪物受击后获得 20% 攻击提升 ====
