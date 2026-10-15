@@ -366,14 +366,17 @@ public abstract class Recipe {
 				|| item instanceof com.shatteredpixel.shatteredpixeldungeon.items.rings.Ring)) {
 		return item.cursedKnown && !item.cursed;
 		}
+		//END(修复·法杖进化配方没了): Wand 也是 EquipableItem，必须先判 Wand，
+		//否则会掉进下面"只放行投掷物/灵能弓"的分支，法杖根本投不进炼金炉。
+		if (item instanceof Wand) {
+			return item.cursedKnown && !item.cursed;
+		}
 		//only upgradeable thrown weapons and wands allowed among equipment items
 		if (item instanceof EquipableItem){
 			return item.cursedKnown && !item.cursed &&
 					//END 灵能弓改造：未受诅咒的神弓(及共子类)可作为炼金原料
 					((item instanceof MissileWeapon && item.isUpgradable())
 							|| item instanceof SpiritBow);
-		} else if (item instanceof Wand) {
-			return item.cursedKnown && !item.cursed;
 		} else {
 			//other items can be unidentified, but not cursed
 			return !item.cursed;
