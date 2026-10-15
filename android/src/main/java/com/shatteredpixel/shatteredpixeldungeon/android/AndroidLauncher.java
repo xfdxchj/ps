@@ -62,6 +62,9 @@ public class AndroidLauncher extends AndroidApplication {
 	protected void onCreate (Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		//END(日志导出): 控制台全量日志也写进 pd_log.txt
+		try { com.shatteredpixel.shatteredpixeldungeon.endcontent.CrashLog.installConsoleTee(); } catch (Throwable ignored) {}
+
 		//END(崩溃日志落盘): 未捕获异常写进 external 应用目录的 pd_log.txt
 		final Thread.UncaughtExceptionHandler prevHandler =
 				Thread.getDefaultUncaughtExceptionHandler();

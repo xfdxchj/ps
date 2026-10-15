@@ -56,6 +56,8 @@ public class ShatteredPixelDungeon extends Game {
 	
 	@Override
 	public void create() {
+		//END(日志导出): 控制台全量日志也写进 pd_log.txt
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.CrashLog.installConsoleTee();
 		super.create();
 
 		updateSystemUI();

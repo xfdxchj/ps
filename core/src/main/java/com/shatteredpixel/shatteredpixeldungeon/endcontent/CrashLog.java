@@ -78,6 +78,45 @@ public final class CrashLog {
 		}
 	}
 
+	/** END(日志导出): 把 System.out / System.err 也 tee 到日志文件（控制台全量记录）。 */
+	public static void installConsoleTee(){
+		try {
+			System.setOut(tee(System.out));
+			System.setErr(tee(System.err));
+			info("=== console log attached ===");
+		} catch (Throwable ignored) {}
+	}
+
+	private static final java.io.ByteArrayOutputStream CONSOLE_BUF =
+			new java.io.ByteArrayOutputStream();
+
+	private static java.io.PrintStream tee(final java.io.PrintStream orig){
+		java.io.OutputStream os = new java.io.OutputStream(){
+			@Override public synchronized void write(int b){
+				try { orig.write(b); } catch (Throwable ignored) {}
+				if (b == '\n'){
+					flushLine();
+				} else {
+					CONSOLE_BUF.write(b);
+				}
+			}
+			@Override public void flush(){
+				try { orig.flush(); } catch (Throwable ignored) {}
+			}
+		};
+		return new java.io.PrintStream(os, true);
+	}
+
+	private static synchronized void flushLine(){
+		try {
+			String line = CONSOLE_BUF.toString("UTF-8");
+			CONSOLE_BUF.reset();
+			if (!line.isEmpty()){
+				append(TS.format(new Date()) + "  " + line + '\n');
+			}
+		} catch (Throwable ignored) {}
+	}
+
 	public static String pathHint(){
 		try {
 			FileHandle f = logFile();
