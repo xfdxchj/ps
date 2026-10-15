@@ -372,6 +372,11 @@ public abstract class Recipe {
 				|| item instanceof com.shatteredpixel.shatteredpixeldungeon.items.rings.Ring)) {
 		return item.cursedKnown && !item.cursed;
 		}
+		//END(修复·刺杀匕首进化做不了): 匕首是近战武器，也会被 EquipableItem 分支挡掉
+		if (item instanceof com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons.AssassinDagger){
+			return item.cursedKnown && !item.cursed;
+		}
+
 		//END(修复·无尽工作台做不了): 炼金工具箱是配方材料，但它是 EquipableItem，
 		//会被下面的分支挡掉 —— 勾选 214 时直接放行。
 		if (item instanceof com.shatteredpixel.shatteredpixeldungeon.items.artifacts.AlchemistsToolkit
