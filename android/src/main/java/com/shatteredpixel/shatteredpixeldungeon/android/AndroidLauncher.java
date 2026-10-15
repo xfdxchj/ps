@@ -62,6 +62,31 @@ public class AndroidLauncher extends AndroidApplication {
 	protected void onCreate (Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		//END(崩溃日志落盘): 未捕获异常写进 external 应用目录的 pd_log.txt
+		final Thread.UncaughtExceptionHandler prevHandler =
+				Thread.getDefaultUncaughtExceptionHandler();
+		Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+			@Override
+			public void uncaughtException(Thread thread, Throwable ex) {
+				try {
+					com.shatteredpixel.shatteredpixeldungeon.endcontent.CrashLog.write(ex);
+				} catch (Throwable ignored) {}
+				try {
+					java.io.File dir = getExternalFilesDir(null);
+					if (dir != null){
+						java.io.File f = new java.io.File(dir, "pd_log.txt");
+						java.io.PrintWriter pw = new java.io.PrintWriter(
+								new java.io.FileWriter(f, true));
+						pw.println("\n==== UNCAUGHT " + new java.util.Date() + " ====");
+						ex.printStackTrace(pw);
+						pw.flush();
+						pw.close();
+					}
+				} catch (Throwable ignored) {}
+				if (prevHandler != null) prevHandler.uncaughtException(thread, ex);
+			}
+		});
+
 		try {
 			GdxNativesLoader.load();
 			FreeType.initFreeType();

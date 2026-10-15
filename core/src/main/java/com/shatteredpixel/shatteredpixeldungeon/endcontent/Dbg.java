@@ -77,10 +77,16 @@ public final class Dbg {
 		if (value) forced.add(tag); else forced.remove(tag);
 	}
 
+	/** END: 统一出口——控制台 + 崩溃日志缓冲。 */
+	private static void out(String line){
+		System.out.println(line);
+		CrashLog.record(line);
+	}
+
 	/** END: 打一行诊断。 */
 	public static void log(String tag, String msg){
 		if (!on(tag)) return;
-		System.out.println("[END·" + tag + "] " + msg);
+		out("[END·" + tag + "] " + msg);
 	}
 
 	/**
@@ -90,7 +96,7 @@ public final class Dbg {
 	 */
 	public static void val(String tag, String name, Object value){
 		if (!on(tag)) return;
-		System.out.println("[END·" + tag + "] " + name + " = " + value);
+		out("[END·" + tag + "] " + name + " = " + value);
 	}
 
 	/**
@@ -102,19 +108,19 @@ public final class Dbg {
 	public static void expect(String tag, String name, Object want, Object actual){
 		if (!on(tag)) return;
 		boolean ok = (want == null) ? (actual == null) : want.equals(actual);
-		System.out.println("[END·" + tag + "] " + name
+		out("[END·" + tag + "] " + name
 				+ "  预期=" + want + "  实际=" + actual
 				+ (ok ? "  [OK]" : "  [差异!]"));
 	}
 
 	/** END: 打一行警告（永远输出，不受开关影响）。 */
 	public static void warn(String tag, String msg){
-		System.out.println("[END·" + tag + "·警告] " + msg);
+		out("[END·" + tag + "·警告] " + msg);
 	}
 
 	/** END: 打一行错误（永远输出）。 */
 	public static void err(String tag, String msg, Throwable t){
-		System.out.println("[END·" + tag + "·错误] " + msg
+		out("[END·" + tag + "·错误] " + msg
 				+ (t == null ? "" : ("  -> " + t)));
 		if (t != null) t.printStackTrace();
 	}

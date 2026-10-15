@@ -106,6 +106,13 @@ public class ShatteredPixelDungeon extends Game {
 		}
 	}
 
+	/** END(崩溃日志落盘): 游戏内捕获到的异常也写进 pd_log.txt。 */
+	@Override
+	protected void logException(Throwable tr){
+		super.logException(tr);
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.CrashLog.write(tr);
+	}
+
 	public static void switchNoFade(Class<? extends PixelScene> c){
 		switchNoFade(c, null);
 	}
