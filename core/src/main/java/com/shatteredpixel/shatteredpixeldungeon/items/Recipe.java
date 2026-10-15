@@ -372,6 +372,14 @@ public abstract class Recipe {
 				|| item instanceof com.shatteredpixel.shatteredpixeldungeon.items.rings.Ring)) {
 		return item.cursedKnown && !item.cursed;
 		}
+		//END(修复·无尽工作台做不了): 炼金工具箱是配方材料，但它是 EquipableItem，
+		//会被下面的分支挡掉 —— 勾选 214 时直接放行。
+		if (item instanceof com.shatteredpixel.shatteredpixeldungeon.items.artifacts.AlchemistsToolkit
+				&& com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
+						.infinityShardEnabled()){
+			return item.cursedKnown && !item.cursed;
+		}
+
 		//END(修复·法杖进化配方没了): Wand 也是 EquipableItem，必须先判 Wand，
 		//否则会掉进下面"只放行投掷物/灵能弓"的分支，法杖根本投不进炼金炉。
 		if (item instanceof Wand) {
