@@ -601,6 +601,11 @@ public class DriedRose extends Artifact {
 			else                return null;
 		}
 
+		/** END(B5 移植): 清掉亡灵的武器引用（新版 Crystal 用）。 */
+		public void clearWeapon(){
+			if (rose != null) rose.weapon = null;
+		}
+
 		public Armor armor(){
 			if (rose != null)   return rose.armor;
 			else                return null;

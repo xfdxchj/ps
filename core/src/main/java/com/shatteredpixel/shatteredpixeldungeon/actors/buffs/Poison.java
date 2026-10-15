@@ -64,6 +64,11 @@ public class Poison extends Buff implements Hero.Doom {
 	public void extend( float duration ) {
 		this.left += duration;
 	}
+
+	/** END(B5 移植): 延迟毒的第一跳（新版 Venomous 用）。 */
+	public void delay( float turns ) {
+		spend(turns);
+	}
 	
 	@Override
 	public int icon() {
