@@ -5967,21 +5967,8 @@ public final class ChallengeEffects {
 				.handles(Dungeon.depth)) return;
 
 		int w = level.width(), h = level.height();
+		//END(修正): 隐藏房/特殊房（迷宫等）的墙同样要清；只有矿工事件层例外（已在上面 return）
 		boolean[] keep = new boolean[level.length()];
-		if (level instanceof com.shatteredpixel.shatteredpixeldungeon.levels.RegularLevel){
-			for (com.shatteredpixel.shatteredpixeldungeon.levels.rooms.Room r
-					: ((com.shatteredpixel.shatteredpixeldungeon.levels.RegularLevel) level).rooms()){
-				//END(修复): 隐藏房 + 特殊房（迷宫等）保留自己的墙
-				if (r instanceof com.shatteredpixel.shatteredpixeldungeon.levels.rooms.secret.SecretRoom
-						|| r instanceof com.shatteredpixel.shatteredpixeldungeon.levels.rooms.special.SpecialRoom){
-					for (int y = Math.max(0, r.top-1); y <= Math.min(h-1, r.bottom+1); y++){
-						for (int x = Math.max(0, r.left-1); x <= Math.min(w-1, r.right+1); x++){
-							keep[x + y*w] = true;
-						}
-					}
-				}
-			}
-		}
 
 		for (int y = 0; y < h; y++){
 			for (int x = 0; x < w; x++){
