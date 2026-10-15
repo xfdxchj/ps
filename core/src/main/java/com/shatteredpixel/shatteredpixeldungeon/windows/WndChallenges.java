@@ -174,14 +174,14 @@ public class WndChallenges extends Window {
 		//  · ScrollPane 会吃掉点击，导致分类按钮点不动（要靠手动转发）
 		//改为**两排网格、铺满窗口宽度**后，10 个分类全部可见，
 		//既不需要滚动，也不需要手动转发点击 —— 直接用普通 Component。
-		catContent = new Component();
+		catContent = new ClearingGroup();
 		add( catContent );
 		//END(修复): 必须在 add() 之后立刻绑定窗口相机 ——
 		//（分类栏已改为普通 Component，见下方说明，不再需要相机绑定）
 		buildCategoryBar();
 
 		//列表区
-		content = new Component();
+		content = new ClearingGroup();
 
 		//==== END(修复·滑动条抢点击 / 点击抢滑动): 照原版 WndKeyBindings 的做法 ====
 		//1) ScrollPane 的 PointerController 在 DOWN 时返回 true
@@ -1004,7 +1004,9 @@ public class WndChallenges extends Window {
 		if (!LIFECYCLE_LOG) return;
 		String id = (win == null) ? "null"
 				: Integer.toHexString(System.identityHashCode(win));
-		System.out.println("[WndChallenges@" + id + "] " + tag + " " + msg);
+		String line = "[WndChallenges@" + id + "] " + tag + " " + msg;
+		System.out.println(line);
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.CrashLog.record(line);
 	}
 	private void logLife(String tag, String msg){ logLife(tag, this, msg); }
 
@@ -1509,5 +1511,31 @@ public class WndChallenges extends Window {
 		}
 
 		super.onBackPressed();
+	}
+
+	/**
+	 * END(修复·挑战详情幽灵点击): Group.clear() 只把子节点 parent 置空，
+	 * 不会 destroy —— 于是 CheckBox / 问号 IconButton 的 PointerArea
+	 * 还挂在全局指针监听里，窗口关掉后点原位置仍会命中。
+	 * 这个子类在 clear() 时真正 destroy 掉所有加进来的子节点。
+	 */
+	private static class ClearingGroup extends com.watabou.noosa.ui.Component {
+
+		private final java.util.ArrayList<com.watabou.noosa.Gizmo> kids = new java.util.ArrayList<>();
+
+		@Override
+		public synchronized com.watabou.noosa.Gizmo add(com.watabou.noosa.Gizmo g) {
+			if (g != null && !kids.contains(g)) kids.add(g);
+			return super.add(g);
+		}
+
+		@Override
+		public synchronized void clear() {
+			for (com.watabou.noosa.Gizmo g : kids) {
+				if (g != null) g.destroy();
+			}
+			kids.clear();
+			super.clear();
+		}
 	}
 }
