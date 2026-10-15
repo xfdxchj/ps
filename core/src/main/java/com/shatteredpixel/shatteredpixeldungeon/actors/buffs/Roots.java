@@ -40,11 +40,15 @@ public class Roots extends FlavourBuff {
 			//END(DEBUG·酸蚀缠绕自己): 临时定位，英雄被缠时打印调用来源
 			if (target instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero){
 				StringBuilder sb = new StringBuilder("Roots on HERO:");
+				int n = 0;
 				for (StackTraceElement e : new Throwable().getStackTrace()){
-					if (e.getClassName().contains("shatteredpixeldungeon")){
-						sb.append(" | ").append(e.getClassName()).append('.')
-								.append(e.getMethodName()).append(':').append(e.getLineNumber());
-					}
+					String cn = e.getClassName();
+					if (!cn.startsWith("com.shatteredpixel.shatteredpixeldungeon")) continue;
+					if (cn.endsWith(".Roots") || cn.endsWith(".Buff")) continue;
+					if (n++ >= 4) break;
+					sb.append('\n').append(cn.substring(cn.lastIndexOf('.') + 1))
+							.append('.').append(e.getMethodName())
+							.append(':').append(e.getLineNumber());
 				}
 				try { com.shatteredpixel.shatteredpixeldungeon.utils.GLog.w(sb.toString()); }
 				catch (Throwable ignored) {}
