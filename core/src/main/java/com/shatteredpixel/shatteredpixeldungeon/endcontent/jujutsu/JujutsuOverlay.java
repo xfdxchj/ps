@@ -49,15 +49,20 @@ public class JujutsuOverlay extends Image {
 		JujutsuFx.scatterScreen(factory, PARTICLES_PER_TICK);
 	}
 
-	/** 伏魔御厨子：在视野内随机多格刷斩击（不再堆在单个角色身上）。 */
+	/** END(修订): 伏魔御厨子的斩击铺满**整个画面**（视野内外都刷，不再只刷 heroFOV）。 */
 	private void spawnSukunaSlashes(){
-		if (Dungeon.level == null) return;
+		if (Dungeon.level == null || com.watabou.noosa.Camera.main == null) return;
 		int placed = 0;
 		int attempts = 0;
 		while (placed < SLASH_PER_TICK && attempts < SLASH_PER_TICK * 8){
 			attempts++;
-			int cell = com.watabou.utils.Random.Int(Dungeon.level.length());
-			if (!Dungeon.level.insideMap(cell) || !Dungeon.level.heroFOV[cell]) continue;
+			float wx = com.watabou.noosa.Camera.main.x
+					+ com.watabou.utils.Random.Float(com.watabou.noosa.Camera.main.width);
+			float wy = com.watabou.noosa.Camera.main.y
+					+ com.watabou.utils.Random.Float(com.watabou.noosa.Camera.main.height);
+			int cell = com.shatteredpixel.shatteredpixeldungeon.tiles.DungeonTilemap
+					.worldToTile(wx, wy, Dungeon.level.width());
+			if (!Dungeon.level.insideMap(cell)) continue;
 			try {
 				com.shatteredpixel.shatteredpixeldungeon.effects.Wound.hit(
 						cell, com.watabou.utils.Random.Float() * 360f, SLASH_FADE);

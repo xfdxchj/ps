@@ -39,8 +39,9 @@ public class JujutsuDomainParticle extends Image {
 		this.y = y;
 
 		hardlight( tintColor );
-		angle = Random.Float( 360 );
-		angularSpeed = Random.Float( -40, 40 );
+		//END(修订): 不再 360 度随机旋转，固定向右偏 30 度
+		angle = 30f;
+		angularSpeed = 0f;
 		scale.set( Random.Float( 0.8f, 1.4f ) );
 		left = lifespan = Random.Float( 0.8f, 2.0f );
 	}
