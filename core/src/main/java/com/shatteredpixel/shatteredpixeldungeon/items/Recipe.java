@@ -271,7 +271,9 @@ public abstract class Recipe {
 		new StewedMeat.threeMeat(),
 		new MeatPie.Recipe(),
 		//==== END(ReReARPD gun port): T5 枪 + 升级之尘 + 进化法术 -> 枪械蓝图 ====
-		new com.shatteredpixel.shatteredpixeldungeon.items.changer.GunBlueprint.Recipe()
+		new com.shatteredpixel.shatteredpixeldungeon.items.changer.GunBlueprint.Recipe(),
+		//END(后缀系统): 升级卷轴 + 任意符石 + 邪能碎片 -> 后缀卷轴
+		new com.shatteredpixel.shatteredpixeldungeon.endcontent.items.SuffixScroll.Recipe3()
 	};
 	
 	//END 法杖蜕变：+8 法杖 ＋ 强化符石 → 对应进化法杖（由一条动态配方覆盖全部 13 把）

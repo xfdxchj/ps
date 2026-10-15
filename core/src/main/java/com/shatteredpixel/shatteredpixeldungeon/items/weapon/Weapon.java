@@ -149,6 +149,9 @@ abstract public class Weapon extends KindOfWeapon {
 	public boolean curseInfusionBonus = false;
 	public boolean masteryPotionBonus = false;
 
+	//END(后缀系统): 武器后缀（WeaponSuffix 名，null = 无）
+	public String suffix = null;
+
 
 	@Override
 	public int proc( Char attacker, Char defender, int damage ) {
@@ -199,6 +202,22 @@ abstract public class Weapon extends KindOfWeapon {
 			if (attacker instanceof Hero && isEquipped((Hero) attacker) &&
 					attacker.buff(Smite.SmiteTracker.class) != null && !becameAlly){
 				defender.damage(Smite.bonusDmg((Hero) attacker, defender), Smite.INSTANCE);
+			}
+		}
+
+		//END(后缀系统): 攻击触发后缀（带冷却）
+		if (suffix != null && attacker instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero
+				&& defender.isAlive()){
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons.WeaponSuffix sfx =
+					com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons.WeaponSuffix.byName(suffix);
+			if (sfx != null && attacker.buff(com.shatteredpixel.shatteredpixeldungeon.endcontent
+					.weapons.WeaponSuffix.SuffixCd.class) == null){
+				damage = sfx.proc(this, attacker, defender, damage);
+				if (sfx.cooldown > 0){
+					com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff.affect(attacker,
+							com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons.WeaponSuffix.SuffixCd.class,
+							sfx.cooldown);
+				}
 			}
 		}
 
@@ -257,6 +276,7 @@ abstract public class Weapon extends KindOfWeapon {
 		bundle.put( ENCHANT_HARDENED, enchantHardened );
 		bundle.put( CURSE_INFUSION_BONUS, curseInfusionBonus );
 		bundle.put( MASTERY_POTION_BONUS, masteryPotionBonus );
+		if (suffix != null) bundle.put( "suffix", suffix );
 		bundle.put( AUGMENT, augment );
 	}
 	
@@ -269,6 +289,13 @@ abstract public class Weapon extends KindOfWeapon {
 		enchantHardened = bundle.getBoolean( ENCHANT_HARDENED );
 		curseInfusionBonus = bundle.getBoolean( CURSE_INFUSION_BONUS );
 		masteryPotionBonus = bundle.getBoolean( MASTERY_POTION_BONUS );
+		//END(后缀系统): 读回后缀
+		suffix = bundle.getString( "suffix" );
+		if (suffix == null || suffix.isEmpty()
+				|| com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons.WeaponSuffix
+						.byName(suffix) == null){
+			suffix = null;
+		}
 
 		augment = bundle.getEnum(AUGMENT, Augment.class);
 	}
