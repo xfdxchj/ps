@@ -210,7 +210,8 @@ abstract public class Weapon extends KindOfWeapon {
 		}
 
 		//END(后缀系统): 攻击触发后缀（带冷却）
-		if (suffix != null && attacker instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero
+		if (suffix != null && com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects.suffixEnabled()
+				&& attacker instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero
 				&& defender.isAlive()){
 			com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons.WeaponSuffix sfx =
 					com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons.WeaponSuffix.byName(suffix);
@@ -226,7 +227,8 @@ abstract public class Weapon extends KindOfWeapon {
 		}
 
 		//END(破碎之刃): 命中消耗耐久
-		if (!infiniteDurability && attacker instanceof com.shatteredpixel.shatteredpixeldungeon
+		if (!infiniteDurability && com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects.brittleEnabled()
+				&& attacker instanceof com.shatteredpixel.shatteredpixeldungeon
 				.actors.hero.Hero && attacker == com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero
 				&& isEquipped((com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero) attacker)){
 			com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons.BrittleBlade.wear(this,

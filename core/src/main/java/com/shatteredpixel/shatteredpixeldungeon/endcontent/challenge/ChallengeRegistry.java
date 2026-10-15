@@ -184,6 +184,10 @@ public final class ChallengeRegistry {
 			"所有怪物获得**苍蝇的分裂能力**：受到伤害时，若生命足够（生命 ≥ 伤害 + 2）且旁边有空位，就分裂出一只同类，两只生命对半。Boss 与小 Boss 不分裂；分裂体不掉经验。");
 		done(all, 240, "线性地牢", "linear_dungeon", "地图", ChallengeDef.TENDENCY_TWOSIDED, 2, ChallengeDef.TIER_MEDIUM, "",
 			"所有房间被排成**一条直线**：从入口一路走到出口，不再有分叉。Boss 层与挑战区不受影响。");
+		done(all, 241, "后缀", "weapon_suffix", "武器", ChallengeDef.TENDENCY_TWOSIDED, 3, ChallengeDef.TIER_MEDIUM, "",
+			"武器可以通过炼金获得后缀技能：升级卷轴 + 任意符石 + 邪能碎片 -> 后缀卷轴；对武器使用随机附加一个后缀。每把武器最多 1 个，攻击时自动触发，10 回合冷却（饮血 30）。");
+		done(all, 242, "破碎之刃", "brittle_blade", "武器", ChallengeDef.TENDENCY_TWOSIDED, 3, ChallengeDef.TIER_HARD, "",
+			"所有武器获得耐久度：每次命中 -1，到 0 碎裂成碎片并从装备槽卸下。碎片加液金炼金可重铸回原武器（获得无限耐久），并可加料：升级卷轴(+1) / 强化符石(下限伤害+20%) / 诅咒菱晶(+2 并附带诅咒)。");
 		done(all, 234, "仰望虚空", "open_sky", "地图", ChallengeDef.TENDENCY_TWOSIDED, 2, ChallengeDef.TIER_MEDIUM, "",
 				"除 Boss 层、挑战区与矿工事件层外，所有层的内部墙体全部取消（含隐藏房、特殊房），地图四周边界保留。");
 

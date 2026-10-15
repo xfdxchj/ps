@@ -74,6 +74,7 @@ public class SuffixScroll extends Scroll {
 	public static class Recipe3 extends Recipe {
 		@Override
 		public boolean testIngredients(ArrayList<Item> ingredients) {
+			if (!com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects.suffixEnabled()) return false;
 			if (ingredients.size() != 3) return false;
 			boolean scroll = false, stone = false, shard = false;
 			for (Item it : ingredients){

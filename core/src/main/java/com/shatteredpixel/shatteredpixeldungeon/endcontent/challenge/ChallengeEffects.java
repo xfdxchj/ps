@@ -5953,6 +5953,14 @@ public final class ChallengeEffects {
 
 	public static boolean linearDungeonEnabled(){ return on(LINEAR_DUNGEON); }
 
+	/** 241 后缀：武器可炼金获得后缀技能。 */
+	public static final int WEAPON_SUFFIX = 241;
+	public static boolean suffixEnabled(){ return on(WEAPON_SUFFIX); }
+
+	/** 242 破碎之刃：所有武器有耐久度。 */
+	public static final int BRITTLE_BLADE = 242;
+	public static boolean brittleEnabled(){ return on(BRITTLE_BLADE); }
+
 	/**
 	 * END(234 仰望虚空): 除 Boss 层、挑战区与隐藏房外，把所有墙体变成虚空。
 	 *

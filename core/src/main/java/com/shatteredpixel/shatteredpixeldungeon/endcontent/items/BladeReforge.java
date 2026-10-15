@@ -20,6 +20,7 @@ public class BladeReforge extends Recipe {
 
 	@Override
 	public boolean testIngredients(ArrayList<Item> ingredients) {
+		if (!com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects.brittleEnabled()) return false;
 		if (ingredients.size() < 2 || ingredients.size() > 3) return false;
 		boolean shard = false, metal = false, extra = false;
 		for (Item it : ingredients){
