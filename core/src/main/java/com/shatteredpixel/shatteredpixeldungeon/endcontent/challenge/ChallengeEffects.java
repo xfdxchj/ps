@@ -5948,6 +5948,11 @@ public final class ChallengeEffects {
 
 	public static boolean openSkyEnabled(){ return on(OPEN_SKY); }
 
+	/** 240 线性地牢：所有房间排成一条线。 */
+	public static final int LINEAR_DUNGEON = 240;
+
+	public static boolean linearDungeonEnabled(){ return on(LINEAR_DUNGEON); }
+
 	/**
 	 * END(234 仰望虚空): 除 Boss 层、挑战区与隐藏房外，把所有墙体变成虚空。
 	 *

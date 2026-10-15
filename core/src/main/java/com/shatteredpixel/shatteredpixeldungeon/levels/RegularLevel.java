@@ -174,6 +174,11 @@ public abstract class RegularLevel extends Level {
 	}
 	
 	protected Builder builder(){
+		//END(240 线性地牢): 所有房间排成一条线
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge.ChallengeEffects
+				.linearDungeonEnabled()){
+			return new com.shatteredpixel.shatteredpixeldungeon.levels.builders.PureLineBuilder();
+		}
 		if (Random.Int(2) == 0){
 			return new LoopBuilder()
 					.setLoopShape( 2 ,

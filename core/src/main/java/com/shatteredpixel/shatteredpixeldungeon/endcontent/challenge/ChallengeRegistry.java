@@ -182,6 +182,8 @@ public final class ChallengeRegistry {
 			"所有怪物生命上限与攻击属性 +100%。");
 		done(all, 239, "嗡嗡嗡嗡", "buzz", "怪物", ChallengeDef.TENDENCY_MONSTER, 3, ChallengeDef.TIER_HARD, "",
 			"所有怪物获得**苍蝇的分裂能力**：受到伤害时，若生命足够（生命 ≥ 伤害 + 2）且旁边有空位，就分裂出一只同类，两只生命对半。Boss 与小 Boss 不分裂；分裂体不掉经验。");
+		done(all, 240, "线性地牢", "linear_dungeon", "地图", ChallengeDef.TENDENCY_TWOSIDED, 2, ChallengeDef.TIER_MEDIUM, "",
+			"所有房间被排成**一条直线**：从入口一路走到出口，不再有分叉。Boss 层与挑战区不受影响。");
 		done(all, 234, "仰望虚空", "open_sky", "地图", ChallengeDef.TENDENCY_TWOSIDED, 2, ChallengeDef.TIER_MEDIUM, "",
 				"除 Boss 层、挑战区与矿工事件层外，所有层的内部墙体全部取消（含隐藏房、特殊房），地图四周边界保留。");
 
