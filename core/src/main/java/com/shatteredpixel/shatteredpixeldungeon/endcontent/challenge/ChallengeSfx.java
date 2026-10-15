@@ -490,11 +490,22 @@ public final class ChallengeSfx {
 
 	/** 本层固定的随机曲：由本局种子 + 层数决定，上下楼不会重掷。 */
 	public static String dadiTrackForDepth(int depth){
-		//END(修订): 每 2 层共用同一首 —— 用 (depth+1)/2 当配对层号
-		int pair = (depth + 1) / 2;
-		long h = Dungeon.seed * 1103515245L + pair * 12345L;
-		int i = (int)(h % DADI_TRACKS.length);
-		if (i < 0) i += DADI_TRACKS.length;
+		//END(修订): 常规层每 2 层共用同一首；Boss 层不参与配对，单独取 Boss 曲
+		final int REGULAR_COUNT = 31;
+		int i;
+		if (Dungeon.bossLevel(depth)){
+			int bossCount = DADI_TRACKS.length - REGULAR_COUNT;
+			long hb = Dungeon.seed * 1103515245L + depth * 12345L;
+			int m = (int)(hb % bossCount);
+			if (m < 0) m += bossCount;
+			i = REGULAR_COUNT + m;
+		} else {
+			int pair = (depth + 1) / 2;
+			long h = Dungeon.seed * 1103515245L + pair * 12345L;
+			int m = (int)(h % REGULAR_COUNT);
+			if (m < 0) m += REGULAR_COUNT;
+			i = m;
+		}
 		String track = DADI_TRACKS[i];
 		//END(232 日志): 先记下来，等玩家真正进入本层（Hero.act）再显示，
 		//否则会在 GameScene.create 阶段就打印、进层时已被清掉。
