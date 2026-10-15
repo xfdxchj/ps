@@ -1314,7 +1314,9 @@ public class ItemSpriteSheet {
 	/** END: 无尽核心（炼金材料）。 */
 	public static final int GRIMM_INFINITY_CATALYST = xy(5, 42);
 	static { assignItemRect(GRIMM_INFINITY_CATALYST, 16, 16); }
-	public static final int[] GRIMM_INFINITY_CATALYST_FRAMES = frameColumn(5, 42, 9);
+	//END(修复·无尽碎片贴图): 该列第 0 帧是"奇点"，碎片不该播它，
+	//所以从第 43 行起取 8 帧（跳过奇点）。
+	public static final int[] GRIMM_INFINITY_CATALYST_FRAMES = frameColumn(5, 43, 8);
 
 	/** END: 无尽淀（炼金材料）。 */
 	public static final int GRIMM_INFINITY_INGOT = xy(6, 42);
@@ -1414,6 +1416,16 @@ public class ItemSpriteSheet {
 		if (image == GRIMM_CORE_BOW)   return GRIMM_CORE_BOW_FRAMES;
 
 		return null;
+	}
+
+	/**
+	 * END(修复·无尽碎片速度太快): 每个动画物品的"秒/帧"。
+	 * 默认沿用 {@code ItemSprite.ANIM_FRAME_TIME}，需要慢的单独指定。
+	 */
+	public static float animationFrameTime(int image) {
+		//无尽碎片：8 帧、每帧 0.25s，比默认的 0.125s 慢一半
+		if (image == GRIMM_INFINITY_CATALYST) return 0.25f;
+		return com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSprite.ANIM_FRAME_TIME;
 	}
 
 	//END(gun port): 27 gun icons + bullets + gunsmithing tool, copied from ReReARPD items.png

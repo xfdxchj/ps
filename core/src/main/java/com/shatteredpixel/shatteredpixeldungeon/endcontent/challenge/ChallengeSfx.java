@@ -490,7 +490,9 @@ public final class ChallengeSfx {
 
 	/** 本层固定的随机曲：由本局种子 + 层数决定，上下楼不会重掷。 */
 	public static String dadiTrackForDepth(int depth){
-		long h = Dungeon.seed * 1103515245L + depth * 12345L;
+		//END(修订): 每 2 层共用同一首 —— 用 (depth+1)/2 当配对层号
+		int pair = (depth + 1) / 2;
+		long h = Dungeon.seed * 1103515245L + pair * 12345L;
 		int i = (int)(h % DADI_TRACKS.length);
 		if (i < 0) i += DADI_TRACKS.length;
 		String track = DADI_TRACKS[i];

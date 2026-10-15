@@ -84,6 +84,9 @@ public class ItemSprite extends MovieClip {
 	/** 距下一帧还有多少秒。 */
 	private float animTimer = 0f;
 
+	/** END(修复·无尽碎片速度): 本图标每帧持续多少秒（默认见下）。 */
+	private float animFrameTime = ANIM_FRAME_TIME;
+
 	/** END: 每帧持续时间（秒）。约 8 帧/秒，接近原版的节奏。 */
 	public static final float ANIM_FRAME_TIME = 0.125f;
 
@@ -283,6 +286,7 @@ public class ItemSprite extends MovieClip {
 		animFrames = ItemSpriteSheet.animationFrames( image );
 		animIndex = 0;
 		animTimer = 0f;
+		animFrameTime = ItemSpriteSheet.animationFrameTime( image );
 	}
 
 	/**
@@ -299,8 +303,8 @@ public class ItemSprite extends MovieClip {
 		if (animFrames == null || animFrames.length <= 1) return;
 
 		animTimer += Game.elapsed;
-		while (animTimer >= ANIM_FRAME_TIME) {
-			animTimer -= ANIM_FRAME_TIME;
+		while (animTimer >= animFrameTime) {
+			animTimer -= animFrameTime;
 			animIndex = (animIndex + 1) % animFrames.length;
 			super.frame( ItemSpriteSheet.film.get( animFrames[animIndex] ) );
 		}

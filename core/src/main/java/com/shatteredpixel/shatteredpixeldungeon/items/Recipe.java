@@ -208,6 +208,8 @@ public abstract class Recipe {
 		new Scroll.ScrollToStone(),
 		new ExoticPotion.PotionToExotic(),
 		new ExoticScroll.ScrollToExotic(),
+		//END(无尽体系): 预知秘卷 + 8 能量 -> 鉴定卷轴
+		new com.shatteredpixel.shatteredpixeldungeon.endcontent.items.ScrollOfAppraisal.Recipe(),
 		new ArcaneResin.Recipe(),
 		new LiquidMetal.Recipe(),
 		new BlizzardBrew.Recipe(),
