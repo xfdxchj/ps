@@ -78,6 +78,8 @@ public class Assets {
 		public static final String CITY_QUEST        = "environment/custom_tiles/city_quest.png";
 		public static final String CITY_BOSS        = "environment/custom_tiles/city_boss.png";
 		public static final String HALLS_SP         = "environment/custom_tiles/halls_special.png";
+		//END(B5 移植): 新版任务房地毯贴图
+		public static final String CARPET          = "environment/custom_tiles/carpet.png";
 
 		//END(移植自魔绫): 空洞遗迹(Hollow) 关卡资源键
 		public static final String TILES_HOLLOW    = "environment/tiles_halloween.png";
