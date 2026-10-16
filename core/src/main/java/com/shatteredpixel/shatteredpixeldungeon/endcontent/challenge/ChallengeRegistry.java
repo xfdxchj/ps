@@ -51,6 +51,7 @@ public final class ChallengeRegistry {
 		all.add(ChallengeDef.at(110, "信念护体", "no_armor")
 				.group("经典").tendency(ChallengeDef.TENDENCY_RESOURCE).level(2)
 				.tier(ChallengeDef.TIER_EASY).state(ChallengeDef.STATE_DONE)
+				.exclusive(121)
 				.legacyBit(legacy.NO_ARMOR).build());
 		all.add(ChallengeDef.at(111, "恐药异症", "no_healing")
 				.group("经典").tendency(ChallengeDef.TENDENCY_RESOURCE).level(2)
@@ -285,7 +286,7 @@ public final class ChallengeRegistry {
 				"玩家攻速 +20%，怪物移速 +20%。");
 		done(all, 20, "等我启动",   "wind_up",          "战斗", T_TWO, 2, T_MED,    "",
 				"对**同一目标**的伤害递增：第一次 20%，第二次 50%，第三次及以后 110%。换目标就重新计算。");
-		done(all, 21, "法术连击",   "spell_combo",      "战斗", T_BEN, 2, T_MED,    "",
+		done(all, 21, "法术连击",   "spell_combo",      "战斗", T_BEN, 2, T_MED,    "x:141",
 				"施法后 13% 概率**立即再施放一次**，不消耗充能与回合；单次最多追加一次。");
 		done(all, 22, "物极必反",   "overkill_reverse", "战斗", T_TWO, 3, T_EASY,   "",
 				"单次伤害超过目标最大生命 150% 时，该次伤害被完全免疫（只对怪物生效）。");
@@ -402,7 +403,7 @@ public final class ChallengeRegistry {
 				"装备获得时 50% 概率带随机附魔词缀（与装备觉醒独立计算）。");
 		done(all, 59, "诅咒装备",   "cursed_equipment", "装备", T_RES, 2, T_EASY,   "r:108",
 				"装备获得诅咒的概率提高 13%（原本 30%，提高后 43%）。");
-		done(all, 60, "家传法杖",   "heirloom_wand",    "装备", T_BEN, 1, T_EASY,   "",
+		done(all, 60, "家传法杖",   "heirloom_wand",    "装备", T_BEN, 1, T_EASY,   "x:141",
 				"开局额外获得 13 种进阶法杖中随机的一支（已鉴定）。");
 		done(all, 79, "高级附魔台", "advanced_enchant", "装备", T_BEN, 1, T_EASY,   "",
 				"每进入一个新区域（每 5 层）获得 1 个附魔秘卷。");
@@ -486,7 +487,7 @@ public final class ChallengeRegistry {
 
 		//==== 扩展包：139-147（表内有 ID 的新规则）====
 		//等级 / 倾向 / 关系均按清单给定；ID 139-147 经核实为原表空号，可直接使用。
-		done(all, 139,"紊乱法杖",   "chaos_wand",       "装备", T_TWO, 2, T_MED,    "s:60,21",
+		done(all, 139,"紊乱法杖",   "chaos_wand",       "装备", T_TWO, 2, T_MED,    "x:141;s:60,21",
 				"任何法杖施法时 **13%** 概率变成**另一种法杖**的效果（不是新物品，是全局规则）。等级沿用当前法杖。");
 		done(all, 140,"枪枪爆头",   "headshot",         "战斗", T_BEN, 2, T_EASY,   "s:76",
 				"玩家与目标距离 5 格以上时，远程攻击伤害必定为最大值。");
