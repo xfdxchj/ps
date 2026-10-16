@@ -24,6 +24,9 @@ public class JujutsuOverlay extends Image {
 	private static final float CAST_TIME = 0.9f;
 	private float particleTimer = 0f;
 
+	/** END(修复·粒子被迷雾盖住): 挂在迷雾之上的领域粒子发射器。 */
+	private com.watabou.noosa.particles.Emitter domainEmitter;
+
 	/** 领域展开瞬间的黑->白/红过渡。 */
 	public static void castFlash(boolean player){
 		castPlayer = player;
@@ -43,10 +46,20 @@ public class JujutsuOverlay extends Image {
 		alpha(0f);
 	}
 
-	/** 领域：粒子撒在**当前屏幕画面**上（不按格子）。 */
+	/** 领域：粒子撒在**当前屏幕画面**上，且必须画在迷雾之上。 */
 	private void spawnDomainParticles(com.watabou.noosa.particles.Emitter.Factory factory){
-		//END(修订): 改为按屏幕随机分布，不再按格子
-		JujutsuFx.scatterScreen(factory, PARTICLES_PER_TICK);
+		if (Camera.main == null) return;
+		//==== END(修复·无量空处粒子只在视野外可见) ====
+		//GameScene.emitter() 拿到的发射器挂在 emitters 组，而 emitters 在
+		//FogOfWar **之前** add —— 粒子会被迷雾盖住，视野内反而看不见。
+		//这里改为把发射器挂到 overFogEffects（迷雾之上），全屏都可见。
+		if (domainEmitter == null || !domainEmitter.exists){
+			domainEmitter = new com.watabou.noosa.particles.Emitter();
+			GameScene.effectOverFog(domainEmitter);
+		}
+		domainEmitter.pos(Camera.main.x, Camera.main.y,
+				Camera.main.width, Camera.main.height);
+		domainEmitter.burst(factory, PARTICLES_PER_TICK);
 	}
 
 	/** END(修订): 伏魔御厨子的斩击铺满**整个画面**（视野内外都刷，不再只刷 heroFOV）。 */
@@ -125,6 +138,10 @@ public class JujutsuOverlay extends Image {
 
 		if (!player && !sukuna && a <= 0.01f){
 			instance = null;
+			if (domainEmitter != null){
+				domainEmitter.killAndErase();
+				domainEmitter = null;
+			}
 			killAndErase();
 		}
 	}

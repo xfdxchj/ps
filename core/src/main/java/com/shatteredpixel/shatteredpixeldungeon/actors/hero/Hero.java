@@ -2706,48 +2706,56 @@ public class Hero extends Char {
 			super.onAttackComplete();
 			return;
 		}
-		
-		AttackIndicator.target(attackTarget);
-		boolean wasEnemy = attackTarget.alignment == Alignment.ENEMY
-				|| (attackTarget instanceof Mimic && attackTarget.alignment == Alignment.NEUTRAL);
 
-		boolean hit = attack(attackTarget);
-		
-		Invisibility.dispel();
+		//==== END(修复·点击怪物偶尔不近战): 任何异常都不能让英雄卡在 busy ====
+		//文档所有者反馈："点击怪物有时候不近战，切后台恢复。"
+		//
+		//根因：攻击结算（attack() 里一连串挑战/武器钩子）一旦抛异常，
+		//curAction / attackTarget 就永远停在攻击状态，sprite 也不再出发
+		//onAttackComplete —— 于是英雄一直 busy，点谁都没反应。
+		//切后台时 CharSprite.update() 的 paused 分支会补发一次 onComplete，
+		//所以"切后台能恢复"。
+		//
+		//这里用 try/finally 兜底：无论中间发生什么，都清空攻击状态并
+		//调用 super.onAttackComplete()（→ next()），保证回合能继续推进。
+		try {
+			AttackIndicator.target(attackTarget);
+			boolean wasEnemy = attackTarget.alignment == Alignment.ENEMY
+					|| (attackTarget instanceof Mimic && attackTarget.alignment == Alignment.NEUTRAL);
 
-		//==== END(修复·黑兔戒指不生效) ====
-		//文档所有者反馈（第二次）："没效果。"
-		//
-		//**根因在这里**：{@code attack()} 里返还的 1 个 tick，
-		//被**紧接着的这一行** {@code spend(attackDelay())} 又花掉了 ——
-		//两相抵消，玩家完全感觉不到。
-		//
-		//修法：{@code attack()} 改成只挂"免费出手"标记（见 RabbitRing.markFreeAttack），
-		//这里看到标记就**跳过这次 spend** —— 于是这一击不消耗回合，
-		//玩家能在同一回合内再出手一次（正是"一回合攻击两次"）。
-		if (hit && com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
-				.RabbitRing.consumeFreeAttack(this)) {
+			boolean hit = attack(attackTarget);
+
+			Invisibility.dispel();
+
+			//==== END(修复·黑兔戒指不生效) ====
+			if (hit && com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+					.RabbitRing.consumeFreeAttack(this)) {
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.log(
+						com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.COMBAT,
+						"【127 黑兔戒指】本次出手不消耗回合");
+			} else {
+				spend( attackDelay() );
+			}
+
+			if (hit && subClass == HeroSubClass.GLADIATOR && wasEnemy){
+				Buff.affect( this, Combo.class ).hit(attackTarget);
+			}
+
+			if (hit && heroClass == HeroClass.DUELIST && wasEnemy){
+				Buff.affect( this, Sai.ComboStrikeTracker.class).addHit();
+			}
+		} catch (Throwable t) {
 			com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.log(
 					com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.COMBAT,
-					"【127 黑兔戒指】本次出手不消耗回合");
-		} else {
-			spend( attackDelay() );
+					"【攻击回调异常】" + t.getClass().getSimpleName() + ": " + t.getMessage());
+			com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon.reportException(t);
+		} finally {
+			curAction = null;
+			attackTarget = null;
+			super.onAttackComplete();
 		}
-
-		if (hit && subClass == HeroSubClass.GLADIATOR && wasEnemy){
-			Buff.affect( this, Combo.class ).hit(attackTarget);
-		}
-
-		if (hit && heroClass == HeroClass.DUELIST && wasEnemy){
-			Buff.affect( this, Sai.ComboStrikeTracker.class).addHit();
-		}
-
-		curAction = null;
-		attackTarget = null;
-
-		super.onAttackComplete();
 	}
-	
+
 	@Override
 	public void onMotionComplete() {
 		GameScene.checkKeyHold();

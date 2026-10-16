@@ -1208,6 +1208,11 @@ public class GameScene extends PixelScene {
 	public static void effectOverFog( Visual effect ) {
 		scene.overFogEffects.add( effect );
 	}
+
+	/** END(修复·无量空处粒子): 允许把 Group/发射器也挂到迷雾之上。 */
+	public static void effectOverFog( Group effect ) {
+		scene.overFogEffects.add( effect );
+	}
 	
 	public static Ripple ripple( int pos ) {
 		if (scene != null) {
