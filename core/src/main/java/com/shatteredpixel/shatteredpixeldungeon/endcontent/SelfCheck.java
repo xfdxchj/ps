@@ -31,6 +31,13 @@ public final class SelfCheck {
 		}
 
 		try {
+			problems += checkRelationConsistency();
+		} catch (Throwable t){
+			log("[自检] 关系一致性自检异常: " + t);
+			problems++;
+		}
+
+		try {
 			problems += checkChallengeTexts();
 		} catch (Throwable t){
 			log("[自检] 挑战文案自检异常: " + t);
@@ -186,5 +193,60 @@ public final class SelfCheck {
 			p++;
 		}
 		return p;
+	}
+
+	/** 前置成环 + 互斥不对称。 */
+	private static int checkRelationConsistency(){
+		int p = 0;
+
+		//---- 前置成环 ----
+		for (ChallengeDef d : ChallengeRegistry.ALL){
+			if (hasPrereqCycle(d, new HashSet<Integer>())){
+				report("前置成环: 挑战 " + d.id + "(" + d.name + ") 沿前置关系绕回自身");
+				p++;
+			}
+		}
+
+		//---- 互斥必须对称 ----
+		for (ChallengeDef d : ChallengeRegistry.ALL){
+			if (d.relations == null) continue;
+			for (ChallengeRelation r : d.relations){
+				if (r == null || r.type != ChallengeRelation.Type.EXCLUSIVE) continue;
+				for (int t : r.targets){
+					ChallengeDef o = ChallengeRegistry.byId(t);
+					if (o == null) continue;   // 不存在的 ID 已由前一项检查报出
+					if (!hasRelation(o, ChallengeRelation.Type.EXCLUSIVE, d.id)){
+						report("互斥不对称: " + d.id + "(" + d.name + ") 互斥 " + t
+								+ "(" + o.name + ")，但反过来没有声明");
+						p++;
+					}
+				}
+			}
+		}
+		return p;
+	}
+
+	private static boolean hasRelation(ChallengeDef d, ChallengeRelation.Type type, int targetId){
+		if (d.relations == null) return false;
+		for (ChallengeRelation r : d.relations){
+			if (r == null || r.type != type || r.targets == null) continue;
+			for (int t : r.targets) if (t == targetId) return true;
+		}
+		return false;
+	}
+
+	private static boolean hasPrereqCycle(ChallengeDef d, HashSet<Integer> path){
+		if (d == null) return false;
+		if (!path.add(d.id)) return true;
+		if (d.relations != null){
+			for (ChallengeRelation r : d.relations){
+				if (r == null || r.type != ChallengeRelation.Type.PREREQUISITE || r.targets == null) continue;
+				for (int t : r.targets){
+					if (hasPrereqCycle(ChallengeRegistry.byId(t), path)) return true;
+				}
+			}
+		}
+		path.remove(d.id);
+		return false;
 	}
 }
