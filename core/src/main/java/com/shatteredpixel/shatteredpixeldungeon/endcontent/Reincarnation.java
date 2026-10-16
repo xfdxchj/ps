@@ -6,8 +6,6 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.endcontent;
 
-import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
-
 /**
  * END(轮回): 无尽循环 —— 九次轮回，九种诅咒。
  *
@@ -97,26 +95,6 @@ public final class Reincarnation {
 		if (len <= 0) return depth;
 		if (depth <= len) return depth;
 		return ((depth - 1) % len) + 1;
-	}
-
-	/**
-	 * END(修复·和层号挂钩的怪不吃区域倍率):
-	 * 给"按层号直接算数值"的怪（宝箱怪/食人鱼/雕像等）使用的层号。
-	 *
-	 * <p>无尽里 {@code Dungeon.depth} 是 26、30、160… 这样的绝对层号，
-	 * 直接被它们拿去当等级/血量基数，就等于绕过了"区域映射"这一整套 ——
-	 * 于是这些怪在无尽里数值严重偏离（宝箱怪 26 层近 1000 血就是这么来的）。
-	 *
-	 * <p>这里统一返回**映射后的原版层号**；未开无尽时原样返回，不影响原版。
-	 */
-	public static int statDepth(){
-		return enabled() ? mappedDepth( Dungeon.depth ) : Dungeon.depth;
-	}
-
-	/** END: 同上，但以 {@link Dungeon#scalingDepth()} 为基准（宝箱怪用）。 */
-	public static int statScalingDepth(){
-		int d = Dungeon.scalingDepth();
-		return enabled() ? mappedDepth( d ) : d;
 	}
 
 	/** END: 当前是第几轮（0 = 第一轮，尚未循环）。 */
@@ -243,6 +221,20 @@ public final class Reincarnation {
 		}
 		if (mob instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Swarm){
 			return Math.min(1_000_000f, 4f * mult);
+		}
+
+		//==== END(修复·按层号定数值的怪不吃区域倍率) ====
+		//文档所有者定稿："这些怪只吃轮回系数和层级，不要区域的。"
+		//
+		//宝箱怪/食人鱼/雕像的初始数值本来就是用**绝对层号**算的
+		//（见 Piranha/Statue/Mimic 的构造与 spawnAt），也就是"层级"那一份。
+		//它们不再乘 BASE_RATIO[区域]，只乘轮回系数 (1 + cycles)。
+		//
+		//ArmoredStatue 继承 Statue、HollowMimic 继承 Mimic，一并覆盖。
+		if (mob instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mimic
+				|| mob instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Piranha
+				|| mob instanceof com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Statue){
+			return Math.min(1_000_000f, mult);
 		}
 
 		int mapped = mappedDepth(depth);

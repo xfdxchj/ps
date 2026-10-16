@@ -67,7 +67,7 @@ public class HollowMimic extends Mimic {
 
 
         m.items = new ArrayList<>( items );
-        m.setLevel( com.shatteredpixel.shatteredpixeldungeon.endcontent.Reincarnation.statDepth() );
+        m.setLevel( Dungeon.depth );
         m.pos = pos;
 
         //generate an extra reward for killing the mimic

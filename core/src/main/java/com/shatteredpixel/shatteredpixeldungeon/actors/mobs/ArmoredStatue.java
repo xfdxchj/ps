@@ -33,13 +33,6 @@ import com.watabou.utils.Random;
 
 public class ArmoredStatue extends Statue {
 
-	/** END(修复·无尽区域倍率): 用映射后的层号算数值，而不是绝对层号。 */
-	private static int dpt(){
-		return com.shatteredpixel.shatteredpixeldungeon.endcontent
-				.Reincarnation.statDepth();
-	}
-
-
 	{
 		spriteClass = StatueSprite.class;
 	}
@@ -50,7 +43,7 @@ public class ArmoredStatue extends Statue {
 		super();
 
 		//double HP
-		HP = HT = 30 + dpt() * 10;
+		HP = HT = 30 + Dungeon.depth * 10;
 	}
 
 	@Override

@@ -1064,7 +1064,7 @@ public abstract class Mob extends Char {
 							.ChallengeEffects.rollMobMagic();
 			if (spell != null) {
 				//等级随层数走（否则低层怪物放出高层法术会过于致命）
-				spell.level(Math.max(0, com.shatteredpixel.shatteredpixeldungeon.endcontent.Reincarnation.statDepth() / 5));
+				spell.level(Math.max(0, com.shatteredpixel.shatteredpixeldungeon.endcontent.Reincarnation.mappedDepth(Dungeon.depth) / 5));
 
 				//用 CursedWand.cursedZap()：它接受**任意 Char 作为施法者**，
 				//正是"怪物放法术"需要的入口。
