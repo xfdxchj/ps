@@ -130,7 +130,7 @@ public class Eye extends Mob {
 		if (beamCooldown > 0 || (!beamCharged && !beam.subPath(1, beam.dist).contains(enemy.pos))) {
 			return super.doAttack(enemy);
 		} else if (!beamCharged){
-			((EyeSprite)sprite).charge( enemy.pos );
+			if (sprite instanceof EyeSprite) ((EyeSprite)sprite).charge( enemy.pos );
 			spend( attackDelay()*2f );
 			beamCharged = true;
 			return true;

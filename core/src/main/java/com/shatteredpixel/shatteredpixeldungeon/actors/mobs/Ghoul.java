@@ -159,7 +159,7 @@ public class Ghoul extends Mob {
 				Actor.remove(this);
 				Dungeon.level.mobs.remove( this );
 				Buff.append(nearby, GhoulLifeLink.class).set(timesDowned*5, this);
-				((GhoulSprite)sprite).crumple();
+				if (sprite instanceof GhoulSprite) ((GhoulSprite)sprite).crumple();
 				return;
 			}
 		}
@@ -320,7 +320,7 @@ public class Ghoul extends Mob {
 		public void fx(boolean on) {
 			if (on && ghoul != null && ghoul.sprite == null){
 				GameScene.addSprite(ghoul);
-				((GhoulSprite)ghoul.sprite).crumple();
+				if (ghoul.sprite instanceof GhoulSprite) ((GhoulSprite)ghoul.sprite).crumple();
 			}
 		}
 
