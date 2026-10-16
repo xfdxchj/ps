@@ -219,7 +219,7 @@ public final class InfinityMaterials {
 		//投掷武器：再 + 数量 × 1/2
 		if (item instanceof com.shatteredpixel.shatteredpixeldungeon.items.weapon
 				.missiles.MissileWeapon){
-			n += Math.max(1, item.quantity()) / 2;
+			n += Math.round(Math.max(1, item.quantity()) * 0.5f);
 		}
 		return Math.max(1, n);
 	}
