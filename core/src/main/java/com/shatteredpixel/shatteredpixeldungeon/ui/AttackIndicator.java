@@ -206,11 +206,8 @@ public class AttackIndicator extends Tag {
 	@Override
 	protected void onClick() {
 		super.onClick();
-		if (enabled && Dungeon.hero.ready) {
-			if (Dungeon.hero.handle( lastTarget.pos )) {
-				Dungeon.hero.next();
-			}
-		}
+		//END(修正·误点箭头导致乱走): 不再点击后自动寻路/攻击。
+		//只保留"显示当前目标"的功能，避免手滑点到就直接移动。
 	}
 
 	@Override
