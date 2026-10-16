@@ -38,6 +38,13 @@ import com.watabou.utils.Bundle;
 import com.watabou.utils.Random;
 
 public class Statue extends Mob {
+
+	/** END(修复·无尽区域倍率): 用映射后的层号算数值，而不是绝对层号。 */
+	private static int dpt(){
+		return com.shatteredpixel.shatteredpixeldungeon.endcontent
+				.Reincarnation.statDepth();
+	}
+
 	
 	{
 		spriteClass = StatueSprite.class;
@@ -55,8 +62,8 @@ public class Statue extends Mob {
 	public Statue() {
 		super();
 		
-		HP = HT = 15 + Dungeon.depth * 5;
-		defenseSkill = 4 + Dungeon.depth;
+		HP = HT = 15 + dpt() * 5;
+		defenseSkill = 4 + dpt();
 	}
 
 	public void createWeapon( boolean useDecks ){
@@ -110,7 +117,7 @@ public class Statue extends Mob {
 
 	@Override
 	public int drRoll() {
-		return super.drRoll() + Random.NormalIntRange(0, Dungeon.depth + weapon.defenseFactor(this));
+		return super.drRoll() + Random.NormalIntRange(0, dpt() + weapon.defenseFactor(this));
 	}
 	
 	@Override

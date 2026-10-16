@@ -6,6 +6,8 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.endcontent;
 
+import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+
 /**
  * END(轮回): 无尽循环 —— 九次轮回，九种诅咒。
  *
@@ -95,6 +97,26 @@ public final class Reincarnation {
 		if (len <= 0) return depth;
 		if (depth <= len) return depth;
 		return ((depth - 1) % len) + 1;
+	}
+
+	/**
+	 * END(修复·和层号挂钩的怪不吃区域倍率):
+	 * 给"按层号直接算数值"的怪（宝箱怪/食人鱼/雕像等）使用的层号。
+	 *
+	 * <p>无尽里 {@code Dungeon.depth} 是 26、30、160… 这样的绝对层号，
+	 * 直接被它们拿去当等级/血量基数，就等于绕过了"区域映射"这一整套 ——
+	 * 于是这些怪在无尽里数值严重偏离（宝箱怪 26 层近 1000 血就是这么来的）。
+	 *
+	 * <p>这里统一返回**映射后的原版层号**；未开无尽时原样返回，不影响原版。
+	 */
+	public static int statDepth(){
+		return enabled() ? mappedDepth( Dungeon.depth ) : Dungeon.depth;
+	}
+
+	/** END: 同上，但以 {@link Dungeon#scalingDepth()} 为基准（宝箱怪用）。 */
+	public static int statScalingDepth(){
+		int d = Dungeon.scalingDepth();
+		return enabled() ? mappedDepth( d ) : d;
 	}
 
 	/** END: 当前是第几轮（0 = 第一轮，尚未循环）。 */

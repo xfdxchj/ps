@@ -40,6 +40,13 @@ import com.watabou.utils.PathFinder;
 import com.watabou.utils.Random;
 
 public class Piranha extends Mob {
+
+	/** END(修复·无尽区域倍率): 用映射后的层号算数值，而不是绝对层号。 */
+	private static int dpt(){
+		return com.shatteredpixel.shatteredpixeldungeon.endcontent
+				.Reincarnation.statDepth();
+	}
+
 	
 	{
 		spriteClass = PiranhaSprite.class;
@@ -62,8 +69,8 @@ public class Piranha extends Mob {
 	public Piranha() {
 		super();
 		
-		HP = HT = 10 + Dungeon.depth * 5;
-		defenseSkill = 10 + Dungeon.depth * 2;
+		HP = HT = 10 + dpt() * 5;
+		defenseSkill = 10 + dpt() * 2;
 	}
 	
 	@Override
@@ -82,17 +89,17 @@ public class Piranha extends Mob {
 	
 	@Override
 	public int damageRoll() {
-		return Random.NormalIntRange( Dungeon.depth, 4 + Dungeon.depth * 2 );
+		return Random.NormalIntRange( dpt(), 4 + dpt() * 2 );
 	}
 	
 	@Override
 	public int attackSkill( Char target ) {
-		return 20 + Dungeon.depth * 2;
+		return 20 + dpt() * 2;
 	}
 	
 	@Override
 	public int drRoll() {
-		return super.drRoll() + Random.NormalIntRange(0, Dungeon.depth);
+		return super.drRoll() + Random.NormalIntRange(0, dpt());
 	}
 
 	@Override
