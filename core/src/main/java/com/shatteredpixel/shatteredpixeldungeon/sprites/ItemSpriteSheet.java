@@ -1384,6 +1384,15 @@ public class ItemSpriteSheet {
 	 * @param count  帧数
 	 * @return 帧索引数组
 	 */
+	/** END(启动自检): 某个帧号在主贴图里是否存在（防止越界 -> nofound / 错帧）。 */
+	public static boolean hasFrame(int image){
+		try {
+			return film.get(image) != null;
+		} catch (Throwable t){
+			return false;
+		}
+	}
+
 	private static int[] frameColumn(int col, int row, int count) {
 		int[] out = new int[count];
 		for (int i = 0; i < count; i++) {

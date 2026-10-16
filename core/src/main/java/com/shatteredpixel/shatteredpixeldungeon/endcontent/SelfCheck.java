@@ -30,6 +30,13 @@ public final class SelfCheck {
 			problems++;
 		}
 
+		try {
+			problems += checkFrames();
+		} catch (Throwable t){
+			log("[自检] 贴图自检异常: " + t);
+			problems++;
+		}
+
 		log("[自检] 完成，发现 " + problems + " 处问题");
 	}
 
@@ -74,5 +81,37 @@ public final class SelfCheck {
 			com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg
 					.log(com.shatteredpixel.shatteredpixeldungeon.endcontent.Dbg.LEVEL, msg);
 		} catch (Throwable ignored) {}
+	}
+
+	/** 检查 ItemSpriteSheet 里 END 新增的帧号 / 帧序列是否越界。 */
+	private static int checkFrames(){
+		int p = 0;
+		Class<?> c = com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet.class;
+		for (java.lang.reflect.Field f : c.getFields()){
+			String n = f.getName();
+			boolean interesting = n.startsWith("GRIMM_") || n.startsWith("END_")
+					|| n.startsWith("INFINITY_") || n.startsWith("HOLLOW_")
+					|| n.endsWith("_FRAMES");
+			if (!interesting) continue;
+			try {
+				if (f.getType() == int.class){
+					int v = f.getInt(null);
+					if (!com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet.hasFrame(v)){
+						report("贴图帧越界: " + n + " = " + v);
+						p++;
+					}
+				} else if (f.getType() == int[].class){
+					int[] arr = (int[]) f.get(null);
+					if (arr == null) continue;
+					for (int i = 0; i < arr.length; i++){
+						if (!com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet.hasFrame(arr[i])){
+							report("贴图帧越界: " + n + "[" + i + "] = " + arr[i]);
+							p++;
+						}
+					}
+				}
+			} catch (Throwable ignored) {}
+		}
+		return p;
 	}
 }
