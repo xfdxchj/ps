@@ -818,7 +818,8 @@ public final class ChallengeSfx {
 	 *
 	 * <p>定稿后应把 {@link #DEBUG} 改为 false（或删掉相关打印）。
 	 */
-	public static final boolean DEBUG = false;
+	//END(临时): 排查"触发类音效有时没声"，打开日志；查完改回 false
+	public static final boolean DEBUG = true;
 
 	/** 统计：本局各规则触发次数（诊断用）。 */
 	public static final java.util.HashMap<String, Integer> triggerCount = new java.util.HashMap<>();
