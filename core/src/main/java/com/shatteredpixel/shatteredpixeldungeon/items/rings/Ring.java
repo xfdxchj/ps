@@ -443,7 +443,8 @@ public class Ring extends KindofMisc {
 	public void restoreFromBundle( Bundle bundle ) {
 		super.restoreFromBundle( bundle );
 		levelsToID = bundle.getFloat( LEVELS_TO_ID );
-		int[] ids = bundle.getIntArray( AFFIXES );
+		//END(修复·老存档没有 ring_affixes): 用 contains 兜底，避免 JSONException 崩溃
+		int[] ids = bundle.contains( AFFIXES ) ? bundle.getIntArray( AFFIXES ) : null;
 		if (ids != null){
 			RingAffix[] vals = RingAffix.values();
 			affixes = new RingAffix[ids.length];

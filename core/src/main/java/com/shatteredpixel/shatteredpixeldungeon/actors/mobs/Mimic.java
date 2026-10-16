@@ -146,8 +146,11 @@ public class Mimic extends Mob {
 
 	@Override
 	public CharSprite sprite() {
-		MimicSprite sprite = (MimicSprite) super.sprite();
-		if (alignment == Alignment.NEUTRAL) sprite.hideMimic(this);
+		//END(修复·神秘复苏/幻影贴图强转崩溃): 精灵不一定是 MimicSprite
+		com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite sprite = super.sprite();
+		if (sprite instanceof MimicSprite && alignment == Alignment.NEUTRAL){
+			((MimicSprite) sprite).hideMimic(this);
+		}
 		return sprite;
 	}
 

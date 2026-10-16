@@ -1,56 +1,34 @@
 /*
- * 破碎的地牢 (End fork) — 挑战「线性地牢」：所有房间排成一条线。
+ * 破碎的地牢 (End fork) — 挑战「线性地牢」。
  *
- * 复用原版 placeRoom：从入口出发，方向固定，把全部房间（含商店、
- * 特殊房、连接房）依次首尾相接排成一条直线，不再产生分叉。
- * 入口在一端，出口在另一端。
+ * 直接用原版 LineBuilder，只把它配置成"直线主路"：
+ * 全部多连接房进主路、方向偏差 0、无隧道、无额外连接。
+ * 不再自己手摆房间（曾把房间摆到地图外 + 让 RegularLevel.build 死循环）。
+ *
+ * 注意：RegularLevel.build() 是 while (rooms == null)，本类不能返回 null。
+ * LineBuilder 自带随机性，外层重试能收敛；极端情况下再退回 LoopBuilder。
  */
 package com.shatteredpixel.shatteredpixeldungeon.levels.builders;
 
 import com.shatteredpixel.shatteredpixeldungeon.levels.rooms.Room;
-import com.watabou.utils.Random;
 
 import java.util.ArrayList;
 
-public class PureLineBuilder extends RegularBuilder {
+public class PureLineBuilder extends LineBuilder {
 
 	@Override
 	public ArrayList<Room> build(ArrayList<Room> rooms) {
+		setPathLength(1f, new float[]{0, 0, 0, 1});
+		setPathVariance(0f);
+		setTunnelLength(new float[]{0, 0, 0}, new float[]{0, 0, 0});
+		setExtraConnectionChance(0f);
 
-		setupRooms(rooms);
+		ArrayList<Room> result = super.build(rooms);
+		if (result != null) return result;
 
-		if (entrance == null){
-			return null;
-		}
-
-		entrance.setSize();
-		entrance.setPos(0, 0);
-
-		ArrayList<Room> rest = new ArrayList<>();
-		if (shop != null) rest.add(shop);
-		rest.addAll(mainPathRooms);
-		rest.addAll(multiConnections);
-		rest.addAll(singleConnections);
-		Random.shuffle(rest);
-		//出口放最后，保证线性的两端是入口 / 出口
-		if (exit != null) rest.add(exit);
-
-		final float direction = 90f; //0 = 上，90 = 右
-		Room prev = entrance;
-		for (Room r : rest){
-			boolean ok = false;
-			for (int t = 0; t < 16 && !ok; t++){
-				float a = (t == 0) ? direction : direction + Random.Float(-25f, 25f);
-				float ang = placeRoom(rooms, prev, r, a);
-				ok = ang != -1;
-			}
-			if (!ok){
-				return null;
-			}
-			prev = r;
-		}
-
-		findNeighbours(rooms);
-		return rooms;
+		//最后兜底：原版 LoopBuilder（正常地图，非直线）
+		return new LoopBuilder()
+				.setLoopShape(2, 0.5f, 0.3f)
+				.build(rooms);
 	}
 }
