@@ -211,18 +211,11 @@ public abstract class Mob extends Char {
 						99999f);
 			}
 
-			//==== END(挑战 73 神秘复苏): 13% 的怪物直接变成幽灵 ====
-			//原表："13% 生成幽灵"
-			//
-			//做法与 29 童工不同：那条是改数值，这条是**换怪**。
-			//但 Mob.onAdd 里已经没法把 this 换成另一个类，
-			//所以改为"把它变成幽灵的外观 + 数值"——
-			//即：把贴图换成 WraithSprite、HP 压到 1、清掉经验。
-			//这样它在行为上就是一只幽灵，而且不需要新建实例（避免递归 onAdd）。
-			if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
-					.ChallengeEffects.rollMysticRevival(this)) {
-				becomeWraith();
-			}
+			//==== END(挑战 73 神秘复苏): 13% 直接生成真幽灵 ====
+			//原先在这里"就地改造"（换贴图 + HP/HT 压成 1）。
+			//但那样会跳过怪物自身机制：矮人尸群(Ghoul)的复活用 HT/10
+			//算血量，HT=1 时复活出 0 血怪物 —— 无血条、查看空白、随后崩溃。
+			//现在改为在 Level.createMob() 里直接返回一只真正的 Wraith。
 
 
 			//==== END(挑战 148 飞天神偷): 怪物 13% 获得隐身 ====
@@ -1462,41 +1455,6 @@ public abstract class Mob extends Char {
 		}
 	}
 	
-	/**
-	 * END(挑战 73 神秘复苏): 把这只怪"变成幽灵"。
-	 *
-	 * <h3>为什么不换成另一个实例</h3>
-	 * 我们正在 {@code onAdd()} 里 —— 那时 this 已经在 level.mobs 里了，
-	 * 新建一个 Wraith 再删掉自己会打乱 Actor 的注册顺序（而且可能递归）。
-	 *
-	 * <p>所以改为**就地改造**：把外观与关键数值改成幽灵的样子。
-	 * 行为上它就已经是一只幽灵了（飞行、1 血、无经验）。
-	 *
-	 * <h3>改了哪些</h3>
-	 * <ul>
-	 *   <li>{@code spriteClass} → {@code WraithSprite}（外观）</li>
-	 *   <li>HP/HT → 1（幽灵只有 1 点血）</li>
-	 *   <li>EXP → 0（打死幽灵不给经验）</li>
-	 *   <li>{@code flying} → true</li>
-	 *   <li>属性加 UNDEAD / INORGANIC</li>
-	 * </ul>
-	 */
-	private void becomeWraith() {
-		try {
-			spriteClass = com.shatteredpixel.shatteredpixeldungeon.sprites
-					.WraithSprite.class;
-
-			HP = HT = 1;
-			EXP = 0;
-			flying = true;
-
-			properties.add(Property.UNDEAD);
-			properties.add(Property.INORGANIC);
-		} catch (Throwable t) {
-			//改造失败就保持原样 —— 那只是少一只幽灵
-		}
-	}
-
 	/**
 	 * END(轮回诅咒⑦ 爆裂): 死亡时爆炸。
 	 *

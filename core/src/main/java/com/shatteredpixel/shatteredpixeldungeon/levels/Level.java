@@ -912,6 +912,21 @@ public abstract class Level implements Bundlable {
 					.ChallengeEffects.applyGiant(m);
 		}
 
+		//==== END(挑战 73 神秘复苏): 13% 直接换成一只真幽灵 ====
+		//原先是在 Mob.onAdd() 里"就地改造"（换贴图 + HP/HT 压成 1）。
+		//那样会跳过怪物自身的机制，最典型的是矮人尸群(Ghoul)：
+		//它复活时用 HT/10 算血量，HT=1 -> 复活出 0 血怪物，
+		//表现为无血条、查看空白、几回合后崩溃。
+		//改为在**实例化出口**直接返回 Wraith，贴图/血条/机制全部正确。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.rollMysticRevival(m)) {
+			com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Wraith w =
+					new com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Wraith();
+			w.adjustStats(Dungeon.scalingDepth());
+			w.state = w.HUNTING;
+			return w;
+		}
+
 		return m;
 	}
 
