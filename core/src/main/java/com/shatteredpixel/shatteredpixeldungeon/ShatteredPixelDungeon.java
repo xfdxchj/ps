@@ -60,6 +60,9 @@ public class ShatteredPixelDungeon extends Game {
 		com.shatteredpixel.shatteredpixeldungeon.endcontent.CrashLog.installConsoleTee();
 		super.create();
 
+		//END(启动自检): 检查挑战 ID/关系等低级问题，结果写进 pd_log.txt
+		com.shatteredpixel.shatteredpixeldungeon.endcontent.SelfCheck.run();
+
 		updateSystemUI();
 		SPDAction.loadBindings();
 		
