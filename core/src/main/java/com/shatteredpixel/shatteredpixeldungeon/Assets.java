@@ -460,6 +460,8 @@ public class Assets {
 		public static final String SCORPIO  = "sprites/scorpio.png";
 		public static final String FISTS    = "sprites/yog_fists.png";
 		public static final String YOG      = "sprites/yog.png";
+		//END(131 格林之敌): 莉耶芙版古神贴图（仅勾选 131 时使用）
+		public static final String GRIMM_YOG = "sprites/grimm_yog.png";
 		public static final String LARVA    = "sprites/larva.png";
 		public static final String GHOST    = "sprites/ghost.png";
 		public static final String MAKER    = "sprites/wandmaker.png";

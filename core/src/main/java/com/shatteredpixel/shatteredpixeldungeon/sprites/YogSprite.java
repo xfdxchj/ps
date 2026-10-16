@@ -33,37 +33,51 @@ public class YogSprite extends MobSprite {
 
 		perspectiveRaise = 5 / 16f;
 
-		texture( Assets.Sprites.YOG );
-		
-		//==== END(古神贴图替换): 帧尺寸 20x19 -> 50x42 ====
-		//文档所有者提供了新的古神贴图（音乐/莉耶夫.png），
-		//源图 150x168，3 列 x 4 行，每帧 50x42。
-		//
-		//**不缩放**，直接把游戏帧尺寸改成 50x42 —— 缩放会让瞳孔等细节全丢。
-		//代价：古神在屏幕上会变大 2.5 倍（原来 20x19）。
-		//
-		//贴图只取**第一行的 3 帧**（列 0/1/2），排成 150x42 的单行图。
-		//行 1-3 未使用。
-		//
-		//帧映射由文档所有者指定：0,0,0,1,1,1,2,2,2
-		//（每帧重复 3 次，形成缓慢的呼吸/凝视节奏）
-		TextureFilm frames = new TextureFilm( texture, 50, 42 );
-		
-		idle = new Animation( 10, true );
-		idle.frames( frames, 0, 0, 0, 1, 1, 1, 2, 2, 2 );
-		
-		run = new Animation( 12, true );
-		run.frames( frames, 0 );
-		
-		attack = new Animation( 12, false );
-		attack.frames( frames, 0 );
-		
-		//==== END: 死亡没有专属贴图 ====
-		//文档所有者说明"死亡没有贴图"，所以复用已有的 3 帧做收尾，
-		//而不是指向不存在的帧号（那会显示 nofound 或越界取到别的花纹）。
-		die = new Animation( 10, false );
-		die.frames( frames, 2, 1, 0 );
-		
+		//==== END(修复·没开 131 古神也变成莉耶芙) ====
+		//原来直接把 assets/sprites/yog.png 替换成了莉耶芙贴图，
+		//YogSprite 又无条件加载它 —— 于是没勾选挑战 131 也显示莉耶芙。
+		//改为两张图分开：原版 yog.png + grimm_yog.png，按挑战 131 切换。
+		if (com.shatteredpixel.shatteredpixeldungeon.endcontent.grimm
+				.GrimmText.grimmEnemyEnabled()) {
+
+			//---- 莉耶芙（150x42，单行 3 帧，每帧 50x42）----
+			texture( Assets.Sprites.GRIMM_YOG );
+
+			TextureFilm frames = new TextureFilm( texture, 50, 42 );
+
+			idle = new Animation( 10, true );
+			idle.frames( frames, 0, 0, 0, 1, 1, 1, 2, 2, 2 );
+
+			run = new Animation( 12, true );
+			run.frames( frames, 0 );
+
+			attack = new Animation( 12, false );
+			attack.frames( frames, 0 );
+
+			die = new Animation( 10, false );
+			die.frames( frames, 2, 1, 0 );
+
+		} else {
+
+			//---- 原版古神 ----
+			texture( Assets.Sprites.YOG );
+
+			TextureFilm frames = new TextureFilm( texture, 20, 19 );
+
+			idle = new Animation( 10, true );
+			idle.frames( frames, 0, 1, 2, 2, 1, 0, 3, 4, 4, 3, 0, 5, 6, 6, 5 );
+
+			run = new Animation( 12, true );
+			run.frames( frames, 0 );
+
+			attack = new Animation( 12, false );
+			attack.frames( frames, 0 );
+
+			die = new Animation( 10, false );
+			die.frames( frames, 0, 7, 8, 9 );
+
+		}
+
 		play( idle );
 	}
 
