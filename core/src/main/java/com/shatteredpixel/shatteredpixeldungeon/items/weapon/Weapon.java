@@ -481,6 +481,22 @@ abstract public class Weapon extends KindOfWeapon {
 	}
 	
 	@Override
+	public String info() {
+		String info = super.info();
+
+		//END(后缀系统): 在武器详情里显示已附加的后缀
+		if (suffix != null) {
+			com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons.WeaponSuffix s =
+					com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons.WeaponSuffix
+							.byName(suffix);
+			if (s != null) {
+				info += "\n\n_后缀·" + s.label + "_";
+			}
+		}
+		return info;
+	}
+
+	@Override
 	public String name() {
 		if (isEquipped(Dungeon.hero) && !hasCurseEnchant() && Dungeon.hero.buff(HolyWeapon.HolyWepBuff.class) != null
 			&& (Dungeon.hero.subClass != HeroSubClass.PALADIN || enchantment == null)){

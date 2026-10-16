@@ -2,12 +2,12 @@
  * 破碎的地牢 (End fork) — 后缀卷轴。
  *
  * 炼金：升级卷轴 + 任意符石 + 邪能碎片 -> 后缀卷轴。
- * 对当前武器使用后，随机附加 1 个后缀技能（每把武器最多 1 个）。
+ * 使用时选择一把武器，随机附加 1 个后缀技能。
+ * 若该武器已有后缀，会先询问是否替换。
  */
 package com.shatteredpixel.shatteredpixeldungeon.endcontent.items;
 
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
-import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Identification;
 import com.shatteredpixel.shatteredpixeldungeon.endcontent.weapons.WeaponSuffix;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
@@ -17,8 +17,12 @@ import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.Scroll;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfUpgrade;
 import com.shatteredpixel.shatteredpixeldungeon.items.stones.Runestone;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon;
+import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
+import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSprite;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
+import com.shatteredpixel.shatteredpixeldungeon.windows.WndBag;
+import com.shatteredpixel.shatteredpixeldungeon.windows.WndOptions;
 import com.watabou.noosa.audio.Sample;
 
 import java.util.ArrayList;
@@ -33,8 +37,8 @@ public class SuffixScroll extends Scroll {
 
 	@Override public String name(){ return "后缀卷轴"; }
 	@Override public String info(){
-		return "把卷轴按在**当前武器**上，随机附加 1 个后缀技能。"
-				+ "每把武器最多 1 个后缀。\n\n炼金：**升级卷轴 + 任意符石 + 邪能碎片**。";
+		return "阅读并选择一把武器，随机附加 1 个后缀技能。"
+				+ "若该武器已有后缀，会询问是否替换。\n\n炼金：**升级卷轴 + 任意符石 + 邪能碎片**。";
 	}
 	@Override public String desc(){ return info(); }
 	@Override public boolean isUpgradable(){ return false; }
@@ -43,32 +47,66 @@ public class SuffixScroll extends Scroll {
 
 	@Override
 	public void doRead(){
-		com.shatteredpixel.shatteredpixeldungeon.items.KindOfWeapon k = curUser.belongings.attackingWeapon();
-		Weapon w = (k instanceof Weapon) ? (Weapon) k : null;
-		if (w == null){
-			k = curUser.belongings.weapon();
-			w = (k instanceof Weapon) ? (Weapon) k : null;
-		}
-		if (w == null){
-			GLog.w("没有可附加后缀的武器。");
-			return;
-		}
-		if (w.suffix != null){
-			GLog.w("这把武器已经有后缀了。");
-			return;
-		}
-		detach(curUser.belongings.backpack);
-		curUser.sprite.parent.add(new Identification(curUser.sprite.center().offset(0, -16)));
-		Sample.INSTANCE.play(Assets.Sounds.READ);
+		GameScene.selectItem( itemSelector );
+	}
+
+	/** END: 真正把随机后缀写到武器上（含替换）。 */
+	private void applySuffix( Weapon w ){
+		if (w == null) return;
+
+		detach( curUser.belongings.backpack );
+		curUser.sprite.parent.add( new Identification( curUser.sprite.center().offset( 0, -16 ) ) );
+		Sample.INSTANCE.play( Assets.Sounds.READ );
 
 		WeaponSuffix s = WeaponSuffix.random();
+		boolean replace = w.suffix != null;
 		w.suffix = s.name();
-		GLog.i("武器获得后缀：" + s.label);
+
+		if (replace){
+			GLog.i( "后缀已替换为：" + s.label );
+		} else {
+			GLog.i( "武器获得后缀：" + s.label );
+		}
 
 		readAnimation();
 		identify();
 		Item.updateQuickslot();
 	}
+
+	protected WndBag.ItemSelector itemSelector = new WndBag.ItemSelector() {
+
+		@Override
+		public String textPrompt(){
+			return "选择要附加后缀的武器：";
+		}
+
+		@Override
+		public boolean itemSelectable( Item item ){
+			return item instanceof Weapon && item.isIdentified() && !item.cursed;
+		}
+
+		@Override
+		public void onSelect( Item item ){
+			if (!(item instanceof Weapon)) return;
+			final Weapon w = (Weapon) item;
+
+			if (w.suffix != null){
+				WeaponSuffix old = WeaponSuffix.byName( w.suffix );
+				GameScene.show( new WndOptions(
+						new ItemSprite( new SuffixScroll() ),
+						"替换后缀",
+						"该武器已有后缀「" + (old == null ? w.suffix : old.label) + "」，\n要替换成新的随机后缀吗？",
+						"替换", "取消" ) {
+					@Override
+					protected void onSelect( int index ){
+						if (index == 0) applySuffix( w );
+					}
+				} );
+			} else {
+				applySuffix( w );
+			}
+		}
+	};
 
 	/** 炼金：升级卷轴 + 任意符石 + 邪能碎片。 */
 	public static class Recipe3 extends Recipe {
