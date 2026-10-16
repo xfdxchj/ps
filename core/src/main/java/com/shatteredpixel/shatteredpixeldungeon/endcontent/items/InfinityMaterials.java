@@ -47,7 +47,7 @@ public final class InfinityMaterials {
 		@Override
 		public String info(){
 			return "装备被熔尽之后剩下的东西。边缘还在轻轻发烫。\n\n" +
-					"-由**炼金分解装备**获得（按装备阶数给 1~5 个）\n" +
+					"-由**炼金分解装备**获得：**阶数 + 等级**（每级 +1）；投掷武器再按数量倍乘\n" +
 					"-**100 个**可以合成 1 个**无尽锭**";
 		}
 
@@ -214,7 +214,13 @@ public final class InfinityMaterials {
 	 */
 	public static int shardsFrom(Item item){
 		if (item == null) return 0;
-		return Math.max(1, Math.min(5, tierOf(item)));
+		//END(新配方): 产出 = 武器阶数 + 等级（每级 +1）；投掷武器再按数量倍乘。
+		int n = tierOf(item) + Math.max(0, item.level());
+		if (item instanceof com.shatteredpixel.shatteredpixeldungeon.items.weapon
+				.missiles.MissileWeapon){
+			n *= Math.max(1, item.quantity());
+		}
+		return Math.max(1, n);
 	}
 
 	/**
