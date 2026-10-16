@@ -31,6 +31,13 @@ public final class SelfCheck {
 		}
 
 		try {
+			problems += checkChallengeTexts();
+		} catch (Throwable t){
+			log("[自检] 挑战文案自检异常: " + t);
+			problems++;
+		}
+
+		try {
 			problems += checkFrames();
 		} catch (Throwable t){
 			log("[自检] 贴图自检异常: " + t);
@@ -111,6 +118,42 @@ public final class SelfCheck {
 					}
 				}
 			} catch (Throwable ignored) {}
+		}
+		return p;
+	}
+
+	/** 检查挑战 key / 名字重复，以及"既无 effect 又无 _desc 文案"。 */
+	private static int checkChallengeTexts(){
+		int p = 0;
+		HashSet<String> keys = new HashSet<>();
+		HashSet<String> names = new HashSet<>();
+		boolean messagesOk = true;
+
+		for (ChallengeDef d : ChallengeRegistry.ALL){
+			if (d.key != null && !keys.add(d.key)){
+				report("挑战 key 重复: " + d.key + " (id " + d.id + ")");
+				p++;
+			}
+			if (d.name != null && !names.add(d.name)){
+				report("挑战名重复: " + d.name + " (id " + d.id + ")");
+				p++;
+			}
+
+			boolean hasEffect = d.effect != null && !d.effect.isEmpty();
+			if (hasEffect || !messagesOk) continue;
+
+			try {
+				if (!com.shatteredpixel.shatteredpixeldungeon.messages.Messages
+						.exists(null, "challenges." + d.key + "_desc")){
+					report("挑战 " + d.id + "(" + d.name
+							+ ") 既无 effect 也无 challenges." + d.key + "_desc 文案");
+					p++;
+				}
+			} catch (Throwable t){
+				//离线运行（无 Gdx）时 Messages 不可用，直接跳过文案检查
+				messagesOk = false;
+				log("[自检] 文案检查跳过：Messages 不可用（仅离线运行时会出现）");
+			}
 		}
 		return p;
 	}
