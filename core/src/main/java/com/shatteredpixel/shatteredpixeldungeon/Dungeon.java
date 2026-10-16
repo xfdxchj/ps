@@ -1090,6 +1090,23 @@ public class Dungeon {
 					.ChallengeArea.areaAtDepth(depth);
 			if (info != null && (info[1] == 4 || info[1] == 9)) return true;
 		}
+		//==== END(修复·无尽没有 Boss): 26+ 映射回原版层号后也要认 Boss 层 ====
+		//无尽轮回里第 26/30/35… 层实际是原版的 1/5/10… 层，
+		//但这里是按**实际层号**判定的，于是 26+ 永远走不到下面那句
+		//`depth % bossInterval == 0`（depth <= maxMainDepth 不成立）——
+		//结果无尽力里的 Boss 层不被当成 Boss 层处理。
+		if (depth > com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+				.ChallengeEffects.maxMainDepth()
+				&& com.shatteredpixel.shatteredpixeldungeon.endcontent
+						.Reincarnation.enabled()) {
+			int mappedBoss = com.shatteredpixel.shatteredpixeldungeon.endcontent
+					.Reincarnation.mappedDepth(depth);
+			if (mappedBoss > 0) {
+				return mappedBoss % com.shatteredpixel.shatteredpixeldungeon.endcontent
+						.challenge.ChallengeEffects.bossInterval() == 0;
+			}
+		}
+
 		//==== END(适配 6 完整地牢): Boss 层判定不再是写死的 25 层制 ====
 		//原版是每 5 层一个 Boss（5/10/15/20/25）。
 		//勾选 6 完整地牢后主线变成 50 层，Boss 层相应变成 10/20/30/40/50。
