@@ -292,6 +292,16 @@ public class ItemSprite extends MovieClip {
 		animFrameTime = ItemSpriteSheet.animationFrameTime( image );
 		animPingPong = ItemSpriteSheet.animationPingPong( image );
 		animDir = 1;
+
+		//==== END(修复·无尽碎片出售时贴图不一样) ====
+		//原实现先显示 frame(image)（该列第 0 帧是"奇点"），
+		//要等一个 animFrameTime 才切到动画帧；而且 advanceAnimation()
+		//会先把 animIndex 加 1，等于**永远跳过 animFrames[0]**。
+		//于是"背包/出售/详情"在不同时机可能分别显示"奇点"和"碎片"。
+		//这里在建立图标时就直接显示 animFrames[0]，各处第一帧即一致。
+		if (animFrames != null && animFrames.length > 0){
+			super.frame( ItemSpriteSheet.film.get( animFrames[0] ) );
+		}
 	}
 
 	/**
