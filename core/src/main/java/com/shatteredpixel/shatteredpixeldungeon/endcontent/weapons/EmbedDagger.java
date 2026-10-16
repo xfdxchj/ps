@@ -62,7 +62,11 @@ public abstract class EmbedDagger extends MissileWeapon {
 
 	@Override
 	protected void onThrow( int cell ){
-		super.onThrow( cell );
+		//==== END(修复·进阶匕首投掷后失效) ====
+		//必须**先**记录嵌住目标，再调 super.onThrow()。
+		//因为 super.onThrow() 里会走 shoot() -> Char.attack() -> proc()，
+		//而 proc() 现在就是"命中即结算分支效果"的入口 ——
+		//那时候 stuckEnemy/stuckCell 就得已经就位。
 		Char t = Actor.findChar( cell );
 		if (t != null && t.isAlive()){
 			stuckEnemy = t;
@@ -73,6 +77,56 @@ public abstract class EmbedDagger extends MissileWeapon {
 			stuckEnemy = null;
 			stuckCell  = cell;
 		}
+		super.onThrow( cell );
+	}
+
+	/**
+	 * END(修复·进阶匕首投掷后失效): 命中时直接触发分支效果。
+	 *
+	 * <p>旧设计是"投掷 -> 落地 -> 玩家手动点回收"。
+	 * 但投掷武器出手后会被 {@code cast()} 从背包 detach 掉、再落到地上，
+	 * 玩家在背包里根本点不到那个"回收"动作 —— 等于三个分支都没有实现。
+	 *
+	 * <p>现在改成与基底刺杀匕首一致的"命中即触发"：
+	 * 命中时 stuckEnemy 已由 onThrow 记好，直接调用子类的 recover()。
+	 * 冷却期间 recoverable() 为 false，就只做普通投掷。
+	 */
+	@Override
+	public int proc(Char attacker, Char defender, int damage){
+		int out = super.proc(attacker, defender, damage);
+
+		if (attacker instanceof Hero
+				&& defender != null
+				&& defender == stuckEnemy
+				&& defender.isAlive()
+				&& defender.alignment != Char.Alignment.ALLY
+				&& recoverable((Hero) attacker)){
+			recover((Hero) attacker);
+		}
+		return out;
+	}
+
+	/** 投掷结束后把匕首收回英雄背包（不再落地，快捷栏不消失）。 */
+	private void returnToHero( int cell ){
+		parent = null;
+		stuckEnemy = null;
+		stuckCell  = -1;
+		if (spawnedForEffect || Dungeon.hero == null) return;
+		if (!collect( Dungeon.hero.belongings.backpack )){
+			Dungeon.level.drop( this, cell ).sprite.drop();
+		} else {
+			updateQuickslot();
+		}
+	}
+
+	@Override
+	protected void rangedHit( Char enemy, int cell ){
+		returnToHero( cell );
+	}
+
+	@Override
+	protected void rangedMiss( int cell ){
+		returnToHero( cell );
 	}
 
 	@Override public int min(int lvl){ return 2 + lvl; }
