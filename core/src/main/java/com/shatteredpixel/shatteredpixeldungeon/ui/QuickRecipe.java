@@ -426,6 +426,21 @@ public class QuickRecipe extends Component {
 						Item outW = rWand.sampleOutput(inW);
 						if (outW != null) result.add(new QuickRecipe(rWand, inW, outW));
 					}
+
+					//END 无尽工作台: 炼金工具箱 + 无尽锭 → 无尽工作台
+					if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+							.ChallengeEffects.infinityShardEnabled()) {
+						com.shatteredpixel.shatteredpixeldungeon.items.Recipe rBench =
+								new com.shatteredpixel.shatteredpixeldungeon.endcontent.items
+										.InfinityWorkbench.BenchRecipe();
+						ArrayList<Item> inBench = new ArrayList<>(Arrays.asList(
+								(Item) new com.shatteredpixel.shatteredpixeldungeon.items.artifacts
+										.AlchemistsToolkit().identify(),
+								(Item) new com.shatteredpixel.shatteredpixeldungeon.endcontent.items
+										.InfinityMaterials.InfinityIngot().identify()));
+						Item outBench = rBench.sampleOutput(inBench);
+						if (outBench != null) result.add(new QuickRecipe(rBench, inBench, outBench));
+					}
 				}
 				return result;
 			case 7:
