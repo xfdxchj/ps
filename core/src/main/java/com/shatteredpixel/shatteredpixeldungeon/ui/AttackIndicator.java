@@ -200,7 +200,9 @@ public class AttackIndicator extends Tag {
 	}
 	
 	private synchronized void visible( boolean value ) {
-		bg.visible = value;
+		//END(需求·取消原版箭头): 一律不显示这个"攻击"标签
+		bg.visible = false;
+		if (sprite != null) sprite.visible = false;
 	}
 	
 	@Override
