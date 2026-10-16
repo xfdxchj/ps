@@ -358,6 +358,36 @@ public abstract class Recipe {
 		return result;
 	}
 	
+	/**
+	 * END(启动自检): 遍历所有配方，检查 SimpleRecipe 的 sampleOutput 是否正常。
+	 * 返回问题描述列表（空 = 正常）。
+	 */
+	public static java.util.List<String> selfCheck(){
+		java.util.List<String> out = new java.util.ArrayList<>();
+		checkRecipeList(variableRecipes, "任意料", out);
+		checkRecipeList(oneIngredientRecipes, "1料", out);
+		checkRecipeList(twoIngredientRecipes, "2料", out);
+		checkRecipeList(threeIngredientRecipes, "3料", out);
+		checkRecipeList(endVariantRecipes, "END", out);
+		return out;
+	}
+
+	private static void checkRecipeList(Recipe[] list, String tag, java.util.List<String> out){
+		if (list == null) return;
+		for (Recipe r : list){
+			if (r == null) continue;
+			if (!(r instanceof SimpleRecipe)) continue;
+			try {
+				Item sample = r.sampleOutput(((SimpleRecipe) r).getIngredients());
+				if (sample == null){
+					out.add(tag + " 配方 " + r.getClass().getSimpleName() + " 产出为空");
+				}
+			} catch (Throwable t){
+				out.add(tag + " 配方 " + r.getClass().getSimpleName() + " 抛异常: " + t);
+			}
+		}
+	}
+
 	public static boolean usableInRecipe(Item item){
 		//==== END(修复·214 无尽碎片：装备进不了炼金炉) ====
 		//文档所有者反馈："无尽炼金不能使用，无法获得无尽碎片。"

@@ -38,6 +38,13 @@ public final class SelfCheck {
 		}
 
 		try {
+			problems += checkRecipes();
+		} catch (Throwable t){
+			log("[自检] 配方自检异常: " + t);
+			problems++;
+		}
+
+		try {
 			problems += checkFrames();
 		} catch (Throwable t){
 			log("[自检] 贴图自检异常: " + t);
@@ -154,6 +161,29 @@ public final class SelfCheck {
 				messagesOk = false;
 				log("[自检] 文案检查跳过：Messages 不可用（仅离线运行时会出现）");
 			}
+		}
+		return p;
+	}
+
+	/** 检查所有 SimpleRecipe 的产出是否正常（离线环境错误直接忽略）。 */
+	private static int checkRecipes(){
+		int p = 0;
+		java.util.List<String> msgs;
+		try {
+			msgs = com.shatteredpixel.shatteredpixeldungeon.items.Recipe.selfCheck();
+		} catch (Throwable t){
+			log("[自检] 配方检查跳过（环境不可用）: " + t);
+			return 0;
+		}
+		for (String msg : msgs){
+			if (msg == null) continue;
+			//离线运行（无 Gdx）时物品类无法初始化，这类"环境错误"不算问题
+			if (msg.contains("NoClassDefFoundError") || msg.contains("ExceptionInInitializerError")
+					|| msg.contains("Gdx") || msg.contains("ItemSpriteSheet")){
+				continue;
+			}
+			report(msg);
+			p++;
 		}
 		return p;
 	}
