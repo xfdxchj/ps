@@ -441,6 +441,71 @@ public class QuickRecipe extends Component {
 						Item outBench = rBench.sampleOutput(inBench);
 						if (outBench != null) result.add(new QuickRecipe(rBench, inBench, outBench));
 					}
+
+					//END 无尽碎片体系: 分解→碎片 / 15级装备→核心 / 100碎片→锭 / 2锭+核心+样品套→顶级装备
+					if (com.shatteredpixel.shatteredpixeldungeon.endcontent.challenge
+							.ChallengeEffects.infinityShardEnabled()) {
+
+						//分解任意装备 → 无尽碎片
+						com.shatteredpixel.shatteredpixeldungeon.items.Recipe rDec =
+								new com.shatteredpixel.shatteredpixeldungeon.endcontent.items
+										.InfinityRecipes.Decompose();
+						{
+							ArrayList<Item> in = new ArrayList<>(Arrays.asList(
+									(Item) new com.shatteredpixel.shatteredpixeldungeon.items.weapon
+											.melee.Longsword().identify()));
+							Item out = rDec.sampleOutput(in);
+							if (out != null) result.add(new QuickRecipe(rDec, in, out));
+						}
+
+						//15级以上装备 → 对应无尽核心
+						com.shatteredpixel.shatteredpixeldungeon.items.Recipe rCore2 =
+								new com.shatteredpixel.shatteredpixeldungeon.endcontent.items
+										.InfinityRecipes.ToCore();
+						{
+							Item sample = (Item) new com.shatteredpixel.shatteredpixeldungeon.items.weapon
+									.melee.Longsword().identify();
+							sample.level(15);
+							ArrayList<Item> in = new ArrayList<>(Arrays.asList(sample));
+							Item out = rCore2.sampleOutput(in);
+							if (out != null) result.add(new QuickRecipe(rCore2, in, out));
+						}
+
+						//100 无尽碎片 → 1 无尽锭
+						com.shatteredpixel.shatteredpixeldungeon.items.Recipe rIngot =
+								new com.shatteredpixel.shatteredpixeldungeon.endcontent.items
+										.InfinityRecipes.ShardToIngot();
+						{
+							ArrayList<Item> in = new ArrayList<>(Arrays.asList(
+									(Item) new com.shatteredpixel.shatteredpixeldungeon.endcontent.items
+											.InfinityMaterials.InfinityShard().quantity(100)));
+							Item out = rIngot.sampleOutput(in);
+							if (out != null) result.add(new QuickRecipe(rIngot, in, out));
+						}
+
+						//2 无尽锭 + 核心·剑 + 剑类样品套(7件) → 寰宇支配之剑
+						com.shatteredpixel.shatteredpixeldungeon.items.Recipe rTop =
+								new com.shatteredpixel.shatteredpixeldungeon.endcontent.items
+										.InfinityRecipes.ToEquipment();
+						{
+							ArrayList<Item> in = new ArrayList<>(Arrays.asList(
+									(Item) new com.shatteredpixel.shatteredpixeldungeon.endcontent.items
+											.InfinityMaterials.InfinityIngot().quantity(2).identify(),
+									(Item) new com.shatteredpixel.shatteredpixeldungeon.endcontent.items
+											.InfinityMaterials.InfinityCore(
+													com.shatteredpixel.shatteredpixeldungeon.endcontent.items
+															.InfinityMaterials.InfinityCore.Kind.SWORD).identify(),
+									(Item) new com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Greatsword().identify(),
+									(Item) new com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.WarHammer().identify(),
+									(Item) new com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Glaive().identify(),
+									(Item) new com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Greataxe().identify(),
+									(Item) new com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Greatshield().identify(),
+									(Item) new com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Gauntlet().identify(),
+									(Item) new com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.WarScythe().identify()));
+							Item out = rTop.sampleOutput(in);
+							if (out != null) result.add(new QuickRecipe(rTop, in, out));
+						}
+					}
 				}
 				return result;
 			case 7:
