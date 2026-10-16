@@ -118,4 +118,11 @@ public class DaggerTrident extends EmbedDagger {
 				"-并对被嵌住的目标**再补一记伤害**\n\n" +
 				"传送后获得 1 回合隐匿，冷却 **20 回合**。";
 	}
+
+	/** END(进阶匕首): 100% 命中。 */
+	@Override
+	public float accuracyFactor(com.shatteredpixel.shatteredpixeldungeon.actors.Char owner,
+			com.shatteredpixel.shatteredpixeldungeon.actors.Char target){
+		return 1000f;
+	}
 }

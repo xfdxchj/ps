@@ -117,21 +117,11 @@ public class EvolveDaggerRecipe extends Recipe {
 					|| it instanceof com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHaste
 					|| it instanceof com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfLevitation
 					|| it instanceof com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfRetribution){
-				//END(修复): 减到 0 时要真的移除 ——
-				//quantity(0) 只改数字，物品还留在背包里。
-				int left = it.quantity() - 1;
-				if (left <= 0) {
-					it.detachAll(com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero
-							.belongings.backpack);
-				} else {
-					it.quantity(left);
-				}
+				//END(修复·材料不消耗): 用统一的 ItemConsume（会真正移除）
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.ItemConsume.consumeOne(it);
 			} else if (it instanceof AssassinDagger){
-				//END(修复): 基础匕首必须**真正移除** ——
-				//原来是 quantity(0)，只把数量设成 0，物品对象还留在背包里，
-				//于是"基础匕首 + 成品"两把共存。
-				it.detachAll(com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero
-						.belongings.backpack);
+				//END(修复·基础匕首不消耗): 用统一 ItemConsume 真正移除
+				com.shatteredpixel.shatteredpixeldungeon.endcontent.ItemConsume.remove(it);
 			}
 		}
 		GLog.i("炼成：" + out.title());

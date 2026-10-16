@@ -122,4 +122,11 @@ public class DaggerTeleport extends EmbedDagger {
 				"-插在**平地**上 -> 直接传送到那一格\n\n" +
 				"传送后获得 1 回合隐匿，冷却 **10 回合**。";
 	}
+
+	/** END(进阶匕首): 100% 命中。 */
+	@Override
+	public float accuracyFactor(com.shatteredpixel.shatteredpixeldungeon.actors.Char owner,
+			com.shatteredpixel.shatteredpixeldungeon.actors.Char target){
+		return 1000f;
+	}
 }
