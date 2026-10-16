@@ -281,7 +281,7 @@ public final class ChallengeRegistry {
 				"玩家攻击命中后，13% 概率魅惑目标。");
 		done(all, 18, "老龄化",     "aging",            "战斗", T_BEN, 3, T_EASY,   "",
 				"普通怪物每回合 13% 概率睡眠 1 回合（Boss 与精英怪免疫）。");
-		done(all, 19, "风驰电掣",   "swift",            "战斗", T_TWO, 1, T_EASY,   "s:103",
+		done(all, 19, "风驰电掣",   "swift",            "战斗", T_TWO, 1, T_EASY,   "",
 				"玩家攻速 +20%，怪物移速 +20%。");
 		done(all, 20, "等我启动",   "wind_up",          "战斗", T_TWO, 2, T_MED,    "",
 				"对**同一目标**的伤害递增：第一次 20%，第二次 50%，第三次及以后 110%。换目标就重新计算。");
@@ -323,7 +323,7 @@ public final class ChallengeRegistry {
 		//END: 原联动串为 "s:14,30,97"，其中 97 已删除，故移除该引用（保留 14/30）。
 		done(all, 75, "精英地牢",   "elite_dungeon",    "怪物", T_MON, 3, T_MED,    "s:14,30",
 				"13% 的怪物被替换为其稀有变种（白化老鼠、寄居蟹、强盗等）。");
-		done(all, 76, "原始状态",   "primal_state",     "怪物", T_MON, 2, T_MED,    "s:103",
+		done(all, 76, "原始状态",   "primal_state",     "怪物", T_MON, 2, T_MED,    "",
 				"非远程怪物在打不到你的时候会**扔石头**（最多 6 格）。");
 		done(all, 77, "亡灵法师",   "necromancer",      "怪物", T_MON, 3, T_MED,    "s:73,86",
 				"怪物死亡后 **20%** 在原地留下一个幽灵。");
@@ -488,7 +488,7 @@ public final class ChallengeRegistry {
 		//等级 / 倾向 / 关系均按清单给定；ID 139-147 经核实为原表空号，可直接使用。
 		done(all, 139,"紊乱法杖",   "chaos_wand",       "装备", T_TWO, 2, T_MED,    "s:60,21",
 				"任何法杖施法时 **13%** 概率变成**另一种法杖**的效果（不是新物品，是全局规则）。等级沿用当前法杖。");
-		done(all, 140,"枪枪爆头",   "headshot",         "战斗", T_BEN, 2, T_EASY,   "s:103,76",
+		done(all, 140,"枪枪爆头",   "headshot",         "战斗", T_BEN, 2, T_EASY,   "s:76",
 				"玩家与目标距离 5 格以上时，远程攻击伤害必定为最大值。");
 		done(all, 141,"禁魔空间",   "anti_magic_zone",  "环境", T_MON, 2, T_EASY,   "x:139,21,60",
 				"所有魔法伤害降低 20%（玩家与怪物都受影响）。");
