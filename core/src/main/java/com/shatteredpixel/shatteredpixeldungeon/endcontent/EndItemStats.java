@@ -78,7 +78,7 @@ public final class EndItemStats {
 		} else {
 			s += Messages.get(msgClass, "stats_unknown", tier, dmgMin, dmgMax, strReq);
 			if (Dungeon.hero != null && strReq > Dungeon.hero.STR()){
-				s += " " + Messages.get(Weapon.class, "probably_too_heavy");
+				s += " " + Messages.get(msgClass, "probably_too_heavy");
 			}
 		}
 		return s;
