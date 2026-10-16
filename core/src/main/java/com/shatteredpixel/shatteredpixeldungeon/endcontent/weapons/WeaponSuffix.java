@@ -84,10 +84,10 @@ public enum WeaponSuffix {
 		}
 	},
 
-	BLOOD_DRINK("饮血", 30){
+	BLOOD_DRINK("饮血", 50){
 		@Override
 		public int proc(Weapon w, Char attacker, Char defender, int damage){
-			int heal = Math.max(1, Math.round(damage * 0.15f));
+			int heal = Math.max(1, Math.round(damage * 0.50f));
 			if (attacker.HP < attacker.HT){
 				attacker.HP = Math.min(attacker.HT, attacker.HP + heal);
 				if (attacker.sprite != null){

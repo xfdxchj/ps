@@ -1422,6 +1422,15 @@ public class ItemSpriteSheet {
 	 * END(修复·无尽碎片速度太快): 每个动画物品的"秒/帧"。
 	 * 默认沿用 {@code ItemSprite.ANIM_FRAME_TIME}，需要慢的单独指定。
 	 */
+	/** END(修复·无尽贴图): 这些图标要 1-8-8-1 往返动画，而不是循环。 */
+	public static boolean animationPingPong(int image) {
+		return image == GRIMM_INFINITY_SWORD || image == GRIMM_INFINITY_ARMOR
+				|| image == GRIMM_INFINITY_BOW || image == GRIMM_INFINITY_CATALYST
+				|| image == GRIMM_INFINITY_INGOT
+				|| image == GRIMM_CORE_SWORD || image == GRIMM_CORE_ARMOR
+				|| image == GRIMM_CORE_RING || image == GRIMM_CORE_BOW;
+	}
+
 	public static float animationFrameTime(int image) {
 		//无尽碎片：8 帧、每帧 0.25s，比默认的 0.125s 慢一半
 		if (image == GRIMM_INFINITY_CATALYST) return 0.25f;
